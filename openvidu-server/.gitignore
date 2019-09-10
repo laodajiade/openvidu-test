@@ -1,0 +1,3 @@
+/target/
+*.factorypath
+openvidu-server.iml
