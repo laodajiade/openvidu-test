@@ -60,6 +60,18 @@
 			<build>
 				<resources>
 					<resource>
+						<directory>src/main/java</directory>
+						<includes>
+							<include>io/openvidu/server/common/dao/mappers/*.xml</include>
+						</includes>
+					</resource>
+					<!--<resource>
+						<directory>src/main/resources</directory>
+						<includes>
+							<include>**/*</include>
+						</includes>
+					</resource>-->
+					<resource>
 						<directory>src/main/resources</directory>
 						<filtering>false</filtering>
 					</resource>
@@ -279,6 +291,11 @@
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
 			<version>${version.alibaba.druid}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>${version.org.mybatis.spring.boot}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
