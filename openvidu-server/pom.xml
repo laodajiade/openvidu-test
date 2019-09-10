@@ -311,6 +311,11 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 			<version>${version.spring-boot}</version>
 		</dependency>
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>${version.redis.clients.jedis}</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 
