@@ -25,3 +25,4 @@ nbactions.xml
 
 /.idea/
 openvidu-parent.iml
+/logs/
