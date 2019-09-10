@@ -66,7 +66,8 @@ public class BashCoturnCredentialsService extends CoturnCredentialsService {
 				log.info("Using COTURN credentials service for BASH environment");
 			}
 		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			log.info("");
 		}
 	}
 
