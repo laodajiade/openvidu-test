@@ -270,6 +270,16 @@
 			<artifactId>openvidu-java-client</artifactId>
 			<version>${version.openvidu.java.client}</version>
 		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${version.mysql-connector-java}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>${version.alibaba.druid}</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 

@@ -59,6 +59,8 @@
 		<version.janino>3.0.12</version.janino>
 		<version.commonslang>3.9</version.commonslang>
 		<version.dockerjava>3.1.2</version.dockerjava>
+		<version.alibaba.druid>1.1.12</version.alibaba.druid>
+		<version.mysql-connector-java>5.1.47</version.mysql-connector-java>
 
 		<version.webdrivermanager>3.6.1</version.webdrivermanager>
 		<version.selenium.jupiter>3.2.1</version.selenium.jupiter>
