@@ -117,6 +117,15 @@
 						<artifactId>maven-enforcer-plugin</artifactId>
 						<version>${version.enforcer.plugin}</version>
 					</plugin>
+					<plugin>
+						<groupId>org.mybatis.generator</groupId>
+						<artifactId>mybatis-generator-maven-plugin</artifactId>
+						<version>${version.org.mybatis.generator}</version>
+						<configuration>
+							<verbose>true</verbose>
+							<overwrite>true</overwrite>
+						</configuration>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
