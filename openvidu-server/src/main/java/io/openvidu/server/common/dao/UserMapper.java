@@ -2,9 +2,6 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.User;
 
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
-
 public interface UserMapper {
 
     int deleteByPrimaryKey(Long id);
