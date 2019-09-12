@@ -164,6 +164,7 @@ public class SessionRestController {
 		responseJson.addProperty("id", sessionNotActive.getSessionId());
 		responseJson.addProperty("createdAt", sessionNotActive.getStartTime());
 
+		log.info("POST /api/sessions resp content:{}", responseJson.toString());
 		return new ResponseEntity<>(responseJson.toString(), getResponseHeaders(), HttpStatus.OK);
 	}
 
@@ -204,6 +205,7 @@ public class SessionRestController {
 		});
 		json.addProperty("numberOfElements", sessions.size());
 		json.add("content", jsonArray);
+		log.info("GET /api/sessions resp content:{}", json.toString());
 		return new ResponseEntity<>(json.toString(), getResponseHeaders(), HttpStatus.OK);
 	}
 

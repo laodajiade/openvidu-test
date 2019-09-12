@@ -113,57 +113,57 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		transaction.startAsync();
 
 		switch (request.getMethod()) {
-		case ProtocolElements.JOINROOM_METHOD:
-			joinRoom(rpcConnection, request);
-			break;
-		case ProtocolElements.LEAVEROOM_METHOD:
-			leaveRoom(rpcConnection, request);
-			break;
-		case ProtocolElements.PUBLISHVIDEO_METHOD:
-			publishVideo(rpcConnection, request);
-			break;
-		case ProtocolElements.ONICECANDIDATE_METHOD:
-			onIceCandidate(rpcConnection, request);
-			break;
-		case ProtocolElements.RECEIVEVIDEO_METHOD:
-			receiveVideoFrom(rpcConnection, request);
-			break;
-		case ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD:
-			unsubscribeFromVideo(rpcConnection, request);
-			break;
-		case ProtocolElements.SENDMESSAGE_ROOM_METHOD:
-			sendMessage(rpcConnection, request);
-			break;
-		case ProtocolElements.UNPUBLISHVIDEO_METHOD:
-			unpublishVideo(rpcConnection, request);
-			break;
-		case ProtocolElements.STREAMPROPERTYCHANGED_METHOD:
-			streamPropertyChanged(rpcConnection, request);
-			break;
-		case ProtocolElements.FORCEDISCONNECT_METHOD:
-			forceDisconnect(rpcConnection, request);
-			break;
-		case ProtocolElements.FORCEUNPUBLISH_METHOD:
-			forceUnpublish(rpcConnection, request);
-			break;
-		case ProtocolElements.APPLYFILTER_METHOD:
-			applyFilter(rpcConnection, request);
-			break;
-		case ProtocolElements.EXECFILTERMETHOD_METHOD:
-			execFilterMethod(rpcConnection, request);
-			break;
-		case ProtocolElements.REMOVEFILTER_METHOD:
-			removeFilter(rpcConnection, request);
-			break;
-		case ProtocolElements.ADDFILTEREVENTLISTENER_METHOD:
-			addFilterEventListener(rpcConnection, request);
-			break;
-		case ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD:
-			removeFilterEventListener(rpcConnection, request);
-			break;
-		default:
-			log.error("Unrecognized request {}", request);
-			break;
+			case ProtocolElements.JOINROOM_METHOD:
+				joinRoom(rpcConnection, request);
+				break;
+			case ProtocolElements.LEAVEROOM_METHOD:
+				leaveRoom(rpcConnection, request);
+				break;
+			case ProtocolElements.PUBLISHVIDEO_METHOD:
+				publishVideo(rpcConnection, request);
+				break;
+			case ProtocolElements.ONICECANDIDATE_METHOD:
+				onIceCandidate(rpcConnection, request);
+				break;
+			case ProtocolElements.RECEIVEVIDEO_METHOD:
+				receiveVideoFrom(rpcConnection, request);
+				break;
+			case ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD:
+				unsubscribeFromVideo(rpcConnection, request);
+				break;
+			case ProtocolElements.SENDMESSAGE_ROOM_METHOD:
+				sendMessage(rpcConnection, request);
+				break;
+			case ProtocolElements.UNPUBLISHVIDEO_METHOD:
+				unpublishVideo(rpcConnection, request);
+				break;
+			case ProtocolElements.STREAMPROPERTYCHANGED_METHOD:
+				streamPropertyChanged(rpcConnection, request);
+				break;
+			case ProtocolElements.FORCEDISCONNECT_METHOD:
+				forceDisconnect(rpcConnection, request);
+				break;
+			case ProtocolElements.FORCEUNPUBLISH_METHOD:
+				forceUnpublish(rpcConnection, request);
+				break;
+			case ProtocolElements.APPLYFILTER_METHOD:
+				applyFilter(rpcConnection, request);
+				break;
+			case ProtocolElements.EXECFILTERMETHOD_METHOD:
+				execFilterMethod(rpcConnection, request);
+				break;
+			case ProtocolElements.REMOVEFILTER_METHOD:
+				removeFilter(rpcConnection, request);
+				break;
+			case ProtocolElements.ADDFILTEREVENTLISTENER_METHOD:
+				addFilterEventListener(rpcConnection, request);
+				break;
+			case ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD:
+				removeFilterEventListener(rpcConnection, request);
+				break;
+			default:
+				log.error("Unrecognized request {}", request);
+				break;
 		}
 	}
 
