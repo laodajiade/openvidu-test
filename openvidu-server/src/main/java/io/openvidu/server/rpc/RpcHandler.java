@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpSession;
 
+import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -53,6 +55,7 @@ import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.core.Token;
 import io.openvidu.server.utils.GeoLocation;
 import io.openvidu.server.utils.GeoLocationByIp;
+import org.springframework.util.StringUtils;
 
 public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
@@ -70,6 +73,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Autowired
 	RpcNotificationService notificationService;
 
+	@Autowired
+	CacheManage cacheManage;
+
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
 	@Override
@@ -86,7 +92,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		log.debug("WebSocket session #{} - Request: {}", participantPrivateId, request);
 
 		RpcConnection rpcConnection;
-		if (ProtocolElements.JOINROOM_METHOD.equals(request.getMethod())) {
+		if (ProtocolElements.ACCESS_IN_METHOD.equals(request.getMethod())) {
+//		if (ProtocolElements.JOINROOM_METHOD.equals(request.getMethod())) {  // modified at 2019-09-12
 			// Store new RpcConnection information if method 'joinRoom'
 			rpcConnection = notificationService.newRpcConnection(transaction, request);
 		} else if (notificationService.getRpcConnection(participantPrivateId) == null) {
@@ -101,7 +108,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		rpcConnection = notificationService.addTransaction(transaction, request);
 
 		String sessionId = rpcConnection.getSessionId();
-		if (sessionId == null && !ProtocolElements.JOINROOM_METHOD.equals(request.getMethod())) {
+		if (sessionId == null && !ProtocolElements.FILTERS.contains(request.getMethod())) {
+//		if (sessionId == null && !ProtocolElements.JOINROOM_METHOD.equals(request.getMethod())) {	// modified at 2019-09-12
 			log.warn(
 					"No session information found for participant with privateId {} when trying to execute method '{}'. Method 'Session.connect()' must be the first operation called in any session",
 					participantPrivateId, request.getMethod());
@@ -113,6 +121,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		transaction.startAsync();
 
 		switch (request.getMethod()) {
+            case ProtocolElements.ACCESS_IN_METHOD:
+                accessIn(rpcConnection, request);
+
+
+
 			case ProtocolElements.JOINROOM_METHOD:
 				joinRoom(rpcConnection, request);
 				break;
@@ -167,7 +180,25 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}
 
-	public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+    private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
+	    String userId = getStringParam(request, ProtocolElements.ACCESS_IN_USER_ID_PARAM);
+	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
+	    // verify parameters
+	    if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(token)) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+		}
+
+	    if (cacheManage.accessTokenEverValid(userId, token)) {
+			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+		} else {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.TOKEN_INVALID);
+		}
+
+    }
+
+    public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 
 		String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
 		String token = getStringParam(request, ProtocolElements.JOINROOM_TOKEN_PARAM);

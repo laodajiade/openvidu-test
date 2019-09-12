@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
@@ -80,6 +81,23 @@ public class RpcNotificationService {
 		try {
 			String dataVal = data != null ? data.toString() : null;
 			t.sendError(error.getCodeValue(), error.getMessage(), dataVal);
+		} catch (Exception e) {
+			log.error("Exception sending error response to user ({})", transactionId, e);
+		}
+	}
+
+	// add by chosongi 2019-09-12
+	public void sendErrorResponseWithDesc(String participantPrivateId, Integer transactionId, Object data,
+											  ErrorCodeEnum errorCodeEnum) {
+		Transaction t = getAndRemoveTransaction(participantPrivateId, transactionId);
+		if (t == null) {
+			log.error("No transaction {} found for paticipant with private id {}, unable to send result {}",
+					transactionId, participantPrivateId, data);
+			return;
+		}
+		try {
+			String dataVal = data != null ? data.toString() : null;
+			t.sendError(errorCodeEnum.getCode(), errorCodeEnum.getMessage(), dataVal);
 		} catch (Exception e) {
 			log.error("Exception sending error response to user ({})", transactionId, e);
 		}

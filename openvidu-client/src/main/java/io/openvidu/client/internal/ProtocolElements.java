@@ -16,6 +16,9 @@
 
 package io.openvidu.client.internal;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This class defines constant values of client-server messages and their
  * parameters.
@@ -117,6 +120,13 @@ public class ProtocolElements {
 	public static final String FILTEREVENTLISTENER_FILTERTYPE_PARAM = "filterType";
 	public static final String FILTEREVENTLISTENER_EVENTTYPE_PARAM = "eventType";
 	public static final String FILTEREVENTLISTENER_DATA_PARAM = "data";
+
+	// ---------------------------- add by chosongi at 2019-09-12
+	public static final String ACCESS_IN_METHOD = "accessIn";
+	public static final String ACCESS_IN_USER_ID_PARAM = "userId";
+	public static final String ACCESS_IN_TOKEN_PARAM = "token";
+
+	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, JOINROOM_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
