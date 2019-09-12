@@ -316,7 +316,11 @@
 			<artifactId>jedis</artifactId>
 			<version>${version.redis.clients.jedis}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${version.org.projectlombok.lombok}</version>
+		</dependency>
 	</dependencies>
 
 </project>

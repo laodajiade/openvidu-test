@@ -237,6 +237,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 		if (OpenViduServer.wsUrl == null) {
 			type = "local";
 			OpenViduServer.wsUrl = "wss://localhost:" + openviduConfig.getServerPort();
+//			OpenViduServer.wsUrl = "ws://172.25.18.3:" + openviduConfig.getServerPort();
 		}
 
 		if (OpenViduServer.wsUrl.endsWith("/")) {
