@@ -76,14 +76,14 @@ public class KurentoParticipant extends Participant {
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager) {
 		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
-				kurentoSession.getSessionId(), participant.getToken(), participant.getClientMetadata(),
+				kurentoSession.getSessionId(), participant.getRole(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt());
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
 		this.session = kurentoSession;
 
-		if (!OpenViduRole.SUBSCRIBER.equals(participant.getToken().getRole())) {
+		if (!OpenViduRole.SUBSCRIBER.equals(participant.getRole())) {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
@@ -91,7 +91,7 @@ public class KurentoParticipant extends Participant {
 
 		for (Participant other : session.getParticipants()) {
 			if (!other.getParticipantPublicId().equals(this.getParticipantPublicId())
-					&& !OpenViduRole.SUBSCRIBER.equals(other.getToken().getRole())) {
+					&& !OpenViduRole.SUBSCRIBER.equals(other.getRole())) {
 				// Initialize a SubscriberEndpoint for each other user connected with PUBLISHER
 				// or MODERATOR role
 				getNewOrExistingSubscriber(other.getParticipantPublicId());

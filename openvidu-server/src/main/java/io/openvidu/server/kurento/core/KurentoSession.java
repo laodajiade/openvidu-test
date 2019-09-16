@@ -323,7 +323,7 @@ public class KurentoSession extends Session {
 					throw new Exception("MediaPipleine was not created in 20 seconds");
 				}
 				getParticipants().forEach(p -> {
-					if (!OpenViduRole.SUBSCRIBER.equals(p.getToken().getRole())) {
+					if (!OpenViduRole.SUBSCRIBER.equals(p.getRole())) {
 						((KurentoParticipant) p).resetPublisherEndpoint();
 					}
 				});

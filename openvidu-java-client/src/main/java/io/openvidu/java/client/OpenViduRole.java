@@ -40,4 +40,11 @@ public enum OpenViduRole {
 	 * <code>Session.forceDisconnect()</code>)
 	 */
 	MODERATOR;
+
+	public static OpenViduRole parseRole(String role) {
+		for (OpenViduRole openViduRole : OpenViduRole.values()) {
+			if (openViduRole.name().equalsIgnoreCase(role)) return openViduRole;
+		}
+		return null;
+	}
 }

@@ -557,7 +557,7 @@ public class SessionEventsHandler {
 			}
 			boolean isRole = false;
 			for (OpenViduRole role : roles) {
-				isRole = role.equals(part.getToken().getRole());
+				isRole = role.equals(part.getRole());
 				if (isRole)
 					break;
 			}

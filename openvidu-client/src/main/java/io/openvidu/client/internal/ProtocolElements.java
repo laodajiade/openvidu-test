@@ -42,6 +42,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_SECRET_PARAM = "secret";
 	public static final String JOINROOM_PLATFORM_PARAM = "platform";
 	public static final String JOINROOM_RECORDER_PARAM = "recorder";
+	public static final String JOINROOM_ROLE_PARAM = "role";
 
 	public static final String JOINROOM_PEERID_PARAM = "id";
 	public static final String JOINROOM_PEERCREATEDAT_PARAM = "createdAt";
@@ -127,6 +128,8 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, JOINROOM_METHOD);
+
+	public static final String ACCESS_OUT_METHOD = "accessOut";
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 

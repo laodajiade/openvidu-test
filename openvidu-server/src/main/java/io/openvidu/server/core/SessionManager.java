@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PreDestroy;
 
+import io.openvidu.server.rpc.RpcConnection;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
@@ -84,6 +85,8 @@ public abstract class SessionManager {
 
 	public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
 			boolean closeWebSocket);
+
+	public abstract void accessOut(RpcConnection rpcConnection);
 
 	public abstract void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId);
 
@@ -284,7 +287,7 @@ public abstract class SessionManager {
 		}
 	}
 
-	public boolean isTokenValidInSession(String token, String sessionId, String participanPrivatetId) {
+	/*public boolean isTokenValidInSession(String token, String sessionId, String participanPrivatetId) {
 		if (!this.isInsecureParticipant(participanPrivatetId)) {
 			if (this.sessionidTokenTokenobj.get(sessionId) != null) {
 				return this.sessionidTokenTokenobj.get(sessionId).containsKey(token);
@@ -306,13 +309,21 @@ public abstract class SessionManager {
 							null));
 			return true;
 		}
+	}*/
+
+	public void recordParticipantByPublicid(String sessionId) {
+		this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
+		this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
+		if (this.openviduConfig.isRecordingModuleEnabled()) {
+			this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
+		}
 	}
 
 	public boolean isPublisherInSession(String sessionId, Participant participant) {
 		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
 			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-				return (OpenViduRole.PUBLISHER.equals(participant.getToken().getRole())
-						|| OpenViduRole.MODERATOR.equals(participant.getToken().getRole()));
+				return (OpenViduRole.PUBLISHER.equals(participant.getRole())
+						|| OpenViduRole.MODERATOR.equals(participant.getRole()));
 			} else {
 				return false;
 			}
@@ -324,7 +335,7 @@ public abstract class SessionManager {
 	public boolean isModeratorInSession(String sessionId, Participant participant) {
 		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
 			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-				return OpenViduRole.MODERATOR.equals(participant.getToken().getRole());
+				return OpenViduRole.MODERATOR.equals(participant.getRole());
 			} else {
 				return false;
 			}
@@ -345,11 +356,13 @@ public abstract class SessionManager {
 		this.insecureUsers.put(participantPrivateId, true);
 	}
 
-	public Participant newParticipant(String sessionId, String participantPrivatetId, Token token,
+//	public Participant newParticipant(String sessionId, String participantPrivatetId, Token token,
+	public Participant newParticipant(String sessionId, String participantPrivatetId, String role,
 			String clientMetadata, GeoLocation location, String platform, String finalUserId) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 			String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
-			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, token,
+//			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, token,
+			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
 					clientMetadata, location, platform, null);
 			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 					p) != null) {
@@ -376,11 +389,13 @@ public abstract class SessionManager {
 		}
 	}
 
-	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
-			String clientMetadata) {
+//	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
+	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, String role,
+											  String clientMetadata) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+
 			Participant p = new Participant(null, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-					sessionId, token, clientMetadata, null, null, null);
+					sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null);
 			this.sessionidParticipantpublicidParticipant.get(sessionId)
 					.put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
 			return p;

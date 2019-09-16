@@ -18,7 +18,7 @@
 package io.openvidu.server.core;
 
 import com.google.gson.JsonObject;
-
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.utils.GeoLocation;
 
 public class Participant {
@@ -30,7 +30,8 @@ public class Participant {
 	protected Long createdAt; // Timestamp when this connection was established
 	protected String clientMetadata = ""; // Metadata provided on client side
 	protected String serverMetadata = ""; // Metadata provided on server side
-	protected Token token; // Token associated to this participant
+//	protected Token token; // Token associated to this participant
+	private OpenViduRole role;
 	protected GeoLocation location; // Location of the participant
 	protected String platform; // Platform used by the participant to connect to the session
 
@@ -39,8 +40,8 @@ public class Participant {
 
 	private final String METADATA_SEPARATOR = "%/%";
 
-	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId,
-			Token token, String clientMetadata, GeoLocation location, String platform, Long createdAt) {
+	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
+					   String clientMetadata, GeoLocation location, String platform, Long createdAt) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
@@ -50,10 +51,11 @@ public class Participant {
 		} else {
 			this.createdAt = System.currentTimeMillis();
 		}
-		this.token = token;
+//		this.token = token;
 		this.clientMetadata = clientMetadata;
-		if (!token.getServerMetadata().isEmpty())
-			this.serverMetadata = token.getServerMetadata();
+		/*if (!token.getServerMetadata().isEmpty())
+			this.serverMetadata = token.getServerMetadata();*/
+		this.role = role;
 		this.location = location;
 		this.platform = platform;
 	}
@@ -102,12 +104,16 @@ public class Participant {
 		this.serverMetadata = serverMetadata;
 	}
 
-	public Token getToken() {
-		return this.token;
-	}
+//	public Token getToken() {
+//		return this.token;
+//	}
+//
+//	public void setToken(Token token) {
+//		this.token = token;
+//	}
 
-	public void setToken(Token token) {
-		this.token = token;
+	public OpenViduRole getRole() {
+		return role;
 	}
 
 	public GeoLocation getLocation() {
@@ -214,8 +220,8 @@ public class Participant {
 		json.addProperty("createdAt", this.createdAt);
 		json.addProperty("location", this.location != null ? this.location.toString() : "unknown");
 		json.addProperty("platform", this.platform);
-		json.addProperty("token", this.token.getToken());
-		json.addProperty("role", this.token.getRole().name());
+//		json.addProperty("token", this.token.getToken());
+		json.addProperty("role", this.getRole().name());
 		json.addProperty("serverData", this.serverMetadata);
 		json.addProperty("clientData", this.clientMetadata);
 		return json;

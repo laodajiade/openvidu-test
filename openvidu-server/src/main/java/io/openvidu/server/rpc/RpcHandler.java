@@ -123,8 +123,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		switch (request.getMethod()) {
             case ProtocolElements.ACCESS_IN_METHOD:
                 accessIn(rpcConnection, request);
-
-
+            case ProtocolElements.ACCESS_OUT_METHOD:
+                accessOut(rpcConnection, request);
 
 			case ProtocolElements.JOINROOM_METHOD:
 				joinRoom(rpcConnection, request);
@@ -198,10 +198,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
     }
 
+    private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
+	    sessionManager.accessOut(rpcConnection);
+        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+
     public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 
 		String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
-		String token = getStringParam(request, ProtocolElements.JOINROOM_TOKEN_PARAM);
+//		String token = getStringParam(request, ProtocolElements.JOINROOM_TOKEN_PARAM);
+        String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
+        String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
 		String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
 		String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
 		String participantPrivatetId = rpcConnection.getParticipantPrivateId();
@@ -262,43 +269,41 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		if (openviduConfig.isOpenViduSecret(secret)) {
 			sessionManager.newInsecureParticipant(participantPrivatetId);
-			token = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
+//			token = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
 			if (recorder) {
 				generateRecorderParticipant = true;
 			}
 		}
 
-		if (sessionManager.isTokenValidInSession(token, sessionId, participantPrivatetId)) {
+//		if (sessionManager.isTokenValidInSession(token, sessionId, participantPrivatetId)) {
 
-			String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
+//			String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
+        sessionManager.recordParticipantByPublicid(sessionId);
+        if (sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
 
-			if (sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
+//            Token tokenObj = sessionManager.consumeToken(sessionId, participantPrivatetId, token);
+            Participant participant;
 
-				Token tokenObj = sessionManager.consumeToken(sessionId, participantPrivatetId, token);
-				Participant participant;
+            if (generateRecorderParticipant) {
+                participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role);
+            } else {
+                participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata, role, location, platform,
+                        httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
+            }
 
-				if (generateRecorderParticipant) {
-					participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, tokenObj,
-							clientMetadata);
-				} else {
-					participant = sessionManager.newParticipant(sessionId, participantPrivatetId, tokenObj,
-							clientMetadata, location, platform,
-							httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
-				}
+            rpcConnection.setSessionId(sessionId);
+            sessionManager.joinRoom(participant, sessionId, request.getId());
 
-				rpcConnection.setSessionId(sessionId);
-				sessionManager.joinRoom(participant, sessionId, request.getId());
-
-			} else {
-				log.error("ERROR: Metadata format set in client-side is incorrect");
-				throw new OpenViduException(Code.USER_METADATA_FORMAT_INVALID_ERROR_CODE,
-						"Unable to join room. The metadata received from the client-side has an invalid format");
-			}
-		} else {
+        } else {
+            log.error("ERROR: Metadata format set in client-side is incorrect");
+            throw new OpenViduException(Code.USER_METADATA_FORMAT_INVALID_ERROR_CODE,
+                    "Unable to join room. The metadata received from the client-side has an invalid format");
+        }
+		/*} else {
 			log.error("ERROR: sessionId or token not valid");
 			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
 					"Unable to join room. The user is not authorized");
-		}
+		}*/
 	}
 
 	private void leaveRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -309,7 +314,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, true);
+//		sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, true);
+		sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 		log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
 				rpcConnection.getSessionId());
 	}
@@ -468,8 +474,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		// Allow applying filter if the user is a MODERATOR (owning the stream or other
 		// user's stream) or if the user is the owner of the stream and has a token
 		// configured with this specific filter
-		if (isModerator || (this.userIsStreamOwner(rpcConnection.getSessionId(), participant, streamId)
-				&& participant.getToken().getKurentoTokenOptions().isFilterAllowed(filterType))) {
+		if (isModerator || (this.userIsStreamOwner(rpcConnection.getSessionId(), participant, streamId))) {
+//				&& participant.getToken().getKurentoTokenOptions().isFilterAllowed(filterType))) {
 			JsonObject filterOptions;
 			try {
 				filterOptions = new JsonParser().parse(getStringParam(request, ProtocolElements.FILTER_OPTIONS_PARAM))

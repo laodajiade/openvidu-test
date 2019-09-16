@@ -112,7 +112,8 @@ public abstract class MediaEndpoint {
 
 		this.openviduConfig = openviduConfig;
 
-		KurentoTokenOptions kurentoTokenOptions = this.owner.getToken().getKurentoTokenOptions();
+//		KurentoTokenOptions kurentoTokenOptions = this.owner.getToken().getKurentoTokenOptions();
+		KurentoTokenOptions kurentoTokenOptions = null;
 		if (kurentoTokenOptions != null) {
 			this.maxRecvKbps = kurentoTokenOptions.getVideoMaxRecvBandwidth() != null
 					? kurentoTokenOptions.getVideoMaxRecvBandwidth()
