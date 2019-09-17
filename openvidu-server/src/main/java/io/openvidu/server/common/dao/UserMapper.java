@@ -2,6 +2,8 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.User;
 
+import java.util.List;
+
 public interface UserMapper {
 
     int deleteByPrimaryKey(Long id);
@@ -15,4 +17,6 @@ public interface UserMapper {
     int updateByPrimaryKeySelective(User record);
 
     int updateByPrimaryKey(User record);
+
+    List<User> selectByPrimaryKeys(List<Long> ids);
 }

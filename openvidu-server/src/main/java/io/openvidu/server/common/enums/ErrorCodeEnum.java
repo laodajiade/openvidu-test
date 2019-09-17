@@ -16,7 +16,13 @@ public enum ErrorCodeEnum {
     PERFORMANCE_EXCEED(11002, "performance exceed"),
 
     TOKEN_INVALID(12003, "token invalid"),
-    TOKEN_ERROR(12004, "token error");
+    TOKEN_ERROR(12004, "token error"),
+
+    CONFERENCE_ALREADY_EXIST(13000, "conference already exist"),
+    CONFERENCE_NOT_EXIST(13001, "conference not exist"),
+    CONFERENCE_IS_LOCKED(13002, "conference is locked"),
+    PERMISSION_LIMITED(13004, "permission limited"),
+    SHARING_ALREADY_EXIST(13005, "screen sharing already exist");
 
 
     private int code;

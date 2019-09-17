@@ -81,6 +81,8 @@ public abstract class SessionManager {
 	protected ConcurrentMap<String, Boolean> insecureUsers = new ConcurrentHashMap<>();
 	public ConcurrentMap<String, ConcurrentHashMap<String, Token>> sessionidTokenTokenobj = new ConcurrentHashMap<>();
 
+	protected ConcurrentMap<String, ConcurrentHashMap<String, String>> sessionidConferenceInfo = new ConcurrentHashMap<>();
+
 	public abstract void joinRoom(Participant participant, String sessionId, Integer transactionId);
 
 	public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
@@ -311,7 +313,7 @@ public abstract class SessionManager {
 		}
 	}*/
 
-	public void recordParticipantByPublicid(String sessionId) {
+	public void recordParticipantBySessionId(String sessionId) {
 		this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		if (this.openviduConfig.isRecordingModuleEnabled()) {
@@ -428,7 +430,7 @@ public abstract class SessionManager {
 	 * <strong>Dev advice:</strong> Send notifications to all participants to inform
 	 * that their session has been forcibly closed.
 	 *
-	 * @see SessionManmager#closeSession(String)
+//	 * @see SessionManmager#closeSession(String)
 	 */
 	@PreDestroy
 	public void close() {
@@ -512,4 +514,24 @@ public abstract class SessionManager {
 		sessionidTokenTokenobj.remove(sessionId);
 	}
 
+	public boolean isNewSessionIdValid(String sessionId) {
+		if (sessionidConferenceInfo.containsKey(sessionId)) return false;
+		sessionidConferenceInfo.put(sessionId, new ConcurrentHashMap<>());
+		return true;
+	}
+
+	public boolean isSessionIdValid(String sessionId) {
+		return sessionidConferenceInfo.containsKey(sessionId);
+	}
+
+	public boolean isConflictSharing(String sessionId, String sourceId) {
+		ConcurrentHashMap<String, String> sessionInfo = sessionidConferenceInfo.get(sessionId);
+		if (sessionInfo.containsKey("sharingSourceId")) return false;
+		sessionInfo.put("sharingSourceId", sourceId);
+		return true;
+	}
+
+	public ConcurrentHashMap<String, String> getSessionInfo(String sessionId) {
+		return sessionidConferenceInfo.get(sessionId);
+	}
 }

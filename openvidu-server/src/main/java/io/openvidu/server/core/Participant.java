@@ -19,6 +19,7 @@ package io.openvidu.server.core;
 
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.utils.GeoLocation;
 
 public class Participant {
@@ -37,6 +38,8 @@ public class Participant {
 
 	protected boolean streaming = false;
 	protected volatile boolean closed;
+
+	protected ParticipantHandStatus handStatus;
 
 	private final String METADATA_SEPARATOR = "%/%";
 
@@ -58,6 +61,7 @@ public class Participant {
 		this.role = role;
 		this.location = location;
 		this.platform = platform;
+		this.handStatus = ParticipantHandStatus.down;
 	}
 
 	public String getFinalUserId() {
@@ -114,6 +118,14 @@ public class Participant {
 
 	public OpenViduRole getRole() {
 		return role;
+	}
+
+	public ParticipantHandStatus getHandStatus() {
+		return handStatus;
+	}
+
+	public void setHandStatus(ParticipantHandStatus handStatus) {
+		this.handStatus = handStatus;
 	}
 
 	public GeoLocation getLocation() {

@@ -49,6 +49,7 @@ public class Session implements SessionInterface {
 	protected Long startTime;
 
 	protected volatile boolean closed = false;
+	private volatile boolean locking = false;
 	protected AtomicInteger activePublishers = new AtomicInteger(0);
 
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
@@ -122,6 +123,15 @@ public class Session implements SessionInterface {
 		if (isClosed()) {
 			throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "The session '" + sessionId + "' is closed");
 		}
+	}
+
+	public boolean isLocking() {
+		return locking;
+	}
+
+	public boolean setLocking(boolean locking) {
+		this.locking = locking;
+		return this.locking;
 	}
 
 	public JsonObject toJson() {

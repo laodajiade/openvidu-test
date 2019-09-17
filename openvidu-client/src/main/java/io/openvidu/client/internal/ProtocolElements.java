@@ -131,6 +131,45 @@ public class ProtocolElements {
 
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
+	public static final String CREATE_ROOM_METHOD = "createRoom";
+	public static final String CREATE_ROOM_ID_PARAM = "roomId";
+
+	public static final String SHARE_SCREEN_METHOD = "shareScreen";
+	public static final String SHARE_ROOM_ID_PARAM = "roomId";
+	public static final String SHARE_SOURCE_ID_PARAM = "sourceId";
+
+	public static final String STOP_SHARE_SCREEN_METHOD = "stopShareScreen";
+	public static final String STOP_SHARE_ROOM_ID_PARAM = "roomId";
+	public static final String STOP_SHARE_SOURCE_ID_PARAM = "sourceId";
+
+	public static final String GET_PARTICIPANTS_METHOD = "getParticipants";
+	public static final String GET_PARTICIPANTS_ROOM_ID_PARAM = "roomId";
+
+	public static final String SET_AUDIO_STATUS_METHOD = "setAudioStatus";
+	public static final String SET_AUDIO_ROOM_ID_PARAM = "roomId";
+	public static final String SET_AUDIO_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_AUDIO_TARGET_ID_PARAM = "targetId";
+	public static final String SET_AUDIO_STATUS_PARAM = "status";
+
+	public static final String SET_VIDEO_STATUS_METHOD = "setVideoStatus";
+	public static final String SET_VIDEO_ROOM_ID_PARAM = "roomId";
+	public static final String SET_VIDEO_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_VIDEO_TARGET_ID_PARAM = "targetId";
+	public static final String SET_VIDEO_STATUS_PARAM = "status";
+
+	public static final String RAISE_HAND_METHOD = "raiseHand";
+	public static final String RAISE_HAND_ROOM_ID_PARAM = "roomId";
+	public static final String RAISE_HAND_SOURCE_ID_PARAM = "sourceId";
+
+	public static final String PUT_DOWN_HAND_METHOD = "putDownHand";
+	public static final String PUT_DOWN_HAND_ROOM_ID_PARAM = "roomId";
+	public static final String PUT_DOWN_HAND_SOURCE_ID_PARAM = "sourceId";
+	public static final String PUT_DOWN_HAND_TARGET_ID_PARAM = "targetId";
+
+	public static final String LOCK_SESSION_METHOD = "lockSession";
+	public static final String LOCK_SESSION_ROOM_ID_PARAM = "roomId";
+	public static final String LOCK_SESSION_SOURCE_ID_PARAM = "sourceId";
+
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
 	public static final String PARTICIPANTJOINED_METHOD = "participantJoined";
