@@ -273,10 +273,10 @@ public class OpenViduServer implements JsonRpcConfigurer {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void whenReady() {
-		final String NEW_LINE = System.lineSeparator();
+		/*final String NEW_LINE = System.lineSeparator();
 		String str = NEW_LINE + NEW_LINE + "    ACCESS IP            " + NEW_LINE + "-------------------------"
-				+ NEW_LINE + httpUrl + NEW_LINE + "-------------------------" + NEW_LINE;
-		log.info(str);
+				+ NEW_LINE + httpUrl + NEW_LINE + "-------------------------" + NEW_LINE;*/
+		log.info("ACCESS IP:{}", httpUrl);
 	}
 
 }
