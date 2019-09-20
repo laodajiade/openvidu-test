@@ -43,7 +43,7 @@ public class Session implements SessionInterface {
 	protected RecordingManager recordingManager;
 
 //	protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
-	protected final ConcurrentMap<String, ConcurrentHashMap<String, Participant>> participants = new ConcurrentHashMap<>();
+	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
