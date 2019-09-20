@@ -17,17 +17,8 @@
 
 package io.openvidu.server.core;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
@@ -38,12 +29,21 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+
 public class Session implements SessionInterface {
 
 	protected OpenviduConfig openviduConfig;
 	protected RecordingManager recordingManager;
 
-	protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
+//	protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
+	protected final ConcurrentMap<String, ConcurrentHashMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
