@@ -86,7 +86,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Override
 	public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
 
-		String participantPrivateId = null;
+		String participantPrivateId;
 		try {
 			participantPrivateId = transaction.getSession().getSessionId();
 		} catch (Throwable e) {
