@@ -18,6 +18,7 @@
 package io.openvidu.server.kurento.core;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -79,7 +80,19 @@ public class KurentoSession extends Session {
 
 		KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 				this.openviduConfig, this.recordingManager);
-		participants.put(participant.getParticipantPrivateId(), kurentoParticipant);
+//		participants.put(participant.getParticipantPrivateId(), kurentoParticipant);
+		participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
+			ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
+			connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
+			return connectionParticipants;
+		});
+		participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
+			Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
+			if (newPart != null)
+				log.error("RPCConnection:{} already exists the stream type:{}", participant.getParticipantPrivateId(),
+						participant.getStreamType().name());
+			return parts;
+		});
 
 		filterStates.forEach((filterId, state) -> {
 			log.info("Adding filter {}", filterId);
