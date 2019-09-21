@@ -76,7 +76,7 @@ public class KurentoParticipant extends Participant {
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager) {
 		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
-				kurentoSession.getSessionId(), participant.getRole(), participant.getClientMetadata(),
+				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt());
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
