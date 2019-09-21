@@ -110,7 +110,9 @@ public class KurentoSession extends Session {
 		registerPublisher();
 
 		// pre-load endpoints to recv video from the new publisher
-		for (Participant p : participants.values()) {
+//        for (Participant p : participants.values()) {
+        // TODO exclude participants of the same RPCConnection
+		for (Participant p : getParticipants()) {
 			if (participant.equals(p)) {
 				continue;
 			}
@@ -123,7 +125,9 @@ public class KurentoSession extends Session {
 
 	public void cancelPublisher(Participant participant, EndReason reason) {
 		// Cancel all subscribers for this publisher
-		for (Participant subscriber : participants.values()) {
+//		for (Participant subscriber : participants.values()) {
+        // TODO exclude participants of the same RPCConnection
+		for (Participant subscriber : getParticipants()) {
 			if (participant.equals(subscriber)) {
 				continue;
 			}
@@ -157,7 +161,8 @@ public class KurentoSession extends Session {
 	public boolean close(EndReason reason) {
 		if (!closed) {
 
-			for (Participant participant : participants.values()) {
+//			for (Participant participant : participants.values()) {
+			for (Participant participant : getParticipants()) {
 				((KurentoParticipant) participant).releaseAllFilters();
 				((KurentoParticipant) participant).close(reason, true, 0);
 			}
@@ -201,7 +206,9 @@ public class KurentoSession extends Session {
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
-		for (Participant other : participants.values()) {
+//		for (Participant other : participants.values()) {
+        // TODO exclude participants of the same RPCConnection
+        for (Participant other : getParticipants()) {
 			((KurentoParticipant) other).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
 	}

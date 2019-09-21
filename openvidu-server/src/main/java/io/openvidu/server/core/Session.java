@@ -25,17 +25,18 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Session implements SessionInterface {
 
@@ -83,9 +84,21 @@ public class Session implements SessionInterface {
 		return this.startTime;
 	}
 
-	public Set<Participant> getParticipants() {
+	/*public Set<Participant> getParticipants() {
 		checkClosed();
 		return new HashSet<Participant>(this.participants.values());
+	}*/
+
+	public Set<Participant> getParticipants() {
+		checkClosed();
+		return this.participants.values().stream().flatMap(v ->
+				v.values().stream()).collect(Collectors.toSet());
+	}
+
+	public Set<Participant> getMajorPartEachConnect() {
+		checkClosed();
+		return this.participants.values().stream().map(v ->
+				v.get(StreamType.MAJOR.name())).collect(Collectors.toSet());
 	}
 
 	public Participant getParticipantByPrivateId(String participantPrivateId) {
