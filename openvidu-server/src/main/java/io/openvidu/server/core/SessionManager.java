@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PreDestroy;
 
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcConnection;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.jsonrpc.message.Request;
@@ -359,13 +360,13 @@ public abstract class SessionManager {
 	}
 
 //	public Participant newParticipant(String sessionId, String participantPrivatetId, Token token,
-	public Participant newParticipant(String sessionId, String participantPrivatetId, String role,
+	public Participant newParticipant(String sessionId, String participantPrivatetId, String role, String streamType,
 			String clientMetadata, GeoLocation location, String platform, String finalUserId) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 			String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
 //			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, token,
 			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
-					clientMetadata, location, platform, null);
+					StreamType.valueOf(streamType), clientMetadata, location, platform, null);
 			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 					p) != null) {
 				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
@@ -392,12 +393,12 @@ public abstract class SessionManager {
 	}
 
 //	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
-	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, String role,
+	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, String role, String streamType,
 											  String clientMetadata) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
 			Participant p = new Participant(null, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-					sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null);
+					sessionId, OpenViduRole.parseRole(role), StreamType.valueOf(streamType), clientMetadata, null, null, null);
 			this.sessionidParticipantpublicidParticipant.get(sessionId)
 					.put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
 			return p;

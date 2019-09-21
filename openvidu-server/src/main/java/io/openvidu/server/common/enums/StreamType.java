@@ -6,9 +6,9 @@ package io.openvidu.server.common.enums;
  */
 public enum StreamType {
     /** 主码流*/
-    major,
+    MAJOR,
     /** 辅码流*/
-    minor,
+    MINOR,
     /** 分享码流*/
-    sharing
+    SHARING
 }

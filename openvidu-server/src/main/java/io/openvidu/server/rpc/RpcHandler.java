@@ -406,6 +406,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
 		String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
 		String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
+		String streamType = getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM);
 		String participantPrivatetId = rpcConnection.getParticipantPrivateId();
 
 		InetAddress remoteAddress = null;
@@ -480,9 +481,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             Participant participant;
 
             if (generateRecorderParticipant) {
-                participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role);
+                participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
             } else {
-                participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata, role, location, platform,
+                participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType, location, platform,
                         httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
             }
 
