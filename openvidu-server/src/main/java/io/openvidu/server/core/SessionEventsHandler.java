@@ -150,8 +150,10 @@ public class SessionEventsHandler {
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM,
 						participant.getFullMetadata());
 
-				rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
+					rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
+							ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+				}
 			}
 		}
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
@@ -179,8 +181,10 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
 		for (Participant p : remainingParticipants) {
-			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-					ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+			}
 		}
 
 		if (transactionId != null) {
