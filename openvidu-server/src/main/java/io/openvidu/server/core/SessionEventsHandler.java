@@ -101,6 +101,8 @@ public class SessionEventsHandler {
 				JsonObject stream = new JsonObject();
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMID_PARAM,
 						existingParticipant.getPublisherStreamId());
+				stream.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
+						existingParticipant.getStreamType().name());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 						kParticipant.getPublisher().createdAt());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,

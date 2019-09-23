@@ -429,7 +429,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		search.setRoomId(sessionId);
 		Conference conference = conferenceMapper.selectBySearchCondition(search);
 		if (!StringUtils.isEmpty(conference.getPassword()) && !conference.getPassword().equals(password)) {
-			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(), null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
+			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
 			return;
 		}
 
