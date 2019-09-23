@@ -1,6 +1,7 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferenceSearch;
 
 public interface ConferenceMapper {
     int deleteByPrimaryKey(Long id);
@@ -14,4 +15,6 @@ public interface ConferenceMapper {
     int updateByPrimaryKeySelective(Conference record);
 
     int updateByPrimaryKey(Conference record);
+
+    Conference selectBySearchCondition(ConferenceSearch search);
 }

@@ -35,6 +35,7 @@ import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.User;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -419,7 +420,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
 		String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
 		String streamType = getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM);
+		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.JOINROOM_PASSWORD_PARAM)) ?
+				request.getParams().get(ProtocolElements.JOINROOM_PASSWORD_PARAM).getAsString() : null;
 		String participantPrivatetId = rpcConnection.getParticipantPrivateId();
+
+		// verify conference password
+		ConferenceSearch search = new ConferenceSearch();
+		search.setRoomId(sessionId);
+		Conference conference = conferenceMapper.selectBySearchCondition(search);
+		if (!StringUtils.isEmpty(conference.getPassword()) && !conference.getPassword().equals(password)) {
+			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(), null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
+			return;
+		}
 
 		InetAddress remoteAddress = null;
 		GeoLocation location = null;

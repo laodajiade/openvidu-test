@@ -29,12 +29,4 @@ public class Conference {
     private Date createTime;
 
     private Date updateTime;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 }

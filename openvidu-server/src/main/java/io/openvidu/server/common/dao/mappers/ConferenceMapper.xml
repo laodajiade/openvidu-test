@@ -19,6 +19,15 @@
     id, room_id, subject, desc, start_time, end_time, room_capacity, status, password, 
     invite_limit, create_time, update_time
   </sql>
+  <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
+      select
+      <include refid="Base_Column_List" />
+      from sd_conference
+      where
+      <if test="roomId != null" >
+          room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+  </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
     <include refid="Base_Column_List" />
