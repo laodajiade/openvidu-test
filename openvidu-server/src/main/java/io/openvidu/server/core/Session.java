@@ -101,14 +101,24 @@ public class Session implements SessionInterface {
 				v.get(StreamType.MAJOR.name())).collect(Collectors.toSet());
 	}
 
-	public Participant getParticipantByPrivateId(String participantPrivateId) {
-		checkClosed();
-		return participants.get(participantPrivateId);
-	}
+    /*public Participant getParticipantByPrivateId(String participantPrivateId) {
+        checkClosed();
+        return participants.get(participantPrivateId);
+    }*/
+
+    public Participant getParticipantByPrivateId(String participantPrivateId) {
+        checkClosed();
+        return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
+    }
+
+    public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
+        checkClosed();
+        return participants.get(participantPrivateId).get(streamType.name());
+    }
 
 	public Participant getParticipantByPublicId(String participantPublicId) {
 		checkClosed();
-		for (Participant p : participants.values()) {
+		for (Participant p : getParticipants()) {
 			if (p.getParticipantPublicId().equals(participantPublicId)) {
 				return p;
 			}
@@ -173,11 +183,16 @@ public class Session implements SessionInterface {
 		}
 		JsonObject connections = new JsonObject();
 		JsonArray participants = new JsonArray();
-		this.participants.values().forEach(p -> {
+		/*this.participants.values().forEach(p -> {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(p.getParticipantPublicId())) {
 				participants.add(toJsonFunction.apply((KurentoParticipant) p));
 			}
-		});
+		});*/
+		this.participants.values().stream().flatMap(m -> m.values().stream()).forEach(p -> {
+            if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(p.getParticipantPublicId())) {
+                participants.add(toJsonFunction.apply((KurentoParticipant) p));
+            }
+        });
 		connections.addProperty("numberOfElements", participants.size());
 		connections.add("content", participants);
 		json.add("connections", connections);
