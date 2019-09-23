@@ -134,6 +134,7 @@ public class ProtocolElements {
 
 	public static final String CREATE_ROOM_METHOD = "createRoom";
 	public static final String CREATE_ROOM_ID_PARAM = "roomId";
+	public static final String CREATE_ROOM_PASSWORD_PARAM = "password";
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
 	public static final String SHARE_ROOM_ID_PARAM = "roomId";

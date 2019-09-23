@@ -30,9 +30,11 @@ import javax.servlet.http.HttpSession;
 import com.google.gson.*;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -80,6 +82,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Resource
 	UserMapper userMapper;
+
+	@Resource
+    ConferenceMapper conferenceMapper;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -239,9 +244,16 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
+		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM)) ?
+                request.getParams().get(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM).getAsString() : null;
 		if (sessionManager.isNewSessionIdValid(sessionId)) {
 			JsonObject respJson = new JsonObject();
 			respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
+			// save conference info
+            Conference conference = new Conference();
+            conference.setRoomId(sessionId);
+            conference.setPassword(password);
+            int insertResult = conferenceMapper.insert(conference);
 			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
 		} else {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
