@@ -2,11 +2,9 @@ package io.openvidu.server.common.cache;
 
 import io.openvidu.server.common.Contants.CacheKeyConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -24,9 +22,14 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public boolean accessTokenEverValid(String userId, String token) {
-        return Objects.equals(tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId).get("token").toString(), token);
+        boolean result;
+        try {
+            result = Objects.equals(tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId).get("token").toString(), token);
+        } catch (Exception e) {
+            log.error("Exception:", e);
+            return false;
+        }
+        return result;
     }
-
-
 
 }
