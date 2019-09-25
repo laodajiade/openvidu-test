@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * @author chosongi
@@ -24,7 +23,7 @@ public class CacheManageImpl implements CacheManage {
     public boolean accessTokenEverValid(String userId, String token) {
         boolean result;
         try {
-            result = Objects.equals(tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId).get("token").toString(), token);
+            result = token.equals(tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId).get("token").toString());
         } catch (Exception e) {
             log.error("Exception:", e);
             return false;

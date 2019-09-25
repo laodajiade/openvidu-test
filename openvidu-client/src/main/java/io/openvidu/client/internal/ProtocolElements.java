@@ -129,13 +129,13 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_USER_ID_PARAM = "userId";
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
 
-	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, JOINROOM_METHOD);
-
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
 	public static final String CREATE_ROOM_METHOD = "createRoom";
 	public static final String CREATE_ROOM_ID_PARAM = "roomId";
 	public static final String CREATE_ROOM_PASSWORD_PARAM = "password";
+
+    public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD);
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
 	public static final String SHARE_ROOM_ID_PARAM = "roomId";

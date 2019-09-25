@@ -100,7 +100,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw e;
 		}
 
-		log.debug("WebSocket session #{} - Request: {}", participantPrivateId, request);
+		log.info("WebSocket session #{} - Request: {}", participantPrivateId, request);
 
 		RpcConnection rpcConnection;
 		if (ProtocolElements.ACCESS_IN_METHOD.equals(request.getMethod())) {
