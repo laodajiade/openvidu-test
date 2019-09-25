@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.ParticipantMicStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.utils.GeoLocation;
 
@@ -44,6 +45,7 @@ public class Participant {
 	protected volatile boolean closed;
 
 	protected ParticipantHandStatus handStatus;
+	protected ParticipantMicStatus micStatus;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -68,6 +70,7 @@ public class Participant {
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
+		this.micStatus = ParticipantMicStatus.on;
 	}
 
 	public String getFinalUserId() {
@@ -136,6 +139,12 @@ public class Participant {
 
 	public void setHandStatus(ParticipantHandStatus handStatus) {
 		this.handStatus = handStatus;
+	}
+
+	public ParticipantMicStatus getMicStatus() { return micStatus; }
+
+	public void setMicStatus(ParticipantMicStatus micStatus) {
+		this.micStatus = micStatus;
 	}
 
 	public GeoLocation getLocation() {

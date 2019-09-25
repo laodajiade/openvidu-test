@@ -173,6 +173,14 @@ public class ProtocolElements {
 	public static final String LOCK_SESSION_ROOM_ID_PARAM = "roomId";
 	public static final String LOCK_SESSION_SOURCE_ID_PARAM = "sourceId";
 
+	public static final String UNLOCK_SESSION_METHOD = "unlockSession";
+	public static final String UNLOCK_SESSION_ROOM_ID_PARAM = "roomId";
+	public static final String UNLOCK_SESSION_SOURCE_ID_PARAM = "sourceId";
+
+	public static final String CLOSE_ROOM_METHOD = "closeRoom";
+	public static final String CLOSE_ROOM_ID_PARAM = "roomId";
+
+
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
 	public static final String PARTICIPANTJOINED_METHOD = "participantJoined";

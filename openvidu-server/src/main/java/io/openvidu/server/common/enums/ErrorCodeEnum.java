@@ -23,7 +23,8 @@ public enum ErrorCodeEnum {
     CONFERENCE_IS_LOCKED(13002, "conference is locked"),
     PERMISSION_LIMITED(13004, "permission limited"),
     SHARING_ALREADY_EXIST(13005, "screen sharing already exist"),
-    CONFERENCE_PASSWORD_ERROR(13006, "conference password error");
+    CONFERENCE_PASSWORD_ERROR(13006, "conference password error"),
+    CONFERENCE_ALREADY_CLOSED(13007, "conference already closed");
 
 
     private int code;

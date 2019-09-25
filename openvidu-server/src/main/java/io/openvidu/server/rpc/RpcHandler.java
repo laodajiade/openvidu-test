@@ -34,6 +34,7 @@ import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.ParticipantMicStatus;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.User;
@@ -165,6 +166,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.LOCK_SESSION_METHOD:
 				lockSession(rpcConnection, request);
 				break;
+			case ProtocolElements.UNLOCK_SESSION_METHOD:
+				unlockSession(rpcConnection, request);
+				break;
 			case ProtocolElements.JOINROOM_METHOD:
 				joinRoom(rpcConnection, request);
 				break;
@@ -212,6 +216,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			case ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD:
 				removeFilterEventListener(rpcConnection, request);
+				break;
+			case ProtocolElements.CLOSE_ROOM_METHOD:
+				closeRoom(rpcConnection, request);
 				break;
 			default:
 				log.error("Unrecognized request {}", request);
@@ -323,16 +330,49 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void setAudioStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_ROOM_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
+		String micStatus = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
 
-		String targetPrivateId = sessionManager.getParticipants(sessionId).stream().filter(s ->
-				targetId.equals(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsString())).findFirst().get().getParticipantPrivateId();
+		if (!StringUtils.isEmpty(targetId)) {
+			String targetPrivateId = sessionManager.getParticipants(sessionId).stream().filter(s ->
+					targetId.equals(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsString())).findFirst().get().getParticipantPrivateId();
 
-		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
-		params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM));
-		params.addProperty(ProtocolElements.SET_AUDIO_TARGET_ID_PARAM, targetId);
-		params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
-		this.notificationService.sendNotification(targetPrivateId, ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+			sessionManager.getParticipants(sessionId).stream().filter(part ->
+					targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
+					.findFirst().get().setMicStatus(ParticipantMicStatus.valueOf(micStatus));
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM));
+			params.addProperty(ProtocolElements.SET_AUDIO_TARGET_ID_PARAM, targetId);
+			params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
+			this.notificationService.sendNotification(targetPrivateId, ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+		} else {
+			// 1. whether source id is moderator;
+			// 2. notify all participant;
+			if (sessionManager.getSession(sessionId).isClosed()) {
+				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.CONFERENCE_IS_LOCKED);
+				return;
+			}
+			if (sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.PERMISSION_LIMITED);
+				return;
+			}
+
+			Set<Participant> participants = sessionManager.getParticipants(sessionId);
+
+			participants.forEach(part -> part.setMicStatus(ParticipantMicStatus.valueOf(micStatus)));
+
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM));
+			params.addProperty(ProtocolElements.SET_AUDIO_TARGET_ID_PARAM, targetId);
+			params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
+			for (Participant p: participants) {
+				if (p.getParticipantPrivateId().equals(rpcConnection.getParticipantPrivateId()))
+					continue;
+				this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+			}
+		}
+
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
@@ -403,12 +443,36 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		if (sessionManager.getSession(sessionId).setLocking(true)) {
+		if (!sessionManager.getSession(sessionId).isLocking() &&
+				sessionManager.getSession(sessionId).setLocking(true)) {
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.LOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
 			sessionManager.getParticipants(sessionId).forEach(participant ->
 					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.LOCK_SESSION_METHOD, params));
+		}
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+	}
+
+	private void unlockSession(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM);
+		if (sessionManager.getSession(sessionId).isClosed()) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
+			return;
+		}
+		if (sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.PERMISSION_LIMITED);
+			return;
+		}
+
+		if (sessionManager.getSession(sessionId).isLocking() &&
+				sessionManager.getSession(sessionId).setLocking(false)) {
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, sessionId);
+
+			sessionManager.getParticipants(sessionId).forEach(participant ->
+					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, params));
 		}
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
@@ -435,6 +499,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
 			return;
+		}
+
+		if (null == sessionManager.getSession(sessionId) ||
+				sessionManager.getSession(sessionId).isLocking()) {
+			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_IS_LOCKED);
 		}
 
 		InetAddress remoteAddress = null;
@@ -984,6 +1054,36 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private boolean userIsStreamOwner(String sessionId, Participant participant, String streamId) {
 		return participant.getParticipantPrivateId()
 				.equals(this.sessionManager.getParticipantPrivateIdFromStreamId(sessionId, streamId));
+	}
+
+	private void closeRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
+
+		if (!sessionManager.isSessionIdValid(sessionId)) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+		}
+
+		if (sessionManager.getSession(sessionId).isClosed()) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
+			return;
+		}
+
+		if (sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.PERMISSION_LIMITED);
+			return;
+		}
+
+		// TODO.
+		// 1. notify all participant stop publish and receive stream.
+		// 2. close session but can not disconnect the connection.
+		this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
+		this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
+
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
 }

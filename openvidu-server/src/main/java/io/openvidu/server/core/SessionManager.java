@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PreDestroy;
 
+import io.openvidu.java.client.OpenVidu;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcConnection;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -51,6 +52,7 @@ import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.utils.FormatChecker;
 import io.openvidu.server.utils.GeoLocation;
+import sun.java2d.loops.ProcessPath;
 
 public abstract class SessionManager {
 
@@ -540,4 +542,28 @@ public abstract class SessionManager {
 	public ConcurrentHashMap<String, String> getSessionInfo(String sessionId) {
 		return sessionidConferenceInfo.get(sessionId);
 	}
+
+	public void unpublishAllStream(String sessionId, EndReason reason) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		if (session.isClosed()) {
+			this.closeSessionAndEmptyCollections(session, reason);
+			throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "Session '" + sessionId + "' already closed");
+		}
+
+		Set<Participant> participants = getParticipants(sessionId);
+
+		if (EndReason.forceCloseSessionByUser.equals(reason)) {
+			for (Participant p : participants) {
+				try {
+					this.unpublishVideo(p, null, null, reason);
+				} catch (OpenViduException e) {
+					log.warn("Error evicting participant '{}' from session '{}'", p.getParticipantPublicId(), sessionId, e);
+				}
+			}
+		}
+	}
+
 }

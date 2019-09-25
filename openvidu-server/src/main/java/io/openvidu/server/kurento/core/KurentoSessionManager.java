@@ -548,7 +548,7 @@ public class KurentoSessionManager extends SessionManager {
 			sessionClosedByLastParticipant = this.leaveRoom(kParticipant, null, reason, false);
 			this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant, participants, transactionId,
 					null, reason);
-			sessionEventsHandler.closeRpcSession(evictedParticipant.getParticipantPrivateId());
+//			sessionEventsHandler.closeRpcSession(evictedParticipant.getParticipantPrivateId());
 		} else {
 			if (moderator != null && transactionId != null) {
 				this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant,
