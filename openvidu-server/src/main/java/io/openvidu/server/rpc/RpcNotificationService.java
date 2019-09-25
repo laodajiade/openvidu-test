@@ -65,6 +65,7 @@ public class RpcNotificationService {
 		}
 		try {
 			t.sendResponse(result);
+			log.info("WebSocket response session #{} - Response transaction id:{} and result: {}", participantPrivateId, transactionId, result);
 		} catch (Exception e) {
 			log.error("Exception responding to participant ({})", participantPrivateId, e);
 		}
@@ -91,13 +92,15 @@ public class RpcNotificationService {
 											  ErrorCodeEnum errorCodeEnum) {
 		Transaction t = getAndRemoveTransaction(participantPrivateId, transactionId);
 		if (t == null) {
-			log.error("No transaction {} found for paticipant with private id {}, unable to send result {}",
+			log.error("No transaction {} found for participant with private id {}, unable to send result {}",
 					transactionId, participantPrivateId, data);
 			return;
 		}
 		try {
 			String dataVal = data != null ? data.toString() : null;
 			t.sendError(errorCodeEnum.getCode(), errorCodeEnum.getMessage(), dataVal);
+			log.info("WebSocket error response session #{} - Response transaction id:{} and error:{} {}",
+					participantPrivateId, transactionId, errorCodeEnum.getCode(), errorCodeEnum.getMessage());
 		} catch (Exception e) {
 			log.error("Exception sending error response to user ({})", transactionId, e);
 		}
@@ -114,6 +117,7 @@ public class RpcNotificationService {
 
 		try {
 			s.sendNotification(method, params);
+			log.info("WebSocket notification session #{} - Notification method:{} and params: {}", participantPrivateId, method, params);
 		} catch (Exception e) {
 			log.error("Exception sending notification '{}': {} to participant with private id {}", method, params,
 					participantPrivateId, e);
