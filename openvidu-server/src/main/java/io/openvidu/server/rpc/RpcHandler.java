@@ -253,7 +253,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			// save conference info
             Conference conference = new Conference();
             conference.setRoomId(sessionId);
-            conference.setPassword(password);
+            conference.setPassword(StringUtils.isEmpty(password) ? null : password);
             int insertResult = conferenceMapper.insert(conference);
 			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
 		} else {
