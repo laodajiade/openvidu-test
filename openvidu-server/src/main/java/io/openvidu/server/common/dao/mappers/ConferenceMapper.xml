@@ -25,7 +25,7 @@
       from sd_conference
       where
       <if test="roomId != null" >
-          room_id = #{roomId,jdbcType=VARCHAR},
+          room_id = #{roomId,jdbcType=VARCHAR}
       </if>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
