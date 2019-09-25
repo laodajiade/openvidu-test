@@ -17,6 +17,8 @@
 
 package io.openvidu.server.core;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
@@ -44,6 +46,7 @@ public class Participant {
 	protected ParticipantHandStatus handStatus;
 
 	private final String METADATA_SEPARATOR = "%/%";
+    protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
 					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt) {
@@ -169,10 +172,12 @@ public class Participant {
 
 	public String getFullMetadata() {
 		String fullMetadata;
+        JsonObject clientMetaJson = gson.fromJson(clientMetadata, JsonObject.class);
+        clientMetaJson.addProperty("role", this.role.name());
 		if ((!this.clientMetadata.isEmpty()) && (!this.serverMetadata.isEmpty())) {
-			fullMetadata = this.clientMetadata + METADATA_SEPARATOR + this.serverMetadata;
+			fullMetadata = clientMetaJson.toString() + METADATA_SEPARATOR + this.serverMetadata;
 		} else {
-			fullMetadata = this.clientMetadata + this.serverMetadata;
+			fullMetadata = clientMetaJson.toString() + this.serverMetadata;
 		}
 		return fullMetadata;
 	}
