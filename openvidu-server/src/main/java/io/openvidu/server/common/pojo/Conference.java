@@ -10,9 +10,9 @@ public class Conference {
 
     private String roomId;
 
-    private String subject;
+    private String conferenceSubject;
 
-    private String desc;
+    private String conferenceDesc;
 
     private Date startTime;
 

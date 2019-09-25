@@ -4,8 +4,8 @@
   <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.Conference" >
     <id column="id" property="id" jdbcType="BIGINT" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />
-    <result column="subject" property="subject" jdbcType="VARCHAR" />
-    <result column="desc" property="desc" jdbcType="VARCHAR" />
+    <result column="conference_subject" property="conferenceSubject" jdbcType="VARCHAR" />
+    <result column="conference_desc" property="conferenceDesc" jdbcType="VARCHAR" />
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
     <result column="room_capacity" property="roomCapacity" jdbcType="INTEGER" />
@@ -16,7 +16,7 @@
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, room_id, subject, desc, start_time, end_time, room_capacity, status, password, 
+    id, room_id, conference_subject, conference_desc, start_time, end_time, room_capacity, status, password,
     invite_limit, create_time, update_time
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
@@ -39,15 +39,12 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Conference" >
-    insert into sd_conference (id, room_id, subject, 
-      desc, start_time, end_time, 
-      room_capacity, status, password, 
-      invite_limit, create_time, update_time
+    insert into sd_conference (id, room_id, conference_subject,
+      conference_desc, start_time, end_time, password
       )
-    values (#{id,jdbcType=BIGINT}, #{roomId,jdbcType=VARCHAR}, #{subject,jdbcType=VARCHAR}, 
-      #{desc,jdbcType=VARCHAR}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, 
-      #{roomCapacity,jdbcType=INTEGER}, #{status,jdbcType=TINYINT}, #{password,jdbcType=VARCHAR}, 
-      #{inviteLimit,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
+    values (#{id,jdbcType=BIGINT}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
+      #{conferenceDesc,jdbcType=VARCHAR}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
+      #{password,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Conference" >
@@ -60,10 +57,10 @@
         room_id,
       </if>
       <if test="subject != null" >
-        subject,
+        conference_subject,
       </if>
       <if test="desc != null" >
-        desc,
+        conference_desc,
       </if>
       <if test="startTime != null" >
         start_time,
@@ -97,11 +94,11 @@
       <if test="roomId != null" >
         #{roomId,jdbcType=VARCHAR},
       </if>
-      <if test="subject != null" >
-        #{subject,jdbcType=VARCHAR},
+      <if test="conferenceSubject != null" >
+        #{conferenceSubject,jdbcType=VARCHAR},
       </if>
-      <if test="desc != null" >
-        #{desc,jdbcType=VARCHAR},
+      <if test="conferenceDesc != null" >
+        #{conferenceDesc,jdbcType=VARCHAR},
       </if>
       <if test="startTime != null" >
         #{startTime,jdbcType=TIMESTAMP},
@@ -136,10 +133,10 @@
         room_id = #{roomId,jdbcType=VARCHAR},
       </if>
       <if test="subject != null" >
-        subject = #{subject,jdbcType=VARCHAR},
+        conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
       </if>
       <if test="desc != null" >
-        desc = #{desc,jdbcType=VARCHAR},
+        conference_desc = #{conferenceDesc,jdbcType=VARCHAR},
       </if>
       <if test="startTime != null" >
         start_time = #{startTime,jdbcType=TIMESTAMP},
@@ -171,8 +168,8 @@
   <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.Conference" >
     update sd_conference
     set room_id = #{roomId,jdbcType=VARCHAR},
-      subject = #{subject,jdbcType=VARCHAR},
-      desc = #{desc,jdbcType=VARCHAR},
+      conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
+      conference_desc = #{conferenceDesc,jdbcType=VARCHAR},
       start_time = #{startTime,jdbcType=TIMESTAMP},
       end_time = #{endTime,jdbcType=TIMESTAMP},
       room_capacity = #{roomCapacity,jdbcType=INTEGER},
