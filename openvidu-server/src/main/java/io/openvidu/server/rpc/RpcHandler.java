@@ -255,6 +255,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             conference.setRoomId(sessionId);
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
             int insertResult = conferenceMapper.insert(conference);
+
+            // store this inactive session
+            sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
 			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
 		} else {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -499,7 +502,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //		if (sessionManager.isTokenValidInSession(token, sessionId, participantPrivatetId)) {
 
 //			String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
-        sessionManager.recordParticipantBySessionId(sessionId);
+//        sessionManager.recordParticipantBySessionId(sessionId);
         if (sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
 
 //            Token tokenObj = sessionManager.consumeToken(sessionId, participantPrivatetId, token);

@@ -243,26 +243,31 @@ public abstract class SessionManager {
 
 	public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
 		Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager);
-		this.sessionsNotActive.put(sessionId, sessionNotActive);
-		this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
-		this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
-		if (this.openviduConfig.isRecordingModuleEnabled()) {
-			this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
-		}
+		dealSessionNotActiveStored(sessionId, sessionNotActive);
 		showTokens();
 		return sessionNotActive;
 	}
 
 	public Session storeSessionNotActive(Session sessionNotActive) {
 		final String sessionId = sessionNotActive.getSessionId();
+		dealSessionNotActiveStored(sessionId, sessionNotActive);
+		showTokens();
+		return sessionNotActive;
+	}
+
+	public void storeSessionNotActiveWhileRoomCreated(String sessionId) {
+		Session sessionNotActive = new Session(sessionId,
+				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager);
+		dealSessionNotActiveStored(sessionId, sessionNotActive);
+	}
+
+	private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
 		this.sessionsNotActive.put(sessionId, sessionNotActive);
 		this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		if (this.openviduConfig.isRecordingModuleEnabled()) {
 			this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
 		}
-		showTokens();
-		return sessionNotActive;
 	}
 
 	public String newToken(String sessionId, OpenViduRole role, String serverMetadata,
@@ -314,13 +319,13 @@ public abstract class SessionManager {
 		}
 	}*/
 
-	public void recordParticipantBySessionId(String sessionId) {
+	/*public void recordParticipantBySessionId(String sessionId) {
 		this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		if (this.openviduConfig.isRecordingModuleEnabled()) {
 			this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
 		}
-	}
+	}*/
 
 	public boolean isPublisherInSession(String sessionId, Participant participant) {
 		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
@@ -360,8 +365,8 @@ public abstract class SessionManager {
 	}
 
 //	public Participant newParticipant(String sessionId, String participantPrivatetId, Token token,
-	public Participant newParticipant(String sessionId, String participantPrivatetId, String role, String streamType,
-			String clientMetadata, GeoLocation location, String platform, String finalUserId) {
+	public Participant newParticipant(String sessionId, String participantPrivatetId, String clientMetadata, String role,
+									  String streamType, GeoLocation location, String platform, String finalUserId) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 			String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
 //			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, token,
@@ -393,8 +398,8 @@ public abstract class SessionManager {
 	}
 
 //	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
-	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, String role, String streamType,
-											  String clientMetadata) {
+	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, String clientMetadata,
+											  String role, String streamType) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
 			Participant p = new Participant(null, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
