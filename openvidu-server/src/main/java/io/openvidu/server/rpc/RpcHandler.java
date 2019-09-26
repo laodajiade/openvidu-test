@@ -500,11 +500,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
 			return;
 		}
-
-		if (null == sessionManager.getSession(sessionId) ||
-				sessionManager.getSession(sessionId).isLocking()) {
-			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_IS_LOCKED);
+		// verify conference ever locked
+		if (!Objects.isNull(sessionManager.getSession(sessionId)) && sessionManager.getSession(sessionId).isLocking()) {
+			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),null,
+					ErrorCodeEnum.CONFERENCE_IS_LOCKED);
 		}
 
 		InetAddress remoteAddress = null;
