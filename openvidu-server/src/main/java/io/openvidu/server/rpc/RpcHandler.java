@@ -1059,8 +1059,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void closeRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
 
-		if (!sessionManager.isSessionIdValid(sessionId)) {
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+		if (null == sessionManager.getSession(sessionId)) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
 		}
 
