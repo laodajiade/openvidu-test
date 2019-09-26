@@ -520,6 +520,7 @@ public abstract class SessionManager {
 		sessionidFinalUsers.remove(sessionId);
 		sessionidAccumulatedRecordings.remove(sessionId);
 		sessionidTokenTokenobj.remove(sessionId);
+		sessionidConferenceInfo.remove(sessionId);
 	}
 
 	public boolean isNewSessionIdValid(String sessionId) {
