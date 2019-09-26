@@ -17,6 +17,29 @@
 
 package io.openvidu.server.core;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.java.client.SessionProperties;
+import io.openvidu.server.cdr.CDREventRecording;
+import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import io.openvidu.server.recording.service.RecordingManager;
+import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.FormatChecker;
+import io.openvidu.server.utils.GeoLocation;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.kurento.jsonrpc.message.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PreDestroy;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,34 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-
-import javax.annotation.PreDestroy;
-
-import io.openvidu.java.client.OpenVidu;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.rpc.RpcConnection;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.kurento.jsonrpc.message.Request;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.java.client.SessionProperties;
-import io.openvidu.server.cdr.CDREventRecording;
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.coturn.CoturnCredentialsService;
-import io.openvidu.server.kurento.core.KurentoTokenOptions;
-import io.openvidu.server.recording.service.RecordingManager;
-import io.openvidu.server.utils.FormatChecker;
-import io.openvidu.server.utils.GeoLocation;
-import sun.java2d.loops.ProcessPath;
 
 public abstract class SessionManager {
 

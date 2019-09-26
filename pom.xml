@@ -126,9 +126,9 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<!-- Check for the minimum version of Java and Maven. Runs during the
-					validate phase. -->
+			<!--<plugin>
+				&lt;!&ndash; Check for the minimum version of Java and Maven. Runs during the
+					validate phase. &ndash;&gt;
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<version>${version.enforcer.plugin}</version>
@@ -211,7 +211,7 @@
 						<version>${version.extra.enforcer.rules.plugin}</version>
 					</dependency>
 				</dependencies>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
 
