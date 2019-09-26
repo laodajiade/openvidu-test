@@ -246,8 +246,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     }
 
     private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
-	    sessionManager.accessOut(rpcConnection);
-        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+		sessionManager.accessOut(rpcConnection);
     }
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
