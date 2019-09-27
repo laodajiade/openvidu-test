@@ -17,29 +17,28 @@
 
 package io.openvidu.server.rpc;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
-
 import com.google.gson.*;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.ParticipantMicStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.MediaOptions;
+import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.utils.GeoLocation;
+import io.openvidu.server.utils.GeoLocationByIp;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -49,19 +48,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.MediaOptions;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.utils.GeoLocation;
-import io.openvidu.server.utils.GeoLocationByIp;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
@@ -348,41 +345,26 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void setAudioStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_ROOM_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
 		String micStatus = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
+		if (!Objects.equals(sourceId, targetId)
+                && sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
 
-		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
-		params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM));
-		params.addProperty(ProtocolElements.SET_AUDIO_TARGET_ID_PARAM, targetId);
-		params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
-		if (!StringUtils.isEmpty(targetId)) {
-			String targetPrivateId = sessionManager.getParticipants(sessionId).stream().filter(s ->
-					targetId.equals(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsString())).findFirst().get().getParticipantPrivateId();
-
-			sessionManager.getParticipants(sessionId).stream().filter(part ->
-					targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-					.findFirst().get().setMicStatus(ParticipantMicStatus.valueOf(micStatus));
-
-			this.notificationService.sendNotification(targetPrivateId, ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
-		} else {
-			// 1. whether source id is moderator;
-			// 2. notify all participant;
-			if (sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
-				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.PERMISSION_LIMITED);
-				return;
-			}
-
-			Set<Participant> participants = sessionManager.getParticipants(sessionId);
-
-			participants.forEach(part -> part.setMicStatus(ParticipantMicStatus.valueOf(micStatus)));
-
-			for (Participant p: participants) {
-				if (p.getParticipantPrivateId().equals(rpcConnection.getParticipantPrivateId()))
-					continue;
-				this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
-			}
-		}
-
+        JsonObject params = new JsonObject();
+        params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
+        params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM));
+        params.addProperty(ProtocolElements.SET_AUDIO_TARGET_ID_PARAM, targetId);
+        params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
+        Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        if (!CollectionUtils.isEmpty(participants)) {
+            for (Participant p: participants) {
+                this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+            }
+        }
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
