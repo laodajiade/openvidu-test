@@ -40,10 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PreDestroy;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -182,21 +179,57 @@ public abstract class SessionManager {
 	 *
 	 * @param sessionId            identifier of the session
 	 * @param participantPrivateId private identifier of the participant
+	 * @param streamType type of stream
 	 * @return {@link Participant}
 	 * @throws OpenViduException in case the session doesn't exist or the
 	 *                           participant doesn't belong to it
 	 */
-	public Participant getParticipant(String sessionId, String participantPrivateId) throws OpenViduException {
+	public Participant getParticipant(String sessionId, String participantPrivateId, StreamType streamType) throws OpenViduException {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
 			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
 		}
-		Participant participant = session.getParticipantByPrivateId(participantPrivateId);
+		Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
 		if (participant == null) {
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
 		}
 		return participant;
+	}
+
+	/**
+	 * Returns a participant in a session
+	 *
+	 * @param sessionId            identifier of the session
+	 * @param participantPrivateId private identifier of the participant
+	 * @return {@link Participant}
+	 * @throws OpenViduException in case the session doesn't exist or the
+	 *                           participant doesn't belong to it
+	 */
+	public Participant getParticipant(String sessionId, String participantPrivateId) throws OpenViduException {
+		return this.getParticipant(sessionId, participantPrivateId, StreamType.MAJOR);
+	}
+
+	/**
+	 * Returns a participant
+	 *
+	 * @param participantPrivateId private identifier of the participant
+	 * @param streamType type of stream
+	 * @return {@link Participant}
+	 * @throws OpenViduException in case the participant doesn't exist
+	 */
+	public Participant getParticipant(String participantPrivateId, StreamType streamType) throws OpenViduException {
+		for (Session session : sessions.values()) {
+			if (!session.isClosed()) {
+				Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
+				if (Objects.isNull(participant))
+					throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+							"No participant with private id '" + participantPrivateId + "' was found");
+				return participant;
+			}
+		}
+		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+				"No participant with private id '" + participantPrivateId + "' was found");
 	}
 
 	/**
@@ -207,15 +240,7 @@ public abstract class SessionManager {
 	 * @throws OpenViduException in case the participant doesn't exist
 	 */
 	public Participant getParticipant(String participantPrivateId) throws OpenViduException {
-		for (Session session : sessions.values()) {
-			if (!session.isClosed()) {
-				if (session.getParticipantByPrivateId(participantPrivateId) != null) {
-					return session.getParticipantByPrivateId(participantPrivateId);
-				}
-			}
-		}
-		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-				"No participant with private id '" + participantPrivateId + "' was found");
+		return this.getParticipant(participantPrivateId, StreamType.MAJOR);
 	}
 
 	public Map<String, FinalUser> getFinalUsers(String sessionId) {

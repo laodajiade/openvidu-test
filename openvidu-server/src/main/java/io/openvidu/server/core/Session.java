@@ -109,22 +109,13 @@ public class Session implements SessionInterface {
 
     public Participant getParticipantByPrivateId(String participantPrivateId) {
         checkClosed();
-
-        if (Objects.isNull(participants.get(participantPrivateId))) {
-        	return null;
-		}
-
         return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
     }
 
     public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
         checkClosed();
-
-		if (Objects.isNull(participants.get(participantPrivateId))) {
-			return null;
-		}
-
-        return participants.get(participantPrivateId).get(streamType.name());
+        return Objects.isNull(streamType) ? participants.get(participantPrivateId).get(StreamType.MAJOR.name()) :
+				participants.get(participantPrivateId).get(streamType.name());
     }
 
 	public Participant getParticipantByPublicId(String participantPublicId) {

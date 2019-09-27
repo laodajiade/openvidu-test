@@ -33,6 +33,9 @@ public class ProtocolElements {
 	public static final String SENDMESSAGE_MESSAGE_PARAM = "message";
 
 	public static final String LEAVEROOM_METHOD = "leaveRoom";
+	public static final String LEAVEROOM_ROOM_ID_PARAM = "roomId";
+	public static final String LEAVEROOM_SOURCE_ID_PARAM = "sourceId";
+	public static final String LEAVEROOM_STREAM_TYPE_PARAM = "streamType";
 
 	public static final String JOINROOM_METHOD = "joinRoom";
 	public static final String JOINROOM_USER_PARAM = "user";
