@@ -328,8 +328,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				userObj.addProperty("userId", user.getId());
 				userObj.addProperty("account", user.getUsername());
 				userObj.addProperty("role", part.getRole().name());
-				userObj.addProperty("audioActive", part.getPublisherMediaOptions().isAudioActive());
-				userObj.addProperty("videoActive", part.getPublisherMediaOptions().isVideoActive());
+				userObj.addProperty("audioActive", null != part.getPublisher() &&
+						null != part.getPublisherMediaOptions() && part.getPublisherMediaOptions().isAudioActive());
+				userObj.addProperty("videoActive", null != part.getPublisher() &&
+						null != part.getPublisherMediaOptions() && part.getPublisherMediaOptions().isVideoActive());
 				jsonArray.add(userObj);
 			});
 		}
