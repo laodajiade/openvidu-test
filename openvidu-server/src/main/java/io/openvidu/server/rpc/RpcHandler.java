@@ -38,6 +38,7 @@ import io.openvidu.server.common.enums.ParticipantMicStatus;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.kurento.core.KurentoParticipant;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -314,12 +315,15 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (!CollectionUtils.isEmpty(userIds)) {
 			List<User> userList = userMapper.selectByPrimaryKeys(userIds);
 			userList.forEach(user -> {
+				KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
+						.compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
+								.getAsLong()) == 0).findFirst().get();
 				JsonObject userObj = new JsonObject();
 				userObj.addProperty("userId", user.getId());
 				userObj.addProperty("account", user.getUsername());
-				userObj.addProperty("role", sessionManager.getParticipants(sessionId).stream().filter(s ->
-						user.getId().compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()) == 0)
-						.findFirst().get().getRole().name());
+				userObj.addProperty("role", part.getRole().name());
+				userObj.addProperty("audioActive", part.getPublisherMediaOptions().isAudioActive());
+				userObj.addProperty("videoActive", part.getPublisherMediaOptions().isVideoActive());
 				jsonArray.add(userObj);
 			});
 		}

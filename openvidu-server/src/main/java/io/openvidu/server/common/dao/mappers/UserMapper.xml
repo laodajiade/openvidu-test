@@ -22,7 +22,7 @@
     from sd_user
     where id in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
-      #{id,jdbcType=BIGINT}
+      #{item,jdbcType=BIGINT}
     </foreach>
   </select>
 
