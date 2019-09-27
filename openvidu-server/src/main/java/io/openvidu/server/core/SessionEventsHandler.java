@@ -216,6 +216,7 @@ public class SessionEventsHandler {
 		JsonObject stream = new JsonObject();
 
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, streamId);
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, participant.getStreamType().name());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, createdAt);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);

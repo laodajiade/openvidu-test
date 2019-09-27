@@ -63,6 +63,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
+	public static final String PUBLISHVIDEO_STREAM_TYPE_PARAM = "streamType";
 	public static final String PUBLISHVIDEO_SDPOFFER_PARAM = "sdpOffer";
 	public static final String PUBLISHVIDEO_DOLOOPBACK_PARAM = "doLoopback";
 	public static final String PUBLISHVIDEO_SDPANSWER_PARAM = "sdpAnswer";
@@ -203,6 +204,7 @@ public class ProtocolElements {
 	public static final String PARTICIPANTPUBLISHED_USER_PARAM = "id";
 	public static final String PARTICIPANTPUBLISHED_STREAMS_PARAM = "streams";
 	public static final String PARTICIPANTPUBLISHED_STREAMID_PARAM = "id";
+	public static final String PARTICIPANTPUBLISHED_STREAMTYPE_PARAM = "streamType";
 	public static final String PARTICIPANTPUBLISHED_CREATEDAT_PARAM = "createdAt";
 	public static final String PARTICIPANTPUBLISHED_HASAUDIO_PARAM = "hasAudio";
 	public static final String PARTICIPANTPUBLISHED_HASVIDEO_PARAM = "hasVideo";

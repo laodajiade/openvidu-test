@@ -626,9 +626,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void publishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
 		Participant participant;
 		try {
-			participant = sanityCheckOfSession(rpcConnection, "publish");
+//			participant = sanityCheckOfSession(rpcConnection, "publish");
+			participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
 		} catch (OpenViduException e) {
 			return;
 		}
