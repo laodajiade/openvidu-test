@@ -476,7 +476,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			params.addProperty(ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
 			sessionManager.getParticipants(sessionId).forEach(participant ->
-					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, params));
+					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_METHOD, params));
 		}
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
