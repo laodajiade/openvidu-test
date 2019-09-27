@@ -346,7 +346,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_ROOM_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
-		String micStatus = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
 		if (!Objects.equals(sourceId, targetId)
                 && sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -370,17 +369,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void setVideoStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_VIDEO_ROOM_ID_PARAM);
+        String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_VIDEO_TARGET_ID_PARAM);
-
+        if (!Objects.equals(sourceId, targetId)
+                && sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
 		JsonObject params = new JsonObject();
-		String targetPrivateId = sessionManager.getParticipants(sessionId).stream().filter(s ->
-				targetId.equals(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsString())).findFirst().get().getParticipantPrivateId();
-
 		params.addProperty(ProtocolElements.SET_VIDEO_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.SET_VIDEO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_SOURCE_ID_PARAM));
 		params.addProperty(ProtocolElements.SET_VIDEO_TARGET_ID_PARAM, targetId);
 		params.addProperty(ProtocolElements.SET_VIDEO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_STATUS_PARAM));
-		this.notificationService.sendNotification(targetPrivateId, ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
+		sessionManager.getParticipants(sessionId).forEach(participant -> this.notificationService
+                .sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_VIDEO_STATUS_METHOD, params));
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
