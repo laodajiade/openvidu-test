@@ -577,8 +577,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             if (generateRecorderParticipant) {
                 participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
             } else {
-                participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType, location, platform,
-                        httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
+                participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
+						role, streamType, location, platform,
+						httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
             }
 
             rpcConnection.setSessionId(sessionId);
