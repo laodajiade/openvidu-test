@@ -253,9 +253,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
-		if (StringUtils.isEmpty(sessionId))
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
+		if (StringUtils.isEmpty(sessionId)) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+            return;
+        }
 		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM)) ?
                 request.getParams().get(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM).getAsString() : null;
 		if (sessionManager.isNewSessionIdValid(sessionId)) {
@@ -498,19 +500,25 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				request.getParams().get(ProtocolElements.JOINROOM_PASSWORD_PARAM).getAsString() : null;
 		String participantPrivatetId = rpcConnection.getParticipantPrivateId();
 
-		// verify conference password
 		ConferenceSearch search = new ConferenceSearch();
-		search.setRoomId(sessionId);
-		Conference conference = conferenceMapper.selectBySearchCondition(search);
-		if (!StringUtils.isEmpty(conference.getPassword()) && !conference.getPassword().equals(password)) {
-			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
-			return;
-		}
+        search.setRoomId(sessionId);
+        Conference conference = conferenceMapper.selectBySearchCondition(search);
+        if (conference == null) {
+            this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+                    null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            return;
+        }
+        // verify conference password
+        if (!StringUtils.isEmpty(conference.getPassword()) && !Objects.equals(conference.getPassword(), password)) {
+            this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+                    null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
+            return;
+        }
 		// verify conference ever locked
 		if (!Objects.isNull(sessionManager.getSession(sessionId)) && sessionManager.getSession(sessionId).isLocking()) {
 			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),null,
 					ErrorCodeEnum.CONFERENCE_IS_LOCKED);
+			return;
 		}
 
 		InetAddress remoteAddress = null;
