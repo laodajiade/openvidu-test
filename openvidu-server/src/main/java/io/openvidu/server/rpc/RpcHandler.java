@@ -253,6 +253,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
+		if (StringUtils.isEmpty(sessionId))
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
 		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM)) ?
                 request.getParams().get(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM).getAsString() : null;
 		if (sessionManager.isNewSessionIdValid(sessionId)) {
