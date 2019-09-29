@@ -141,7 +141,6 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leave(String participantPrivateId, EndReason reason) throws OpenViduException {
-
 		checkClosed();
 
 		for (Participant p : participants.get(participantPrivateId).values()) {
@@ -158,6 +157,24 @@ public class KurentoSession extends Session {
 			this.removeParticipant(participant, reason);
 			participant.close(reason, true, 0);
 		}
+	}
+
+	@Override
+	public void leaveRoom(Participant p, EndReason reason) {
+		checkClosed();
+
+		KurentoParticipant participant = (KurentoParticipant)p;
+
+		if (participant == null) {
+			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE, "Participant with private id "
+					+ p.getParticipantPrivateId() + "public id " + p.getParticipantPublicId() + " not found in session '" + sessionId + "'");
+		}
+		participant.releaseAllFilters();
+
+		log.info("PARTICIPANT {}: Leaving session {}", participant.getParticipantPublicId(), this.sessionId);
+
+		this.removeParticipant(participant, reason);
+		participant.close(reason, true, 0);
 	}
 
 	@Override

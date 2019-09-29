@@ -220,6 +220,10 @@ public class Session implements SessionInterface {
 	public void leave(String participantPrivateId, EndReason reason) {
 	}
 
+    @Override
+    public void leaveRoom(Participant p, EndReason reason) {
+    }
+
 	@Override
 	public boolean close(EndReason reason) {
 		return false;
