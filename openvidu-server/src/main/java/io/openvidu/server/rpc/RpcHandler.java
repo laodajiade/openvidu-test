@@ -371,9 +371,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
                 this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
-                if (StringUtils.isEmpty(targetId)) {
-                	KurentoParticipant part = (KurentoParticipant) p;
-                	if (part.isStreaming()) part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
+                if (StringUtils.isEmpty(targetId) && !sourceId.equals(gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsString())) {
+					KurentoParticipant part = (KurentoParticipant) p;
+					if (part.isStreaming()) part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
 				}
             }
         }
@@ -408,7 +408,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.getParticipants(sessionId).forEach(participant -> {
 			this.notificationService.sendNotification(participant.getParticipantPrivateId(),
 					ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
-			if (StringUtils.isEmpty(targetId)) {
+			if (StringUtils.isEmpty(targetId) && !sourceId.equals(gson.fromJson(participant.getClientMetadata(),
+					JsonObject.class).get("clientData").getAsString())) {
 				KurentoParticipant part = (KurentoParticipant) participant;
 				if (part.isStreaming()) part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
 			}
