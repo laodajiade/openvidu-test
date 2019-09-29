@@ -458,7 +458,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		if (sessionManager.getSession(sessionId).isLocking() &&
-				sessionManager.getSession(sessionId).setLocking(false)) {
+				!sessionManager.getSession(sessionId).setLocking(false)) {
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
