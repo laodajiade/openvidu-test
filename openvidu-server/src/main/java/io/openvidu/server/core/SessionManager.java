@@ -222,10 +222,13 @@ public abstract class SessionManager {
 		for (Session session : sessions.values()) {
 			if (!session.isClosed()) {
 				Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
-				if (Objects.isNull(participant))
-					throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-							"No participant with private id '" + participantPrivateId + "' was found");
-				return participant;
+				if (!Objects.isNull(participant)) {
+					return participant;
+				}
+//				if (Objects.isNull(participant))
+//					throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+//							"No participant with private id '" + participantPrivateId + "' was found");
+//				return participant;
 			}
 		}
 		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
