@@ -331,10 +331,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				userObj.addProperty("userId", user.getId());
 				userObj.addProperty("account", user.getUsername());
 				userObj.addProperty("role", part.getRole().name());
-				userObj.addProperty("audioActive", null != part.getPublisher() &&
-						null != part.getPublisherMediaOptions() && part.getPublisherMediaOptions().isAudioActive());
-				userObj.addProperty("videoActive", null != part.getPublisher() &&
-						null != part.getPublisherMediaOptions() && part.getPublisherMediaOptions().isVideoActive());
+				// 获取发布者时存在同步阻塞的状态，改为不做判断，直接获取发布者的媒体信息
+                userObj.addProperty("audioActive", part.getPublisherMediaOptions().isAudioActive());
+                userObj.addProperty("videoActive", part.getPublisherMediaOptions().isVideoActive());
 				jsonArray.add(userObj);
 			});
 		}
