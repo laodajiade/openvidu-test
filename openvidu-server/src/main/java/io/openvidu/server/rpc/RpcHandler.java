@@ -331,6 +331,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				userObj.addProperty("userId", user.getId());
 				userObj.addProperty("account", user.getUsername());
 				userObj.addProperty("role", part.getRole().name());
+				userObj.addProperty("handStatus", part.getHandStatus().name());
 				// 获取发布者时存在同步阻塞的状态
                 userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
                 userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
