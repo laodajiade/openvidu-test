@@ -27,6 +27,7 @@ import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.ParticipantMicStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
@@ -346,6 +347,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_ROOM_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
+		String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
 		if (!Objects.equals(sourceId, targetId)
                 && sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -353,6 +355,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             return;
         }
 
+		if (!StringUtils.isEmpty(targetId)) {
+			KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(targetId)
+					.compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
+							.getAsLong()) == 0).findFirst().get();
+			if (part.isStreaming())
+				part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
+		}
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM));
@@ -362,6 +371,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
                 this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+                if (StringUtils.isEmpty(targetId)) {
+                	KurentoParticipant part = (KurentoParticipant) p;
+                	if (part.isStreaming()) part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
+				}
             }
         }
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -371,19 +384,35 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sessionId = getStringParam(request, ProtocolElements.SET_VIDEO_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_VIDEO_TARGET_ID_PARAM);
+		String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
         if (!Objects.equals(sourceId, targetId)
                 && sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
         }
+		if (!StringUtils.isEmpty(targetId)) {
+			KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(targetId)
+					.compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
+							.getAsLong()) == 0).findFirst().get();
+			if (part.isStreaming())
+				part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
+		}
+
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_VIDEO_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.SET_VIDEO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_SOURCE_ID_PARAM));
 		params.addProperty(ProtocolElements.SET_VIDEO_TARGET_ID_PARAM, targetId);
 		params.addProperty(ProtocolElements.SET_VIDEO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_STATUS_PARAM));
-		sessionManager.getParticipants(sessionId).forEach(participant -> this.notificationService
-                .sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_VIDEO_STATUS_METHOD, params));
+
+		sessionManager.getParticipants(sessionId).forEach(participant -> {
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+					ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
+			if (StringUtils.isEmpty(targetId)) {
+				KurentoParticipant part = (KurentoParticipant) participant;
+				if (part.isStreaming()) part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
+			}
+		});
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
