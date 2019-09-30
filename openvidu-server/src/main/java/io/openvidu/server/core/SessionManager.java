@@ -174,6 +174,19 @@ public abstract class SessionManager {
 		return participants;
 	}
 
+	public Participant getParticipantByPrivateAndPublicId(String sessionId, String participantPrivateId, String participantPublicId) throws OpenViduException {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		Participant participant = session.getPartByPrivateIdAndPublicId(participantPrivateId, participantPublicId);
+		if (participant == null) {
+			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+					"Participant '" + participantPublicId + "' not found in session '" + sessionId + "'");
+		}
+		return participant;
+	}
+
 	/**
 	 * Returns a participant in a session
 	 *

@@ -190,7 +190,7 @@ public class SessionEventsHandler {
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily
 			// leaving the session
-			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
+			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, params);
 		}
 
 		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {

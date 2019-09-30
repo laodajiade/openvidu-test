@@ -30,6 +30,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -126,6 +127,26 @@ public class Session implements SessionInterface {
 
         return Objects.isNull(streamType) ? participants.get(participantPrivateId).get(StreamType.MAJOR.name()) :
 				participants.get(participantPrivateId).get(streamType.name());
+    }
+
+    public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
+        checkClosed();
+
+        if (Objects.isNull(participants.get(participantPrivateId))) {
+            return null;
+        }
+
+        if (participants.get(participantPrivateId).values().size() <= 1) {
+            return getParticipantByPrivateId(participantPrivateId);
+        }
+
+        for (Participant p: participants.get(participantPrivateId).values()) {
+            if (p.getParticipantPublicId().equals(participantPublicId)) {
+                return p;
+            }
+        }
+
+        return null;
     }
 
 	public Participant getParticipantByPublicId(String participantPublicId) {

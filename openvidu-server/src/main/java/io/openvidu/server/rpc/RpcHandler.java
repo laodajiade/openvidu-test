@@ -698,16 +698,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void onIceCandidate(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
-		try {
-			participant = sanityCheckOfSession(rpcConnection, "onIceCandidate");
-		} catch (OpenViduException e) {
-			return;
-		}
 
 		String endpointName = getStringParam(request, ProtocolElements.ONICECANDIDATE_EPNAME_PARAM);
 		String candidate = getStringParam(request, ProtocolElements.ONICECANDIDATE_CANDIDATE_PARAM);
 		String sdpMid = getStringParam(request, ProtocolElements.ONICECANDIDATE_SDPMIDPARAM);
 		int sdpMLineIndex = getIntParam(request, ProtocolElements.ONICECANDIDATE_SDPMLINEINDEX_PARAM);
+		try {
+//			participant = sanityCheckOfSession(rpcConnection, "onIceCandidate");
+			participant = sanityCheckOfSession(rpcConnection, endpointName, "onIceCandidate");
+		} catch (OpenViduException e) {
+			return;
+		}
 
 		sessionManager.onIceCandidate(participant, endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
 	}
@@ -1096,6 +1097,35 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw new OpenViduException(Code.GENERIC_ERROR_CODE, "Participant not exists.");
 		}
 		return participant;
+	}
+
+	private Participant sanityCheckOfSession(RpcConnection rpcConnection, String participantPublicId, String methodName) throws OpenViduException {
+		String participantPrivateId = rpcConnection.getParticipantPrivateId();
+		String sessionId = rpcConnection.getSessionId();
+		String errorMsg;
+
+		if (sessionId == null) { // null when afterConnectionClosed
+			errorMsg = "No session information found for participant with privateId " + participantPrivateId
+					+ ". Using the admin method to evict the user.";
+			log.warn(errorMsg);
+			leaveRoomAfterConnClosed(participantPrivateId, null);
+			throw new OpenViduException(Code.GENERIC_ERROR_CODE, errorMsg);
+		} else {
+			// Sanity check: don't call RPC method unless the id checks out
+			Participant participant = sessionManager.getParticipantByPrivateAndPublicId(sessionId, participantPrivateId, participantPublicId);
+			if (participant != null) {
+				errorMsg = "Participant " + participant.getParticipantPublicId() + " is calling method '" + methodName
+						+ "' in session " + sessionId;
+				log.info(errorMsg);
+				return participant;
+			} else {
+				errorMsg = "Participant with private id " + participantPrivateId + " not found in session " + sessionId
+						+ ". Using the admin method to evict the user.";
+				log.warn(errorMsg);
+				leaveRoomAfterConnClosed(participantPrivateId, null);
+				throw new OpenViduException(Code.GENERIC_ERROR_CODE, errorMsg);
+			}
+		}
 	}
 
 	private boolean userIsStreamOwner(String sessionId, Participant participant, String streamId) {
