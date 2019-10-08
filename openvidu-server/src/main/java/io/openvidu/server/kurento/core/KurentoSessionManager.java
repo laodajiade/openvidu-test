@@ -181,8 +181,12 @@ public class KurentoSessionManager extends SessionManager {
 			log.info("Possible collision when closing the session '{}' (not found)", sessionId);
 			remainingParticipants = Collections.emptySet();
 		}
-		sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
-				reason);
+
+		if (!EndReason.forceDisconnectByUser.equals(reason) &&
+				!EndReason.forceCloseSessionByUser.equals(reason)) {
+			sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
+					reason);
+		}
 
 		if (!EndReason.sessionClosedByServer.equals(reason)) {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the

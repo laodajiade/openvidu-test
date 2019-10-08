@@ -785,8 +785,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		if (sessionManager.isModeratorInSession(rpcConnection.getSessionId(), participant)) {
 			String streamId = getStringParam(request, ProtocolElements.FORCEUNPUBLISH_STREAMID_PARAM);
-			sessionManager.unpublishStream(sessionManager.getSession(rpcConnection.getSessionId()), streamId,
-					participant, request.getId(), EndReason.forceUnpublishByUser);
+			if (sessionManager.unpublishStream(sessionManager.getSession(rpcConnection.getSessionId()), streamId,
+					participant, request.getId(), EndReason.forceUnpublishByUser)) {
+				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.USER_NOT_STREAMING_ERROR_CODE);
+			}
 		} else {
 			log.error("Error: participant {} is not a moderator", participant.getParticipantPublicId());
 			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
