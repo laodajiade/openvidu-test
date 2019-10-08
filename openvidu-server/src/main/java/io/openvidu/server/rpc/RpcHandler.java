@@ -345,9 +345,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void setAudioStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_ROOM_ID_PARAM);
-		String targetId = getStringParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
+//		String targetId = getStringParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
+		String targetId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
 		String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
+
+
 		if (!Objects.equals(sourceId, targetId)
                 && sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -1026,6 +1029,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Override
 	public List<String> allowedOrigins() {
 		return Arrays.asList("*");
+	}
+
+	public static String getStringOptionalParam(Request<JsonObject> request, String key) {
+		if (request.getParams() == null || request.getParams().get(key) == null) {
+			return null;
+		}
+
+		return request.getParams().get(key).getAsString();
 	}
 
 	public static String getStringParam(Request<JsonObject> request, String key) {
