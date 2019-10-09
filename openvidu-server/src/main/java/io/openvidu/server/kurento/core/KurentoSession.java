@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import io.openvidu.server.common.enums.StreamType;
 import org.kurento.client.Continuation;
 import org.kurento.client.ErrorEvent;
 import org.kurento.client.EventListener;
@@ -222,7 +223,10 @@ public class KurentoSession extends Session {
 
 		checkClosed();
 
-		participants.remove(participant.getParticipantPrivateId());
+		participants.get(participant.getParticipantPrivateId()).values().remove(participant.getStreamType());
+		if (participants.get(participant.getParticipantPrivateId()).values().size() == 0) {
+			participants.remove(participant.getParticipantPrivateId());
+		}
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
