@@ -148,9 +148,10 @@ public class KurentoSessionManager extends SessionManager {
 		// Update control data structures
 
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+//			log.info("before remove size:{}", sessionidParticipantpublicidParticipant.get(sessionId).size());
 			Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
 					.remove(participant.getParticipantPublicId());
-
+//			log.info("after remove size:{}", sessionidParticipantpublicidParticipant.get(sessionId).size());
 			if (this.coturnCredentialsService.isCoturnAvailable()) {
 //				this.coturnCredentialsService.deleteUser(p.getToken().getTurnCredentials().getUsername());
 			}

@@ -17,6 +17,7 @@
 
 package io.openvidu.server.kurento.core;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -223,8 +224,8 @@ public class KurentoSession extends Session {
 
 		checkClosed();
 
-		participants.get(participant.getParticipantPrivateId()).values().remove(participant.getStreamType());
-		if (participants.get(participant.getParticipantPrivateId()).values().size() == 0) {
+		Participant p1 = participants.get(participant.getParticipantPrivateId()).remove(participant.getStreamType().name());
+		if (participants.get(participant.getParticipantPrivateId()).size() == 0) {
 			participants.remove(participant.getParticipantPrivateId());
 		}
 

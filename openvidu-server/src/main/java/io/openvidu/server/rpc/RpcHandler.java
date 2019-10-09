@@ -1153,6 +1153,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (Objects.isNull(sessionManager.getSession(sessionId))) {
 			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+			return ;
 		}
 
 		if (sessionManager.getSession(sessionId).isClosed()) {
