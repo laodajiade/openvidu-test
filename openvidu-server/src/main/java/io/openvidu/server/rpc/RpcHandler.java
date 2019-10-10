@@ -262,9 +262,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		// verify room id ever exists
         ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);
-		if (conferenceMapper.selectBySearchCondition(search) != null)
-		    notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
+        // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
+        search.setStatus(1);
+		if (conferenceMapper.selectBySearchCondition(search) != null) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
+			return ;
+		}
+
 		if (sessionManager.isNewSessionIdValid(sessionId)) {
 			JsonObject respJson = new JsonObject();
 			respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
@@ -272,6 +277,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             Conference conference = new Conference();
             conference.setRoomId(sessionId);
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
+            conference.setStatus(1);
             int insertResult = conferenceMapper.insert(conference);
 
             // store this inactive session
@@ -517,6 +523,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);
+        search.setStatus(1);
         Conference conference = conferenceMapper.selectBySearchCondition(search);
         if (conference == null) {
             this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
@@ -1174,6 +1181,19 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
 		this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
 
+
+		ConferenceSearch search = new ConferenceSearch();
+		search.setRoomId(sessionId);
+		search.setStatus(1);
+		Conference conference = conferenceMapper.selectBySearchCondition(search);
+		if (conference == null) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+			return;
+		}
+
+		conference.setStatus(2);
+		conferenceMapper.updateByPrimaryKey(conference);
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}

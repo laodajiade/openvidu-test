@@ -17,11 +17,9 @@
 
 package io.openvidu.server.core;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -82,6 +80,7 @@ public class SessionEventsHandler {
 
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 
 		for (Participant existingParticipant : existingParticipants) {
 			JsonObject participantJson = new JsonObject();
@@ -151,8 +150,11 @@ public class SessionEventsHandler {
 						participant.getFullMetadata());
 
 				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
-					rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
+					if (Objects.isNull(publicId)) {
+						rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					}
 				}
 			}
 		}

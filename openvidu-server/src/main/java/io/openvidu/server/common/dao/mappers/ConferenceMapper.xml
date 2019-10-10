@@ -27,6 +27,9 @@
       <if test="roomId != null" >
           room_id = #{roomId,jdbcType=VARCHAR}
       </if>
+      <if test="status != null">
+          and status = #{status,jdbcType=VARCHAR}
+      </if>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
@@ -40,11 +43,11 @@
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Conference" >
     insert into sd_conference (id, room_id, conference_subject,
-      conference_desc, start_time, end_time, password
+      conference_desc, start_time, end_time, status, password
       )
     values (#{id,jdbcType=BIGINT}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
       #{conferenceDesc,jdbcType=VARCHAR}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
-      #{password,jdbcType=VARCHAR}
+      #{status,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Conference" >
