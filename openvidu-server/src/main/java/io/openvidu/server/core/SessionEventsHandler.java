@@ -234,8 +234,12 @@ public class SessionEventsHandler {
 		streamsArray.add(stream);
 		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);
 
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 		for (Participant p : participants) {
-			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+			String publicId = alreayNotifyRPC.putIfAbsent(p.getParticipantPrivateId(), p.getParticipantPublicId());
+
+			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId()) ||
+					!Objects.isNull(publicId)) {
 				continue;
 			} else {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),

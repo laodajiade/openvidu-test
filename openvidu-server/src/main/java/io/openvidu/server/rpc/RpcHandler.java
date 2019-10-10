@@ -715,6 +715,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sdpMid = getStringParam(request, ProtocolElements.ONICECANDIDATE_SDPMIDPARAM);
 		int sdpMLineIndex = getIntParam(request, ProtocolElements.ONICECANDIDATE_SDPMLINEINDEX_PARAM);
 		try {
+			// TODO. Maybe should add streamType in protocol when invoke OnIceCandidate.
 //			participant = sanityCheckOfSession(rpcConnection, "onIceCandidate");
 			participant = sanityCheckOfSession(rpcConnection, endpointName, "onIceCandidate");
 		} catch (OpenViduException e) {

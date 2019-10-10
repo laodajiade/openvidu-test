@@ -146,7 +146,7 @@ public class Session implements SessionInterface {
             }
         }
 
-        return null;
+		return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
     }
 
 	public Participant getParticipantByPublicId(String participantPublicId) {
