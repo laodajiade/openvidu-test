@@ -278,6 +278,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             conference.setRoomId(sessionId);
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
             conference.setStatus(1);
+            conference.setStartTime(new Date());
             int insertResult = conferenceMapper.insert(conference);
 
             // store this inactive session
@@ -1181,19 +1182,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
 		this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
 
-
-		ConferenceSearch search = new ConferenceSearch();
-		search.setRoomId(sessionId);
-		search.setStatus(1);
-		Conference conference = conferenceMapper.selectBySearchCondition(search);
-		if (conference == null) {
-			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
-			return;
-		}
-
-		conference.setStatus(2);
-		conferenceMapper.updateByPrimaryKey(conference);
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
