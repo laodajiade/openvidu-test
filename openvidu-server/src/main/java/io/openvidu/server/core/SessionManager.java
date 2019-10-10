@@ -25,6 +25,8 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
+import io.openvidu.server.common.Contants.CacheKeyConstants;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
@@ -38,8 +40,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -64,6 +68,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	protected TokenGenerator tokenGenerator;
+
+	@Autowired
+	protected CacheManage cacheManage;
 
 	public FormatChecker formatChecker = new FormatChecker();
 
@@ -551,6 +558,8 @@ public abstract class SessionManager {
 
 	protected void cleanCollections(String sessionId) {
 		sessions.remove(sessionId);
+		// remove record in redis
+		cacheManage.removeSession(sessionId);
 		sessionsNotActive.remove(sessionId);
 		sessionidParticipantpublicidParticipant.remove(sessionId);
 		sessionidFinalUsers.remove(sessionId);

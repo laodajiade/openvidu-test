@@ -47,10 +47,11 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 	public void onPipelineError(String roomName, Set<Participant> participants, String description) {
 		JsonObject notifParams = new JsonObject();
 		notifParams.addProperty(ProtocolElements.MEDIAERROR_ERROR_PARAM, description);
-		for (Participant p : participants) {
+		publisher.notifyParticipants(roomName,null, ProtocolElements.MEDIAERROR_METHOD, notifParams);
+		/*for (Participant p : participants) {
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MEDIAERROR_METHOD,
 					notifParams);
-		}
+		}*/
 	}
 
 	public void onMediaElementError(String roomName, String participantId, String description) {

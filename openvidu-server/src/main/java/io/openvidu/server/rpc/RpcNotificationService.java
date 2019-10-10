@@ -17,10 +17,8 @@
 
 package io.openvidu.server.rpc;
 
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -28,9 +26,9 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonObject;
-
-import io.openvidu.client.OpenViduException;
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class RpcNotificationService {
 

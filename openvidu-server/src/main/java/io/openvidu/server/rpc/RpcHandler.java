@@ -22,6 +22,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
@@ -59,7 +60,6 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
@@ -87,6 +87,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Resource
     ConferenceMapper conferenceMapper;
+
+	@Autowired
+	protected RedisPublisher publisher;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -372,8 +375,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
-            for (Participant p: participants) {
-                this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+			publisher.notifyParticipants(sessionId,null, ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+			for (Participant p: participants) {
+//                this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
                 if (StringUtils.isEmpty(targetId) && !sourceId.equals(gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsString())) {
 					KurentoParticipant part = (KurentoParticipant) p;
 					if (part.isStreaming()) part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
@@ -408,9 +412,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.SET_VIDEO_TARGET_ID_PARAM, targetId);
 		params.addProperty(ProtocolElements.SET_VIDEO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_STATUS_PARAM));
 
+		publisher.notifyParticipants(sessionId, null, ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
 		sessionManager.getParticipants(sessionId).forEach(participant -> {
-			this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-					ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
+			/*this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+					ProtocolElements.SET_VIDEO_STATUS_METHOD, params);*/
 			if (StringUtils.isEmpty(targetId) && !sourceId.equals(gson.fromJson(participant.getClientMetadata(),
 					JsonObject.class).get("clientData").getAsString())) {
 				KurentoParticipant part = (KurentoParticipant) participant;
@@ -425,14 +430,19 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sourceId = getStringParam(request, ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM);
 		sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.up);
 
-		List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
+		JsonObject params = new JsonObject();
+		params.addProperty("roomId", sessionId);
+		params.addProperty("sourceId", sourceId);
+		publisher.notifyParticipants(sessionId, null,
+				ProtocolElements.RAISE_HAND_METHOD, params);
+		/*List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
 				.stream().map(p -> p.getParticipantPrivateId()).collect(Collectors.toList());
 		if (!CollectionUtils.isEmpty(notifyClientPrivateIds)) {
 			JsonObject params = new JsonObject();
 			params.addProperty("roomId", sessionId);
 			params.addProperty("sourceId", sourceId);
 			notifyClientPrivateIds.forEach(client -> this.notificationService.sendNotification(client, ProtocolElements.RAISE_HAND_METHOD, params));
-		}
+		}*/
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
@@ -454,8 +464,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM, sourceId);
 		if (!StringUtils.isEmpty(targetId)) params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
-		participants.forEach(participant ->
-				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.PUT_DOWN_HAND_METHOD, params));
+		publisher.notifyParticipants(sessionId,null, ProtocolElements.PUT_DOWN_HAND_METHOD, params);
+//		participants.forEach(participant ->
+//				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.PUT_DOWN_HAND_METHOD, params));
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
@@ -476,8 +487,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.LOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
-			sessionManager.getParticipants(sessionId).forEach(participant ->
-					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.LOCK_SESSION_METHOD, params));
+			publisher.notifyParticipants(sessionId,null, ProtocolElements.LOCK_SESSION_METHOD, params);
+//			sessionManager.getParticipants(sessionId).forEach(participant ->
+//					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.LOCK_SESSION_METHOD, params));
 		}
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
@@ -495,8 +507,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
-			sessionManager.getParticipants(sessionId).forEach(participant ->
-					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_METHOD, params));
+			publisher.notifyParticipants(sessionId, null, ProtocolElements.UNLOCK_SESSION_METHOD, params);
+//			sessionManager.getParticipants(sessionId).forEach(participant ->
+//					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_METHOD, params));
 		}
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 

@@ -37,6 +37,7 @@ public abstract class RedisCommonConfig {
         stringRedisTemplate.setValueSerializer(new StringRedisSerializer());
         stringRedisTemplate.setHashKeySerializer(new StringRedisSerializer());
         stringRedisTemplate.setHashValueSerializer(new StringRedisSerializer());
+//        stringRedisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
         stringRedisTemplate.afterPropertiesSet();
         return stringRedisTemplate;
     }

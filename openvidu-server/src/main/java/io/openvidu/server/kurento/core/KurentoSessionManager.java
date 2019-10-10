@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import io.openvidu.server.common.Contants.CacheKeyConstants;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
@@ -115,6 +116,10 @@ public class KurentoSessionManager extends SessionManager {
 
 			existingParticipants = getParticipants(sessionId);
 			kSession.join(participant);
+
+			// record conf-part relation and participant in redis
+			cacheManage.recordPartAndRelation(getParticipant(participant.getSessionId(),
+					participant.getParticipantPrivateId(), participant.getStreamType()));
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
@@ -144,6 +149,9 @@ public class KurentoSessionManager extends SessionManager {
 		}
 //		session.leave(participant.getParticipantPrivateId(), reason);
 		session.leaveRoom(participant, reason);
+
+		// update record in redis
+		cacheManage.removeParticipant(participant);
 
 		// Update control data structures
 
@@ -302,6 +310,8 @@ public class KurentoSessionManager extends SessionManager {
 		sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
 				kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType);
 
+		// update participant stream info in redis
+		cacheManage.updateParticipantStreamInfo(kParticipant);
 		if (sdpAnswer == null) {
 			OpenViduException e = new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 					"Error generating SDP response for publishing user " + participant.getParticipantPublicId());
@@ -528,6 +538,8 @@ public class KurentoSessionManager extends SessionManager {
 				kmsManager.destroyWhenUnused());
 
 		KurentoSession oldSession = (KurentoSession) sessions.putIfAbsent(session.getSessionId(), session);
+		// record in redis
+		cacheManage.recordSession(session.getSessionId());
 		if (oldSession != null) {
 			log.warn("Session '{}' has just been created by another thread", session.getSessionId());
 			return oldSession;
@@ -913,8 +925,8 @@ public class KurentoSessionManager extends SessionManager {
 			final String filterType = kParticipant.getPublisherMediaOptions().getFilter().getType();
 			try {
 				ListenerSubscription listener = pub.getFilter().addEventListener(eventType, event -> {
-					sessionEventsHandler.onFilterEventDispatched(connectionId, streamId, filterType, event.getType(),
-							event.getData(), kParticipant.getSession().getParticipants(),
+					sessionEventsHandler.onFilterEventDispatched(kParticipant.getSessionId(), connectionId, streamId,
+							filterType, event.getType(), event.getData(), kParticipant.getSession().getParticipants(),
 							kParticipant.getPublisher().getPartipantsListentingToFilterEvent(eventType));
 				});
 				pub.storeListener(eventType, listener);

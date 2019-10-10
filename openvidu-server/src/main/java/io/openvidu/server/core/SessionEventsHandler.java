@@ -17,33 +17,29 @@
 
 package io.openvidu.server.core;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CallDetailRecord;
+import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class SessionEventsHandler {
 
@@ -60,6 +56,9 @@ public class SessionEventsHandler {
 
 	@Autowired
 	protected OpenviduConfig openviduConfig;
+
+	@Autowired
+	protected RedisPublisher publisher;
 
 	Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -140,7 +139,7 @@ public class SessionEventsHandler {
 			// If RECORDER participant has joined do NOT send 'participantJoined'
 			// notification to existing participants. 'recordingStarted' will be sent to all
 			// existing participants when recorder first subscribe to a stream
-			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+			/*if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 				JsonObject notifParams = new JsonObject();
 
 				// Metadata associated to new participant
@@ -154,8 +153,17 @@ public class SessionEventsHandler {
 					rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
 							ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
 				}
-			}
+			}*/
 		}
+		// notify existing participants
+		JsonObject notifParams = new JsonObject();
+		// Metadata associated to new participant
+		notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
+		notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
+		notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+		publisher.notifyParticipants(sessionId, Arrays.asList(participant.getParticipantPrivateId()),
+				ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
@@ -179,13 +187,14 @@ public class SessionEventsHandler {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
-
-		for (Participant p : remainingParticipants) {
+		/*for (Participant p : remainingParticipants) {
 			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
 			}
-		}
+		}*/
+		publisher.notifyParticipants(sessionId, Arrays.asList(participant.getParticipantPrivateId()),
+				ProtocolElements.PARTICIPANTLEFT_METHOD, params);
 
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily
@@ -232,14 +241,16 @@ public class SessionEventsHandler {
 		streamsArray.add(stream);
 		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);
 
-		for (Participant p : participants) {
+		publisher.notifyParticipants(sessionId, Arrays.asList(participant.getParticipantPrivateId()),
+				ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+		/*for (Participant p : participants) {
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				continue;
 			} else {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 			}
-		}
+		}*/
 	}
 
 	public void onUnpublishMedia(Participant participant, Set<Participant> participants, Participant moderator,
@@ -260,7 +271,23 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
 
-		for (Participant p : participants) {
+		if (!isRpcFromOwner) {
+			rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+					ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
+		} else {
+			if (error != null) {
+				rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId,
+						null, error);
+				return;
+			}
+			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
+
+		}
+		if (error == null) {
+			publisher.notifyParticipants(participant.getSessionId(), Arrays.asList(participant.getParticipantPrivateId()),
+					ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
+		}
+		/*for (Participant p : participants) {
 			log.info("unPublish ParticipantPublicId {} p PublicId {}", participant.getParticipantPublicId(), p.getParticipantPublicId());
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				// Send response to the affected participant
@@ -283,7 +310,7 @@ public class SessionEventsHandler {
 							ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
 				}
 			}
-		}
+		}*/
 	}
 
 	public void onSubscribe(Participant participant, Session session, String sdpAnswer, Integer transactionId,
@@ -345,12 +372,19 @@ public class SessionEventsHandler {
 		}
 
 		if (toSet.isEmpty()) {
-			for (Participant p : participants) {
+			publisher.notifyParticipants(participant.getSessionId(), null,
+					ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
+			/*for (Participant p : participants) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
-			}
+			}*/
 		} else {
-			Set<String> participantPublicIds = participants.stream().map(Participant::getParticipantPublicId)
+			Set<Participant> participantSet = participants.stream().filter(s -> toSet.contains(
+					s.getParticipantPublicId())).collect(Collectors.toSet());
+			publisher.notifyParticipants(participant.getSessionId(),null,
+					ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
+
+			/*Set<String> participantPublicIds = participants.stream().map(Participant::getParticipantPublicId)
 					.collect(Collectors.toSet());
 			for (String to : toSet) {
 				if (participantPublicIds.contains(to)) {
@@ -362,7 +396,7 @@ public class SessionEventsHandler {
 					throw new OpenViduException(Code.SIGNAL_TO_INVALID_ERROR_CODE,
 							"Signal \"to\" field invalid format: Connection [" + to + "] does not exist");
 				}
-			}
+			}*/
 		}
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
@@ -379,7 +413,10 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_NEWVALUE_PARAM, newValue.toString());
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM, reason);
 
-		for (Participant p : participants) {
+		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
+		publisher.notifyParticipants(participant.getSessionId(), Arrays.asList(participant.getParticipantPrivateId()),
+				ProtocolElements.STREAMPROPERTYCHANGED_METHOD, params);
+		/*for (Participant p : participants) {
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId,
 						new JsonObject());
@@ -387,7 +424,7 @@ public class SessionEventsHandler {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.STREAMPROPERTYCHANGED_METHOD, params);
 			}
-		}
+		}*/
 	}
 
 	public void onRecvIceCandidate(Participant participant, Integer transactionId, OpenViduException error) {
@@ -422,7 +459,10 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
 					ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
 		}
-		for (Participant p : participants) {
+		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId()))
+			publisher.notifyParticipants(evictedParticipant.getSessionId(), Arrays.asList(evictedParticipant.getParticipantPrivateId()),
+					ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+		/*for (Participant p : participants) {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
 				log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
 				if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())) {
@@ -430,7 +470,7 @@ public class SessionEventsHandler {
 							ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
 				}
 			}
-		}
+		}*/
 	}
 
 	public void sendRecordingStartedNotification(Session session, Recording recording) {
@@ -443,10 +483,12 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.RECORDINGSTARTED_ID_PARAM, recording.getId());
 		params.addProperty(ProtocolElements.RECORDINGSTARTED_NAME_PARAM, recording.getName());
 
-		for (Participant p : filteredParticipants) {
+		publisher.notifyParticipants(session.getSessionId(), null,
+				ProtocolElements.RECORDINGSTARTED_METHOD, params);
+		/*for (Participant p : filteredParticipants) {
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.RECORDINGSTARTED_METHOD, params);
-		}
+		}*/
 	}
 
 	public void sendRecordingStoppedNotification(Session session, Recording recording, EndReason reason) {
@@ -472,10 +514,12 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.RECORDINGSTARTED_NAME_PARAM, recording.getName());
 		params.addProperty(ProtocolElements.RECORDINGSTOPPED_REASON_PARAM, reason != null ? reason.name() : "");
 
-		for (Participant p : filteredParticipants) {
+		publisher.notifyParticipants(session.getSessionId(),null,
+				ProtocolElements.RECORDINGSTOPPED_METHOD, params);
+		/*for (Participant p : filteredParticipants) {
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.RECORDINGSTOPPED_METHOD, params);
-		}
+		}*/
 	}
 
 	public void onFilterChanged(Participant participant, Participant moderator, Integer transactionId,
@@ -510,7 +554,25 @@ public class SessionEventsHandler {
 		params.add(ProtocolElements.STREAMPROPERTYCHANGED_NEWVALUE_PARAM, filterJson);
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM, filterReason);
 
-		for (Participant p : participants) {
+		// Affected participant
+		if (isRpcFromModerator) {
+			// Force by moderator. Send notification to affected participant
+			rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+					ProtocolElements.STREAMPROPERTYCHANGED_METHOD, params);
+		} else {
+			if (error != null) {
+				rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId,
+						null, error);
+				return;
+			}
+			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
+		}
+		// Send response to every other user in the session different than the affected
+		// participant or the moderator
+		if (error == null && moderator == null)
+			publisher.notifyParticipants(participant.getSessionId(), Arrays.asList(participant.getParticipantPrivateId()),
+					ProtocolElements.STREAMPROPERTYCHANGED_METHOD, params);
+		/*for (Participant p : participants) {
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				// Affected participant
 				if (isRpcFromModerator) {
@@ -535,23 +597,29 @@ public class SessionEventsHandler {
 							ProtocolElements.STREAMPROPERTYCHANGED_METHOD, params);
 				}
 			}
-		}
+		}*/
 	}
 
-	public void onFilterEventDispatched(String connectionId, String streamId, String filterType, String eventType,
-			Object data, Set<Participant> participants, Set<String> subscribedParticipants) {
+	public void onFilterEventDispatched(String sessionId, String connectionId, String streamId, String filterType, String eventType,
+										Object data, Set<Participant> participants, Set<String> subscribedParticipants) {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_CONNECTIONID_PARAM, connectionId);
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_STREAMID_PARAM, streamId);
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_FILTERTYPE_PARAM, filterType);
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_EVENTTYPE_PARAM, eventType);
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_DATA_PARAM, data.toString());
-		for (Participant p : participants) {
+
+
+		Set<Participant> participantSet = participants.stream().filter(s ->
+				subscribedParticipants.contains(s.getParticipantPublicId())).collect(Collectors.toSet());
+		publisher.notifyParticipants(sessionId, null,
+				ProtocolElements.FILTEREVENTDISPATCHED_METHOD, params);
+		/*for (Participant p : participants) {
 			if (subscribedParticipants.contains(p.getParticipantPublicId())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.FILTEREVENTDISPATCHED_METHOD, params);
 			}
-		}
+		}*/
 	}
 
 	public void closeRpcSession(String participantPrivateId) {
