@@ -26,6 +26,7 @@ import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -50,6 +51,8 @@ public class Session implements SessionInterface {
 	protected String sessionId;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
+	// TODO. Maybe we should relate conference in here.
+	protected Conference conference;
 
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
@@ -85,6 +88,10 @@ public class Session implements SessionInterface {
 	public Long getStartTime() {
 		return this.startTime;
 	}
+
+	public void setConference(Conference conference){ this.conference = conference; }
+
+	public Conference getConference() { return this.conference; }
 
 	/*public Set<Participant> getParticipants() {
 		checkClosed();

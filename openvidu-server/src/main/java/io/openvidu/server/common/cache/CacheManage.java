@@ -6,4 +6,6 @@ package io.openvidu.server.common.cache;
  */
 public interface CacheManage {
     boolean accessTokenEverValid(String userId, String token);
+
+    String getUserId(String uuid);
 }

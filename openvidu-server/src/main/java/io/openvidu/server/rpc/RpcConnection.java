@@ -41,6 +41,7 @@ public class RpcConnection {
 	private ConcurrentMap<Integer, Transaction> transactions;
 	private String sessionId;
 	private String participantPrivateId;
+	private String userId;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -59,6 +60,10 @@ public class RpcConnection {
 	public void setParticipantPrivateId(String participantPrivateId) {
 		this.participantPrivateId = participantPrivateId;
 	}
+
+	public String getUserId() { return this.userId; }
+
+	public void setUserId(String userId) { this.userId = userId; }
 
 	public String getSessionId() {
 		return sessionId;

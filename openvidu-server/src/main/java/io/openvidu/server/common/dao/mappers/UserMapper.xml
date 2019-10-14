@@ -26,6 +26,13 @@
     </foreach>
   </select>
 
+  <select id="selectByUUID" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_user
+    where uuid = #{uuid,jdbcType=BIGINT}
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
     <include refid="Base_Column_List" />

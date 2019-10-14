@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
@@ -73,7 +74,7 @@ public class KurentoSessionManager extends SessionManager {
 	private KurentoParticipantEndpointConfig kurentoEndpointConfig;
 
 	@Override
-	public synchronized void joinRoom(Participant participant, String sessionId, Integer transactionId) {
+	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
 		Set<Participant> existingParticipants = null;
 		try {
 
@@ -104,6 +105,7 @@ public class KurentoSessionManager extends SessionManager {
 				}
 				log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
 				kSession = createSession(sessionNotActive, lessLoadedKms);
+				kSession.setConference(conference);
 			}
 
 			if (kSession.isClosed()) {

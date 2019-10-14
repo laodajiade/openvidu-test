@@ -21,6 +21,7 @@ import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenVidu;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
@@ -89,6 +90,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     ConferenceMapper conferenceMapper;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
+
+//	private ConcurrentHashMap<String, RpcConnection rpcConnection> users = new ConcurrentHashMap<>();
 
 	@Override
 	public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
@@ -220,6 +223,27 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.CLOSE_ROOM_METHOD:
 				closeRoom(rpcConnection, request);
 				break;
+			case ProtocolElements.GET_ROOM_INFO_METHOD:
+				getRoomInfo(rpcConnection, request);
+				break;
+			case ProtocolElements.INVITE_PARTICIPANT_METHOD:
+				inviteParticipant(rpcConnection, request);
+				break;
+			case ProtocolElements.SET_PRESET_INFO_METHOD:
+				setPresetInfo(rpcConnection, request);
+				break;
+			case ProtocolElements.GET_PRESET_INFO_METHOD:
+				getPresetInfo(rpcConnection, request);
+				break;
+			case ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD:
+				setAudioSpeakerStatus(rpcConnection, request);
+				break;
+			case ProtocolElements.SET_SHARE_POWER_METHOD:
+				setSharePower(rpcConnection, request);
+				break;
+			case ProtocolElements.TRANSFER_MODERATOR_METHOD:
+				transferModerator(rpcConnection, request);
+				break;
 			default:
 				log.error("Unrecognized request {}", request);
 				break;
@@ -243,6 +267,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					null, ErrorCodeEnum.TOKEN_INVALID);
 		}
 
+		// TODO. Maybe we should contain userId in accessIn for less query rds
+//		User user = userMapper.selectByUUID(userId);
+		String userRealId = cacheManage.getUserId(userId);
+		rpcConnection.setUserId(userRealId);
     }
 
     private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -624,7 +652,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             }
 
             rpcConnection.setSessionId(sessionId);
-            sessionManager.joinRoom(participant, sessionId, request.getId());
+            sessionManager.joinRoom(participant, sessionId, conference, request.getId());
 
         } else {
             log.error("ERROR: Metadata format set in client-side is incorrect");
@@ -1051,6 +1079,16 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return request.getParams().get(key).getAsString();
 	}
 
+	public static List<String> getStringListParam(Request<JsonObject> request, String key) {
+		if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
+			return null;
+		}
+
+		List<String> values = new ArrayList<>();
+		request.getParams().get(key).getAsJsonArray().forEach(s -> values.add(s.getAsString()));
+		return values;
+	}
+
 	public static String getStringParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
 			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
@@ -1183,6 +1221,137 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
 		this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
 
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void getRoomInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.GET_ROOM_INFO_ID_PARAM);
+
+		sessionManager.getParticipants(sessionId).forEach(p -> {
+			JsonObject params = new JsonObject();
+
+			params.addProperty(ProtocolElements.GET_ROOM_INFO_SUBJECT, sessionManager.getSession(sessionId).getConference().getConferenceSubject());
+			this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
+		});
+	}
+
+	private void inviteParticipant(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM);
+		List<String> targetIds = getStringListParam(request, ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM);
+
+		if (sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.PERMISSION_LIMITED);
+			return;
+		}
+
+		// find the target rpc connection by targetId list and notify info.
+		Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
+		targetIds.forEach(t -> {
+			rpcConnections.forEach(c -> {
+				if (Objects.equals(t, c.getUserId())) {
+					JsonObject params = new JsonObject();
+					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
+					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM));
+					params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM, t);
+					this.notificationService.sendNotification(c.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
+				}
+			});
+		});
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void setPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
+		// TODO.
+		String sessionId = getStringParam(request, ProtocolElements.SET_PRESET_INFO_ID_PARAM);
+		String micStatus = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_MIC_STATUS_PARAM);
+		String sharePower = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_SHARE_POWER_PARAM);
+		String useId = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_USE_ID_PARAM);
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
+		// TODO.
+
+
+	}
+
+	private void setAudioSpeakerStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM);
+		String targetId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM);
+		String status = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM);
+
+
+		if (!Objects.equals(sourceId, targetId)
+				&& sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.PERMISSION_LIMITED);
+			return;
+		}
+
+		JsonObject params = new JsonObject();
+		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM));
+		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM, targetId);
+		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM));
+		Set<Participant> participants = sessionManager.getParticipants(sessionId);
+		if (!CollectionUtils.isEmpty(participants)) {
+			for (Participant p: participants) {
+				this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, params);
+			}
+		}
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_ID_PARAM);
+		String targetId = getStringOptionalParam(request, ProtocolElements.SET_SHARE_POWER_TARGET_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM);
+		String status = getStringParam(request, ProtocolElements.SET_SHARE_POWER_STATUS_PARAM);
+
+		if (!Objects.equals(sourceId, targetId)
+				&& sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.PERMISSION_LIMITED);
+			return;
+		}
+
+		JsonObject params = new JsonObject();
+		params.addProperty(ProtocolElements.SET_SHARE_POWER_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM));
+		params.addProperty(ProtocolElements.SET_SHARE_POWER_TARGET_ID_PARAM, targetId);
+		params.addProperty(ProtocolElements.SET_SHARE_POWER_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_SHARE_POWER_STATUS_PARAM));
+		Set<Participant> participants = sessionManager.getParticipants(sessionId);
+		if (!CollectionUtils.isEmpty(participants)) {
+			participants.forEach(p -> this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_SHARE_POWER_METHOD, params));
+		}
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void transferModerator(RpcConnection rpcConnection, Request<JsonObject> request) {
+		// TODO. Need combine createConference and conferenceControl power. Not only used MODRATOR.
+		String sessionId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_ID_PARAM);
+		String targetId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_TARGET_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_SOURCE_ID_PARAM);
+
+		if (sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.PERMISSION_LIMITED);
+			return;
+		}
+
+		sessionManager.getParticipants(sessionId).forEach(s -> {
+			long userId = gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
+			if (Objects.equals(String.valueOf(userId), targetId)) {
+				s.setRole(OpenViduRole.MODERATOR);
+			}
+		});
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}

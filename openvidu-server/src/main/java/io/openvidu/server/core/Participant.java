@@ -129,6 +129,11 @@ public class Participant {
 		return role;
 	}
 
+	// 仅仅在 主持人和发布者之间角色切换
+	public void setRole(OpenViduRole role) {
+		this.role = role;
+	}
+
 	public StreamType getStreamType() {
 		return streamType;
 	}

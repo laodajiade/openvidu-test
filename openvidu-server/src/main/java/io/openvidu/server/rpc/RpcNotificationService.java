@@ -18,6 +18,7 @@
 package io.openvidu.server.rpc;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -162,4 +163,7 @@ public class RpcNotificationService {
 		return this.rpcConnections.get(participantPrivateId);
 	}
 
+	public Collection<RpcConnection> getRpcConnections() {
+		return this.rpcConnections.values();
+	}
 }

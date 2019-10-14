@@ -86,7 +86,7 @@ public abstract class SessionManager {
 
 	protected ConcurrentMap<String, ConcurrentHashMap<String, String>> sessionidConferenceInfo = new ConcurrentHashMap<>();
 
-	public abstract void joinRoom(Participant participant, String sessionId, Integer transactionId);
+	public abstract void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId);
 
 	public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
 			boolean closeWebSocket);

@@ -184,6 +184,44 @@ public class ProtocolElements {
 	public static final String CLOSE_ROOM_METHOD = "closeRoom";
 	public static final String CLOSE_ROOM_ID_PARAM = "roomId";
 
+	public static final String GET_ROOM_INFO_METHOD = "getRoomInfo";
+	public static final String GET_ROOM_INFO_ID_PARAM = "roomId";
+	public static final String GET_ROOM_INFO_SUBJECT = "subject";
+
+	public static final String INVITE_PARTICIPANT_METHOD = "inviteParticipant";
+	public static final String INVITE_PARTICIPANT_ID_PARAM = "roomId";
+	public static final String INVITE_PARTICIPANT_SOURCE_ID_PARAM = "sourceId";
+	public static final String INVITE_PARTICIPANT_TARGET_ID_PARAM = "targetId";
+
+	public static final String SET_AUDIO_SPEAKER_STATUS_METHOD = "setAudioSpeakerStatus";
+	public static final String SET_AUDIO_SPEAKER_ID_PARAM = "roomId";
+	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targetId";
+	public static final String SET_AUDIO_SPEAKER_STATUS_PARAM = "status";
+
+	public static final String SET_SHARE_POWER_METHOD = "setSharePower";
+	public static final String SET_SHARE_POWER_ID_PARAM = "roomId";
+	public static final String SET_SHARE_POWER_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_SHARE_POWER_TARGET_ID_PARAM = "targetId";
+	public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
+
+	public static final String TRANSFER_MODERATOR_METHOD = "transferModerator";
+	public static final String TRANSFER_MODERATOR_ID_PARAM = "roomId";
+	public static final String TRANSFER_MODERATOR_SOURCE_ID_PARAM = "sourceId";
+	public static final String TRANSFER_MODERATOR_TARGET_ID_PARAM = "targetId";
+
+	public static final String SET_PRESET_INFO_METHOD = "setPresetInfo";
+	public static final String SET_PRESET_INFO_ID_PARAM = "roomId";
+	public static final String SET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
+	public static final String SET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
+	public static final String SET_PRESET_INFO_USE_ID_PARAM = "useIDInRoom";
+
+	public static final String GET_PRESET_INFO_METHOD = "getPresetInfo";
+	public static final String GET_PRESET_INFO_ID_PARAM = "roomId";
+	public static final String GET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
+	public static final String GET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
+	public static final String GET_PRESET_INFO_USE_ID_PARAM = "useIDInRoom";
+
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 

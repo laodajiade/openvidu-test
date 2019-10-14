@@ -31,4 +31,16 @@ public class CacheManageImpl implements CacheManage {
         return result;
     }
 
+    @Override
+    public String getUserId(String uuid) {
+        String userId;
+        try {
+            userId = tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid).get("userId").toString();
+        } catch (Exception e) {
+            log.error("Exception:", e);
+            return null;
+        }
+        return userId;
+    }
+
 }
