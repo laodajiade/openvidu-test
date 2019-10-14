@@ -5,4 +5,6 @@ import lombok.Data;
 @Data
 public class ConferenceSearch {
     private String roomId;
+
+    private int status;
 }

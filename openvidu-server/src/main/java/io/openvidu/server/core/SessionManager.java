@@ -25,7 +25,11 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
+import io.openvidu.server.common.dao.ConferenceMapper;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
@@ -40,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -64,6 +69,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	protected TokenGenerator tokenGenerator;
+
+	@Resource
+	ConferenceMapper conferenceMapper;
 
 	public FormatChecker formatChecker = new FormatChecker();
 
@@ -545,6 +553,7 @@ public abstract class SessionManager {
 		}
 
 		this.cleanCollections(session.getSessionId());
+		this.updateConferenceInfo(session.getSessionId());
 
 		log.info("Session '{}' removed and closed", session.getSessionId());
 	}
@@ -557,6 +566,22 @@ public abstract class SessionManager {
 		sessionidAccumulatedRecordings.remove(sessionId);
 		sessionidTokenTokenobj.remove(sessionId);
 		sessionidConferenceInfo.remove(sessionId);
+	}
+
+	protected void updateConferenceInfo(String sessionId) {
+		// TODO. update sd_conference status info.
+		ConferenceSearch search = new ConferenceSearch();
+		search.setRoomId(sessionId);
+		search.setStatus(1);
+		Conference conference = conferenceMapper.selectBySearchCondition(search);
+		if (conference == null) {
+			log.warn("can not find conference {} when closed.", sessionId);
+			return;
+		}
+
+		conference.setStatus(2);
+		conference.setEndTime(new Date());
+		conferenceMapper.updateByPrimaryKey(conference);
 	}
 
 	public boolean isNewSessionIdValid(String sessionId) {

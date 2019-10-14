@@ -17,14 +17,13 @@
 
 package io.openvidu.server.core;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import io.openvidu.server.common.enums.StreamType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +81,7 @@ public class SessionEventsHandler {
 
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 
 		for (Participant existingParticipant : existingParticipants) {
 			JsonObject participantJson = new JsonObject();
@@ -151,8 +151,11 @@ public class SessionEventsHandler {
 						participant.getFullMetadata());
 
 				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
-					rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
+					if (Objects.isNull(publicId)) {
+						rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					}
 				}
 			}
 		}
@@ -232,8 +235,12 @@ public class SessionEventsHandler {
 		streamsArray.add(stream);
 		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);
 
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 		for (Participant p : participants) {
-			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+			String publicId = alreayNotifyRPC.putIfAbsent(p.getParticipantPrivateId(), p.getParticipantPublicId());
+
+			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId()) ||
+					!Objects.isNull(publicId)) {
 				continue;
 			} else {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),

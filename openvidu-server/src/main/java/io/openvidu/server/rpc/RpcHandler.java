@@ -262,9 +262,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		// verify room id ever exists
         ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);
-		if (conferenceMapper.selectBySearchCondition(search) != null)
-		    notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
+        // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
+        search.setStatus(1);
+		if (conferenceMapper.selectBySearchCondition(search) != null) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
+			return ;
+		}
+
 		if (sessionManager.isNewSessionIdValid(sessionId)) {
 			JsonObject respJson = new JsonObject();
 			respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
@@ -272,6 +277,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             Conference conference = new Conference();
             conference.setRoomId(sessionId);
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
+            conference.setStatus(1);
+            conference.setStartTime(new Date());
             int insertResult = conferenceMapper.insert(conference);
 
             // store this inactive session
@@ -517,6 +524,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);
+        search.setStatus(1);
         Conference conference = conferenceMapper.selectBySearchCondition(search);
         if (conference == null) {
             this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
@@ -707,6 +715,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sdpMid = getStringParam(request, ProtocolElements.ONICECANDIDATE_SDPMIDPARAM);
 		int sdpMLineIndex = getIntParam(request, ProtocolElements.ONICECANDIDATE_SDPMLINEINDEX_PARAM);
 		try {
+			// TODO. Maybe should add streamType in protocol when invoke OnIceCandidate.
 //			participant = sanityCheckOfSession(rpcConnection, "onIceCandidate");
 			participant = sanityCheckOfSession(rpcConnection, endpointName, "onIceCandidate");
 		} catch (OpenViduException e) {
