@@ -80,6 +80,19 @@ CREATE TABLE `sd_department` (
   INDEX `index_corp_id` (`corp_id`) USING BTREE
 )ENGINE=InnoDB DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=COMPACT COMMENT='部门表';
 
+--
+-- Table structure for table `sd_corporation`
+--
+DROP TABLE IF EXISTS `sd_corporation`;
+CREATE TABLE `sd_corporation` (
+  `id`  bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键' ,
+  `corp_name`  varchar(256) CHARACTER SET utf8 NOT NULL COMMENT '企业名称' ,
+  `create_time`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+  `project` varchar(128) CHARACTER SET utf8 DEFAULT 'Base' COMMENT '项目属性' ,
+  `update_time`  datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' ,
+  PRIMARY KEY (`id`)
+)ENGINE=InnoDB DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=COMPACT COMMENT='企业表';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
