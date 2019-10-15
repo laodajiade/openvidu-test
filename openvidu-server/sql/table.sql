@@ -166,6 +166,21 @@ CREATE TABLE `sd_user_role`  (
   UNIQUE INDEX `unique_user_role`(`user_id`, `role_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户角色关联表' ROW_FORMAT = Compact;
 
+--
+-- Table structure for table `sd_user_dept`
+--
+DROP TABLE IF EXISTS `sd_user_dept`;
+CREATE TABLE `sd_user_dept`  (
+`id` bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+`user_id` bigint(11) UNSIGNED NOT NULL COMMENT '用户ID',
+`dept_id`  bigint(11) UNSIGNED NOT NULL COMMENT '部门ID' ,
+`project` varchar(128) CHARACTER SET utf8 DEFAULT 'Base' COMMENT '项目属性',
+`create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+`update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+PRIMARY KEY (`id`) USING BTREE,
+UNIQUE INDEX `unique_user_dept`(`user_id`, `dept_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户部门关联表' ROW_FORMAT = Compact;
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
