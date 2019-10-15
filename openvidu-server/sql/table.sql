@@ -109,6 +109,28 @@ CREATE TABLE `sd_role` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='角色表';
 
+--
+-- Table structure for table `sd_device`
+--
+DROP TABLE IF EXISTS `sd_device`;
+CREATE TABLE `sd_device` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `serial_number` varchar(128) NOT NULL COMMENT '设备序列号',
+  `device_id` varchar(128) NOT NULL COMMENT '设备编码',
+  `device_name` varchar(256) DEFAULT NULL COMMENT '设备名称',
+  `device_type` varchar(128) DEFAULT NULL COMMENT '设备类型',
+  `device_model` varchar(128) DEFAULT NULL COMMENT '设备型号',
+  `ability` varchar(512) DEFAULT NULL COMMENT '设备能力集',
+  `version` varchar(128) DEFAULT NULL COMMENT '设备程序版本',
+  `manufacturer` varchar(128) DEFAULT NULL COMMENT '设备厂商',
+  `access_type` tinyint(5) unsigned DEFAULT '0' COMMENT '设备接入协议类型，0：私有协议',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `index_serial_number` (`serial_number`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='设备表';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
