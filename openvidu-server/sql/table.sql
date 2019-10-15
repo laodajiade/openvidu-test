@@ -93,6 +93,22 @@ CREATE TABLE `sd_corporation` (
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=COMPACT COMMENT='企业表';
 
+
+--
+-- Table structure for table `sd_role`
+--
+DROP TABLE IF EXISTS `sd_role`;
+CREATE TABLE `sd_role` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `role_name` varchar(128) NOT NULL COMMENT '角色名称',
+  `role_desc` varchar(1024) NOT NULL COMMENT '角色描述',
+  `privilege` varchar(512) NOT NULL COMMENT '角色权限,英文逗号分隔枚举值如下:createConference,conferenceManager,conferenceControl,organizationManager,userManager,deviceManager,roleManager,participantOnly  其中participantOnly为默认权限',
+  `project` varchar(128) CHARACTER SET utf8 DEFAULT 'Base' COMMENT '项目属性' ,
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='角色表';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
