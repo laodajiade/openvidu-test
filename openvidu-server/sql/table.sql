@@ -20,8 +20,7 @@
 --
 
 DROP TABLE IF EXISTS `sd_conference`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `sd_conference` (
   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `room_id` varchar(128) NOT NULL COMMENT '会议室名称',
