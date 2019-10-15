@@ -568,7 +568,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		// check preset and set share power in room info. for example: sharePower.
-		if (Objects.equals(streamType, StreamType.SHARING.toString())) {
+		if (Objects.equals(streamType, StreamType.SHARING.name())) {
 			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
 			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
 				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
@@ -661,11 +661,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
             if (Objects.equals(streamType, StreamType.MAJOR)) {
 				SessionPreset preset = sessionManager.getPresetInfo(sessionId);
-				if (SessionPresetEnum.enable.equals(preset.getSharePowerInRoom())) {
-					sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(ParticipantSharePowerStatus.on);
-				} else {
-					sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(ParticipantSharePowerStatus.off);
-				}
+				sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(
+						ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
 			}
         } else {
             log.error("ERROR: Metadata format set in client-side is incorrect");
@@ -1269,7 +1266,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sessionId = getStringParam(request, ProtocolElements.SET_PRESET_INFO_ID_PARAM);
 		String micStatus = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_MIC_STATUS_PARAM);
 		String sharePower = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_SHARE_POWER_PARAM);
-		String useId = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_USE_ID_PARAM);
+		String useId = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_VIDEO_STATUS_PARAM);
 		String roomSubject = getStringParam(request, ProtocolElements.SET_PRESET_INFO_SUBJECT_PARAM);
 
 		SessionPreset preset = new SessionPreset(micStatus, sharePower, useId, roomSubject);
@@ -1278,13 +1275,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
-		String sessionId = getStringParam(request, ProtocolElements.SET_PRESET_INFO_ID_PARAM);
+		String sessionId = getStringParam(request, ProtocolElements.GET_PRESET_INFO_ID_PARAM);
 		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
 		JsonObject params = new JsonObject();
 
-		params.addProperty(ProtocolElements.GET_PRESET_INFO_MIC_STATUS_PARAM, preset.getMicStatusInRoom().toString());
-		params.addProperty(ProtocolElements.GET_PRESET_INFO_SHARE_POWER_PARAM, preset.getSharePowerInRoom().toString());
-		params.addProperty(ProtocolElements.GET_PRESET_INFO_USE_ID_PARAM, preset.getUseIdInRoom().toString());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_MIC_STATUS_PARAM, preset.getMicStatusInRoom().name());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_SHARE_POWER_PARAM, preset.getSharePowerInRoom().name());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_VIDEO_STATUS_PARAM, preset.getUseIdInRoom().name());
 		params.addProperty(ProtocolElements.GET_PRESET_INFO_SUBJECT_PARAM, preset.getRoomSubject());
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
