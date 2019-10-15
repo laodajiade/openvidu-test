@@ -26,10 +26,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.ParticipantMicStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.User;
@@ -570,8 +567,15 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		// TODO. check power table and preset in room info. for example: sharePower.
-
+		// check preset and set share power in room info. for example: sharePower.
+		if (Objects.equals(streamType, StreamType.SHARING.toString())) {
+			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
+			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
+				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+						null, ErrorCodeEnum.PERMISSION_LIMITED);
+				return ;
+			}
+		}
 
 		InetAddress remoteAddress = null;
 		GeoLocation location = null;
@@ -655,6 +659,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             rpcConnection.setSessionId(sessionId);
             sessionManager.joinRoom(participant, sessionId, conference, request.getId());
 
+            if (Objects.equals(streamType, StreamType.MAJOR)) {
+				SessionPreset preset = sessionManager.getPresetInfo(sessionId);
+				if (SessionPresetEnum.enable.equals(preset.getSharePowerInRoom())) {
+					sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(ParticipantSharePowerStatus.on);
+				} else {
+					sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(ParticipantSharePowerStatus.off);
+				}
+			}
         } else {
             log.error("ERROR: Metadata format set in client-side is incorrect");
             throw new OpenViduException(Code.USER_METADATA_FORMAT_INVALID_ERROR_CODE,
@@ -1216,7 +1228,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		// TODO.
 		// 1. notify all participant stop publish and receive stream.
 		// 2. close session but can not disconnect the connection.
 		this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
@@ -1307,7 +1318,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
-		// TODO. Maybe we should record the share power.
 		String sessionId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_ID_PARAM);
 		String targetId = getStringOptionalParam(request, ProtocolElements.SET_SHARE_POWER_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM);
@@ -1327,7 +1337,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.SET_SHARE_POWER_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_SHARE_POWER_STATUS_PARAM));
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		if (!CollectionUtils.isEmpty(participants)) {
-			participants.forEach(p -> this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_SHARE_POWER_METHOD, params));
+			participants.forEach(p -> {
+				p.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(status));
+				this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_SHARE_POWER_METHOD, params);
+			});
 		}
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
