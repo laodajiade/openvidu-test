@@ -85,6 +85,7 @@ public abstract class SessionManager {
 	public ConcurrentMap<String, ConcurrentHashMap<String, Token>> sessionidTokenTokenobj = new ConcurrentHashMap<>();
 
 	protected ConcurrentMap<String, ConcurrentHashMap<String, String>> sessionidConferenceInfo = new ConcurrentHashMap<>();
+	protected ConcurrentMap<String, SessionPreset> sessionidPreset = new ConcurrentHashMap<>();
 
 	public abstract void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId);
 
@@ -566,6 +567,7 @@ public abstract class SessionManager {
 		sessionidAccumulatedRecordings.remove(sessionId);
 		sessionidTokenTokenobj.remove(sessionId);
 		sessionidConferenceInfo.remove(sessionId);
+		sessionidPreset.remove(sessionId);
 	}
 
 	protected void updateConferenceInfo(String sessionId) {
@@ -600,6 +602,26 @@ public abstract class SessionManager {
 		sessionInfo.put("sharingSourceId", sourceId);
 		return true;
 	}
+
+	public boolean setPresetInfo(String sessionId, SessionPreset preset) {
+	    if (!Objects.isNull(sessionidPreset.get(sessionId))) {
+            log.info("session {} {} replace preset info {}", sessionId, preset, sessionidPreset.get(sessionId));
+        }
+
+	    sessionidPreset.put(sessionId, preset);
+        return true;
+    }
+
+    public SessionPreset getPresetInfo(String sessionId) {
+	    SessionPreset preset = sessionidPreset.get(sessionId);
+
+	    if (Objects.isNull(preset)) {
+	        preset = new SessionPreset();
+	        sessionidPreset.put(sessionId, preset);
+        }
+
+        return sessionidPreset.get(sessionId);
+    }
 
 	public ConcurrentHashMap<String, String> getSessionInfo(String sessionId) {
 		return sessionidConferenceInfo.get(sessionId);
