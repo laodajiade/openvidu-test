@@ -132,6 +132,8 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_METHOD = "accessIn";
 	public static final String ACCESS_IN_USER_ID_PARAM = "userId";
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
+    public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
+    public static final String ACCESS_IN_MAC_PARAM = "mac";
 
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
@@ -215,12 +217,14 @@ public class ProtocolElements {
 	public static final String SET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
 	public static final String SET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
 	public static final String SET_PRESET_INFO_USE_ID_PARAM = "useIDInRoom";
+	public static final String SET_PRESET_INFO_SUBJECT_PARAM = "subject";
 
 	public static final String GET_PRESET_INFO_METHOD = "getPresetInfo";
 	public static final String GET_PRESET_INFO_ID_PARAM = "roomId";
 	public static final String GET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
 	public static final String GET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
 	public static final String GET_PRESET_INFO_USE_ID_PARAM = "useIDInRoom";
+	public static final String GET_PRESET_INFO_SUBJECT_PARAM = "subject";
 
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------

@@ -34,10 +34,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.MediaOptions;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.utils.GeoLocation;
 import io.openvidu.server.utils.GeoLocationByIp;
@@ -223,9 +220,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.CLOSE_ROOM_METHOD:
 				closeRoom(rpcConnection, request);
 				break;
-			case ProtocolElements.GET_ROOM_INFO_METHOD:
-				getRoomInfo(rpcConnection, request);
-				break;
 			case ProtocolElements.INVITE_PARTICIPANT_METHOD:
 				inviteParticipant(rpcConnection, request);
 				break;
@@ -253,24 +247,28 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
 	    String userId = getStringParam(request, ProtocolElements.ACCESS_IN_USER_ID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
+		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
+		String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
+
 	    // verify parameters
-	    if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(token)) {
+	    if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(token) ||
+				(StringUtils.isEmpty(deviceSerialNumber) && StringUtils.isEmpty(deviceMac))) {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
 			return;
 		}
 
-	    if (cacheManage.accessTokenEverValid(userId, token)) {
-			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-		} else {
+	    if (!cacheManage.accessTokenEverValid(userId, token)) {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.TOKEN_INVALID);
+			return;
 		}
 
-		// TODO. Maybe we should contain userId in accessIn for less query rds
-//		User user = userMapper.selectByUUID(userId);
+		// TODO. Maybe we should check deviceSerialNumber or mac in device table
 		String userRealId = cacheManage.getUserId(userId);
 		rpcConnection.setUserId(userRealId);
+
+		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
     private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -571,6 +569,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					ErrorCodeEnum.CONFERENCE_IS_LOCKED);
 			return;
 		}
+
+		// TODO. check power table and preset in room info. for example: sharePower.
+
 
 		InetAddress remoteAddress = null;
 		GeoLocation location = null;
@@ -1225,17 +1226,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
-	private void getRoomInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
-		String sessionId = getStringParam(request, ProtocolElements.GET_ROOM_INFO_ID_PARAM);
-
-		sessionManager.getParticipants(sessionId).forEach(p -> {
-			JsonObject params = new JsonObject();
-
-			params.addProperty(ProtocolElements.GET_ROOM_INFO_SUBJECT, sessionManager.getSession(sessionId).getConference().getConferenceSubject());
-			this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
-		});
-	}
-
 	private void inviteParticipant(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM);
@@ -1265,19 +1255,27 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void setPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
-		// TODO.
 		String sessionId = getStringParam(request, ProtocolElements.SET_PRESET_INFO_ID_PARAM);
 		String micStatus = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_MIC_STATUS_PARAM);
 		String sharePower = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_SHARE_POWER_PARAM);
 		String useId = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_USE_ID_PARAM);
+		String roomSubject = getStringParam(request, ProtocolElements.SET_PRESET_INFO_SUBJECT_PARAM);
 
+		SessionPreset preset = new SessionPreset(micStatus, sharePower, useId, roomSubject);
+		sessionManager.setPresetInfo(sessionId, preset);
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
 	private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
-		// TODO.
+		String sessionId = getStringParam(request, ProtocolElements.SET_PRESET_INFO_ID_PARAM);
+		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
+		JsonObject params = new JsonObject();
 
-
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_MIC_STATUS_PARAM, preset.getMicStatusInRoom().toString());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_SHARE_POWER_PARAM, preset.getSharePowerInRoom().toString());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_USE_ID_PARAM, preset.getUseIdInRoom().toString());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_SUBJECT_PARAM, preset.getRoomSubject());
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
 
 	private void setAudioSpeakerStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -1309,6 +1307,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
+		// TODO. Maybe we should record the share power.
 		String sessionId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_ID_PARAM);
 		String targetId = getStringOptionalParam(request, ProtocolElements.SET_SHARE_POWER_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM);
@@ -1335,7 +1334,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void transferModerator(RpcConnection rpcConnection, Request<JsonObject> request) {
-		// TODO. Need combine createConference and conferenceControl power. Not only used MODRATOR.
+		// TODO. Need combine createConference and conferenceControl power. Not only used MODERATOR.
 		String sessionId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_SOURCE_ID_PARAM);
@@ -1346,11 +1345,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		sessionManager.getParticipants(sessionId).forEach(s -> {
-			long userId = gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
+		JsonObject params = new JsonObject();
+
+		params.addProperty(ProtocolElements.TRANSFER_MODERATOR_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.TRANSFER_MODERATOR_SOURCE_ID_PARAM, sourceId);
+		params.addProperty(ProtocolElements.TRANSFER_MODERATOR_TARGET_ID_PARAM, targetId);
+		sessionManager.getParticipants(sessionId).forEach(p -> {
+			long userId = gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
 			if (Objects.equals(String.valueOf(userId), targetId)) {
-				s.setRole(OpenViduRole.MODERATOR);
+				p.setRole(OpenViduRole.MODERATOR);
 			}
+
+			this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.TRANSFER_MODERATOR_METHOD, params);
 		});
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
