@@ -63,6 +63,22 @@ CREATE TABLE `sd_user` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Table structure for table `sd_department`
+--
+
+DROP TABLE IF EXISTS `sd_department`;
+CREATE TABLE `sd_department` (
+  `id`  bigint(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键' ,
+  `parent_id`  bigint(11) UNSIGNED NULL COMMENT '上级部门ID' ,
+  `dept_name`  varchar(128) CHARACTER SET utf8 NOT NULL COMMENT '部门名称' ,
+  `corp_id`  bigint(11) UNSIGNED NOT NULL COMMENT '企业ID' ,
+  `project` varchar(128) CHARACTER SET utf8 DEFAULT 'Base' COMMENT '项目属性',
+  `create_time`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+  `update_time`  datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间' ,
+  PRIMARY KEY (`id`),
+  INDEX `index_corp_id` (`corp_id`) USING BTREE
+)ENGINE=InnoDB DEFAULT CHARACTER SET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=COMPACT COMMENT='部门表';
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
