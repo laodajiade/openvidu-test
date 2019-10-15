@@ -20,8 +20,7 @@
 --
 
 DROP TABLE IF EXISTS `sd_conference`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `sd_conference` (
   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `room_id` varchar(128) NOT NULL COMMENT '会议室名称',
@@ -33,6 +32,7 @@ CREATE TABLE `sd_conference` (
   `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '会议状态（0：未开始，1：进行中，2：已结束）',
   `password` varchar(256) DEFAULT NULL COMMENT '入会密码',
   `invite_limit` tinyint(2) unsigned DEFAULT '1' COMMENT '会议邀请（0：不允许，1：允许）',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
