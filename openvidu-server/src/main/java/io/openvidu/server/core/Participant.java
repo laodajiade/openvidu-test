@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.ParticipantMicStatus;
+import io.openvidu.server.common.enums.ParticipantSharePowerStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.utils.GeoLocation;
 
@@ -46,6 +47,7 @@ public class Participant {
 
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
+	protected ParticipantSharePowerStatus sharePowerStatus;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -71,6 +73,7 @@ public class Participant {
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
 		this.micStatus = ParticipantMicStatus.on;
+		this.sharePowerStatus = ParticipantSharePowerStatus.off;
 	}
 
 	public String getFinalUserId() {
@@ -151,6 +154,10 @@ public class Participant {
 	public void setMicStatus(ParticipantMicStatus micStatus) {
 		this.micStatus = micStatus;
 	}
+
+	public ParticipantSharePowerStatus getSharePowerStatus() { return sharePowerStatus; }
+
+	public void setSharePowerStatus(ParticipantSharePowerStatus status) { this.sharePowerStatus = sharePowerStatus; }
 
 	public GeoLocation getLocation() {
 		return this.location;
