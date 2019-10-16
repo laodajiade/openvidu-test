@@ -1,6 +1,6 @@
 package io.openvidu.server.common.cache;
 
-import io.openvidu.server.common.Contants.CacheKeyConstants;
+import io.openvidu.server.common.contants.CacheKeyConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;

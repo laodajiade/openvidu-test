@@ -1,4 +1,4 @@
-package io.openvidu.server.common.Contants;
+package io.openvidu.server.common.contants;
 
 /**
  * @author chosongi
