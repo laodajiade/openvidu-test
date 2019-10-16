@@ -17,9 +17,9 @@
         </commentGenerator>
         <!-- 配置数据库连接 -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://172.25.27.178:3306/sd_main"
-                        userId="chosongi"
-                        password="123456"/>
+                        connectionURL="jdbc:mysql://172.25.22.101:3306/sd_main"
+                        userId="root"
+                        password="abcABC123!"/>
 
         <!-- 指定javaBean生成的位置 -->
         <javaModelGenerator targetPackage="io.openvidu.server.common.pojo" targetProject="src/main/java">
@@ -41,7 +41,7 @@
 
         <!-- table表生成对应的DoaminObject -->
         <!--<table tableName="sd_user" domainObjectName="User"></table>-->
-        <table tableName="sd_conference" domainObjectName="Conference"></table>
+        <table tableName="sd_corporation" domainObjectName="Corporation"></table>
 
     </context>
 
