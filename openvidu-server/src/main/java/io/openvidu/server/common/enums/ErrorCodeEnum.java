@@ -25,7 +25,9 @@ public enum ErrorCodeEnum {
     SHARING_ALREADY_EXIST(13005, "screen sharing already exist"),
     CONFERENCE_PASSWORD_ERROR(13006, "conference password error"),
     CONFERENCE_ALREADY_CLOSED(13007, "conference already closed"),
-    USER_NOT_STREAMING_ERROR_CODE(13008, "user not streaming");
+    USER_NOT_STREAMING_ERROR_CODE(13008, "user not streaming"),
+
+    DEVICE_NOT_FOUND(13100, "device not found");
 
 
 

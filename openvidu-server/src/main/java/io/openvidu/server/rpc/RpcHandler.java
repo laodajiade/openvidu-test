@@ -25,11 +25,10 @@ import io.openvidu.java.client.OpenVidu;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
+import io.openvidu.server.common.dao.DeviceMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferenceSearch;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -46,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -82,6 +83,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Resource
     ConferenceMapper conferenceMapper;
+
+	@Resource
+	DeviceMapper deviceMapper;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -261,9 +265,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		// TODO. Maybe we should check deviceSerialNumber or mac in device table
 		String userRealId = cacheManage.getUserId(userId);
 		rpcConnection.setUserId(userRealId);
+
+		if (!StringUtils.isEmpty(deviceSerialNumber)) {
+			DeviceSearch search = new DeviceSearch();
+			search.setSerialNumber(deviceSerialNumber);
+			if (Objects.isNull(deviceMapper.selectBySearchCondition(search))) {
+				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.DEVICE_NOT_FOUND);
+				return;
+			}
+		}
 
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
