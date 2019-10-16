@@ -258,16 +258,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
 			return;
 		}
-
-	    if (!cacheManage.accessTokenEverValid(userId, token)) {
+		Map userInfo = cacheManage.getUserInfoByUUID(userId);
+	    if (Objects.isNull(userInfo) || !Objects.equals(token, userInfo.get("token"))) {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.TOKEN_INVALID);
 			return;
 		}
 
-		String userRealId = cacheManage.getUserId(userId);
-		rpcConnection.setUserId(userRealId);
-
+		rpcConnection.setUserId(String.valueOf(userInfo.get("userId")));
 		if (!StringUtils.isEmpty(deviceSerialNumber)) {
 			DeviceSearch search = new DeviceSearch();
 			search.setSerialNumber(deviceSerialNumber);

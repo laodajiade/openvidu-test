@@ -1,11 +1,12 @@
 package io.openvidu.server.common.cache;
 
+import java.util.Map;
+
 /**
  * @author chosongi
  * @date 2019/9/12 14:50
  */
 public interface CacheManage {
-    boolean accessTokenEverValid(String userId, String token);
 
-    String getUserId(String uuid);
+    Map getUserInfoByUUID(String userId);
 }
