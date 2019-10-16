@@ -24,7 +24,8 @@ public class AuthorizationManageImpl implements AuthorizationManage {
     @Resource
     private CacheManage cacheManage;
 
-    private final static Set<String> AUTHORIZATION_EXCLUDE_SET = new HashSet<String>(1) {{add(ACCESS_IN_METHOD);}};
+    private final static Set<String> AUTHORIZATION_EXCLUDE_SET = new HashSet<String>(1) {{
+        add(ACCESS_IN_METHOD);add(SET_AUDIO_STATUS_METHOD);add(SET_VIDEO_STATUS_METHOD);add(SET_AUDIO_SPEAKER_STATUS_METHOD);}};
 
     /**
      * setAudioStatus setVideoStatus setAudioSpeakerStatus接口较为特殊，需根据请求参数进行权限的相应校验
