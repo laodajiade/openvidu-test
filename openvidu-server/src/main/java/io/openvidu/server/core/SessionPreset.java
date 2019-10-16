@@ -29,15 +29,15 @@ public class SessionPreset {
     public String getRoomSubject() { return this.roomSubject; }
 
     public SessionPreset() {
-        this.micStatusInRoom = SessionPresetEnum.disable;
-        this.sharePowerInRoom = SessionPresetEnum.disable;
-        this.useIdInRoom = SessionPresetEnum.enable;
+        this.micStatusInRoom = SessionPresetEnum.off;
+        this.sharePowerInRoom = SessionPresetEnum.off;
+        this.useIdInRoom = SessionPresetEnum.on;
     }
 
     public SessionPreset(String micStatusInRoom, String sharePowerInRoom, String useIdInRoom, String subject) {
-        this.micStatusInRoom = SessionPresetEnum.disable;
-        this.sharePowerInRoom = SessionPresetEnum.disable;
-        this.useIdInRoom = SessionPresetEnum.enable;
+        this.micStatusInRoom = SessionPresetEnum.off;
+        this.sharePowerInRoom = SessionPresetEnum.off;
+        this.useIdInRoom = SessionPresetEnum.on;
         this.roomSubject = subject;
 
         if (!StringUtils.isEmpty(micStatusInRoom)) {

@@ -215,15 +215,15 @@ public class ProtocolElements {
 	public static final String SET_PRESET_INFO_METHOD = "setPresetInfo";
 	public static final String SET_PRESET_INFO_ID_PARAM = "roomId";
 	public static final String SET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
+	public static final String SET_PRESET_INFO_VIDEO_STATUS_PARAM = "videoStatusInRoom";
 	public static final String SET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
-	public static final String SET_PRESET_INFO_USE_ID_PARAM = "useIDInRoom";
 	public static final String SET_PRESET_INFO_SUBJECT_PARAM = "subject";
 
 	public static final String GET_PRESET_INFO_METHOD = "getPresetInfo";
 	public static final String GET_PRESET_INFO_ID_PARAM = "roomId";
 	public static final String GET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
+	public static final String GET_PRESET_INFO_VIDEO_STATUS_PARAM = "videoStatusInRoom";
 	public static final String GET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
-	public static final String GET_PRESET_INFO_USE_ID_PARAM = "useIDInRoom";
 	public static final String GET_PRESET_INFO_SUBJECT_PARAM = "subject";
 
 
