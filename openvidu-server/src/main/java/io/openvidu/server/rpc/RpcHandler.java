@@ -1335,7 +1335,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		if (!CollectionUtils.isEmpty(participants)) {
 			participants.forEach(p -> {
-				p.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(status));
+				long userId = gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
+				if (StringUtils.isEmpty(targetId) || Objects.equals(String.valueOf(userId), targetId)) {
+					p.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(status));
+				}
 				this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_SHARE_POWER_METHOD, params);
 			});
 		}
