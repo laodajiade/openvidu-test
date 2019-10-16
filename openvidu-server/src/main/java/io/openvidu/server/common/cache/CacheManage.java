@@ -9,4 +9,6 @@ import java.util.Map;
 public interface CacheManage {
 
     Map getUserInfoByUUID(String userId);
+
+    String getUserAuthorization(String userId);
 }

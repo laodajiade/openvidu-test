@@ -24,4 +24,10 @@ public class CacheManageImpl implements CacheManage {
         return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid);
     }
 
+    @Override
+    public String getUserAuthorization(String userId) {
+        return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId)
+                .get("privilege").toString();
+    }
+
 }

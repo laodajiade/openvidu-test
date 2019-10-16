@@ -21,14 +21,17 @@ import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenVidu;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.DeviceMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.manage.AuthorizationManage;
+import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.DeviceSearch;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -45,8 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
@@ -87,9 +88,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Resource
 	DeviceMapper deviceMapper;
 
-	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
+	@Autowired
+    AuthorizationManage authorizationManage;
 
-//	private ConcurrentHashMap<String, RpcConnection rpcConnection> users = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
 	@Override
 	public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
@@ -104,10 +106,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		log.info("WebSocket request session #{} - Request: {}", participantPrivateId, request);
 
-		RpcConnection rpcConnection;
+		RpcConnection rpcConnection = null;
 		if (ProtocolElements.ACCESS_IN_METHOD.equals(request.getMethod())) {
-//		if (ProtocolElements.JOINROOM_METHOD.equals(request.getMethod())) {  // modified at 2019-09-12
-			// Store new RpcConnection information if method 'joinRoom'
 			rpcConnection = notificationService.newRpcConnection(transaction, request);
 		} else if (notificationService.getRpcConnection(participantPrivateId) == null) {
 			// Throw exception if any method is called before 'joinRoom'
@@ -118,11 +118,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					"No connection found for participant with privateId " + participantPrivateId
 							+ ". Method 'Session.connect()' must be the first operation called in any session");
 		}
-		rpcConnection = notificationService.addTransaction(transaction, request);
 
+		// Authorization Check
+        if (authorizationManage.checkIfOperationPermitted(request.getMethod(), rpcConnection)) {
+            assert rpcConnection != null;
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
+		rpcConnection = notificationService.addTransaction(transaction, request);
 		String sessionId = rpcConnection.getSessionId();
 		if (sessionId == null && !ProtocolElements.FILTERS.contains(request.getMethod())) {
-//		if (sessionId == null && !ProtocolElements.JOINROOM_METHOD.equals(request.getMethod())) {	// modified at 2019-09-12
 			log.warn(
 					"No session information found for participant with privateId {} when trying to execute method '{}'. Method 'Session.connect()' must be the first operation called in any session",
 					participantPrivateId, request.getMethod());
@@ -546,7 +553,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 
 		String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
-//		String token = getStringParam(request, ProtocolElements.JOINROOM_TOKEN_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
 		String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
@@ -644,21 +650,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		if (openviduConfig.isOpenViduSecret(secret)) {
 			sessionManager.newInsecureParticipant(participantPrivatetId);
-//			token = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
 			if (recorder) {
 				generateRecorderParticipant = true;
 			}
 		}
 
-//		if (sessionManager.isTokenValidInSession(token, sessionId, participantPrivatetId)) {
-
-//			String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
-//        sessionManager.recordParticipantBySessionId(sessionId);
         if (sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
-
-//            Token tokenObj = sessionManager.consumeToken(sessionId, participantPrivatetId, token);
             Participant participant;
-
             if (generateRecorderParticipant) {
                 participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
             } else {
@@ -680,11 +678,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             throw new OpenViduException(Code.USER_METADATA_FORMAT_INVALID_ERROR_CODE,
                     "Unable to join room. The metadata received from the client-side has an invalid format");
         }
-		/*} else {
-			log.error("ERROR: sessionId or token not valid");
-			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
-					"Unable to join room. The user is not authorized");
-		}*/
+
 	}
 
 	private void leaveRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -703,7 +697,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-//		sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, true);
 		sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 		log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
 				rpcConnection.getSessionId());
@@ -713,7 +706,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
 		Participant participant;
 		try {
-//			participant = sanityCheckOfSession(rpcConnection, "publish");
 			participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
 		} catch (OpenViduException e) {
 			return;

@@ -226,6 +226,7 @@ public class ProtocolElements {
 	public static final String GET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
 	public static final String GET_PRESET_INFO_SUBJECT_PARAM = "subject";
 
+	public static final String EVICTED_PARTICIPANT_BY_USER_ID_METHOD = "evictedParticipantByUserId";
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
