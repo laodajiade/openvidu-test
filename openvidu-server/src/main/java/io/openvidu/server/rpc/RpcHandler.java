@@ -120,12 +120,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		// Authorization Check
-        if (authorizationManage.checkIfOperationPermitted(request.getMethod(), rpcConnection)) {
-            assert rpcConnection != null;
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PERMISSION_LIMITED);
-            return;
-        }
+//        if (authorizationManage.checkIfOperationPermitted(request.getMethod(), rpcConnection)) {
+//            assert rpcConnection != null;
+//            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+//            return;
+//        }
 
 		rpcConnection = notificationService.addTransaction(transaction, request);
 		String sessionId = rpcConnection.getSessionId();
@@ -585,14 +585,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		// check preset and set share power in room info. for example: sharePower.
-		if (Objects.equals(streamType, StreamType.SHARING.name())) {
-			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
-			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
-				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-						null, ErrorCodeEnum.PERMISSION_LIMITED);
-				return ;
-			}
-		}
+//		if (Objects.equals(streamType, StreamType.SHARING.name())) {
+//			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
+//			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
+//				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+//						null, ErrorCodeEnum.PERMISSION_LIMITED);
+//				return ;
+//			}
+//		}
 
 		InetAddress remoteAddress = null;
 		GeoLocation location = null;
