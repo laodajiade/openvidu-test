@@ -68,7 +68,7 @@ public class SessionPreset {
             this.sharePowerInRoom = SessionPresetEnum.valueOf(sharePowerInRoom);
         }
 
-        if (!StringUtils.isEmpty(sharePowerInRoom)) {
+        if (!StringUtils.isEmpty(subject)) {
             this.roomSubject = subject;
         }
 
