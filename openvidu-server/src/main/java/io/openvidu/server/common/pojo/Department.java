@@ -19,5 +19,4 @@ public class Department {
     private Date createTime;
 
     private Date updateTime;
-
 }

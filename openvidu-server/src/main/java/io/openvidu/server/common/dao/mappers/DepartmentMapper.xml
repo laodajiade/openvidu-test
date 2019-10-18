@@ -10,6 +10,13 @@
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <resultMap id="TreeResultMap" type="io.openvidu.server.common.pojo.DepartmentTree" >
+    <id column="id" property="orgId" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="dept_name" property="organizationName" jdbcType="VARCHAR" />
+  </resultMap>
+
   <sql id="Base_Column_List" >
     id, parent_id, dept_name, corp_id, project, create_time, update_time
   </sql>
@@ -19,6 +26,13 @@
     from sd_department
     where id = #{id,jdbcType=BIGINT}
   </select>
+
+  <select id="selectByCorpId" parameterType="java.lang.Long" resultMap="TreeResultMap">
+    select id, parent_id, dept_name
+    from sd_department
+    where corp_id = #{corpId,jdbcType=BIGINT}
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_department
     where id = #{id,jdbcType=BIGINT}

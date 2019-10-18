@@ -1,6 +1,9 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Department;
+import io.openvidu.server.common.pojo.DepartmentTree;
+
+import java.util.List;
 
 public interface DepartmentMapper {
 
@@ -15,4 +18,6 @@ public interface DepartmentMapper {
     int updateByPrimaryKeySelective(Department record);
 
     int updateByPrimaryKey(Department record);
+
+    List<DepartmentTree> selectByCorpId(Long corpId);
 }
