@@ -61,6 +61,8 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMFRAMERATE_PARAM = "frameRate";
 	public static final String JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
+    public static final String JOINROOM_PEERSHAREPOWER_PARAM = "sharePowerStatus";
+
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
 	public static final String PUBLISHVIDEO_STREAM_TYPE_PARAM = "streamType";
@@ -142,6 +144,13 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_METHOD = "createRoom";
 	public static final String CREATE_ROOM_ID_PARAM = "roomId";
 	public static final String CREATE_ROOM_PASSWORD_PARAM = "password";
+	public static final String CREATE_ROOM_MIC_STATUS_PARAM = "micStatusInRoom";
+	public static final String CREATE_ROOM_VIDEO_STATUS_PARAM = "videoStatusInRoom";
+	public static final String CREATE_ROOM_SHARE_POWER_PARAM = "sharePowerInRoom";
+	public static final String CREATE_ROOM_SUBJECT_PARAM = "subject";
+	public static final String CREATE_ROOM_ROOM_CAPACITY_PARAM = "roomCapacity";
+	public static final String CREATE_ROOM_DURATION_PARAM = "duration";
+
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
 	public static final String SHARE_ROOM_ID_PARAM = "roomId";
@@ -234,13 +243,6 @@ public class ProtocolElements {
 	public static final String TRANSFER_MODERATOR_SOURCE_ID_PARAM = "sourceId";
 	public static final String TRANSFER_MODERATOR_TARGET_ID_PARAM = "targetId";
 
-	public static final String SET_PRESET_INFO_METHOD = "setPresetInfo";
-	public static final String SET_PRESET_INFO_ID_PARAM = "roomId";
-	public static final String SET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
-	public static final String SET_PRESET_INFO_VIDEO_STATUS_PARAM = "videoStatusInRoom";
-	public static final String SET_PRESET_INFO_SHARE_POWER_PARAM = "sharePowerInRoom";
-	public static final String SET_PRESET_INFO_SUBJECT_PARAM = "subject";
-
 	public static final String GET_PRESET_INFO_METHOD = "getPresetInfo";
 	public static final String GET_PRESET_INFO_ID_PARAM = "roomId";
 	public static final String GET_PRESET_INFO_MIC_STATUS_PARAM = "micStatusInRoom";
@@ -258,6 +260,11 @@ public class ProtocolElements {
 	public static final String PARTICIPANTJOINED_USER_PARAM = "id";
 	public static final String PARTICIPANTJOINED_CREATEDAT_PARAM = "createdAt";
 	public static final String PARTICIPANTJOINED_METADATA_PARAM = "metadata";
+    public static final String PARTICIPANTJOINED_MIC_STATUS_PARAM = "micStatusInRoom";
+    public static final String PARTICIPANTJOINED_VIDEO_STATUS_PARAM = "videoStatusInRoom";
+    public static final String PARTICIPANTJOINED_SHARE_POWER_PARAM = "sharePowerInRoom";
+    public static final String PARTICIPANTJOINED_SUBJECT_PARAM = "subject";
+
 
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
 	public static final String PARTICIPANTLEFT_NAME_PARAM = "connectionId";

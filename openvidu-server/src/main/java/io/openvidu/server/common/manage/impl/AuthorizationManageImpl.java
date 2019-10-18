@@ -46,7 +46,6 @@ public class AuthorizationManageImpl implements AuthorizationManage {
         METHOD_AUTHORIZATION_MAP.put(SET_AUDIO_SPEAKER_STATUS_METHOD, AuthorizationEnum.CONFERENCE_CONTROL.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(SET_SHARE_POWER_METHOD, AuthorizationEnum.CONFERENCE_CONTROL.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(TRANSFER_MODERATOR_METHOD, AuthorizationEnum.CONFERENCE_CONTROL.getAuthorization());
-        METHOD_AUTHORIZATION_MAP.put(SET_PRESET_INFO_METHOD, AuthorizationEnum.CONFERENCE_CONTROL.getAuthorization());
 
         // participantOnly
         METHOD_AUTHORIZATION_MAP.put(JOINROOM_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());

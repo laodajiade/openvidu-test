@@ -73,7 +73,7 @@ public class SessionEventsHandler {
 	}
 
 	public void onParticipantJoined(Participant participant, String sessionId, Set<Participant> existingParticipants,
-			Integer transactionId, OpenViduException error) {
+			Integer transactionId, SessionPreset presetInfo, OpenViduException error) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
@@ -89,6 +89,8 @@ public class SessionEventsHandler {
 					existingParticipant.getParticipantPublicId());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 					existingParticipant.getCreatedAt());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHAREPOWER_PARAM,
+					existingParticipant.getSharePowerStatus().name());
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
@@ -162,6 +164,10 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, presetInfo.getMicStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, presetInfo.getVideoStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, presetInfo.getSharePowerInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, presetInfo.getRoomSubject());
 		result.add("value", resultArray);
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);

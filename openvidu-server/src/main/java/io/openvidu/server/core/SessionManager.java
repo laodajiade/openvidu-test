@@ -613,11 +613,8 @@ public abstract class SessionManager {
     }
 
     public SessionPreset getPresetInfo(String sessionId) {
-	    SessionPreset preset = sessionidPreset.get(sessionId);
-
-	    if (Objects.isNull(preset)) {
-	        preset = new SessionPreset();
-	        sessionidPreset.put(sessionId, preset);
+	    if (Objects.isNull(sessionidPreset.get(sessionId))) {
+	        sessionidPreset.put(sessionId, new SessionPreset());
         }
 
         return sessionidPreset.get(sessionId);
