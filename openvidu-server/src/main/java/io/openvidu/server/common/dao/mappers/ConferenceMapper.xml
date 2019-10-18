@@ -28,7 +28,7 @@
           room_id = #{roomId,jdbcType=VARCHAR}
       </if>
       <if test="status != null">
-          and status = #{status,jdbcType=VARCHAR}
+          and status = #{status,jdbcType=TINYINT}
       </if>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >

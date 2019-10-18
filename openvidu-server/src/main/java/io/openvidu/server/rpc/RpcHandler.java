@@ -235,9 +235,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.INVITE_PARTICIPANT_METHOD:
 				inviteParticipant(rpcConnection, request);
 				break;
-			case ProtocolElements.SET_PRESET_INFO_METHOD:
-				setPresetInfo(rpcConnection, request);
-				break;
 			case ProtocolElements.GET_PRESET_INFO_METHOD:
 				getPresetInfo(rpcConnection, request);
 				break;
@@ -329,6 +326,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
         search.setStatus(1);
 		if (conferenceMapper.selectBySearchCondition(search) != null) {
+			log.warn("conference:{} already exist.", sessionId);
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
 			return ;
@@ -345,10 +343,23 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             conference.setStartTime(new Date());
             int insertResult = conferenceMapper.insert(conference);
 
+            // setPresetInfo.
+			String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
+			String micStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MIC_STATUS_PARAM);
+			String videoStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_VIDEO_STATUS_PARAM);
+			String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
+			Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
+			Integer roomDuration = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
+
+			SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
+					roomSubject, roomCapacity, roomDuration);
+			sessionManager.setPresetInfo(sessionId, preset);
+
             // store this inactive session
             sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
 			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
 		} else {
+			log.warn("conference:{} already exist.", sessionId);
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
 		}
@@ -1249,14 +1260,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return Arrays.asList("*");
 	}
 
-	public static String getStringOptionalParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			return null;
-		}
-
-		return request.getParams().get(key).getAsString();
-	}
-
 	public static List<String> getStringListParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
 			return null;
@@ -1275,11 +1278,27 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return request.getParams().get(key).getAsString();
 	}
 
+	public static String getStringOptionalParam(Request<JsonObject> request, String key) {
+		if (request.getParams() == null || request.getParams().get(key) == null) {
+			return null;
+		}
+
+		return request.getParams().get(key).getAsString();
+	}
+
 	public static int getIntParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
 			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
 					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
 		}
+		return request.getParams().get(key).getAsInt();
+	}
+
+	public static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
+		if (request.getParams() == null || request.getParams().get(key) == null) {
+			return null;
+		}
+
 		return request.getParams().get(key).getAsInt();
 	}
 
@@ -1438,18 +1457,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
-	private void setPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
-		String sessionId = getStringParam(request, ProtocolElements.SET_PRESET_INFO_ID_PARAM);
-		String micStatus = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_MIC_STATUS_PARAM);
-		String sharePower = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_SHARE_POWER_PARAM);
-		String useId = getStringOptionalParam(request, ProtocolElements.SET_PRESET_INFO_VIDEO_STATUS_PARAM);
-		String roomSubject = getStringParam(request, ProtocolElements.SET_PRESET_INFO_SUBJECT_PARAM);
-
-		SessionPreset preset = new SessionPreset(micStatus, sharePower, useId, roomSubject);
-		sessionManager.setPresetInfo(sessionId, preset);
-		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
-
 	private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.GET_PRESET_INFO_ID_PARAM);
 		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
@@ -1457,7 +1464,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		params.addProperty(ProtocolElements.GET_PRESET_INFO_MIC_STATUS_PARAM, preset.getMicStatusInRoom().name());
 		params.addProperty(ProtocolElements.GET_PRESET_INFO_SHARE_POWER_PARAM, preset.getSharePowerInRoom().name());
-		params.addProperty(ProtocolElements.GET_PRESET_INFO_VIDEO_STATUS_PARAM, preset.getUseIdInRoom().name());
+		params.addProperty(ProtocolElements.GET_PRESET_INFO_VIDEO_STATUS_PARAM, preset.getVideoStatusInRoom().name());
 		params.addProperty(ProtocolElements.GET_PRESET_INFO_SUBJECT_PARAM, preset.getRoomSubject());
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
