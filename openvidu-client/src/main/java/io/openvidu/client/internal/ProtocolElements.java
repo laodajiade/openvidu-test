@@ -134,14 +134,14 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";
+	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
+	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
 
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
 	public static final String CREATE_ROOM_METHOD = "createRoom";
 	public static final String CREATE_ROOM_ID_PARAM = "roomId";
 	public static final String CREATE_ROOM_PASSWORD_PARAM = "password";
-
-    public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD);
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
 	public static final String SHARE_ROOM_ID_PARAM = "roomId";
@@ -175,6 +175,11 @@ public class ProtocolElements {
 	public static final String PUT_DOWN_HAND_SOURCE_ID_PARAM = "sourceId";
 	public static final String PUT_DOWN_HAND_TARGET_ID_PARAM = "targetId";
 
+	public static final String SET_ROLL_CALL_METHOD = "setRollCall";
+	public static final String SET_ROLL_CALL_ROOM_ID_PARAM = "roomId";
+	public static final String SET_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_ROLL_CALL_TARGET_ID_PARAM = "targetId";
+
 	public static final String LOCK_SESSION_METHOD = "lockSession";
 	public static final String LOCK_SESSION_ROOM_ID_PARAM = "roomId";
 	public static final String LOCK_SESSION_SOURCE_ID_PARAM = "sourceId";
@@ -186,14 +191,31 @@ public class ProtocolElements {
 	public static final String CLOSE_ROOM_METHOD = "closeRoom";
 	public static final String CLOSE_ROOM_ID_PARAM = "roomId";
 
-	public static final String GET_ROOM_INFO_METHOD = "getRoomInfo";
-	public static final String GET_ROOM_INFO_ID_PARAM = "roomId";
-	public static final String GET_ROOM_INFO_SUBJECT = "subject";
-
 	public static final String INVITE_PARTICIPANT_METHOD = "inviteParticipant";
 	public static final String INVITE_PARTICIPANT_ID_PARAM = "roomId";
 	public static final String INVITE_PARTICIPANT_SOURCE_ID_PARAM = "sourceId";
 	public static final String INVITE_PARTICIPANT_TARGET_ID_PARAM = "targetId";
+
+	public static final String GET_ORG_METHOD = "getOrgList";
+	public static final String GET_ORG_NAME_PARAM = "organizationName";
+	public static final String GET_ORG_ID_PARAM = "orgId";
+	public static final String GET_ORG_LIST_PARAM = "organizationList";
+
+	public static final String GET_USER_DEVICE_METHOD = "getUserDeviceList";
+	public static final String GET_USER_DEVICE_ORGID_PARAM = "orgId";
+	public static final String GET_USER_DEVICE_LIST_PARAM = "list";
+	public static final String GET_USER_DEVICE_DEVICE_NAME_PARAM = "deviceName";
+	public static final String GET_USER_DEVICE_STATUS_PARAM = "status";
+	public static final String GET_USER_DEVICE_USER_NAME_PARAM = "username";
+
+	public static final String GET_DEVICE_INFO_METHOD = "getDeviceInfo";
+	public static final String GET_DEVICE_ID_PARAM = "deviceId";
+	public static final String GET_DEVICE_NANE_PARAM = "deviceName";
+
+	public static final String UPDATE_DEVICE_INFO_METHOD = "updateDeviceInfo";
+	public static final String UPDATE_DEVICE_ID_PARAM = "deviceId";
+	public static final String UPDATE_DEVICE_NANE_PARAM = "deviceName";
+
 
 	public static final String SET_AUDIO_SPEAKER_STATUS_METHOD = "setAudioSpeakerStatus";
 	public static final String SET_AUDIO_SPEAKER_ID_PARAM = "roomId";
@@ -227,6 +249,8 @@ public class ProtocolElements {
 	public static final String GET_PRESET_INFO_SUBJECT_PARAM = "subject";
 
 	public static final String EVICTED_PARTICIPANT_BY_USER_ID_METHOD = "evictedParticipantByUserId";
+
+	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 

@@ -19,6 +19,19 @@
     from sd_device_dept
     where id = #{id,jdbcType=BIGINT}
   </select>
+  <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.DeviceDeptSearch" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_device_dept
+    where
+    <if test="serialNumber != null" >
+      serial_number = #{serialNumber,jdbcType=VARCHAR}
+    </if>
+    <if test="deptId != null" >
+      dept_id = #{deptId,jdbcType=BIGINT}
+    </if>
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_device_dept
     where id = #{id,jdbcType=BIGINT}
