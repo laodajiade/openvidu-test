@@ -21,10 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.ParticipantMicStatus;
-import io.openvidu.server.common.enums.ParticipantSharePowerStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.utils.GeoLocation;
 
 public class Participant {
@@ -48,6 +45,8 @@ public class Participant {
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
 	protected ParticipantSharePowerStatus sharePowerStatus;
+	protected ParticipantVideoStatus videoStatus;
+	protected String roomSubject;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -72,8 +71,9 @@ public class Participant {
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
-		this.micStatus = ParticipantMicStatus.on;
+		this.micStatus = ParticipantMicStatus.off;
 		this.sharePowerStatus = ParticipantSharePowerStatus.off;
+		this.videoStatus = ParticipantVideoStatus.on;
 	}
 
 	public String getFinalUserId() {
@@ -151,13 +151,19 @@ public class Participant {
 
 	public ParticipantMicStatus getMicStatus() { return micStatus; }
 
-	public void setMicStatus(ParticipantMicStatus micStatus) {
-		this.micStatus = micStatus;
-	}
+	public void setMicStatus(ParticipantMicStatus micStatus) { this.micStatus = micStatus; }
+
+	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }
+
+	public void setVideoStatus(ParticipantVideoStatus status) { this.videoStatus = status; }
 
 	public ParticipantSharePowerStatus getSharePowerStatus() { return sharePowerStatus; }
 
-	public void setSharePowerStatus(ParticipantSharePowerStatus status) { this.sharePowerStatus = sharePowerStatus; }
+	public void setSharePowerStatus(ParticipantSharePowerStatus status) { this.sharePowerStatus = status; }
+
+	public String getRoomSubject() { return this.roomSubject; }
+
+	public void setRoomSubject(String subject) { this.roomSubject = subject; }
 
 	public GeoLocation getLocation() {
 		return this.location;

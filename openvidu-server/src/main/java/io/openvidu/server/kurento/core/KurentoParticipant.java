@@ -78,6 +78,12 @@ public class KurentoParticipant extends Participant {
 		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt());
+		setMicStatus(participant.getMicStatus());
+		setVideoStatus(participant.getVideoStatus());
+		setSharePowerStatus(participant.getSharePowerStatus());
+		setHandStatus(participant.getHandStatus());
+		setRoomSubject(participant.getRoomSubject());
+
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;

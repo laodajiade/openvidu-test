@@ -9,6 +9,7 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCodeEnum {
+    SUCCESS(0, "success"),
     REQUEST_PARAMS_ERROR(10006, "request param error"),
 
     SERVER_UNKNOWN_ERROR(11000, "server unknown error"),

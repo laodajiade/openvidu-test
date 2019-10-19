@@ -17,13 +17,14 @@
 
 package io.openvidu.server.kurento.core;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
+import io.openvidu.server.common.enums.ParticipantMicStatus;
+import io.openvidu.server.common.enums.ParticipantSharePowerStatus;
+import io.openvidu.server.common.enums.ParticipantVideoStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
@@ -47,11 +48,6 @@ import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.RecordingMode;
 import io.openvidu.java.client.RecordingProperties;
 import io.openvidu.java.client.SessionProperties;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.MediaOptions;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
@@ -116,16 +112,31 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			existingParticipants = getParticipants(sessionId);
+			// 第一个入会者是主持人，所有权限都打开
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				SessionPreset preset = getPresetInfo(sessionId);
+				if (existingParticipants.isEmpty()) {
+					participant.setMicStatus(ParticipantMicStatus.on);
+					participant.setVideoStatus(ParticipantVideoStatus.on);
+					participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
+				} else {
+					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
+					participant.setMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
+					participant.setVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
+				}
+				participant.setRoomSubject(preset.getRoomSubject());
+			}
+
 			kSession.join(participant);
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
 			sessionEventsHandler.onParticipantJoined(participant, sessionId, null,
-					transactionId, getPresetInfo(sessionId), e);
+					transactionId, e);
 		}
 		if (existingParticipants != null) {
 			sessionEventsHandler.onParticipantJoined(participant, sessionId, existingParticipants,
-					transactionId, getPresetInfo(sessionId), null);
+					transactionId, null);
 		}
 	}
 

@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
@@ -273,35 +274,44 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
 		String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
+		ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
-	    // verify parameters
-	    if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(token) ||
-				(StringUtils.isEmpty(deviceSerialNumber) && StringUtils.isEmpty(deviceMac))) {
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-			return;
-		}
-		Map userInfo = cacheManage.getUserInfoByUUID(userId);
-	    if (Objects.isNull(userInfo) || !Objects.equals(token, userInfo.get("token"))) {
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.TOKEN_INVALID);
-			return;
-		}
-
-		rpcConnection.setUserId(String.valueOf(userInfo.get("userId")));
-		if (!StringUtils.isEmpty(deviceSerialNumber)) {
-			DeviceSearch search = new DeviceSearch();
-			search.setSerialNumber(deviceSerialNumber);
-			if (Objects.isNull(deviceMapper.selectBySearchCondition(search))) {
-				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-						null, ErrorCodeEnum.DEVICE_NOT_FOUND);
-				return;
+		do {
+			// verify parameters
+			if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(token) ||
+					(StringUtils.isEmpty(deviceSerialNumber) && StringUtils.isEmpty(deviceMac))) {
+				errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
+				break;
 			}
 
-			rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
-		}
+			Map userInfo = cacheManage.getUserInfoByUUID(userId);
+			if (Objects.isNull(userInfo) || !Objects.equals(token, userInfo.get("token"))) {
+				log.warn("local token:{} userInfo:{}", token, userInfo);
+				errCode = ErrorCodeEnum.TOKEN_INVALID;
+				break;
+			}
 
-        // TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
+			rpcConnection.setUserId(String.valueOf(userInfo.get("userId")));
+			// TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
+
+			if (!StringUtils.isEmpty(deviceSerialNumber)) {
+				DeviceSearch search = new DeviceSearch();
+				search.setSerialNumber(deviceSerialNumber);
+				if (Objects.isNull(deviceMapper.selectBySearchCondition(search))) {
+					errCode = ErrorCodeEnum.DEVICE_NOT_FOUND;
+					break;
+				}
+
+				rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
+			}
+		} while (false);
+
+		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
+			log.warn("accessIn failed. errCode:{}", errCode.name());
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
+			sessionManager.accessOut(rpcConnection);
+			return;
+		}
 
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
@@ -407,6 +417,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		Map<String, String> onlineUserList = new HashMap<>();
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			onlineUserList.put(c.getUserId(), c.getSerialNumber());
+			log.info("online userId:{} serialNumber:{}", c.getUserId(), c.getSerialNumber());
 		}
 
 		sessionManager.getParticipants(sessionId).forEach(s -> userIds.add(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()));
@@ -423,27 +434,36 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
 				Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
-				// device and dept info.
-				DeviceSearch deviceSearch = new DeviceSearch();
-				deviceSearch.setSerialNumber(onlineUserList.get(String.valueOf(user.getId())));
-				Device device = deviceMapper.selectBySearchCondition(deviceSearch);
-				DeviceDeptSearch ddSearch = new DeviceDeptSearch();
-				ddSearch.setSerialNumber(onlineUserList.get(String.valueOf(user.getId())));
-				List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
-				Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
-
 				JsonObject userObj = new JsonObject();
 				userObj.addProperty("userId", user.getId());
 				userObj.addProperty("account", user.getUsername());
 				userObj.addProperty("userOrgName", userDep.getDeptName());
-				userObj.addProperty("deviceName", device.getDeviceName());
-				userObj.addProperty("deviceOrgName", devDep.getDeptName());
 				userObj.addProperty("role", part.getRole().name());
 				userObj.addProperty("sharePowerStatus", part.getSharePowerStatus().name());
 				userObj.addProperty("handStatus", part.getHandStatus().name());
 				// 获取发布者时存在同步阻塞的状态
                 userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
                 userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
+
+                // get device info if have device.
+				String serialNumber = onlineUserList.get(String.valueOf(user.getId()));
+				if (!StringUtils.isEmpty(serialNumber)) {
+					log.info("select userId:{} online key(userId):{} serialNumber:{}", user.getId(),
+							onlineUserList.get(String.valueOf(user.getId())), serialNumber);
+
+					// device and dept info.
+					DeviceSearch deviceSearch = new DeviceSearch();
+					deviceSearch.setSerialNumber(serialNumber);
+					Device device = deviceMapper.selectBySearchCondition(deviceSearch);
+					DeviceDeptSearch ddSearch = new DeviceDeptSearch();
+					ddSearch.setSerialNumber(serialNumber);
+					List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
+					Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
+
+					userObj.addProperty("deviceName", device.getDeviceName());
+					userObj.addProperty("deviceOrgName", devDep.getDeptName());
+				}
+
 				jsonArray.add(userObj);
 			});
 		}
@@ -839,17 +859,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
             rpcConnection.setSessionId(sessionId);
             sessionManager.joinRoom(participant, sessionId, conference, request.getId());
-
-            if (Objects.equals(streamType, StreamType.MAJOR)) {
-				SessionPreset preset = sessionManager.getPresetInfo(sessionId);
-				if (sessionManager.getParticipants(sessionId).size() == 1) {
-					sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(
-							ParticipantSharePowerStatus.on);
-				} else {
-					sessionManager.getParticipant(rpcConnection.getParticipantPrivateId()).setSharePowerStatus(
-							ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
-				}
-			}
         } else {
             log.error("ERROR: Metadata format set in client-side is incorrect");
             throw new OpenViduException(Code.USER_METADATA_FORMAT_INVALID_ERROR_CODE,
@@ -1600,13 +1609,19 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		search.setUserId(Long.valueOf(rpcConnection.getUserId()));
 		UserDept userDept = userDeptMapper.selectBySearchCondition(search);
 		Long orgId = userDept.getDeptId();
-
 		Department dep = depMapper.selectByPrimaryKey(orgId);
 
 		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.GET_ORG_ID_PARAM, orgId);
-		params.addProperty(ProtocolElements.GET_ORG_NAME_PARAM, dep.getDeptName());
-		params.add(ProtocolElements.GET_ORG_LIST_PARAM, new JsonArray());
+		params.addProperty(ProtocolElements.GET_ORG_ID_PARAM, 0);
+		params.addProperty(ProtocolElements.GET_ORG_NAME_PARAM, "速递科技");
+
+		JsonArray orgList = new JsonArray();
+		JsonObject org = new JsonObject();
+		org.addProperty(ProtocolElements.GET_ORG_ID_PARAM, orgId);
+		org.addProperty(ProtocolElements.GET_ORG_NAME_PARAM, dep.getDeptName());
+		orgList.add(org);
+
+		params.add(ProtocolElements.GET_ORG_LIST_PARAM, orgList);
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
 
