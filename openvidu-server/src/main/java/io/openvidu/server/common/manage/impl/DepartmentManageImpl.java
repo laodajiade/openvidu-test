@@ -43,4 +43,5 @@ public class DepartmentManageImpl implements DepartmentManage {
                 deptList.stream().filter(s -> s.getOrgId().compareTo(orgId) != 0).collect(Collectors.toList()))
                 .getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
     }
+
 }
