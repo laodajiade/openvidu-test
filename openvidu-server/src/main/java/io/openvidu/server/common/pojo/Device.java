@@ -14,6 +14,8 @@ public class Device {
 
     private String deviceName;
 
+    private String deviceMac;
+
     private String deviceType;
 
     private String deviceModel;

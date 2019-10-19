@@ -20,6 +20,8 @@ public class User {
 
     private String project;
 
+    private String title;
+
     private Date createTime;
 
     private Date updateTime;
