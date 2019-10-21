@@ -26,6 +26,7 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AuthorizationManage;
+import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
@@ -94,6 +95,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Autowired
     AuthorizationManage authorizationManage;
+
+	@Autowired
+	DepartmentManage departmentManage;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -1502,23 +1506,26 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void getOrgList(RpcConnection rpcConnection, Request<JsonObject> request) {
-		UserDeptSearch search = new UserDeptSearch();
-		search.setUserId(Long.valueOf(rpcConnection.getUserId()));
-		UserDept userDept = userDeptMapper.selectBySearchCondition(search);
-		Long orgId = userDept.getDeptId();
-		Department dep = depMapper.selectByPrimaryKey(orgId);
+		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserId());
+		Long userDeptId = Long.valueOf(String.valueOf(userInfo.get("deptId")));
 
+		// TODO eliminate unnecessary corp info according to the protocol
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.GET_ORG_ID_PARAM, 0);
 		params.addProperty(ProtocolElements.GET_ORG_NAME_PARAM, "速递科技");
 
 		JsonArray orgList = new JsonArray();
-		JsonObject org = new JsonObject();
-		org.addProperty(ProtocolElements.GET_ORG_ID_PARAM, orgId);
-		org.addProperty(ProtocolElements.GET_ORG_NAME_PARAM, dep.getDeptName());
-		orgList.add(org);
-
+		List<Department> departments = departmentManage.getSubFirstLevelDepts(userDeptId);
+		if (!CollectionUtils.isEmpty(departments)) {
+			departments.forEach(dept -> {
+				JsonObject org = new JsonObject();
+				org.addProperty(ProtocolElements.GET_ORG_ID_PARAM, dept.getId());
+				org.addProperty(ProtocolElements.GET_ORG_NAME_PARAM, dept.getDeptName());
+				orgList.add(org);
+			});
+		}
 		params.add(ProtocolElements.GET_ORG_LIST_PARAM, orgList);
+
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
 

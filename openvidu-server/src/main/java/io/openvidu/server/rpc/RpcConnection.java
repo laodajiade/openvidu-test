@@ -41,7 +41,7 @@ public class RpcConnection {
 	private ConcurrentMap<Integer, Transaction> transactions;
 	private String sessionId;
 	private String participantPrivateId;
-	private String userId;
+	private String userId;	// the uuid of user
 	private String serialNumber;
 
 	public RpcConnection(Session session) {
