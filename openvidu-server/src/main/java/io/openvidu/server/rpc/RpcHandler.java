@@ -319,6 +319,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			sessionManager.accessOut(rpcConnection);
 			return;
 		}
+		// update user online status in cache
+        cacheManage.updateUserOnlineStatus(userId, UserOnlineStatusEnum.online);
 
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
@@ -326,6 +328,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 		sessionManager.accessOut(rpcConnection);
+        // update user online status in cache
+        cacheManage.updateUserOnlineStatus(rpcConnection.getUserId(), UserOnlineStatusEnum.online);
     }
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {

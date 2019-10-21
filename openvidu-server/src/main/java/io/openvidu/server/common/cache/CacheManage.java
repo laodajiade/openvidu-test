@@ -1,5 +1,7 @@
 package io.openvidu.server.common.cache;
 
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+
 import java.util.Map;
 
 /**
@@ -11,4 +13,6 @@ public interface CacheManage {
     Map getUserInfoByUUID(String userId);
 
     String getUserAuthorization(String userId);
+
+    void updateUserOnlineStatus(String userId, UserOnlineStatusEnum onlineStatusEnum);
 }
