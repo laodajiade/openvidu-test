@@ -34,6 +34,7 @@ import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.utils.GeoLocation;
 import io.openvidu.server.utils.GeoLocationByIp;
+import io.openvidu.server.utils.StringUtil;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -333,12 +334,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     }
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
-		String sessionId = getStringParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
-		if (StringUtils.isEmpty(sessionId)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-            return;
-        }
+		String sessionId = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_ID_PARAM)) ?
+				request.getParams().get(ProtocolElements.CREATE_ROOM_ID_PARAM).getAsString() : StringUtil.createSessionId();
 		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM)) ?
                 request.getParams().get(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM).getAsString() : null;
 		// verify room id ever exists
