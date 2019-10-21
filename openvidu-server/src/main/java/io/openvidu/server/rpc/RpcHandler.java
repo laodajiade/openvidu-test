@@ -27,6 +27,7 @@ import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.common.manage.DepartmentManage;
+import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
@@ -98,6 +99,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Autowired
 	DepartmentManage departmentManage;
+
+	@Autowired
+    DeviceManage deviceManage;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -1531,13 +1535,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void getUserDeviceList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Long orgId = getLongParam(request, ProtocolElements.GET_USER_DEVICE_ORGID_PARAM);
-
-		// TODO. get user object by userId, and get user orgId. if orgId larger than user orgId, will return user orgId.
-		// TODO. get device list lower the orgId
-		DeviceDeptSearch search = new DeviceDeptSearch();
-		search.setDeptId(orgId);
-		List<DeviceDept> deviceDept = deviceDeptMapper.selectBySearchCondition(search);
-
 		Map<String, String> onlineDeviceList = new HashMap<>();
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
@@ -1545,28 +1542,19 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		JsonObject params = new JsonObject();
 		JsonArray devList = new JsonArray();
-		for (DeviceDept dev : deviceDept) {
-			JsonObject devParams = new JsonObject();
-			DeviceSearch deviceSearch = new DeviceSearch();
-			deviceSearch.setSerialNumber(dev.getSerialNumber());
-			Device device = deviceMapper.selectBySearchCondition(deviceSearch);
-
-			if (onlineDeviceList.containsKey(dev.getSerialNumber())) {
-				User user = userMapper.selectByPrimaryKey(Long.valueOf(onlineDeviceList.get(dev.getSerialNumber())));
-
-//                devParams.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_SERIAL_NUMBER_PARAM, dev.getSerialNumber());
-				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
-				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.online.name());
-				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_USER_NAME_PARAM, user.getUsername());
-				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, user.getId());
-			} else {
-				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
-				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.offline.name());
-			}
-			devList.add(devParams);
-		}
-
+        List<Device> deviceList = deviceManage.getSubDeviceByDeptId(orgId);
+        if (!CollectionUtils.isEmpty(deviceList)) {
+            deviceList.forEach(device -> {
+                JsonObject devObj = new JsonObject();
+                devObj.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
+                devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM,
+                        onlineDeviceList.containsKey(device.getSerialNumber()) ? DeviceStatus.online.name() : DeviceStatus.offline.name());
+                devObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, Long.valueOf(onlineDeviceList.get(device.getSerialNumber())));
+                devList.add(devObj);
+            });
+        }
 		params.add(ProtocolElements.GET_USER_DEVICE_LIST_PARAM, devList);
+
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
 
