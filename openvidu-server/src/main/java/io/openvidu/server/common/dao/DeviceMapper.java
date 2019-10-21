@@ -3,6 +3,8 @@ package io.openvidu.server.common.dao;
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
 
+import java.util.List;
+
 public interface DeviceMapper {
 
     int deleteByPrimaryKey(Long id);
@@ -18,4 +20,8 @@ public interface DeviceMapper {
     int updateByPrimaryKey(Device record);
 
     Device selectBySearchCondition(DeviceSearch search);
+
+    List<String> selectDevSerialNumsByDeptIds(List<Long> subDeptIds);
+
+    List<Device> getDevicesBySerialNumsList(List<String> deviceSerialNumbers);
 }

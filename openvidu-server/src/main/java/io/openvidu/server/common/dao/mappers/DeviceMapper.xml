@@ -33,6 +33,25 @@
     from sd_device
     where serial_number = #{serialNumber,jdbcType=BIGINT}
   </select>
+
+  <select id="selectDevSerialNumsByDeptIds" parameterType="java.util.List" resultType="java.lang.String">
+    select serial_number
+    from sd_device_dept
+    where dept_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+  <select id="getDevicesBySerialNumsList" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_device
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
+    </foreach>
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_device
     where id = #{id,jdbcType=BIGINT}
