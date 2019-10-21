@@ -1547,9 +1547,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			if (onlineDeviceList.containsKey(dev.getSerialNumber())) {
 				User user = userMapper.selectByPrimaryKey(Long.valueOf(onlineDeviceList.get(dev.getSerialNumber())));
 
+//                devParams.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_SERIAL_NUMBER_PARAM, dev.getSerialNumber());
 				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
 				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.online.name());
 				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_USER_NAME_PARAM, user.getUsername());
+				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, user.getId());
 			} else {
 				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
 				devParams.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.offline.name());

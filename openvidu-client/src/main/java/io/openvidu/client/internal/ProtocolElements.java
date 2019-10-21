@@ -213,9 +213,11 @@ public class ProtocolElements {
 	public static final String GET_USER_DEVICE_METHOD = "getUserDeviceList";
 	public static final String GET_USER_DEVICE_ORGID_PARAM = "orgId";
 	public static final String GET_USER_DEVICE_LIST_PARAM = "list";
+	public static final String GET_USER_DEVICE_DEVICE_SERIAL_NUMBER_PARAM = "deviceSerialNumber";
 	public static final String GET_USER_DEVICE_DEVICE_NAME_PARAM = "deviceName";
 	public static final String GET_USER_DEVICE_STATUS_PARAM = "status";
 	public static final String GET_USER_DEVICE_USER_NAME_PARAM = "username";
+	public static final String GET_USER_DEVICE_USER_ID_PARAM = "userId";
 
 	public static final String GET_DEVICE_INFO_METHOD = "getDeviceInfo";
 	public static final String GET_DEVICE_ID_PARAM = "deviceId";
