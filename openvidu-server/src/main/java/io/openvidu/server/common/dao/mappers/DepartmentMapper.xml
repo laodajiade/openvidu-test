@@ -33,6 +33,12 @@
     where corp_id = #{corpId,jdbcType=BIGINT}
   </select>
 
+  <select id="getSubFirstLevelDepts" parameterType="java.lang.Long" resultMap="BaseResultMap">
+      select id, parent_id, dept_name
+      from  sd_department
+      where parent_id = #{parentId,jdbcType=BIGINT}
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_department
     where id = #{id,jdbcType=BIGINT}

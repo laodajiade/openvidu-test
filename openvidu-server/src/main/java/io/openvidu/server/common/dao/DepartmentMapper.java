@@ -20,4 +20,6 @@ public interface DepartmentMapper {
     int updateByPrimaryKey(Department record);
 
     List<DepartmentTree> selectByCorpId(Long corpId);
+
+    List<Department> getSubFirstLevelDepts(Long parentId);
 }

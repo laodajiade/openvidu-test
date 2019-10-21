@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +43,21 @@ public class DepartmentManageImpl implements DepartmentManage {
         return !CollectionUtils.isEmpty(deptList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
                 deptList.stream().filter(s -> s.getOrgId().compareTo(orgId) != 0).collect(Collectors.toList()))
                 .getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
+    }
+
+    @Override
+    public List<Department> getSubFirstLevelDepts(Long deptId) {
+        List<Department> departments = new ArrayList<>();
+        Department userCurrentDept = departmentMapper.selectByPrimaryKey(deptId);
+        if (Objects.isNull(userCurrentDept))
+            return departments;
+        departments.add(userCurrentDept);
+
+        List<Department> subFirstLevelDepts = departmentMapper.getSubFirstLevelDepts(deptId);
+        if (!CollectionUtils.isEmpty(subFirstLevelDepts))
+            departments.addAll(subFirstLevelDepts);
+
+        return departments;
     }
 
 }
