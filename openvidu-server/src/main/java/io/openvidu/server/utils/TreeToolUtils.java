@@ -15,6 +15,7 @@ import java.util.Map;
 public class TreeToolUtils {
     private List<DepartmentTree> rootList;
     private List<DepartmentTree> bodyList;
+    private List<Long> subDeptIds = Lists.newArrayList();
 
     public TreeToolUtils(List<DepartmentTree> rootList, List<DepartmentTree> bodyList) {
         this.rootList = rootList;
@@ -40,8 +41,14 @@ public class TreeToolUtils {
                     map.put(c.getOrgId(), c.getParentId());
                     getChild(c, map);
                     childList.add(c);
+
+                    subDeptIds.add(c.getOrgId());
                 });
         beanTree.setOrganizationList(childList);
+    }
+
+    public List<Long> getSubDeptIds() {
+        return subDeptIds;
     }
 
 }
