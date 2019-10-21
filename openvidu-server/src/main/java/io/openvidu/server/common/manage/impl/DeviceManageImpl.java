@@ -6,12 +6,15 @@ import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.DepartmentTree;
 import io.openvidu.server.common.pojo.Device;
+import io.openvidu.server.utils.TreeToolUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author chosongi
@@ -32,10 +35,15 @@ public class DeviceManageImpl implements DeviceManage {
         if (rootDept == null) return null;
 
         List<Long> subDeptIds = new ArrayList<>();
-        subDeptIds.add(rootDept.getId());
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
-        if (!CollectionUtils.isEmpty(deptList))
-            deptList.forEach(dept -> subDeptIds.add(dept.getOrgId()));
+        if (!CollectionUtils.isEmpty(deptList)) {
+            TreeToolUtils treeToolUtils = new TreeToolUtils(
+                    Collections.singletonList(DepartmentTree.builder().orgId(deptId).organizationName(rootDept.getDeptName()).build()),
+                    deptList.stream().filter(s -> s.getOrgId().compareTo(deptId) != 0).collect(Collectors.toList()));
+            treeToolUtils.getTree();
+            subDeptIds = treeToolUtils.getSubDeptIds();
+        }
+        subDeptIds.add(deptId);
 
         List<String> deviceSerialNumbers = deviceMapper.selectDevSerialNumsByDeptIds(subDeptIds);
         return !CollectionUtils.isEmpty(deviceSerialNumbers) ?
