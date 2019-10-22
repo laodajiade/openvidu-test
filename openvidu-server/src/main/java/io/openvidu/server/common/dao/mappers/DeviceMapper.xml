@@ -47,6 +47,7 @@
     select
     <include refid="Base_Column_List"/>
     from sd_device
+    where serial_number in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=VARCHAR}
     </foreach>

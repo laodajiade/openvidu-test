@@ -1,6 +1,5 @@
 package io.openvidu.server.common.pojo;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +8,6 @@ import java.util.List;
 
 @Data
 @Builder
-@AllArgsConstructor
 public class DepartmentTree implements Serializable  {
     private Long orgId;
     private Long parentId;
