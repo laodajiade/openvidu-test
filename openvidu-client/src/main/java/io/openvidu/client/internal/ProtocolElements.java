@@ -171,13 +171,13 @@ public class ProtocolElements {
 	public static final String SET_AUDIO_STATUS_METHOD = "setAudioStatus";
 	public static final String SET_AUDIO_ROOM_ID_PARAM = "roomId";
 	public static final String SET_AUDIO_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_AUDIO_TARGET_ID_PARAM = "targetId";
+	public static final String SET_AUDIO_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_AUDIO_STATUS_PARAM = "status";
 
 	public static final String SET_VIDEO_STATUS_METHOD = "setVideoStatus";
 	public static final String SET_VIDEO_ROOM_ID_PARAM = "roomId";
 	public static final String SET_VIDEO_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_VIDEO_TARGET_ID_PARAM = "targetId";
+	public static final String SET_VIDEO_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_VIDEO_STATUS_PARAM = "status";
 
 	public static final String RAISE_HAND_METHOD = "raiseHand";
@@ -258,7 +258,7 @@ public class ProtocolElements {
 	public static final String SET_SHARE_POWER_METHOD = "setSharePower";
 	public static final String SET_SHARE_POWER_ID_PARAM = "roomId";
 	public static final String SET_SHARE_POWER_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_SHARE_POWER_TARGET_ID_PARAM = "targetId";
+	public static final String SET_SHARE_POWER_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
 
 	public static final String TRANSFER_MODERATOR_METHOD = "transferModerator";
@@ -281,6 +281,10 @@ public class ProtocolElements {
 
 	public static final String ROOM_DELAY_METHOD = "roomDelay";
 	public static final String ROOM_DELAY_ID_PARAM = "roomId";
+
+	public static final String GET_NOT_FINISHED_ROOM_METHOD = "getNotFinishedRoom";
+	public static final String GET_NOT_FINISHED_ROOM_ID_PARAM = "roomId";
+	public static final String GET_NOT_FINISHED_ROOM_SUBJECT_PARAM = "subject";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
 

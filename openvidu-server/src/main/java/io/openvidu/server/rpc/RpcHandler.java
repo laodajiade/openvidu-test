@@ -276,6 +276,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			case ProtocolElements.ROOM_DELAY_METHOD:
 				roomDelay(rpcConnection, request);
+				break;
+			case ProtocolElements.GET_NOT_FINISHED_ROOM_METHOD:
+				getNotFinishedRoom(rpcConnection, request);
 			default:
 				log.error("Unrecognized request {}", request);
 				break;
@@ -304,9 +307,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			}
 
+
+			// TODO.
+			// 1. check already exist userId info;
+			// 2. check already exist participant online/offline;
+			// 3. offline ? notify room info : login
+
 			rpcConnection.setUserUuid(String.valueOf(userInfo.get("userUuid")));
 			rpcConnection.setUserId(String.valueOf(userInfo.get("userId")));
+
 			// TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
+
 
 			if (!StringUtils.isEmpty(deviceSerialNumber)) {
 				DeviceSearch search = new DeviceSearch();
@@ -534,7 +545,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //		String targetId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
 		String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
-		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
+		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
 
 		if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0))) &&
 				sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
@@ -559,7 +570,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, sourceId);
-		params.add(ProtocolElements.SET_AUDIO_TARGET_ID_PARAM, tsArray);
+		params.add(ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM, tsArray);
 		params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		if (!CollectionUtils.isEmpty(participants)) {
@@ -579,7 +590,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void setVideoStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_VIDEO_ROOM_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
-		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_ID_PARAM);
+		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
 		String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
 		if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0)))
 				&& sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
@@ -603,7 +614,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_VIDEO_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.SET_VIDEO_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_SOURCE_ID_PARAM));
-		params.add(ProtocolElements.SET_VIDEO_TARGET_ID_PARAM, tsArray);
+		params.add(ProtocolElements.SET_VIDEO_TARGET_IDS_PARAM, tsArray);
 		params.addProperty(ProtocolElements.SET_VIDEO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_STATUS_PARAM));
 
 		sessionManager.getParticipants(sessionId).forEach(participant -> {
@@ -1634,7 +1645,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM);
-		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_SHARE_POWER_TARGET_ID_PARAM);
+		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_SHARE_POWER_TARGET_IDS_PARAM);
 		String status = getStringParam(request, ProtocolElements.SET_SHARE_POWER_STATUS_PARAM);
 
 		if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0)))
@@ -1652,7 +1663,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_SHARE_POWER_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM));
-		params.add(ProtocolElements.SET_SHARE_POWER_TARGET_ID_PARAM, tsArray);
+		params.add(ProtocolElements.SET_SHARE_POWER_TARGET_IDS_PARAM, tsArray);
 		params.addProperty(ProtocolElements.SET_SHARE_POWER_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_SHARE_POWER_STATUS_PARAM));
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		if (!CollectionUtils.isEmpty(participants)) {
@@ -1809,5 +1820,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.getSession(sessionId).incDelayConfCnt();
 		sessionManager.getSession(sessionId).getParticipants().forEach(p ->
 				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_DELAY_METHOD, new JsonObject()));
+	}
+
+	private void getNotFinishedRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+
 	}
 }
