@@ -372,9 +372,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
 			Integer roomDuration = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
 			String useIdInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_USE_ID_PARAM);
+			String allowPartOperMic = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM);
+			String allowPartOperShare = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM);
 
 			SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
-					roomSubject, roomCapacity, roomDuration, useIdInRoom);
+					roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare);
 			sessionManager.setPresetInfo(sessionId, preset);
 
             // store this inactive session
@@ -945,6 +947,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			String serialNumber = rpcConnection.getSerialNumber();
             String userId = rpcConnection.getUserId();
+            participant.setPreset(preset);
             if (StringUtils.isEmpty(serialNumber)) {
             	User user = userMapper.selectByPrimaryKey(Long.valueOf(userId));
 
@@ -1738,6 +1741,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
                 JsonObject devObj = new JsonObject();
 				devObj.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
+				devObj.addProperty("appShowName", device.getDeviceName());
+				devObj.addProperty("appShowDesc", "(" + device.getDeviceModel() + ")");
                 if (onlineDeviceList.containsKey(device.getSerialNumber())) {
 					devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.online.name());
 					devObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, Long.valueOf(onlineDeviceList.get(device.getSerialNumber())));

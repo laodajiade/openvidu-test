@@ -86,6 +86,7 @@ public class KurentoParticipant extends Participant {
 		setAppShowInfo(participant.getAppShowName(), participant.getAppShowDesc());
 		setShareStatus(participant.getShareStatus());
 		setSpeakerStatus(participant.getSpeakerStatus());
+		setPreset(participant.getPreset());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
