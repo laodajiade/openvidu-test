@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.openvidu.server.core.RoomCountdownService;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -82,6 +83,9 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Autowired
 	OpenviduConfig openviduConfig;
 
+	@Autowired
+	RoomCountdownService roomCountdownService;
+
 	public static final String KMSS_URIS_PROPERTY = "kms.uris";
 
 	public static String wsUrl;
@@ -120,7 +124,10 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public RpcHandler rpcHandler() {
-		return new RpcHandler();
+		log.info("come rpcHandler?");
+		RpcHandler handler = new RpcHandler();
+		roomCountdownService.setHandler(handler);
+		return handler;
 	}
 
 	@Bean
@@ -181,6 +188,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
+
 		registry.addHandler(rpcHandler().withPingWatchdog(true).withInterceptors(new HttpHandshakeInterceptor()),
 				"/openvidu");
 	}

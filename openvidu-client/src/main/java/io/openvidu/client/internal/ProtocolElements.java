@@ -38,6 +38,7 @@ public class ProtocolElements {
 	public static final String LEAVEROOM_STREAM_TYPE_PARAM = "streamType";
 
 	public static final String JOINROOM_METHOD = "joinRoom";
+    public static final String JOINROOM_TYPE_PARAM = "joinType";
 	public static final String JOINROOM_USER_PARAM = "user";
 //	public static final String JOINROOM_TOKEN_PARAM = "token";
 	public static final String JOINROOM_ROOM_PARAM = "session";
@@ -61,7 +62,8 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMFRAMERATE_PARAM = "frameRate";
 	public static final String JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
-    public static final String JOINROOM_PEERSHAREPOWER_PARAM = "sharePowerStatus";
+    public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
+	public static final String JOINROOM_PEERSPEAKER_PARAM = "speakerStatus";
 
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
@@ -150,6 +152,7 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_SUBJECT_PARAM = "subject";
 	public static final String CREATE_ROOM_ROOM_CAPACITY_PARAM = "roomCapacity";
 	public static final String CREATE_ROOM_DURATION_PARAM = "duration";
+	public static final String CREATE_ROOM_USE_ID_PARAM = "useIdInRoom";
 
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
@@ -178,16 +181,32 @@ public class ProtocolElements {
 	public static final String RAISE_HAND_METHOD = "raiseHand";
 	public static final String RAISE_HAND_ROOM_ID_PARAM = "roomId";
 	public static final String RAISE_HAND_SOURCE_ID_PARAM = "sourceId";
+	public static final String RAISE_HAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String PUT_DOWN_HAND_METHOD = "putDownHand";
 	public static final String PUT_DOWN_HAND_ROOM_ID_PARAM = "roomId";
 	public static final String PUT_DOWN_HAND_SOURCE_ID_PARAM = "sourceId";
 	public static final String PUT_DOWN_HAND_TARGET_ID_PARAM = "targetId";
+	public static final String PUT_DOWN_HAND_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String SET_ROLL_CALL_METHOD = "setRollCall";
 	public static final String SET_ROLL_CALL_ROOM_ID_PARAM = "roomId";
 	public static final String SET_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
 	public static final String SET_ROLL_CALL_TARGET_ID_PARAM = "targetId";
+	public static final String SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
+
+	public static final String END_ROLL_CALL_METHOD = "endRollCall";
+	public static final String END_ROLL_CALL_ROOM_ID_PARAM = "roomId";
+	public static final String END_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
+	public static final String END_ROLL_CALL_TARGET_ID_PARAM = "targetId";
+	public static final String END_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
+
+	public static final String REPLACE_ROLL_CALL_METHOD = "replaceRollCall";
+	public static final String REPLACE_ROLL_CALL_ROOM_ID_PARAM = "roomId";
+	public static final String REPLACE_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
+	public static final String REPLACE_ROLL_CALL_END_TARGET_ID_PARAM = "endTargetId";
+	public static final String REPLACE_ROLL_CALL_START_TARGET_ID_PARAM = "startTargetId";
+	public static final String REPLACE_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String LOCK_SESSION_METHOD = "lockSession";
 	public static final String LOCK_SESSION_ROOM_ID_PARAM = "roomId";
@@ -254,6 +273,13 @@ public class ProtocolElements {
 
 	public static final String EVICTED_PARTICIPANT_BY_USER_ID_METHOD = "evictedParticipantByUserId";
 
+	public static final String ROOM_COUNTDOWN_METHOD = "RoomCountDown";
+	public static final String ROOM_COUNTDOWN_INFO_ID_PARAM = "roomId";
+	public static final String ROOM_COUNTDOWN_TIME_PARAM = "remainTime";
+
+	public static final String ROOM_DELAY_METHOD = "roomDelay";
+	public static final String ROOM_DELAY_ID_PARAM = "roomId";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
@@ -266,6 +292,8 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_VIDEO_STATUS_PARAM = "videoStatusInRoom";
     public static final String PARTICIPANTJOINED_SHARE_POWER_PARAM = "sharePowerInRoom";
     public static final String PARTICIPANTJOINED_SUBJECT_PARAM = "subject";
+	public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
+	public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
 
 
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";

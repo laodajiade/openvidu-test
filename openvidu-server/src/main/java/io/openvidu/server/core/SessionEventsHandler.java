@@ -89,8 +89,10 @@ public class SessionEventsHandler {
 					existingParticipant.getParticipantPublicId());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 					existingParticipant.getCreatedAt());
-			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHAREPOWER_PARAM,
-					existingParticipant.getSharePowerStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHARESTATUS_PARAM,
+					existingParticipant.getShareStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKER_PARAM,
+					existingParticipant.getSpeakerStatus().name());
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
@@ -168,6 +170,8 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getVideoStatus().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getSharePowerStatus().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getRoomSubject());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
 		result.add("value", resultArray);
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);

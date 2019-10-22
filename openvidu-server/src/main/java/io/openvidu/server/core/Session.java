@@ -53,6 +53,11 @@ public class Session implements SessionInterface {
 	protected Long startTime;
 	// TODO. Maybe we should relate conference in here.
 	protected Conference conference;
+	protected SessionPreset preset;
+	protected int delayConfCnt;
+	protected final int delayTimeUnit = 20 * 60;	// 20min
+	protected boolean notifyCountdown10Min = false;
+	protected boolean notifyCountdown1Min = false;
 
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
@@ -66,6 +71,10 @@ public class Session implements SessionInterface {
 		this.sessionProperties = previousSession.getSessionProperties();
 		this.openviduConfig = previousSession.openviduConfig;
 		this.recordingManager = previousSession.recordingManager;
+
+		this.conference = previousSession.conference;
+		this.preset = previousSession.preset;
+		this.delayConfCnt = previousSession.delayConfCnt;
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
@@ -75,6 +84,8 @@ public class Session implements SessionInterface {
 		this.sessionProperties = sessionProperties;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
+
+		this.delayConfCnt = 0;
 	}
 
 	public String getSessionId() {
@@ -92,6 +103,26 @@ public class Session implements SessionInterface {
 	public void setConference(Conference conference){ this.conference = conference; }
 
 	public Conference getConference() { return this.conference; }
+
+	public void setPresetInfo(SessionPreset preset) { this.preset = preset; }
+
+	public SessionPreset getPresetInfo() { return this.preset; }
+
+	public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
+
+	public void incDelayConfCnt() { this.delayConfCnt++; }
+
+	public int getDelayConfCnt() { return this.delayConfCnt; }
+
+	public void setNotifyCountdown10Min(boolean notifyCountdown10Min) { this.notifyCountdown10Min = notifyCountdown10Min; }
+
+	public boolean getNotifyCountdown10Min() { return this.notifyCountdown10Min; }
+
+	public void setNotifyCountdown1Min(boolean notifyCountdown1Min) { this.notifyCountdown1Min = notifyCountdown1Min; }
+
+	public boolean getNotifyCountdown1Min() { return this.notifyCountdown1Min; }
+
+	public int getConfDelayTime() { return this.delayConfCnt * this.delayTimeUnit; }
 
 	/*public Set<Participant> getParticipants() {
 		checkClosed();

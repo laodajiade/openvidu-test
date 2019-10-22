@@ -48,6 +48,11 @@ public class Participant {
 	protected ParticipantVideoStatus videoStatus;
 	protected String roomSubject;
 
+	protected String appShowName;
+	protected String appShowDesc;
+	protected ParticipantSpeakerStatus speakerStatus;
+	protected ParticipantShareStatus shareStatus;
+
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
 
@@ -74,6 +79,8 @@ public class Participant {
 		this.micStatus = ParticipantMicStatus.off;
 		this.sharePowerStatus = ParticipantSharePowerStatus.off;
 		this.videoStatus = ParticipantVideoStatus.on;
+		this.speakerStatus = ParticipantSpeakerStatus.on;
+		this.shareStatus = ParticipantShareStatus.off;
 	}
 
 	public String getFinalUserId() {
@@ -164,6 +171,24 @@ public class Participant {
 	public String getRoomSubject() { return this.roomSubject; }
 
 	public void setRoomSubject(String subject) { this.roomSubject = subject; }
+
+	public String getAppShowName() { return this.appShowName; }
+
+	public void setAppShowName(String appShowName) { this.appShowName = appShowName; }
+
+	public String getAppShowDesc() { return this.appShowDesc; }
+
+	public void setAppShowDesc(String appShowDesc) { this.appShowDesc = appShowDesc; }
+
+	public void setAppShowInfo(String appShowName, String appShowDesc) { setAppShowName(appShowName); setAppShowDesc(appShowDesc);}
+
+	public void setSpeakerStatus(ParticipantSpeakerStatus status) { this.speakerStatus = status; }
+
+	public ParticipantSpeakerStatus getSpeakerStatus() { return this.speakerStatus; }
+
+	public void setShareStatus(ParticipantShareStatus status) { this.shareStatus = status; }
+
+	public ParticipantShareStatus getShareStatus() { return this.shareStatus; }
 
 	public GeoLocation getLocation() {
 		return this.location;

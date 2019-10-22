@@ -42,6 +42,7 @@ public class RpcConnection {
 	private String sessionId;
 	private String participantPrivateId;
 	private String userId;	// the uuid of user
+	private String userUuid;
 	private String serialNumber;
 
 	public RpcConnection(Session session) {
@@ -65,6 +66,10 @@ public class RpcConnection {
 	public String getUserId() { return this.userId; }
 
 	public void setUserId(String userId) { this.userId = userId; }
+
+	public String getUserUuid() { return this.userUuid; }
+
+	public void setUserUuid(String userUuid) { this.userUuid = userUuid; }
 
 	public String getSerialNumber() { return this.serialNumber; }
 

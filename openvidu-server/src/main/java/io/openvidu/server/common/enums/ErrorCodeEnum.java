@@ -27,6 +27,7 @@ public enum ErrorCodeEnum {
     CONFERENCE_PASSWORD_ERROR(13006, "conference password error"),
     CONFERENCE_ALREADY_CLOSED(13007, "conference already closed"),
     USER_NOT_STREAMING_ERROR_CODE(13008, "user not streaming"),
+    ROOM_CAPACITY_LIMITED(13009, "room capacity limited"),
 
     DEVICE_NOT_FOUND(13100, "device not found");
 

@@ -259,6 +259,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.SET_ROLL_CALL_METHOD:
 				setRollCall(rpcConnection, request);
 				break;
+			case ProtocolElements.END_ROLL_CALL_METHOD:
+				endRollCall(rpcConnection, request);
+				break;
 			case ProtocolElements.GET_ORG_METHOD:
 				getOrgList(rpcConnection, request);
 				break;
@@ -271,6 +274,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.UPDATE_DEVICE_INFO_METHOD:
 				updateDeviceInfo(rpcConnection, request);
 				break;
+			case ProtocolElements.ROOM_DELAY_METHOD:
+				roomDelay(rpcConnection, request);
 			default:
 				log.error("Unrecognized request {}", request);
 				break;
@@ -299,6 +304,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			}
 
+			rpcConnection.setUserUuid(String.valueOf(userInfo.get("userUuid")));
 			rpcConnection.setUserId(String.valueOf(userInfo.get("userId")));
 			// TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
 
@@ -330,24 +336,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 		sessionManager.accessOut(rpcConnection);
         // update user online status in cache
-        cacheManage.updateUserOnlineStatus(rpcConnection.getUserId(), UserOnlineStatusEnum.online);
+        cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
     }
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
-		String sessionId = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_ID_PARAM)) ?
-				request.getParams().get(ProtocolElements.CREATE_ROOM_ID_PARAM).getAsString() : StringUtil.createSessionId();
-		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM)) ?
-                request.getParams().get(ProtocolElements.CREATE_ROOM_PASSWORD_PARAM).getAsString() : null;
-		// verify room id ever exists
-        ConferenceSearch search = new ConferenceSearch();
-        search.setRoomId(sessionId);
-        // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
-        search.setStatus(1);
-		if (conferenceMapper.selectBySearchCondition(search) != null) {
+		String sessionId = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
+		String password = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_PASSWORD_PARAM);
+		if (StringUtils.isEmpty(sessionId)) {
+			sessionId = generalRoomId();
+        }
+
+        if (isExistingRoom(sessionId)) {
 			log.warn("conference:{} already exist.", sessionId);
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
-			return ;
+        	return ;
 		}
 
 		if (sessionManager.isNewSessionIdValid(sessionId)) {
@@ -355,11 +358,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
 			// save conference info
             Conference conference = new Conference();
-            conference.setRoomId(sessionId);
-            conference.setPassword(StringUtils.isEmpty(password) ? null : password);
-            conference.setStatus(1);
-            conference.setStartTime(new Date());
-            int insertResult = conferenceMapper.insert(conference);
+			conference.setRoomId(sessionId);
+			conference.setPassword(StringUtils.isEmpty(password) ? null : password);
+			conference.setStatus(1);
+			conference.setStartTime(new Date());
+			int insertResult = conferenceMapper.insert(conference);
 
             // setPresetInfo.
 			String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
@@ -368,9 +371,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
 			Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
 			Integer roomDuration = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
+			String useIdInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_USE_ID_PARAM);
 
 			SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
-					roomSubject, roomCapacity, roomDuration);
+					roomSubject, roomCapacity, roomDuration, useIdInRoom);
 			sessionManager.setPresetInfo(sessionId, preset);
 
             // store this inactive session
@@ -381,6 +385,36 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
 		}
+	}
+
+	private boolean isExistingRoom(String sessionId) {
+		// verify room id ever exists
+		ConferenceSearch search = new ConferenceSearch();
+		search.setRoomId(sessionId);
+		// 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
+		search.setStatus(1);
+		if (conferenceMapper.selectBySearchCondition(search) != null) {
+			log.warn("conference:{} already exist.", sessionId);
+			return true;
+		}
+		return false;
+	}
+
+	private String generalRoomId() {
+		String sessionId = "";
+		int tryCnt = 10;
+		while (tryCnt-- > 0) {
+			sessionId = StringUtil.createSessionId();
+			if (isExistingRoom(sessionId)) {
+				log.warn("conference:{} already exist.", sessionId);
+				continue;
+			}
+
+			log.info("general sessionId:{}", sessionId);
+			break;
+		}
+
+		return sessionId;
 	}
 
 	private void shareScreen(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -442,12 +476,20 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
 				Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
+				String shareStatus;
+				try{
+					sessionManager.getParticipant(sessionId, part.getParticipantPrivateId(), StreamType.SHARING);
+					shareStatus = ParticipantShareStatus.on.name();
+				} catch (OpenViduException e) {
+					shareStatus = ParticipantShareStatus.off.name();
+				}
+
 				JsonObject userObj = new JsonObject();
 				userObj.addProperty("userId", user.getId());
 				userObj.addProperty("account", user.getUsername());
 				userObj.addProperty("userOrgName", userDep.getDeptName());
 				userObj.addProperty("role", part.getRole().name());
-				userObj.addProperty("sharePowerStatus", part.getSharePowerStatus().name());
+				userObj.addProperty("shareStatus", shareStatus);
 				userObj.addProperty("handStatus", part.getHandStatus().name());
 				// 获取发布者时存在同步阻塞的状态
                 userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
@@ -470,6 +512,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 					userObj.addProperty("deviceName", device.getDeviceName());
 					userObj.addProperty("deviceOrgName", devDep.getDeptName());
+					userObj.addProperty("appShowName", device.getDeviceName());
+					userObj.addProperty("appShowDesc", "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+				} else {
+					userObj.addProperty("appShowName", user.getUsername());
+					userObj.addProperty("appShowDesc", "(" + user.getTitle() + ") " + userDep.getDeptName());
 				}
 
 				jsonArray.add(userObj);
@@ -585,9 +632,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 
 			JsonObject params = new JsonObject();
-			params.addProperty("roomId", sessionId);
-			params.addProperty("sourceId", sourceId);
-			params.addProperty("raiseHandNum", String.valueOf(raiseHandNum));
+			params.addProperty(ProtocolElements.RAISE_HAND_ROOM_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM, sourceId);
+			params.addProperty(ProtocolElements.RAISE_HAND_NUMBER_PARAM, String.valueOf(raiseHandNum));
 			notifyClientPrivateIds.forEach(client -> this.notificationService.sendNotification(client, ProtocolElements.RAISE_HAND_METHOD, params));
 		}
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -610,7 +657,16 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM, sourceId);
-		if (!StringUtils.isEmpty(targetId)) params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
+		if (!StringUtils.isEmpty(targetId)) {
+			params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
+			int raiseHandNum = 0;
+			for (Participant p : sessionManager.getParticipants(sessionId)) {
+				if (p.getHandStatus() == ParticipantHandStatus.up) {
+					++raiseHandNum;
+				}
+			}
+			params.addProperty(ProtocolElements.PUT_DOWN_HAND_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+		}
 		participants.forEach(participant ->
 				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.PUT_DOWN_HAND_METHOD, params));
 
@@ -627,12 +683,83 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
 				.findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
 
+		int raiseHandNum = 0;
+		for (Participant p : sessionManager.getParticipants(sessionId)) {
+			if (p.getHandStatus() == ParticipantHandStatus.up) {
+				++raiseHandNum;
+			}
+		}
+
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetId);
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
 		participants.forEach(participant ->
 				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params));
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void endRollCall(RpcConnection rpcConnection, Request<JsonObject> request) {
+		// TODO, Fixme. Maybe have good way to do it. for example: add a roll call type.
+		String sessionId = getStringParam(request, ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM);
+		String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
+
+		Set<Participant> participants = sessionManager.getParticipants(sessionId);
+		participants.stream().filter(part ->
+				targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
+				.findFirst().get().setHandStatus(ParticipantHandStatus.endSpeaker);
+		int raiseHandNum = 0;
+		for (Participant p : sessionManager.getParticipants(sessionId)) {
+			if (p.getHandStatus() == ParticipantHandStatus.up) {
+				++raiseHandNum;
+			}
+		}
+
+		JsonObject params = new JsonObject();
+		params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
+		params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, targetId);
+		params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+		participants.forEach(participant ->
+				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params));
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void replaceRollCall(RpcConnection rpcConnection, Request<JsonObject> request) {
+		// TODO, Fixme. Maybe have good way to do it. for example: add a roll call type.
+		String sessionId = getStringParam(request, ProtocolElements.REPLACE_ROLL_CALL_ROOM_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.REPLACE_ROLL_CALL_SOURCE_ID_PARAM);
+		String endTargetId = getStringParam(request, ProtocolElements.REPLACE_ROLL_CALL_END_TARGET_ID_PARAM);
+		String startTargetId = getStringParam(request, ProtocolElements.REPLACE_ROLL_CALL_START_TARGET_ID_PARAM);
+
+		Set<Participant> participants = sessionManager.getParticipants(sessionId);
+		participants.stream().filter(part ->
+				endTargetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
+				.findFirst().get().setHandStatus(ParticipantHandStatus.down);
+
+		participants.stream().filter(part ->
+				startTargetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
+				.findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
+
+		int raiseHandNum = 0;
+		for (Participant p : sessionManager.getParticipants(sessionId)) {
+			if (p.getHandStatus() == ParticipantHandStatus.up) {
+				++raiseHandNum;
+			}
+		}
+
+		JsonObject params = new JsonObject();
+		params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
+		params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_END_TARGET_ID_PARAM, endTargetId);
+		params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_START_TARGET_ID_PARAM, startTargetId);
+		params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+		participants.forEach(participant ->
+				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.REPLACE_ROLL_CALL_METHOD, params));
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
@@ -680,7 +807,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
     public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
-
 		String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
@@ -690,6 +816,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String password = (request.getParams() != null && request.getParams().has(ProtocolElements.JOINROOM_PASSWORD_PARAM)) ?
 				request.getParams().get(ProtocolElements.JOINROOM_PASSWORD_PARAM).getAsString() : null;
 		String participantPrivatetId = rpcConnection.getParticipantPrivateId();
+		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
 
 		ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);
@@ -700,6 +827,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
         }
+
+        // 校验入会方式
+		String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
+        if (StreamType.MAJOR.equals(StreamType.valueOf(streamType)) &&
+				SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
+        	if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
+				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+						null, ErrorCodeEnum.PERMISSION_LIMITED);
+				return ;
+			}
+		}
+
         // verify conference password
         if (!StringUtils.isEmpty(conference.getPassword()) && !Objects.equals(conference.getPassword(), password)) {
             this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
@@ -722,6 +861,16 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //				return ;
 //			}
 //		}
+
+		// Check room capacity limit.
+		if (!Objects.isNull(sessionManager.getSession(sessionId))) {
+			Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
+			if (StreamType.MAJOR.equals(streamType) && majorParts.size() >= preset.getRoomCapacity()) {
+				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+						null, ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
+				return ;
+			}
+		}
 
 		InetAddress remoteAddress = null;
 		GeoLocation location = null;
@@ -793,6 +942,30 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						role, streamType, location, platform,
 						httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
             }
+
+			String serialNumber = rpcConnection.getSerialNumber();
+            String userId = rpcConnection.getUserId();
+            if (StringUtils.isEmpty(serialNumber)) {
+            	User user = userMapper.selectByPrimaryKey(Long.valueOf(userId));
+
+				// User and dept info.
+				UserDeptSearch udSearch = new UserDeptSearch();
+				udSearch.setUserId(Long.valueOf(userId));
+				UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
+				Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
+
+				participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
+			} else {
+            	DeviceSearch devSearch = new DeviceSearch();
+				devSearch.setSerialNumber(serialNumber);
+            	Device device = deviceMapper.selectBySearchCondition(devSearch);
+				DeviceDeptSearch ddSearch = new DeviceDeptSearch();
+				ddSearch.setSerialNumber(serialNumber);
+				List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
+				Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
+
+				participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+			}
 
             rpcConnection.setSessionId(sessionId);
             sessionManager.joinRoom(participant, sessionId, conference, request.getId());
@@ -1349,31 +1522,35 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void closeRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
 
-		if (Objects.isNull(sessionManager.getSession(sessionId))) {
+		ErrorCodeEnum errCode = cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), true, EndReason.forceCloseSessionByUser);
+		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
 			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+					null, errCode);
 			return ;
 		}
 
-		if (sessionManager.getSession(sessionId).isClosed()) {
-			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
-			return;
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
+		if (Objects.isNull(sessionManager.getSession(sessionId))) {
+			return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
 		}
 
-		if (sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
-			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.PERMISSION_LIMITED);
-			return;
+		if (sessionManager.getSession(sessionId).isClosed()) {
+			return ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED;
+		}
+
+		if (checkModerator && sessionManager.getParticipant(sessionId, privateId).getRole() != OpenViduRole.MODERATOR) {
+			return ErrorCodeEnum.PERMISSION_LIMITED;
 		}
 
 		// 1. notify all participant stop publish and receive stream.
 		// 2. close session but can not disconnect the connection.
-		this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
-		this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
+		this.sessionManager.unpublishAllStream(sessionId, reason);
+		this.sessionManager.closeSession(sessionId, reason);
 
-
-		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+		return ErrorCodeEnum.SUCCESS;
 	}
 
 	private void inviteParticipant(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -1430,11 +1607,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
+		if (!StringUtils.isEmpty(targetId)) {
+			KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(targetId)
+					.compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
+							.getAsLong()) == 0).findFirst().get();
+			part.setSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
+		}
+
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM, sessionId);
-		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM));
+		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM, sourceId);
 		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM, targetId);
-		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM));
+		params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM, status);
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		if (!CollectionUtils.isEmpty(participants)) {
 			for (Participant p: participants) {
@@ -1511,7 +1695,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void getOrgList(RpcConnection rpcConnection, Request<JsonObject> request) {
-		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserId());
+		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
+		log.info("deptId:{}", userInfo.get("deptId"));
 		Long userDeptId = Long.valueOf(String.valueOf(userInfo.get("deptId")));
 
 		// TODO eliminate unnecessary corp info according to the protocol
@@ -1536,6 +1721,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void getUserDeviceList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Long orgId = getLongParam(request, ProtocolElements.GET_USER_DEVICE_ORGID_PARAM);
+		String localSerialNumber = rpcConnection.getSerialNumber();
 		Map<String, String> onlineDeviceList = new HashMap<>();
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
@@ -1546,11 +1732,19 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         List<Device> deviceList = deviceManage.getSubDeviceByDeptId(orgId);
         if (!CollectionUtils.isEmpty(deviceList)) {
             deviceList.forEach(device -> {
+				// 返回列表中排除自己的设备
+            	if (localSerialNumber.equals(device.getSerialNumber()))
+            		return ;
+
                 JsonObject devObj = new JsonObject();
-                devObj.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
-                devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM,
-                        onlineDeviceList.containsKey(device.getSerialNumber()) ? DeviceStatus.online.name() : DeviceStatus.offline.name());
-                devObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, Long.valueOf(onlineDeviceList.get(device.getSerialNumber())));
+				devObj.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
+                if (onlineDeviceList.containsKey(device.getSerialNumber())) {
+					devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.online.name());
+					devObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, Long.valueOf(onlineDeviceList.get(device.getSerialNumber())));
+				} else {
+					devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.offline.name());
+				}
+
                 devList.add(devObj);
             });
         }
@@ -1585,4 +1779,30 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
+	private boolean isModerator(String role) {
+		// TODO. Fixme. user account have moderator power.
+		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
+			return true;
+		}
+		return false;
+	}
+
+	public SessionManager getSessionManager() { return this.sessionManager; }
+
+	public void notifyRoomCountdown(String sessionId, long remainTime) {
+		JsonObject params = new JsonObject();
+
+		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_INFO_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_TIME_PARAM, remainTime);
+		sessionManager.getParticipants(sessionId).forEach(p ->
+				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params));
+	}
+
+	private void roomDelay(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.ROOM_DELAY_ID_PARAM);
+
+		sessionManager.getSession(sessionId).incDelayConfCnt();
+		sessionManager.getSession(sessionId).getParticipants().forEach(p ->
+				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_DELAY_METHOD, new JsonObject()));
+	}
 }

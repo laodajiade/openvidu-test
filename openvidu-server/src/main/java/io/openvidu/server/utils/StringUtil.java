@@ -23,7 +23,8 @@ public class StringUtil {
 
     public static String createSessionId() {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < 10; i++) {
+        sb.append("34");
+        for (int i = 0; i < 9; i++) {
             sb.append(chars[random.nextInt(10)]);
         }
         return sb.toString();

@@ -19,10 +19,7 @@ package io.openvidu.server.kurento.core;
 
 import java.util.*;
 
-import io.openvidu.server.common.enums.ParticipantMicStatus;
-import io.openvidu.server.common.enums.ParticipantSharePowerStatus;
-import io.openvidu.server.common.enums.ParticipantVideoStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcConnection;
@@ -102,6 +99,7 @@ public class KurentoSessionManager extends SessionManager {
 				log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
 				kSession = createSession(sessionNotActive, lessLoadedKms);
 				kSession.setConference(conference);
+				kSession.setPresetInfo(getPresetInfo(sessionId));
 			}
 
 			if (kSession.isClosed()) {
@@ -128,6 +126,13 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			kSession.join(participant);
+
+			// record share status.
+			if (StreamType.SHARING.equals(participant.getStreamType())) {
+				participant.setShareStatus(ParticipantShareStatus.on);
+				Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
+				majorPart.setShareStatus(ParticipantShareStatus.on);
+			}
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
@@ -188,8 +193,14 @@ public class KurentoSessionManager extends SessionManager {
 
 		showTokens();
 
-		// Close Session if no more participants
+		// record share status.
+		if (StreamType.SHARING.equals(participant.getStreamType())) {
+			participant.setShareStatus(ParticipantShareStatus.off);
+			Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
+			majorPart.setShareStatus(ParticipantShareStatus.off);
+		}
 
+		// Close Session if no more participants
 		Set<Participant> remainingParticipants = null;
 		try {
 			remainingParticipants = getParticipants(sessionId);
