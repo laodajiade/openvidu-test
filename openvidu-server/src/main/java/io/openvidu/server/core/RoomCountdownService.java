@@ -40,14 +40,14 @@ public class RoomCountdownService {
             } else if (remainTime <= 1 * 60) {
                 // TODO. Notify remain 1 min
                 if (!s.getNotifyCountdown1Min()) {
-                    handler.notifyRoomCountdown(sessionId, remainTime);
+                    handler.notifyRoomCountdown(sessionId, 1);
                     s.setNotifyCountdown1Min(true);
                     log.info("remain 1 min, remainTime:{} s", remainTime);
                 }
             } else if (remainTime <= 10 * 60) {
                 // TODO. Notfiy remain 10 min
                 if (!s.getNotifyCountdown10Min()) {
-                    handler.notifyRoomCountdown(sessionId, remainTime);
+                    handler.notifyRoomCountdown(sessionId, 10);
                     s.setNotifyCountdown10Min(true);
                     log.info("remain 10 min, remainTime:{} s", remainTime);
                 }
