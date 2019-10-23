@@ -976,9 +976,16 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				DeviceDeptSearch ddSearch = new DeviceDeptSearch();
 				ddSearch.setSerialNumber(serialNumber);
 				List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
-				Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
+				if (Objects.isNull(devDeptCom) || devDeptCom.isEmpty()) {
+					log.warn("devDep cant select serialNumber:{}", serialNumber);
+					participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") ");
+				} else {
+					Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
+					participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+				}
 
-				participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+
+
 			}
 
             rpcConnection.setSessionId(sessionId);
@@ -1746,7 +1753,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         if (!CollectionUtils.isEmpty(deviceList)) {
             deviceList.forEach(device -> {
 				// 返回列表中排除自己的设备
-            	if (localSerialNumber.equals(device.getSerialNumber()))
+            	if (device.getSerialNumber().equals(localSerialNumber))
             		return ;
 
                 JsonObject devObj = new JsonObject();
