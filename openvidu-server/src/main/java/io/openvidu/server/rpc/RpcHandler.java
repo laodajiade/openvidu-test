@@ -295,7 +295,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
 		String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
 		ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
-
+        Device device = null;
 		do {
 			// verify parameters
 			if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token) ||
@@ -326,7 +326,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			if (!StringUtils.isEmpty(deviceSerialNumber)) {
 				DeviceSearch search = new DeviceSearch();
 				search.setSerialNumber(deviceSerialNumber);
-				if (Objects.isNull(deviceMapper.selectBySearchCondition(search))) {
+				if (Objects.isNull(device = deviceMapper.selectBySearchCondition(search))) {
 					errCode = ErrorCodeEnum.DEVICE_NOT_FOUND;
 					break;
 				}
@@ -338,8 +338,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
 			log.warn("accessIn failed. errCode:{}", errCode.name());
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
-			if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE))
-				sessionManager.accessOut(rpcConnection);
+			if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
+                sessionManager.accessOut(rpcConnection);
+            } else {
+			    // send login apply notify to current terminal
+                String currentTerminalSocketSessionId = notificationService.getRpcConnections().stream().filter(s ->
+                        Objects.equals(s.getUserUuid(), uuid)).findFirst().get().getParticipantPrivateId();
+                JsonObject param = new JsonObject();
+                param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_DEVICE_NAME_PARAM, device.getDeviceName());
+                param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM, rpcConnection.getParticipantPrivateId());
+                notificationService.sendNotification(currentTerminalSocketSessionId, ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
+            }
 			return;
 		}
 		// update user online status in cache
