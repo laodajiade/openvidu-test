@@ -145,6 +145,12 @@ public class ProtocolElements {
 	public static final String APPLY_FOR_LOGIN_DEVICE_NAME_PARAM = "deviceName";
 	public static final String APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM = "applicantSessionId";
 
+	public static final String CONFIRM_APPLY_FOR_LOGIN_METHOD = "confirmApplyForLogin";
+	public static final String CONFIRM_APPLY_FOR_LOGIN_ACCEPT_PARAM = "accept";
+	public static final String CONFIRM_APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM = "applicantSessionId";
+
+	public static final String RESULT_OF_LOGIN_APPLY_NOTIFY = "resultOfLoginApplyNotify";
+
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
 	public static final String CREATE_ROOM_METHOD = "createRoom";

@@ -161,6 +161,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             case ProtocolElements.ACCESS_IN_METHOD:
                 accessIn(rpcConnection, request);
                 break;
+            case ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_METHOD:
+                confirmApplyForLogin(rpcConnection, request);
+                break;
             case ProtocolElements.ACCESS_OUT_METHOD:
                 accessOut(rpcConnection, request);
 				break;
@@ -289,7 +292,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}
 
-	private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
+    private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
 	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
@@ -355,6 +358,23 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         cacheManage.updateUserOnlineStatus(uuid, UserOnlineStatusEnum.online);
 
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+
+    private void confirmApplyForLogin(RpcConnection rpcConnection, Request<JsonObject> request) {
+	    boolean accept = getBooleanParam(request, ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_ACCEPT_PARAM);
+	    String applicantSessionId = getStringOptionalParam(request, ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM);
+
+	    notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+        if (!Objects.isNull(notificationService.getRpcConnection(applicantSessionId))) {
+            if (accept) {
+                sessionManager.accessOut(rpcConnection);
+            }
+
+            JsonObject param = new JsonObject();
+            param.addProperty("loginAllowable", accept);
+            notificationService.sendNotification(applicantSessionId, ProtocolElements.RESULT_OF_LOGIN_APPLY_NOTIFY, param);
+        }
     }
 
     private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
