@@ -314,7 +314,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			}
 
-			if (Objects.equals(UserOnlineStatusEnum.online.name(), userInfo.get("status"))) {
+			if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
 				log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
 				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
 				break;
