@@ -63,7 +63,7 @@ public class AuthorizationManageImpl implements AuthorizationManage {
     public boolean checkIfOperationPermitted(String method, RpcConnection rpcConnection) {
         if (AUTHORIZATION_EXCLUDE_SET.contains(method)) return true;
         String methodMapAuth = METHOD_AUTHORIZATION_MAP.getOrDefault(method, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
-        String userAuthorization = cacheManage.getUserAuthorization(rpcConnection.getUserId());
+        String userAuthorization = cacheManage.getUserAuthorization(rpcConnection.getUserUuid());
         return !Objects.isNull(userAuthorization) && Arrays.asList(userAuthorization.split(",")).contains(methodMapAuth);
     }
 }

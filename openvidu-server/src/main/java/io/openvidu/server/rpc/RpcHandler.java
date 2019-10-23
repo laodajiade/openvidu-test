@@ -28,6 +28,7 @@ import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.DeviceManage;
+import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
@@ -103,6 +104,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Autowired
     DeviceManage deviceManage;
+
+	@Autowired
+    UserManage userManage;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -314,7 +318,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			// 3. offline ? notify room info : login
 
 			rpcConnection.setUserUuid(String.valueOf(userInfo.get("userUuid")));
-			rpcConnection.setUserId(String.valueOf(userInfo.get("userId")));
+			rpcConnection.setUserId(Long.valueOf(String.valueOf(userInfo.get("userId"))));
 
 			// TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
 
@@ -469,7 +473,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonArray jsonArray = new JsonArray();
 		List<Long> userIds = new ArrayList<>();
 
-		Map<String, String> onlineUserList = new HashMap<>();
+		Map<Long, String> onlineUserList = new HashMap<>();
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			onlineUserList.put(c.getUserId(), c.getSerialNumber());
 			log.info("online userId:{} serialNumber:{}", c.getUserId(), c.getSerialNumber());
@@ -957,14 +961,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             }
 
 			String serialNumber = rpcConnection.getSerialNumber();
-            String userId = rpcConnection.getUserId();
+            Long userId = rpcConnection.getUserId();
             participant.setPreset(preset);
             if (StringUtils.isEmpty(serialNumber)) {
-            	User user = userMapper.selectByPrimaryKey(Long.valueOf(userId));
+            	User user = userMapper.selectByPrimaryKey(userId);
 
 				// User and dept info.
 				UserDeptSearch udSearch = new UserDeptSearch();
-				udSearch.setUserId(Long.valueOf(userId));
+				udSearch.setUserId(userId);
 				UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
 				Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
@@ -1588,7 +1592,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
 		targetIds.forEach(t -> {
 			rpcConnections.forEach(c -> {
-				if (Objects.equals(t, c.getUserId())) {
+				if (Objects.equals(Long.valueOf(t), c.getUserId())) {
 					JsonObject params = new JsonObject();
 					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
 					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM));
@@ -1742,13 +1746,16 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private void getUserDeviceList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Long orgId = getLongParam(request, ProtocolElements.GET_USER_DEVICE_ORGID_PARAM);
 		String localSerialNumber = rpcConnection.getSerialNumber();
-		Map<String, String> onlineDeviceList = new HashMap<>();
+		Long localUserId = rpcConnection.getUserId();
+		Map<String, Long> onlineDeviceList = new HashMap<>();
+        Map<Long, String> onlineUserList = new HashMap<>();
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
+            onlineUserList.put(c.getUserId(), c.getSerialNumber());
 		}
 
 		JsonObject params = new JsonObject();
-		JsonArray devList = new JsonArray();
+		JsonArray userDevList = new JsonArray();
         List<Device> deviceList = deviceManage.getSubDeviceByDeptId(orgId);
         if (!CollectionUtils.isEmpty(deviceList)) {
             deviceList.forEach(device -> {
@@ -1767,10 +1774,30 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.offline.name());
 				}
 
-                devList.add(devObj);
+                userDevList.add(devObj);
             });
         }
-		params.add(ProtocolElements.GET_USER_DEVICE_LIST_PARAM, devList);
+
+        List<User> userList = userManage.getSubUserByDeptId(orgId);
+        if (!CollectionUtils.isEmpty(userList)) {
+            userList.forEach(user -> {
+                // 返回列表中排除自己的用户
+                if (user.getId().equals(localUserId))
+                    return ;
+
+                JsonObject userObj = new JsonObject();
+                userObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_NAME_PARAM, user.getUsername());
+                userObj.addProperty("appShowName", user.getUsername() + " (" + user.getTitle() + ")");
+                userObj.addProperty("appShowDesc", "ID: " + user.getUuid());
+                userObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, onlineUserList.containsKey(user.getId()) ?
+                        DeviceStatus.online.name() : DeviceStatus.offline.name());
+                userObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, user.getId());
+
+                userDevList.add(userObj);
+            });
+        }
+
+		params.add(ProtocolElements.GET_USER_DEVICE_LIST_PARAM, userDevList);
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}

@@ -34,6 +34,25 @@
     where uuid = #{uuid,jdbcType=BIGINT}
   </select>
 
+  <select id="selectUserIdsByDeptIds" parameterType="java.util.List" resultType="java.lang.Long">
+    select user_id
+    from sd_user_dept
+    where dept_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+  <select id="getUsersByUserIdsList" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_user
+    where id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
     <include refid="Base_Column_List" />
