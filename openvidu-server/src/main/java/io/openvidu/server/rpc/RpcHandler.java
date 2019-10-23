@@ -1320,7 +1320,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Override
 	public void afterConnectionClosed(Session rpcSession, String status) throws Exception {
 		log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
-
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
 

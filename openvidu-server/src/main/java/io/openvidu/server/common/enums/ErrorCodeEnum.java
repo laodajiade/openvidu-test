@@ -28,6 +28,7 @@ public enum ErrorCodeEnum {
     CONFERENCE_ALREADY_CLOSED(13007, "conference already closed"),
     USER_NOT_STREAMING_ERROR_CODE(13008, "user not streaming"),
     ROOM_CAPACITY_LIMITED(13009, "room capacity limited"),
+    USER_ALREADY_ONLINE(13010, "user already online"),
 
     DEVICE_NOT_FOUND(13100, "device not found");
 
