@@ -77,7 +77,7 @@ public class SessionPreset {
                          String sharePowerInRoom,
                          String subject,
                          Integer roomCapacity,
-                         Integer roomDuration,
+                         Float roomDuration,
                          String useIdTypeInRoom,
                          String allowPartOperMic,
                          String allowPartOperShare) {

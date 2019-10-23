@@ -415,7 +415,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			String videoStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_VIDEO_STATUS_PARAM);
 			String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
 			Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
-			Integer roomDuration = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
+			Float roomDuration = getFloatOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
 			String useIdInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_USE_ID_PARAM);
 			String allowPartOperMic = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM);
 			String allowPartOperShare = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM);
@@ -1017,9 +1017,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
 					participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
 				}
-
-
-
 			}
 
             rpcConnection.setSessionId(sessionId);
@@ -1476,6 +1473,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return request.getParams().get(key).getAsInt();
 	}
 
+	public static Float getFloatOptionalParam(Request<JsonObject> request, String key) {
+		if (request.getParams() == null || request.getParams().get(key) == null) {
+			return null;
+		}
+
+		return request.getParams().get(key).getAsFloat();
+	}
+
 	public static boolean getBooleanParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
 			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
@@ -1778,10 +1783,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String localSerialNumber = rpcConnection.getSerialNumber();
 		Long localUserId = rpcConnection.getUserId();
 		Map<String, Long> onlineDeviceList = new HashMap<>();
-        Map<Long, String> onlineUserList = new HashMap<>();
+		Map<Long, String> onlineUserList = new HashMap<>();
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
-            onlineUserList.put(c.getUserId(), c.getSerialNumber());
+			onlineUserList.put(c.getUserId(), c.getSerialNumber());
 		}
 
 		JsonObject params = new JsonObject();

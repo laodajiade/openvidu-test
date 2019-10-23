@@ -93,6 +93,10 @@ public class SessionEventsHandler {
 					existingParticipant.getShareStatus().name());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKER_PARAM,
 					existingParticipant.getSpeakerStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWNAME_PARAM,
+					existingParticipant.getAppShowName());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,
+					existingParticipant.getAppShowDesc());
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
