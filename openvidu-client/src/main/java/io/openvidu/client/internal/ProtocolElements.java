@@ -153,6 +153,8 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_ROOM_CAPACITY_PARAM = "roomCapacity";
 	public static final String CREATE_ROOM_DURATION_PARAM = "duration";
 	public static final String CREATE_ROOM_USE_ID_PARAM = "useIdInRoom";
+    public static final String CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
+    public static final String CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
 
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
@@ -169,13 +171,13 @@ public class ProtocolElements {
 	public static final String SET_AUDIO_STATUS_METHOD = "setAudioStatus";
 	public static final String SET_AUDIO_ROOM_ID_PARAM = "roomId";
 	public static final String SET_AUDIO_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_AUDIO_TARGET_ID_PARAM = "targetId";
+	public static final String SET_AUDIO_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_AUDIO_STATUS_PARAM = "status";
 
 	public static final String SET_VIDEO_STATUS_METHOD = "setVideoStatus";
 	public static final String SET_VIDEO_ROOM_ID_PARAM = "roomId";
 	public static final String SET_VIDEO_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_VIDEO_TARGET_ID_PARAM = "targetId";
+	public static final String SET_VIDEO_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_VIDEO_STATUS_PARAM = "status";
 
 	public static final String RAISE_HAND_METHOD = "raiseHand";
@@ -256,7 +258,7 @@ public class ProtocolElements {
 	public static final String SET_SHARE_POWER_METHOD = "setSharePower";
 	public static final String SET_SHARE_POWER_ID_PARAM = "roomId";
 	public static final String SET_SHARE_POWER_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_SHARE_POWER_TARGET_ID_PARAM = "targetId";
+	public static final String SET_SHARE_POWER_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
 
 	public static final String TRANSFER_MODERATOR_METHOD = "transferModerator";
@@ -273,12 +275,16 @@ public class ProtocolElements {
 
 	public static final String EVICTED_PARTICIPANT_BY_USER_ID_METHOD = "evictedParticipantByUserId";
 
-	public static final String ROOM_COUNTDOWN_METHOD = "RoomCountDown";
+	public static final String ROOM_COUNTDOWN_METHOD = "roomCountDown";
 	public static final String ROOM_COUNTDOWN_INFO_ID_PARAM = "roomId";
 	public static final String ROOM_COUNTDOWN_TIME_PARAM = "remainTime";
 
 	public static final String ROOM_DELAY_METHOD = "roomDelay";
 	public static final String ROOM_DELAY_ID_PARAM = "roomId";
+
+	public static final String GET_NOT_FINISHED_ROOM_METHOD = "getNotFinishedRoom";
+	public static final String GET_NOT_FINISHED_ROOM_ID_PARAM = "roomId";
+	public static final String GET_NOT_FINISHED_ROOM_SUBJECT_PARAM = "subject";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
 
@@ -292,8 +298,10 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_VIDEO_STATUS_PARAM = "videoStatusInRoom";
     public static final String PARTICIPANTJOINED_SHARE_POWER_PARAM = "sharePowerInRoom";
     public static final String PARTICIPANTJOINED_SUBJECT_PARAM = "subject";
-	public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
-	public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
+    public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
+    public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
+	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
+	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
 
 
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";

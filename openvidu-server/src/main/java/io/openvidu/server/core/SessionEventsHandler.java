@@ -166,10 +166,12 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getMicStatus().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getVideoStatus().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getSharePowerStatus().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getRoomSubject());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getPreset().getMicStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getPreset().getVideoStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
 		result.add("value", resultArray);

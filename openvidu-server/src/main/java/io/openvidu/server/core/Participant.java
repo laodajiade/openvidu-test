@@ -52,6 +52,7 @@ public class Participant {
 	protected String appShowDesc;
 	protected ParticipantSpeakerStatus speakerStatus;
 	protected ParticipantShareStatus shareStatus;
+	protected SessionPreset preset;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -189,6 +190,10 @@ public class Participant {
 	public void setShareStatus(ParticipantShareStatus status) { this.shareStatus = status; }
 
 	public ParticipantShareStatus getShareStatus() { return this.shareStatus; }
+
+	public void setPreset(SessionPreset preset) { this.preset = preset; }
+
+	public SessionPreset getPreset() { return this.preset; }
 
 	public GeoLocation getLocation() {
 		return this.location;
