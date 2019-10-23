@@ -290,7 +290,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
-	    String userId = getStringParam(request, ProtocolElements.ACCESS_IN_USER_ID_PARAM);
+	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
 		String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
@@ -298,24 +298,24 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		do {
 			// verify parameters
-			if (StringUtils.isEmpty(userId) || StringUtils.isEmpty(token) ||
+			if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token) ||
 					(StringUtils.isEmpty(deviceSerialNumber) && StringUtils.isEmpty(deviceMac))) {
 				errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
 				break;
 			}
 
-			Map userInfo = cacheManage.getUserInfoByUUID(userId);
+			Map userInfo = cacheManage.getUserInfoByUUID(uuid);
 			if (Objects.isNull(userInfo) || !Objects.equals(token, userInfo.get("token"))) {
 				log.warn("local token:{} userInfo:{}", token, userInfo);
 				errCode = ErrorCodeEnum.TOKEN_INVALID;
 				break;
 			}
 
-
-			// TODO.
-			// 1. check already exist userId info;
-			// 2. check already exist participant online/offline;
-			// 3. offline ? notify room info : login
+			if (Objects.equals(UserOnlineStatusEnum.online.name(), userInfo.get("status"))) {
+				log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
+				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
+				break;
+			}
 
 			rpcConnection.setUserUuid(String.valueOf(userInfo.get("userUuid")));
 			rpcConnection.setUserId(Long.valueOf(String.valueOf(userInfo.get("userId"))));
@@ -338,11 +338,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
 			log.warn("accessIn failed. errCode:{}", errCode.name());
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
-			sessionManager.accessOut(rpcConnection);
+			if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE))
+				sessionManager.accessOut(rpcConnection);
 			return;
 		}
 		// update user online status in cache
-        cacheManage.updateUserOnlineStatus(userId, UserOnlineStatusEnum.online);
+        cacheManage.updateUserOnlineStatus(uuid, UserOnlineStatusEnum.online);
 
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

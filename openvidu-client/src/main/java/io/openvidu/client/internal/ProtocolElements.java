@@ -134,12 +134,16 @@ public class ProtocolElements {
 
 	// ---------------------------- add by chosongi at 2019-09-12
 	public static final String ACCESS_IN_METHOD = "accessIn";
-	public static final String ACCESS_IN_USER_ID_PARAM = "userId";
+	public static final String ACCESS_IN_UUID_PARAM = "userId";
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
+
+	public static final String APPLY_FOR_LOGIN_METHOD = "applyForLogin";
+	public static final String APPLY_FOR_LOGIN_DEVICE_NAME_PARAM = "deviceName";
+	public static final String APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM = "applicantSessionId";
 
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
