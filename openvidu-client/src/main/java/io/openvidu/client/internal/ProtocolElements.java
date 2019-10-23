@@ -64,6 +64,8 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
     public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
 	public static final String JOINROOM_PEERSPEAKER_PARAM = "speakerStatus";
+	public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
+	public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
 
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";

@@ -39,10 +39,10 @@ public class RoomCountdownService {
             int voipCountdownLongTime = openviduConfig.getVoipCountdownLongTime();
             int voipCountdownShortTime = openviduConfig.getVoipCountdownShortTime();
 
-//            log.info("sessionId:{} remainTime:{} s", sessionId, remainTime);
+            log.info("sessionId:{} remainTime:{} startTime:{} confEndTime:{}", sessionId, remainTime, confStartTime.getTime(), confEndTime);
             if (remainTime <= 0) {
                 log.info("session:{} no have remain time. should be closed.", sessionId);
-                handler.cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
+//                handler.cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
             } else if (remainTime <= voipCountdownShortTime * 60) {
                 if (!s.getNotifyCountdown1Min()) {
                     handler.notifyRoomCountdown(sessionId, voipCountdownShortTime);
