@@ -1,11 +1,13 @@
 package io.openvidu.server.core;
 
+import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.rpc.RpcHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ import java.util.Date;
 @Service
 public class RoomCountdownService {
     private static final Logger log = LoggerFactory.getLogger(RoomCountdownService.class);
+
+    @Autowired
+    protected OpenviduConfig openviduConfig;
 
     private RpcHandler handler;
 
@@ -31,25 +36,24 @@ public class RoomCountdownService {
             long confEndTime = confStartTime.getTime() + confDuration;
             long now = new Date().getTime();
             long remainTime = (confEndTime - now) / 1000;
+            int voipCountdownLongTime = openviduConfig.getVoipCountdownLongTime();
+            int voipCountdownShortTime = openviduConfig.getVoipCountdownShortTime();
 
 //            log.info("sessionId:{} remainTime:{} s", sessionId, remainTime);
             if (remainTime <= 0) {
-                // TODO. wait closeRoom or clean exception resource.
                 log.info("session:{} no have remain time. should be closed.", sessionId);
                 handler.cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
-            } else if (remainTime <= 1 * 60) {
-                // TODO. Notify remain 1 min
+            } else if (remainTime <= voipCountdownShortTime * 60) {
                 if (!s.getNotifyCountdown1Min()) {
-                    handler.notifyRoomCountdown(sessionId, 1);
+                    handler.notifyRoomCountdown(sessionId, voipCountdownShortTime);
                     s.setNotifyCountdown1Min(true);
-                    log.info("remain 1 min, remainTime:{} s", remainTime);
+                    log.info("remain {} min, remainTime:{} s", voipCountdownShortTime, remainTime);
                 }
-            } else if (remainTime <= 10 * 60) {
-                // TODO. Notfiy remain 10 min
+            } else if (remainTime <= voipCountdownLongTime * 60) {
                 if (!s.getNotifyCountdown10Min()) {
-                    handler.notifyRoomCountdown(sessionId, 10);
+                    handler.notifyRoomCountdown(sessionId, voipCountdownLongTime);
                     s.setNotifyCountdown10Min(true);
-                    log.info("remain 10 min, remainTime:{} s", remainTime);
+                    log.info("remain {} min, remainTime:{} s", voipCountdownLongTime, remainTime);
                 }
             } else {
 //                log.info("remain many time, remainTime:{}", remainTime);

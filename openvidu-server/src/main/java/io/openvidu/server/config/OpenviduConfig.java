@@ -137,6 +137,12 @@ public class OpenviduConfig {
 	@Value("#{'${spring.profiles.active:}'.length() > 0 ? '${spring.profiles.active:}'.split(',') : \"default\"}")
 	private String springProfile;
 
+	@Value("${voip.countdown.longTime}")
+	private int voipCountdownLongTime;
+
+	@Value("${voip.countdown.shortTime}")
+	private int voipCountdownShortTime;
+
 	private String finalUrl;
 	private List<String> kmsUrisList;
 	private List<Header> webhookHeadersList;
@@ -369,6 +375,14 @@ public class OpenviduConfig {
 	public String getVersion() {
 //		return this.buildProperties.getVersion();
 		return "2.11.0";
+	}
+
+	public int getVoipCountdownLongTime() {
+		return this.voipCountdownLongTime;
+	}
+
+	public int getVoipCountdownShortTime() {
+		return this.voipCountdownShortTime;
 	}
 
 	public String getSpringConfigLocation() {
