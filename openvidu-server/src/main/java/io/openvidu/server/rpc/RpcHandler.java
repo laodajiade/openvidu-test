@@ -1388,6 +1388,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		if (!message.isEmpty()) {
+            // update user online status in cache
+            cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
+                    UserOnlineStatusEnum.offline);
 			RpcConnection rpc = this.notificationService.closeRpcSession(rpcSessionId);
 			if (rpc != null && rpc.getSessionId() != null) {
 				io.openvidu.server.core.Session session = this.sessionManager.getSession(rpc.getSessionId());

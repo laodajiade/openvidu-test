@@ -17,32 +17,31 @@
 
 package io.openvidu.server.core;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
-import io.openvidu.server.common.enums.StreamType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CallDetailRecord;
+import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class SessionEventsHandler {
 
@@ -59,6 +58,9 @@ public class SessionEventsHandler {
 
 	@Autowired
 	protected OpenviduConfig openviduConfig;
+
+	@Autowired
+	protected CacheManage cacheManage;
 
 	Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -578,6 +580,9 @@ public class SessionEventsHandler {
 	}
 
 	public void closeRpcSession(String participantPrivateId) {
+		// update user online status in cache
+		cacheManage.updateUserOnlineStatus(rpcNotificationService.getRpcConnection(participantPrivateId).getUserUuid(),
+				UserOnlineStatusEnum.offline);
 		this.rpcNotificationService.closeRpcSession(participantPrivateId);
 	}
 
