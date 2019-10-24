@@ -258,6 +258,8 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public void accessOut(RpcConnection rpcConnection) {
 		sessionEventsHandler.closeRpcSession(rpcConnection.getParticipantPrivateId());
+		// update user online status in cache
+		cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
 	}
 
 	/**

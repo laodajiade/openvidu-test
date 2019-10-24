@@ -145,6 +145,7 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
 
 	public static final String APPLY_FOR_LOGIN_METHOD = "applyForLogin";
+	public static final String APPLY_FOR_LOGIN_TOKEN_PARAM = "token";
 	public static final String APPLY_FOR_LOGIN_DEVICE_NAME_PARAM = "deviceName";
 	public static final String APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM = "applicantSessionId";
 

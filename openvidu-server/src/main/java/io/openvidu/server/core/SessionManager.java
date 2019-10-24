@@ -25,8 +25,8 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
@@ -69,6 +69,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	protected TokenGenerator tokenGenerator;
+
+	@Autowired
+	protected CacheManage cacheManage;
 
 	@Resource
 	ConferenceMapper conferenceMapper;
