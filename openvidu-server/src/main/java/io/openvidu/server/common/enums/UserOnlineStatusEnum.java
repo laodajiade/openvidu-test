@@ -6,5 +6,6 @@ package io.openvidu.server.common.enums;
  */
 public enum UserOnlineStatusEnum {
     online,
-    offline
+    offline,
+    reconnect
 }

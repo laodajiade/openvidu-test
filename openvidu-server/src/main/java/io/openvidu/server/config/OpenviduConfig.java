@@ -138,10 +138,16 @@ public class OpenviduConfig {
 	private String springProfile;
 
 	@Value("${voip.countdown.longTime}")
-	private int voipCountdownLongTime;
+	private int voipCountdownLongTime;	// unit is minute
 
 	@Value("${voip.countdown.shortTime}")
-	private int voipCountdownShortTime;
+	private int voipCountdownShortTime;	// unit is minute
+
+	@Value("${voip.dealy.unit}")
+	private int voipDelayUnit;			// unit is minute
+
+	@Value("${voip.delay.maxTime}")
+	private int voipDelayMaxTime;		// unit is hour
 
 	private String finalUrl;
 	private List<String> kmsUrisList;
@@ -383,6 +389,14 @@ public class OpenviduConfig {
 
 	public int getVoipCountdownShortTime() {
 		return this.voipCountdownShortTime;
+	}
+
+	public int getVoipDelayUnit() {
+		return this.voipDelayUnit;
+	}
+
+	public int getVoipDelayMaxTime() {
+		return this.voipDelayMaxTime;
 	}
 
 	public String getSpringConfigLocation() {

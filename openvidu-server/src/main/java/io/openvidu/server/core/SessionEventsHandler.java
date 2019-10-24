@@ -91,8 +91,10 @@ public class SessionEventsHandler {
 					existingParticipant.getCreatedAt());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHARESTATUS_PARAM,
 					existingParticipant.getShareStatus().name());
-			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKER_PARAM,
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM,
 					existingParticipant.getSpeakerStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERHANDSTATUS_PARAM,
+					existingParticipant.getHandStatus().name());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWNAME_PARAM,
 					existingParticipant.getAppShowName());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,

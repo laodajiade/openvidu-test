@@ -570,17 +570,21 @@ public abstract class SessionManager {
 		sessionidPreset.remove(sessionId);
 	}
 
-	protected void updateConferenceInfo(String sessionId) {
+	public void updateConferenceInfo(String sessionId) {
 		// TODO. update sd_conference status info.
 		ConferenceSearch search = new ConferenceSearch();
 		search.setRoomId(sessionId);
 		search.setStatus(1);
-		Conference conference = conferenceMapper.selectBySearchCondition(search);
-		if (conference == null) {
+		List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
+		if (conferences == null || conferences.isEmpty()) {
 			log.warn("can not find conference {} when closed.", sessionId);
 			return;
 		}
 
+		conferences.forEach(conference -> endConferenceInfo(conference));
+	}
+
+	public void endConferenceInfo(Conference conference) {
 		conference.setStatus(2);
 		conference.setEndTime(new Date());
 		conferenceMapper.updateByPrimaryKey(conference);

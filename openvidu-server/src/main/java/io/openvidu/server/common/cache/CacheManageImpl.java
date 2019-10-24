@@ -36,4 +36,9 @@ public class CacheManageImpl implements CacheManage {
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId, "status", onlineStatusEnum.name());
     }
 
+    @Override
+    public void updateReconnectInfo(String userUuid, String privateId) {
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "reconnect", privateId);
+    }
+
 }

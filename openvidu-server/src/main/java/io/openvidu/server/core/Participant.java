@@ -53,6 +53,7 @@ public class Participant {
 	protected ParticipantSpeakerStatus speakerStatus;
 	protected ParticipantShareStatus shareStatus;
 	protected SessionPreset preset;
+	protected ParticipantJoinType joinType;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -82,6 +83,7 @@ public class Participant {
 		this.videoStatus = ParticipantVideoStatus.on;
 		this.speakerStatus = ParticipantSpeakerStatus.on;
 		this.shareStatus = ParticipantShareStatus.off;
+		this.joinType = ParticipantJoinType.active;
 	}
 
 	public String getFinalUserId() {
@@ -190,6 +192,10 @@ public class Participant {
 	public void setShareStatus(ParticipantShareStatus status) { this.shareStatus = status; }
 
 	public ParticipantShareStatus getShareStatus() { return this.shareStatus; }
+
+	public void setJoinType(ParticipantJoinType joinType) { this.joinType = joinType; }
+
+	public ParticipantJoinType getJoinType() { return this.joinType; }
 
 	public void setPreset(SessionPreset preset) { this.preset = preset; }
 

@@ -63,7 +63,8 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
     public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
-	public static final String JOINROOM_PEERSPEAKER_PARAM = "speakerStatus";
+	public static final String JOINROOM_PEERSPEAKERSTATUS_PARAM = "speakerStatus";
+	public static final String JOINROOM_PEERHANDSTATUS_PARAM = "handStatus";
 	public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
 	public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
 
@@ -297,6 +298,16 @@ public class ProtocolElements {
 	public static final String GET_NOT_FINISHED_ROOM_METHOD = "getNotFinishedRoom";
 	public static final String GET_NOT_FINISHED_ROOM_ID_PARAM = "roomId";
 	public static final String GET_NOT_FINISHED_ROOM_SUBJECT_PARAM = "subject";
+	public static final String GET_NOT_FINISHED_ROOM_REMAINTIME_PARAM = "remainTime";
+	public static final String GET_NOT_FINISHED_ROOM_ROLE_PARAM = "role";
+	public static final String GET_NOT_FINISHED_ROOM_AUDIOACTIVE_PARAM = "audioActive";
+	public static final String GET_NOT_FINISHED_ROOM_VIDEOACTIVE_PARAM = "videoActive";
+	public static final String GET_NOT_FINISHED_ROOM_SHARESTATUS_PARAM = "shareStatus";
+	public static final String GET_NOT_FINISHED_ROOM_SPEAKERSTATUS_PARAM = "speakerStatus";
+	public static final String GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM = "handStatus";
+
+	public static final String USER_BREAK_LINE_METHOD = "userBreakLine";
+	public static final String USER_BREAK_LINE_ID_PARAM = "userId";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
 

@@ -29,6 +29,7 @@ public enum ErrorCodeEnum {
     USER_NOT_STREAMING_ERROR_CODE(13008, "user not streaming"),
     ROOM_CAPACITY_LIMITED(13009, "room capacity limited"),
     USER_ALREADY_ONLINE(13010, "user already online"),
+    CONFERENCE_TOO_LONG(13011, "conference too long"),
 
     DEVICE_NOT_FOUND(13100, "device not found");
 

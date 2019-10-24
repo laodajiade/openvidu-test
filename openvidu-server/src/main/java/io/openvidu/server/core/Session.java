@@ -31,6 +31,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class Session implements SessionInterface {
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected int delayConfCnt;
-	protected final int delayTimeUnit = 20 * 60;	// 20min
+	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean notifyCountdown10Min = false;
 	protected boolean notifyCountdown1Min = false;
 
@@ -86,6 +87,7 @@ public class Session implements SessionInterface {
 		this.recordingManager = recordingManager;
 
 		this.delayConfCnt = 0;
+		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
 	}
 
 	public String getSessionId() {
@@ -110,7 +112,7 @@ public class Session implements SessionInterface {
 
 	public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
 
-	public void incDelayConfCnt() { this.delayConfCnt++; }
+	public int incDelayConfCnt() { return this.delayConfCnt++; }
 
 	public int getDelayConfCnt() { return this.delayConfCnt; }
 
@@ -123,6 +125,19 @@ public class Session implements SessionInterface {
 	public boolean getNotifyCountdown1Min() { return this.notifyCountdown1Min; }
 
 	public int getConfDelayTime() { return this.delayConfCnt * this.delayTimeUnit; }
+
+	public long getConfStartTime() {						// unit is ms
+		return getConference().getStartTime().getTime();
+	}
+
+	public long getConfEndTime() {							// unit is ms
+		int confDuration = Float.valueOf(getPresetInfo().getRoomDuration() * 60 * 60 * 1000).intValue() + getConfDelayTime() * 1000;
+		return getConfStartTime() + confDuration;
+	}
+
+	public long getConfRemainTime() {						// unit is second
+		return (getConfEndTime() - new Date().getTime()) / 1000;
+	}
 
 	/*public Set<Participant> getParticipants() {
 		checkClosed();
