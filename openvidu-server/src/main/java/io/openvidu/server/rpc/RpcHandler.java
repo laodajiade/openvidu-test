@@ -348,6 +348,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 String currentTerminalSocketSessionId = notificationService.getRpcConnections().stream().filter(s ->
                         Objects.equals(s.getUserUuid(), uuid)).findFirst().get().getParticipantPrivateId();
                 JsonObject param = new JsonObject();
+                param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_TOKEN_PARAM, token);
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_DEVICE_NAME_PARAM, device.getDeviceName());
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM, rpcConnection.getParticipantPrivateId());
                 notificationService.sendNotification(currentTerminalSocketSessionId, ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
