@@ -335,9 +335,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					break;
 				}
 
-                // 断线重连功能，未开发完，暂时先注释掉
+                // 断线重连功能
 //				for (RpcConnection c : notificationService.getRpcConnections()) {
-//					if (accessInUserId == c.getUserId()) {
+//					if (accessInUserId == c.getUserId() && !Objects.equals(rpcConnection, c)) {
 //						if (!deviceSerialNumber.equals(c.getSerialNumber())) {		// 同一个账号不同设备同时登录，暂时禁止这样操作
 //							log.warn("the account:{} now login another device:{}, previous device:{}", c.getUserUuid(),
 //									deviceSerialNumber, c.getSerialNumber());
@@ -350,12 +350,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //						break;
 //					}
 //				}
-//
-//                if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
-//                    break;
-//                }
 
 				rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
+			}
+
+			if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
+				break;
 			}
 
             rpcConnection.setUserUuid(String.valueOf(userInfo.get("userUuid")));
