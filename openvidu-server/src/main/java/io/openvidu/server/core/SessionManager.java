@@ -563,14 +563,23 @@ public abstract class SessionManager {
 	}
 
 	protected void cleanCollections(String sessionId) {
+		cleanCacheCollections(sessionId);
 		sessions.remove(sessionId);
 		sessionsNotActive.remove(sessionId);
 		sessionidParticipantpublicidParticipant.remove(sessionId);
 		sessionidFinalUsers.remove(sessionId);
 		sessionidAccumulatedRecordings.remove(sessionId);
 		sessionidTokenTokenobj.remove(sessionId);
-		sessionidConferenceInfo.remove(sessionId);
-		sessionidPreset.remove(sessionId);
+	}
+
+	public void cleanCacheCollections(String sessionId) {
+		if (sessionidConferenceInfo.containsKey(sessionId)) {
+			sessionidConferenceInfo.remove(sessionId);
+		}
+
+		if (sessionidPreset.containsKey(sessionId)) {
+			sessionidPreset.remove(sessionId);
+		}
 	}
 
 	public void updateConferenceInfo(String sessionId) {
