@@ -322,6 +322,7 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_VIDEO_STATUS_PARAM = "videoStatusInRoom";
     public static final String PARTICIPANTJOINED_SHARE_POWER_PARAM = "sharePowerInRoom";
     public static final String PARTICIPANTJOINED_SUBJECT_PARAM = "subject";
+	public static final String PARTICIPANTJOINED_ROOM_CAPACITY_PARAM = "roomCapacity";
     public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
     public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";

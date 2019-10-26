@@ -913,42 +913,46 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				request.getParams().get(ProtocolElements.JOINROOM_PASSWORD_PARAM).getAsString() : null;
 		String participantPrivatetId = rpcConnection.getParticipantPrivateId();
 		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
+		ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
-		ConferenceSearch search = new ConferenceSearch();
-		search.setRoomId(sessionId);
-		search.setStatus(1);
-		List<Conference> conference = conferenceMapper.selectBySearchCondition(search);
-		if (conference == null || conference.isEmpty()) {
-			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
-			return;
-		}
+		try {
+			do {
+				// verify room join type
+				String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
+				if (StreamType.MAJOR.equals(StreamType.valueOf(streamType)) &&
+						SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
+					if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
+						log.error("disable participant active join room:{}", sessionId);
+						errCode = ErrorCodeEnum.PERMISSION_LIMITED;
+						break;
+					}
+				}
 
-        // 校验入会方式
-		String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
-        if (StreamType.MAJOR.equals(StreamType.valueOf(streamType)) &&
-				SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
-        	if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
-				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-						null, ErrorCodeEnum.PERMISSION_LIMITED);
-				return ;
-			}
-		}
+				ConferenceSearch search = new ConferenceSearch();
+				search.setRoomId(sessionId);
+				search.setStatus(1);
+				List<Conference> conference = conferenceMapper.selectBySearchCondition(search);
+				if (conference == null || conference.isEmpty()) {
+					log.error("can not find roomId:{} in data layer", sessionId);
+					errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+					break;
+				}
 
-        // verify conference password
-        if (!StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)) {
-            this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-                    null, ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR);
-            return;
-        }
-		// verify conference ever locked
-		if (!Objects.isNull(sessionManager.getSession(sessionId)) && sessionManager.getSession(sessionId).isLocking()) {
-			this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),null,
-					ErrorCodeEnum.CONFERENCE_IS_LOCKED);
-			return;
-		}
+				// verify conference password
+				if (!StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)) {
+					log.error("invalid room password:{}", password);
+					errCode = ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR;
+					break;
+				}
 
-		// check preset and set share power in room info. for example: sharePower.
+				// verify conference ever locked
+				if (!Objects.isNull(sessionManager.getSession(sessionId)) && sessionManager.getSession(sessionId).isLocking()) {
+					log.error("room:{} is locked.", sessionId);
+					errCode = ErrorCodeEnum.CONFERENCE_IS_LOCKED;
+					break;
+				}
+
+				// check preset and set share power in room info. for example: sharePower.
 //		if (Objects.equals(streamType, StreamType.SHARING.name())) {
 //			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
 //			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
@@ -958,128 +962,102 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //			}
 //		}
 
-		// Check room capacity limit.
-		if (!Objects.isNull(sessionManager.getSession(sessionId))) {
-			Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
-			if (StreamType.MAJOR.equals(streamType) && majorParts.size() >= preset.getRoomCapacity()) {
-				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-						null, ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
-				return ;
-			}
-		}
-
-		// remove previous participant if reconnect
-		updateReconnectInfo(rpcConnection);
-
-		InetAddress remoteAddress = null;
-		GeoLocation location = null;
-		Object obj = rpcConnection.getSession().getAttributes().get("remoteAddress");
-		if (obj != null && obj instanceof InetAddress) {
-			remoteAddress = (InetAddress) obj;
-			try {
-				location = this.geoLocationByIp.getLocationByIp(remoteAddress);
-			} catch (IOException e) {
-				e.printStackTrace();
-				location = null;
-			} catch (Exception e) {
-				log.warn("Error getting address location: {}", e.getMessage());
-				location = null;
-			}
-		}
-
-		HttpSession httpSession = (HttpSession) rpcConnection.getSession().getAttributes().get("httpSession");
-
-		JsonObject sessions = (JsonObject) httpSession.getAttribute("openviduSessions");
-		if (sessions == null) {
-			// First time this final user connects to an OpenVidu session in this active
-			// WebSocketSession. This is a new final user connecting to OpenVidu Server
-			JsonObject json = new JsonObject();
-			json.addProperty(sessionId, System.currentTimeMillis());
-			httpSession.setAttribute("openviduSessions", json);
-		} else {
-			// This final user has already been connected to an OpenVidu session in this
-			// active WebSocketSession
-			if (sessions.has(sessionId)) {
-				if (sessionManager.getSession(sessionId) != null) {
-					// The previously existing final user is reconnecting to an OpenVidu session
-					log.info("Final user reconnecting");
-				} else if (sessionManager.getSessionNotActive(sessionId) != null) {
-					// The previously existing final user is the first one connecting to a new
-					// OpenVidu session that shares a sessionId with a previously closed session
-					// (same customSessionId)
-					sessions.addProperty(sessionId, System.currentTimeMillis());
+				// TODO. calc offline. for reconnect.
+				// verify room capacity limit.
+				if (!Objects.isNull(sessionManager.getSession(sessionId))) {
+					Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
+					if (StreamType.MAJOR.equals(streamType) && majorParts.size() >= preset.getRoomCapacity()) {
+						log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
+						errCode = ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
+						break;
+					}
 				}
-			} else {
-				// The previously existing final user is connecting to a new session
-				sessions.addProperty(sessionId, System.currentTimeMillis());
-			}
-		}
 
-		boolean recorder = false;
+				// remove previous participant if reconnect
+				updateReconnectInfo(rpcConnection);
+				InetAddress remoteAddress = null;
+				GeoLocation location = null;
+				boolean recorder = false;
 
-		try {
-			recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
-		} catch (RuntimeException e) {
-			// Nothing happens. 'recorder' param to false
-		}
+				try {
+					recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
+				} catch (RuntimeException e) {
+					// Nothing happens. 'recorder' param to false
+				}
 
-		boolean generateRecorderParticipant = false;
+				boolean generateRecorderParticipant = false;
+				if (openviduConfig.isOpenViduSecret(secret)) {
+					sessionManager.newInsecureParticipant(participantPrivatetId);
+					if (recorder) {
+						generateRecorderParticipant = true;
+					}
+				}
 
-		if (openviduConfig.isOpenViduSecret(secret)) {
-			sessionManager.newInsecureParticipant(participantPrivatetId);
-			if (recorder) {
-				generateRecorderParticipant = true;
-			}
-		}
+				if (!sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
+					log.error("Metadata format set in client-side is incorrect");
+					errCode = ErrorCodeEnum.SERVER_UNKNOWN_ERROR;
+					break;
+				}
 
-        if (sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
-            Participant participant;
-            if (generateRecorderParticipant) {
-                participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
-            } else {
-                participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
-						role, streamType, location, platform,
-						httpSession.getId().substring(0, Math.min(16, httpSession.getId().length())));
-            }
-
-			String serialNumber = rpcConnection.getSerialNumber();
-            Long userId = rpcConnection.getUserId();
-            participant.setPreset(preset);
-            participant.setJoinType(ParticipantJoinType.valueOf(joinType));
-            if (StringUtils.isEmpty(serialNumber)) {
-            	User user = userMapper.selectByPrimaryKey(userId);
-
-				// User and dept info.
-				UserDeptSearch udSearch = new UserDeptSearch();
-				udSearch.setUserId(userId);
-				UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
-				Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-
-				participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
-			} else {
-            	DeviceSearch devSearch = new DeviceSearch();
-				devSearch.setSerialNumber(serialNumber);
-            	Device device = deviceMapper.selectBySearchCondition(devSearch);
-				DeviceDeptSearch ddSearch = new DeviceDeptSearch();
-				ddSearch.setSerialNumber(serialNumber);
-				List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
-				if (Objects.isNull(devDeptCom) || devDeptCom.isEmpty()) {
-					log.warn("devDep cant select serialNumber:{}", serialNumber);
-					participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") ");
+				Participant participant;
+				if (generateRecorderParticipant) {
+					participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
 				} else {
-					Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
-					participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+					participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
+							role, streamType, location, platform,
+							participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())));
+				}
+
+				String serialNumber = rpcConnection.getSerialNumber();
+				Long userId = rpcConnection.getUserId();
+				participant.setPreset(preset);
+				participant.setJoinType(ParticipantJoinType.valueOf(joinType));
+				if (StringUtils.isEmpty(serialNumber)) {
+					User user = userMapper.selectByPrimaryKey(userId);
+
+					// User and dept info.
+					UserDeptSearch udSearch = new UserDeptSearch();
+					udSearch.setUserId(userId);
+					UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
+					Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
+
+					participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
+				} else {
+					DeviceSearch devSearch = new DeviceSearch();
+					devSearch.setSerialNumber(serialNumber);
+					Device device = deviceMapper.selectBySearchCondition(devSearch);
+					DeviceDeptSearch ddSearch = new DeviceDeptSearch();
+					ddSearch.setSerialNumber(serialNumber);
+					List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
+					if (Objects.isNull(devDeptCom) || devDeptCom.isEmpty()) {
+						log.warn("devDep cant select serialNumber:{}", serialNumber);
+						participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") ");
+					} else {
+						Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
+						participant.setAppShowInfo(device.getDeviceName(), "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+					}
+				}
+
+				rpcConnection.setSessionId(sessionId);
+				sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+			} while (false);
+
+			if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
+				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+						null, errCode);
+
+				log.error("join room:{} failed. errCode:{} message:{}", sessionId, errCode.getCode(), errCode.getMessage());
+				if (isModerator(role)) {
+					sessionManager.cleanCacheCollections(sessionId);
+					cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), false, EndReason.forceCloseSessionByUser);
 				}
 			}
-
-            rpcConnection.setSessionId(sessionId);
-            sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
-        } else {
-            log.error("ERROR: Metadata format set in client-side is incorrect");
-            throw new OpenViduException(Code.USER_METADATA_FORMAT_INVALID_ERROR_CODE,
-                    "Unable to join room. The metadata received from the client-side has an invalid format");
-        }
-
+		} catch (Exception e) {
+			log.error("Unknown error e:{}", e);
+			if (isModerator(role)) {
+				sessionManager.cleanCacheCollections(sessionId);
+			}
+		}
 	}
 
 	private void leaveRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -1411,18 +1389,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	public void afterConnectionEstablished(Session rpcSession) throws Exception {
 		log.info("After connection established for WebSocket session: {}", rpcSession.getSessionId());
 		if (rpcSession instanceof WebSocketServerSession) {
-			InetAddress address;
-			HttpHeaders headers = ((WebSocketServerSession) rpcSession).getWebSocketSession().getHandshakeHeaders();
-			if (headers.containsKey("x-real-ip")) {
-				address = InetAddress.getByName(headers.get("x-real-ip").get(0));
-			} else {
-				address = ((WebSocketServerSession) rpcSession).getWebSocketSession().getRemoteAddress().getAddress();
-			}
-			rpcSession.getAttributes().put("remoteAddress", address);
-
-			HttpSession httpSession = (HttpSession) ((WebSocketServerSession) rpcSession).getWebSocketSession()
-					.getAttributes().get("httpSession");
-			rpcSession.getAttributes().put("httpSession", httpSession);
+//			InetAddress address;
+//			HttpHeaders headers = ((WebSocketServerSession) rpcSession).getWebSocketSession().getHandshakeHeaders();
+//			if (headers.containsKey("x-real-ip")) {
+//				address = InetAddress.getByName(headers.get("x-real-ip").get(0));
+//			} else {
+//				address = ((WebSocketServerSession) rpcSession).getWebSocketSession().getRemoteAddress().getAddress();
+//			}
+//			rpcSession.getAttributes().put("remoteAddress", address);
+//
+//			HttpSession httpSession = (HttpSession) ((WebSocketServerSession) rpcSession).getWebSocketSession()
+//					.getAttributes().get("httpSession");
+//			rpcSession.getAttributes().put("httpSession", httpSession);
 		}
 	}
 
@@ -1940,7 +1918,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private boolean isModerator(String role) {
 		// TODO. Fixme. user account have moderator power.
-		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
+		if (Objects.equals(OpenViduRole.MODERATOR.name(), role)) {
+//		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
 			return true;
 		}
 		return false;

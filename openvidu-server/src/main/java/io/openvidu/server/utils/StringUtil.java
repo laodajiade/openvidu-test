@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class StringUtil {
     private static Random random = new Random();
-    private static final String[] chars = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+    private static final String[] chars = { "0", "1", "2", "3", "5", "6", "7", "8", "9", "4", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
     public static void assertNotEmpty(String param, String paramName) {
         if (param == null)
@@ -23,9 +23,9 @@ public class StringUtil {
 
     public static String createSessionId() {
         StringBuffer sb = new StringBuffer();
-        sb.append("34");
+        sb.append("2");
         for (int i = 0; i < 9; i++) {
-            sb.append(chars[random.nextInt(10)]);
+            sb.append(chars[random.nextInt(9)]);
         }
         return sb.toString();
     }

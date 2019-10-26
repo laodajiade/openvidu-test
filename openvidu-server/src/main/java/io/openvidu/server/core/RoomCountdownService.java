@@ -31,18 +31,13 @@ public class RoomCountdownService {
         SessionManager sessionManager = handler.getSessionManager();
         sessionManager.getSessions().forEach(s -> {
             String sessionId = s.getSessionId();
-//            Date confStartTime = s.getConference().getStartTime();
-//            int confDuration = Float.valueOf(s.getPresetInfo().getRoomDuration() * 60 * 60 * 1000).intValue() + s.getConfDelayTime() * 1000;
-//            long confEndTime = confStartTime.getTime() + confDuration;
-//            long now = new Date().getTime();
-//            long remainTime = (confEndTime - now) / 1000;
             long confStartTime = s.getConfStartTime();
             long confEndTime = s.getConfEndTime();
             long remainTime = s.getConfRemainTime();
             int voipCountdownLongTime = openviduConfig.getVoipCountdownLongTime();
             int voipCountdownShortTime = openviduConfig.getVoipCountdownShortTime();
 
-            log.info("sessionId:{} remainTime:{} startTime:{} confEndTime:{}", sessionId, remainTime, confStartTime, confEndTime);
+//            log.info("sessionId:{} remainTime:{} startTime:{} confEndTime:{}", sessionId, remainTime, confStartTime, confEndTime);
             if (remainTime <= 0) {
                 log.info("session:{} no have remain time. should be closed.", sessionId);
                 handler.cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
