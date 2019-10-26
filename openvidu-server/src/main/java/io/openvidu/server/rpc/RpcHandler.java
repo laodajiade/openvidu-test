@@ -296,7 +296,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
     private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
-		request.setSessionId(rpcConnection.getParticipantPrivateId());
 	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
