@@ -145,6 +145,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //        }
 
 		rpcConnection = notificationService.addTransaction(transaction, request);
+		request.setSessionId(rpcConnection.getParticipantPrivateId());
+
 		String sessionId = rpcConnection.getSessionId();
 		if (sessionId == null && !ProtocolElements.FILTERS.contains(request.getMethod())) {
 			log.warn(
@@ -294,6 +296,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
     private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
+		request.setSessionId(rpcConnection.getParticipantPrivateId());
 	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
@@ -1526,8 +1529,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	public static int getIntParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
-			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+			throw new RuntimeException("RMBER");
 		}
 		return request.getParams().get(key).getAsInt();
 	}
@@ -2049,5 +2051,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		return true;
+	}
+
+	public RpcNotificationService getNotificationService() {
+		return notificationService;
 	}
 }
