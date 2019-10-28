@@ -44,13 +44,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -410,9 +407,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		sessionManager.accessOut(rpcConnection);
-        // update user online status in cache
-        cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
-    }
+	}
 
 	private void createRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
