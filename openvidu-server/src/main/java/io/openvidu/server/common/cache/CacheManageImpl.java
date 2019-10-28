@@ -5,6 +5,7 @@ import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Map;
@@ -32,8 +33,9 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
-    public void updateUserOnlineStatus(String userId, UserOnlineStatusEnum onlineStatusEnum) {
-        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId, "status", onlineStatusEnum.name());
+    public void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum) {
+        if (StringUtils.isEmpty(uuid)) return;
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid, "status", onlineStatusEnum.name());
     }
 
     @Override

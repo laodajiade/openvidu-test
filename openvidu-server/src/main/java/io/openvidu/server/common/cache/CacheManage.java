@@ -14,7 +14,7 @@ public interface CacheManage {
 
     String getUserAuthorization(String userId);
 
-    void updateUserOnlineStatus(String userId, UserOnlineStatusEnum onlineStatusEnum);
+    void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum);
 
     void updateReconnectInfo(String userUuid, String privateId);
 }
