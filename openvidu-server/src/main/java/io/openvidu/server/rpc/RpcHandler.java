@@ -1407,7 +1407,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String message = "";
 
 		// update user online status in cache
-		cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
+        if (notificationService.getRpcConnection(rpcSessionId) != null)
+		    cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
 				UserOnlineStatusEnum.offline);
 		if ("Close for not receive ping from client".equals(status)) {
 			message = "Evicting participant with private id {} because of a network disconnection";
@@ -1453,8 +1454,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Override
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
 		// update user online status in cache
-		cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
-				UserOnlineStatusEnum.offline);
+        if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null)
+            cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
+                    UserOnlineStatusEnum.offline);
 		log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
 				exception.getMessage());
 		if ("IOException".equals(exception.getClass().getSimpleName())
