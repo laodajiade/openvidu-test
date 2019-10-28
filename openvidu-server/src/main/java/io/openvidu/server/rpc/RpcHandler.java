@@ -335,7 +335,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
                 // 断线重连功能
 				for (RpcConnection c : notificationService.getRpcConnections()) {
-					if (accessInUserId == c.getUserId() && !Objects.equals(rpcConnection, c)) {
+					if (accessInUserId.compareTo(c.getUserId()) == 0 && !Objects.equals(rpcConnection, c)) {
 						if (!deviceSerialNumber.equals(c.getSerialNumber())) {		// 同一个账号不同设备同时登录，暂时禁止这样操作
 							log.warn("the account:{} now login another device:{}, previous device:{}", c.getUserUuid(),
 									deviceSerialNumber, c.getSerialNumber());
@@ -358,11 +358,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
             rpcConnection.setUserUuid(String.valueOf(userInfo.get("userUuid")));
             rpcConnection.setUserId(Long.valueOf(String.valueOf(userInfo.get("userId"))));
+
+            // TODO temporary add for debug
+			rpcConnection.setMacAddr(deviceMac);
 		} while (false);
 
 		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
 			log.warn("accessIn failed. errCode:{}", errCode.name());
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
+			// TODO temporary add for debug
+			JsonObject result = new JsonObject();
+			result.addProperty(ProtocolElements.ACCESS_IN_MAC_PARAM, StringUtils.isEmpty(deviceMac) ? "" : deviceMac);
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE) ? result : null, errCode);
+//			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
 			if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
                 sessionManager.accessOut(rpcConnection);
             } else {

@@ -44,6 +44,7 @@ public class RpcConnection {
 	private Long userId;
 	private String userUuid;	// the uuid of user
 	private String serialNumber;
+	private String macAddr;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -74,6 +75,14 @@ public class RpcConnection {
 	public String getSerialNumber() { return this.serialNumber; }
 
 	public void setDeviceSerailNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+	public String getMacAddr() {
+		return macAddr;
+	}
+
+	public void setMacAddr(String macAddr) {
+		this.macAddr = macAddr;
+	}
 
 	public String getSessionId() {
 		return sessionId;
