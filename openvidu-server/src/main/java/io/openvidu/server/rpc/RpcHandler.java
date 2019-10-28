@@ -1405,6 +1405,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
 
+		// update user online status in cache
+		cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
+				UserOnlineStatusEnum.offline);
 		if ("Close for not receive ping from client".equals(status)) {
 			message = "Evicting participant with private id {} because of a network disconnection";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
@@ -1418,9 +1421,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		if (!message.isEmpty()) {
-            // update user online status in cache
-            cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
-                    UserOnlineStatusEnum.offline);
 			RpcConnection rpc = this.notificationService.closeRpcSession(rpcSessionId);
 			if (rpc != null && rpc.getSessionId() != null) {
 				io.openvidu.server.core.Session session = this.sessionManager.getSession(rpc.getSessionId());
@@ -1952,8 +1952,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonObject params = new JsonObject();
 
 		params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, userId);
-		sessionManager.getParticipants(sessionId).forEach(p ->
-				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params));
+		sessionManager.getParticipants(sessionId).forEach( p -> {
+			if (notificationService.getRpcConnection(p.getParticipantPrivateId()) != null)
+				notificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.USER_BREAK_LINE_METHOD, params);});
 	}
 
 	private void getNotFinishedRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
