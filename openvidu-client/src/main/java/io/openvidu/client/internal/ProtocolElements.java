@@ -310,7 +310,7 @@ public class ProtocolElements {
 	public static final String USER_BREAK_LINE_METHOD = "userBreakLine";
 	public static final String USER_BREAK_LINE_ID_PARAM = "userId";
 
-	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
+	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD, GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
