@@ -961,7 +961,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				// verify room capacity limit.
 				if (!Objects.isNull(sessionManager.getSession(sessionId))) {
 					Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
-					if (StreamType.MAJOR.equals(streamType) && majorParts.size() >= preset.getRoomCapacity()) {
+					if (Objects.equals(StreamType.MAJOR.name(), streamType) && majorParts.size() >= preset.getRoomCapacity()) {
 						log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
 						errCode = ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
 						break;
