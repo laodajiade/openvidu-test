@@ -471,6 +471,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				if (sessionId.equals(userUuid)) {
 					// force close previous room when sessionId is userUuid.
 					log.warn("conference:{} will be force closed.", sessionId);
+					// TODO
 					conferences.forEach(conference -> sessionManager.endConferenceInfo(conference));
 					cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
 					return false;
