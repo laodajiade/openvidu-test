@@ -32,6 +32,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.recording.Recording;
+import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,16 @@ public class SessionEventsHandler {
 					existingParticipant.getAppShowName());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,
 					existingParticipant.getAppShowDesc());
+			RpcConnection rpc = rpcNotificationService.getRpcConnection(existingParticipant.getParticipantPrivateId());
+			if (Objects.isNull(rpc)) {
+				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
+						UserOnlineStatusEnum.offline.name());
+			} else {
+				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
+				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, Objects.isNull(userInfo) ?
+						UserOnlineStatusEnum.offline.name() : String.valueOf(userInfo.get("status")));
+			}
+
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
@@ -233,6 +244,8 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM, sdpAnswer);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_CREATEDAT_PARAM, createdAt);
+		result.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM, participant.getAppShowName());
+		result.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM, participant.getAppShowDesc());
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 
 		JsonObject params = new JsonObject();
