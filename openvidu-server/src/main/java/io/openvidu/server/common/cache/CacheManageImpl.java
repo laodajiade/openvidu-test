@@ -43,4 +43,9 @@ public class CacheManageImpl implements CacheManage {
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "reconnect", privateId);
     }
 
+    @Override
+    public void updateDeviceName(String userUuid, String deviceName) {
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
+    }
+
 }

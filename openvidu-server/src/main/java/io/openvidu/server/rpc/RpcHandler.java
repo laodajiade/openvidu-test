@@ -250,6 +250,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.INVITE_PARTICIPANT_METHOD:
 				inviteParticipant(rpcConnection, request);
 				break;
+			case ProtocolElements.REFUSE_INVITE_METHOD:
+				refuseInvite(rpcConnection, request);
+				break;
 			case ProtocolElements.GET_PRESET_INFO_METHOD:
 				getPresetInfo(rpcConnection, request);
 				break;
@@ -386,6 +389,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 		// update user online status in cache
+		cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
         cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
 
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -1678,6 +1682,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
+		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
+		String username = String.valueOf(userInfo.get("username"));
+		String deviceName = userInfo.containsKey("deviceName") ? String.valueOf(userInfo.get("deviceName")) : null;
+
 		// find the target rpc connection by targetId list and notify info.
 		Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
 		targetIds.forEach(t -> {
@@ -1686,11 +1694,33 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					JsonObject params = new JsonObject();
 					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
 					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM));
-					params.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM, t);
+					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, t);
+					params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, username);
+					if (!StringUtils.isEmpty(deviceName)) {
+						params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
+					}
 					this.notificationService.sendNotification(c.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
 				}
 			});
 		});
+
+		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+	}
+
+	private void refuseInvite(RpcConnection rpcConnection, Request<JsonObject> request) {
+		String sessionId = getStringParam(request, ProtocolElements.REFUSE_INVITE_ID_PARAM);
+		String sourceId = getStringParam(request, ProtocolElements.REFUSE_INVITE_SOURCE_ID_PARAM);
+
+		Set<Participant> participants = sessionManager.getParticipants(sessionId);
+		if (!CollectionUtils.isEmpty(participants)) {
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.REFUSE_INVITE_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.REFUSE_INVITE_SOURCE_ID_PARAM, sourceId);
+
+			for (Participant p: participants) {
+				this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.REFUSE_INVITE_METHOD, params);
+			}
+		}
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}

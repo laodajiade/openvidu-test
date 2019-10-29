@@ -239,6 +239,12 @@ public class ProtocolElements {
 	public static final String INVITE_PARTICIPANT_ID_PARAM = "roomId";
 	public static final String INVITE_PARTICIPANT_SOURCE_ID_PARAM = "sourceId";
 	public static final String INVITE_PARTICIPANT_TARGET_ID_PARAM = "targetId";
+	public static final String INVITE_PARTICIPANT_USERNAME_PARAM = "username";
+	public static final String INVITE_PARTICIPANT_DEVICE_NAME_PARAM = "deviceName";
+
+	public static final String REFUSE_INVITE_METHOD = "refuseInvite";
+	public static final String REFUSE_INVITE_ID_PARAM = "roomId";
+	public static final String REFUSE_INVITE_SOURCE_ID_PARAM = "sourceId";
 
 	public static final String GET_ORG_METHOD = "getOrgList";
 	public static final String GET_ORG_NAME_PARAM = "organizationName";

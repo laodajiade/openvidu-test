@@ -17,4 +17,6 @@ public interface CacheManage {
     void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum);
 
     void updateReconnectInfo(String userUuid, String privateId);
+
+    void updateDeviceName(String userUuid, String deviceName);
 }
