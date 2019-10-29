@@ -67,6 +67,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERHANDSTATUS_PARAM = "handStatus";
 	public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
 	public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
+	public static final String JOINROOM_PEERONLINESTATUS_PARAM = "onlineStatus";
 
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
@@ -359,6 +360,9 @@ public class ProtocolElements {
 	public static final String PARTICIPANTPUBLISHED_FRAMERATE_PARAM = "frameRate";
 	public static final String PARTICIPANTPUBLISHED_VIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String PARTICIPANTPUBLISHED_FILTER_PARAM = "filter";
+	public static final String PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM = "appShowName";
+	public static final String PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM = "appShowDesc";
+
 
 	public static final String PARTICIPANTUNPUBLISHED_METHOD = "participantUnpublished";
 	public static final String PARTICIPANTUNPUBLISHED_NAME_PARAM = "connectionId";
