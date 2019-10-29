@@ -299,6 +299,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
 		ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         Device device = null;
+		RpcConnection targetRpc = null;
 		boolean reconnect = false;
 
 		do {
@@ -317,9 +318,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 
 			if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
-				log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
-				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
-				break;
+				targetRpc = notificationService.getRpcConnections().stream().filter(s ->
+						Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);
+				if (!Objects.isNull(targetRpc) && !Objects.equals(targetRpc.getParticipantPrivateId(),
+						rpcConnection.getParticipantPrivateId())) {
+					log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
+					errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
+					break;
+				}
 			}
 
 			// TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
@@ -375,16 +381,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 sessionManager.accessOut(rpcConnection);
             } else {
 			    // send login apply notify to current terminal
-				RpcConnection targetRpc = notificationService.getRpcConnections().stream().filter(s ->
-						Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);
 				if (Objects.isNull(targetRpc)) return;
-                String currentTerminalSocketSessionId = targetRpc.getParticipantPrivateId();
                 JsonObject param = new JsonObject();
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_TOKEN_PARAM, token);
                 if (!StringUtils.isEmpty(deviceSerialNumber))
                 	param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_DEVICE_NAME_PARAM, deviceSerialNumber);
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM, rpcConnection.getParticipantPrivateId());
-                notificationService.sendNotification(currentTerminalSocketSessionId, ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
+                notificationService.sendNotification(targetRpc.getParticipantPrivateId(), ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
             }
 			return;
 		}
