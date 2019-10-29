@@ -1845,11 +1845,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
 			if (Objects.isNull(userInfo)) continue;
-			if (Objects.equals(UserOnlineStatusEnum.online.name(), userInfo.get("status"))) {
+			String status = String.valueOf(userInfo.get("status"));
+			if (Objects.equals(UserOnlineStatusEnum.online.name(), status)) {
 				onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
 				onlineUserList.put(c.getUserId(), c.getSerialNumber());
-			} else {
-				log.info("reconnect userId:{} serialNumber:{}", c.getUserId(), c.getSerialNumber(), userInfo.get("status"));
+				log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
 			}
 		}
 
