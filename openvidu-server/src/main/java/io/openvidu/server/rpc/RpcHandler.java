@@ -320,10 +320,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			}
 			accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
-			rpcConnection.setUserUuid(uuid);
 			rpcConnection.setMacAddr(deviceMac);
 			rpcConnection.setUserId(accessInUserId);
-			log.info("rpcConnection userUuid:{}, macAddr:{}, userId:{}", rpcConnection.getUserUuid(), rpcConnection.getMacAddr(), rpcConnection.getUserId());
 
 			// verify device valid & TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
 			if (!StringUtils.isEmpty(deviceSerialNumber)) {
@@ -336,20 +334,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
 			}
 
+			previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
+				if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
+					log.info("find same login user:{}, previous connection id:{}, ", uuid, s.getParticipantPrivateId());
+					log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
+					return true;
+				} else {
+					log.info("not found previous connection belong to the same user:{}, connection id:{}", uuid, s.getParticipantPrivateId());
+					return false;
+				}
+			}).findFirst().orElse(null);
+
 			// SINGLE LOGIN
 			if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
 				/*previousRpc = notificationService.getRpcConnections().stream().filter(s -> !Objects.equals(rpcConnection, s)
 						&& Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);*/
-                previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-                    if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
-                        log.info("find same login user:{}, previous connection id:{}, ", uuid, s.getParticipantPrivateId());
-                        log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
-                        return true;
-                    } else {
-                        log.info("not found previous connection belong to the same user:{}, connection id:{}", uuid, s.getParticipantPrivateId());
-                        return false;
-                    }
-                }).findFirst().orElse(null);
 				if (!Objects.isNull(previousRpc) && !Objects.equals(previousRpc.getParticipantPrivateId(),
 						rpcConnection.getParticipantPrivateId()) && !Objects.equals(deviceMac, previousRpc.getMacAddr())) {
 					log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
@@ -368,9 +367,15 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 
 			if (!Objects.isNull(previousRpc)) {
-				errCode = ErrorCodeEnum.INVALID_METHOD_CALL;
-				break;
+				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
+				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, errCode);
+				sessionManager.accessOut(rpcConnection);
+				return;
 			}
+
+			rpcConnection.setUserUuid(uuid);
+			log.info("rpcConnection userUuid:{}, macAddr:{}, userId:{}", rpcConnection.getUserUuid(), rpcConnection.getMacAddr(), rpcConnection.getUserId());
 
 			/*for (RpcConnection c : notificationService.getRpcConnections()) {
 				if (!Objects.isNull(c.getUserId()) && accessInUserId.compareTo(c.getUserId()) == 0
@@ -1492,19 +1497,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Override
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
 		// update user online status in cache
-        if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null)
-            cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
-                    UserOnlineStatusEnum.offline);
-		log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
-				exception.getMessage());
-		if ("IOException".equals(exception.getClass().getSimpleName())
-				&& "Broken pipe".equals(exception.getCause().getMessage())) {
-			log.warn("Parcipant with private id {} unexpectedly closed the websocket", rpcSession.getSessionId());
-		}
-		if ("EOFException".equals(exception.getClass().getSimpleName())) {
-			// Store WebSocket connection interrupted exception for this web socket to
-			// automatically evict the participant on "afterConnectionClosed" event
-			this.webSocketEOFTransportError.put(rpcSession.getSessionId(), true);
+		if (rpcSession != null) {
+			if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null)
+				cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
+						UserOnlineStatusEnum.offline);
+			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
+					exception.getMessage());
+			if ("IOException".equals(exception.getClass().getSimpleName())
+					&& "Broken pipe".equals(exception.getCause().getMessage())) {
+				log.warn("Parcipant with private id {} unexpectedly closed the websocket", rpcSession.getSessionId());
+			}
+			if ("EOFException".equals(exception.getClass().getSimpleName())) {
+				// Store WebSocket connection interrupted exception for this web socket to
+				// automatically evict the participant on "afterConnectionClosed" event
+				this.webSocketEOFTransportError.put(rpcSession.getSessionId(), true);
+			}
 		}
 	}
 
@@ -2023,8 +2030,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, userId);
 
 		sessionManager.getParticipants(sessionId).forEach(p -> {
-			if (notificationService.getRpcConnection(p.getParticipantPrivateId()) != null)
-				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+			RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
+			if (rpc != null) {
+				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
+					notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+				}
+			}
 		});
 	}
 
@@ -2039,8 +2050,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		String oldPrivateId = String.valueOf(userInfo.get("reconnect"));
+		log.info("userInfo status:{}, reconnect:{}", userInfo.get("status"), userInfo.get("reconnect"));
 		if (!Objects.equals(UserOnlineStatusEnum.reconnect.name(), userInfo.get("status")) ||
 				StringUtils.isEmpty(oldPrivateId)) {
+			log.info("---------------------------------------------");
 			this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 			return ;
 		}
