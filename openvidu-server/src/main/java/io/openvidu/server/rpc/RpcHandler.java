@@ -335,7 +335,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
                 // 断线重连功能
 				for (RpcConnection c : notificationService.getRpcConnections()) {
-					if (accessInUserId.compareTo(c.getUserId()) == 0 && !Objects.equals(rpcConnection, c)) {
+					if (!Objects.isNull(c.getUserId()) && accessInUserId.compareTo(c.getUserId()) == 0
+							&& !Objects.equals(rpcConnection, c)) {
 						if (!deviceSerialNumber.equals(c.getSerialNumber())) {		// 同一个账号不同设备同时登录，暂时禁止这样操作
 							log.warn("the account:{} now login another device:{}, previous device:{}", c.getUserUuid(),
 									deviceSerialNumber, c.getSerialNumber());
@@ -374,8 +375,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 sessionManager.accessOut(rpcConnection);
             } else {
 			    // send login apply notify to current terminal
-                String currentTerminalSocketSessionId = notificationService.getRpcConnections().stream().filter(s ->
-                        Objects.equals(s.getUserUuid(), uuid)).findFirst().get().getParticipantPrivateId();
+				RpcConnection targetRpc = notificationService.getRpcConnections().stream().filter(s ->
+						Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);
+				if (Objects.isNull(targetRpc)) return;
+                String currentTerminalSocketSessionId = targetRpc.getParticipantPrivateId();
                 JsonObject param = new JsonObject();
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_TOKEN_PARAM, token);
                 if (!StringUtils.isEmpty(deviceSerialNumber))
