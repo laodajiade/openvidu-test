@@ -256,8 +256,10 @@ public abstract class SessionManager {
 //				return participant;
 			}
 		}
-		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-				"No participant with private id '" + participantPrivateId + "' was found");
+//		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+//				"No participant with private id '" + participantPrivateId + "' was found");
+		log.warn("No participant with private id:{} was found.", participantPrivateId);
+		return null;
 	}
 
 	/**

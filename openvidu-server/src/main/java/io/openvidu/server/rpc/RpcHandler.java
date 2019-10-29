@@ -323,6 +323,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			rpcConnection.setUserUuid(uuid);
 			rpcConnection.setMacAddr(deviceMac);
 			rpcConnection.setUserId(accessInUserId);
+			log.info("rpcConnection userUuid:{}, macAddr:{}, userId:{}", rpcConnection.getUserUuid(), rpcConnection.getMacAddr(), rpcConnection.getUserId());
 
 			// verify device valid & TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
 			if (!StringUtils.isEmpty(deviceSerialNumber)) {
@@ -337,8 +338,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			// SINGLE LOGIN
 			if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
-				previousRpc = notificationService.getRpcConnections().stream().filter(s -> !Objects.equals(rpcConnection, s)
-						&& Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);
+				/*previousRpc = notificationService.getRpcConnections().stream().filter(s -> !Objects.equals(rpcConnection, s)
+						&& Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);*/
+                previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
+                    if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
+                        log.info("find same login user:{}, previous connection id:{}, ", uuid, s.getParticipantPrivateId());
+                        log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
+                        return true;
+                    } else {
+                        log.info("not found previous connection belong to the same user:{}, connection id:{}", uuid, s.getParticipantPrivateId());
+                        return false;
+                    }
+                }).findFirst().orElse(null);
 				if (!Objects.isNull(previousRpc) && !Objects.equals(previousRpc.getParticipantPrivateId(),
 						rpcConnection.getParticipantPrivateId()) && !Objects.equals(deviceMac, previousRpc.getMacAddr())) {
 					log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
@@ -348,7 +359,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 
 			// OFFLINE RECONNECT
-			if (!Objects.isNull(previousRpc) && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
+			if (!Objects.isNull(previousRpc) && Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name())
+                    && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
 				reconnect = true;
 				cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
 				log.info("the account:{} now reconnect.", previousRpc.getUserUuid());
