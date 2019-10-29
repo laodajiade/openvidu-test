@@ -553,11 +553,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
 			if (Objects.isNull(userInfo)) continue;
-			if (Objects.equals(UserOnlineStatusEnum.online.name(), userInfo.get("status"))) {
+			String status = String.valueOf(userInfo.get("status"));
+			if (Objects.equals(UserOnlineStatusEnum.online.name(), status)) {
                 onlineUserList.put(c.getUserId(), c.getSerialNumber());
-                log.info("online userId:{} serialNumber:{}", c.getUserId(), c.getSerialNumber());
-			} else {
-                log.info("reconnect/offline userId:{} serialNumber:{}", c.getUserId(), c.getSerialNumber());
+                log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
             }
 		}
 
