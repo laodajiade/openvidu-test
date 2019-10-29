@@ -302,6 +302,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
 		ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         Device device = null;
+		RpcConnection targetRpc = null;
 		boolean reconnect = false;
 
 		do {
@@ -320,9 +321,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 
 			if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
-				log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
-				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
-				break;
+				targetRpc = notificationService.getRpcConnections().stream().filter(s ->
+						Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);
+				if (!Objects.isNull(targetRpc) && !Objects.equals(targetRpc.getParticipantPrivateId(),
+						rpcConnection.getParticipantPrivateId())) {
+					log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
+					errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
+					break;
+				}
 			}
 
 			// TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
@@ -338,7 +344,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
                 // 断线重连功能
 				for (RpcConnection c : notificationService.getRpcConnections()) {
-					if (accessInUserId.compareTo(c.getUserId()) == 0 && !Objects.equals(rpcConnection, c)) {
+					if (!Objects.isNull(c.getUserId()) && accessInUserId.compareTo(c.getUserId()) == 0
+							&& !Objects.equals(rpcConnection, c)) {
 						if (!deviceSerialNumber.equals(c.getSerialNumber())) {		// 同一个账号不同设备同时登录，暂时禁止这样操作
 							log.warn("the account:{} now login another device:{}, previous device:{}", c.getUserUuid(),
 									deviceSerialNumber, c.getSerialNumber());
@@ -377,14 +384,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 sessionManager.accessOut(rpcConnection);
             } else {
 			    // send login apply notify to current terminal
-                String currentTerminalSocketSessionId = notificationService.getRpcConnections().stream().filter(s ->
-                        Objects.equals(s.getUserUuid(), uuid)).findFirst().get().getParticipantPrivateId();
+				if (Objects.isNull(targetRpc)) return;
                 JsonObject param = new JsonObject();
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_TOKEN_PARAM, token);
                 if (!StringUtils.isEmpty(deviceSerialNumber))
                 	param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_DEVICE_NAME_PARAM, deviceSerialNumber);
                 param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM, rpcConnection.getParticipantPrivateId());
-                notificationService.sendNotification(currentTerminalSocketSessionId, ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
+                notificationService.sendNotification(targetRpc.getParticipantPrivateId(), ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
             }
 			return;
 		}
@@ -1872,11 +1878,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		for (RpcConnection c : notificationService.getRpcConnections()) {
 			Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
 			if (Objects.isNull(userInfo)) continue;
-			if (Objects.equals(UserOnlineStatusEnum.online.name(), userInfo.get("status"))) {
+			String status = String.valueOf(userInfo.get("status"));
+			if (Objects.equals(UserOnlineStatusEnum.online.name(), status)) {
 				onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
 				onlineUserList.put(c.getUserId(), c.getSerialNumber());
-			} else {
-				log.info("reconnect userId:{} serialNumber:{}", c.getUserId(), c.getSerialNumber(), userInfo.get("status"));
+				log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
 			}
 		}
 
