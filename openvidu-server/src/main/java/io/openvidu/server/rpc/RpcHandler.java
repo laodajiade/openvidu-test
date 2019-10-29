@@ -367,6 +367,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				break;
 			}
 
+			if (!Objects.isNull(previousRpc)) {
+				errCode = ErrorCodeEnum.INVALID_METHOD_CALL;
+				break;
+			}
+
 			/*for (RpcConnection c : notificationService.getRpcConnections()) {
 				if (!Objects.isNull(c.getUserId()) && accessInUserId.compareTo(c.getUserId()) == 0
 						&& !Objects.equals(rpcConnection, c)) {
