@@ -315,7 +315,9 @@ public abstract class SessionManager {
 
 	private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
 		this.sessionsNotActive.put(sessionId, sessionNotActive);
+		log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
 		this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
+		log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
 		this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
 		if (this.openviduConfig.isRecordingModuleEnabled()) {
 			this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
@@ -568,7 +570,9 @@ public abstract class SessionManager {
 		cleanCacheCollections(sessionId);
 		sessions.remove(sessionId);
 		sessionsNotActive.remove(sessionId);
+		log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
 		sessionidParticipantpublicidParticipant.remove(sessionId);
+		log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
 		sessionidFinalUsers.remove(sessionId);
 		sessionidAccumulatedRecordings.remove(sessionId);
 		sessionidTokenTokenobj.remove(sessionId);

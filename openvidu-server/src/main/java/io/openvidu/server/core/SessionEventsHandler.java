@@ -460,8 +460,12 @@ public class SessionEventsHandler {
 		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
 			log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
 			// Do not send a message when evicting RECORDER participant
-			rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
-					ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+			try {
+				rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+			} catch (Exception e) {
+				log.error("Exception:\n", e);
+			}
 		}
 		for (Participant p : participants) {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {

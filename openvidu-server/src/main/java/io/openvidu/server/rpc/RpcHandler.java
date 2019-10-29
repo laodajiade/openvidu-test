@@ -362,6 +362,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                     && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
 				reconnect = true;
 				cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
+				rpcConnection.setUserUuid(uuid);
+				previousRpc.setUserUuid(null);
 				log.info("the account:{} now reconnect.", previousRpc.getUserUuid());
 				break;
 			}
@@ -2100,7 +2102,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
 				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
 				cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
-				leaveRoomAfterConnClosed(oldPrivateId, EndReason.reconnect);
+				leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
 //				accessOut(oldRpcConnection, null);
 				sessionManager.accessOut(oldRpcConnection);
 				return true;
