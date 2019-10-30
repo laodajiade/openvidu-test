@@ -1712,11 +1712,26 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sessionId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM);
 		List<String> targetIds = getStringListParam(request, ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM);
+		if (CollectionUtils.isEmpty(targetIds)) {
+			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+			return;
+		}
 
 		if (sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
 			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.PERMISSION_LIMITED);
 			return;
+		}
+
+		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
+		if (!Objects.isNull(sessionManager.getSession(sessionId))) {
+			Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
+			if ((majorParts.size() + targetIds.size()) >= preset.getRoomCapacity()) {
+				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
+				return;
+			}
 		}
 
 		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
