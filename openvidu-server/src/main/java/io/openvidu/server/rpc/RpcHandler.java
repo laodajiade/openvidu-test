@@ -1000,8 +1000,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //				return ;
 //			}
 //		}
+				// remove previous participant if reconnect
+				updateReconnectInfo(rpcConnection);
+				GeoLocation location = null;
+				boolean recorder = false;
 
-				// TODO. calc offline. for reconnect.
 				// verify room capacity limit.
 				if (!Objects.isNull(sessionManager.getSession(sessionId))) {
 					Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
@@ -1011,12 +1014,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						break;
 					}
 				}
-
-				// remove previous participant if reconnect
-				updateReconnectInfo(rpcConnection);
-				InetAddress remoteAddress = null;
-				GeoLocation location = null;
-				boolean recorder = false;
 
 				try {
 					recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
