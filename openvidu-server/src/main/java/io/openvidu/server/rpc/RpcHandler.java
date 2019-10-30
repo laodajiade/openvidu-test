@@ -364,7 +364,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
 				rpcConnection.setUserUuid(uuid);
 				previousRpc.setUserUuid(null);
-				log.info("the account:{} now reconnect.", previousRpc.getUserUuid());
+				log.info("the account:{} now reconnect.", uuid);
 				break;
 			}
 
@@ -2078,19 +2078,20 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
 		try {
 			KurentoParticipant p = (KurentoParticipant) sessionManager.getParticipant(oldRpcConnection.getParticipantPrivateId());
+            if (!Objects.isNull(p)) {
+                // room info
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ID_PARAM, p.getSessionId());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, p.getRoomSubject());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_REMAINTIME_PARAM, p.getSession().getConfRemainTime());
 
-			// room info
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ID_PARAM, p.getSessionId());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, p.getRoomSubject());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_REMAINTIME_PARAM, p.getSession().getConfRemainTime());
-
-			// participant info.
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ROLE_PARAM, p.getRole().name());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_AUDIOACTIVE_PARAM, p.isStreaming() && p.getPublisherMediaOptions().isAudioActive());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_VIDEOACTIVE_PARAM, p.isStreaming() && p.getPublisherMediaOptions().isVideoActive());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SPEAKERSTATUS_PARAM, p.getSpeakerStatus().name());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM, p.getHandStatus().name());
-			params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SHARESTATUS_PARAM, p.getShareStatus().name());
+                // participant info.
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ROLE_PARAM, p.getRole().name());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_AUDIOACTIVE_PARAM, p.isStreaming() && p.getPublisherMediaOptions().isAudioActive());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_VIDEOACTIVE_PARAM, p.isStreaming() && p.getPublisherMediaOptions().isVideoActive());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SPEAKERSTATUS_PARAM, p.getSpeakerStatus().name());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM, p.getHandStatus().name());
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SHARESTATUS_PARAM, p.getShareStatus().name());
+            }
 		} catch (OpenViduException e) {
 			log.warn("the privateId:{} not belong any session.", oldPrivateId);
 		}
