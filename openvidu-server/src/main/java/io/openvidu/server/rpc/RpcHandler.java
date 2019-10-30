@@ -1727,7 +1727,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
 		if (!Objects.isNull(sessionManager.getSession(sessionId))) {
 			Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
-			if ((majorParts.size() + targetIds.size()) >= preset.getRoomCapacity()) {
+			if ((majorParts.size() + targetIds.size()) > preset.getRoomCapacity()) {
 				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 						null, ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
 				return;
