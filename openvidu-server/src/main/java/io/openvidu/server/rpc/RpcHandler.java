@@ -353,6 +353,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						rpcConnection.getParticipantPrivateId()) && !Objects.equals(deviceMac, previousRpc.getMacAddr())) {
 					log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
 					errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
+                    rpcConnection.setUserUuid(uuid);
 					break;
 				}
 			}
@@ -371,8 +372,19 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			if (!Objects.isNull(previousRpc)) {
 				log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",
-						rpcConnection.getSessionId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
+						rpcConnection.getParticipantPrivateId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
+				if (Objects.equals(previousRpc.getMacAddr(), deviceMac) &&
+						Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
+					log.info("the account:{} now reconnect.", uuid);
+					rpcConnection.setReconnected(true);
+					reconnect = true;
+					cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
+					rpcConnection.setUserUuid(uuid);
+					previousRpc.setUserUuid(null);
+					break;
+				}
 				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
+                rpcConnection.setUserUuid(uuid);
 				break;
 				/*notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 						null, errCode);
@@ -389,7 +401,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			log.warn("AccessIn Warning. privateId:{}, errCode:{}", rpcConnection.getParticipantPrivateId(), errCode.name());
 			if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
 				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
-                sessionManager.accessOut(rpcConnection);	// TODO. ???
+                sessionManager.accessOut(rpcConnection);
 
 				return;
             } else {
@@ -399,7 +411,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					if (!Objects.isNull(device))
 						result.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
 					notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), result, errCode);
-
+					//---------------------
+					notificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
 					return;
 				} else {
 					// send remote login notify to current terminal
