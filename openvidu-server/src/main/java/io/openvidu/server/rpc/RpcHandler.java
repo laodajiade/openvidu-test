@@ -386,10 +386,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
                 rpcConnection.setUserUuid(uuid);
 				break;
-				/*notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-						null, errCode);
-				sessionManager.accessOut(rpcConnection);
-				return;*/
 			}
 
 			rpcConnection.setUserUuid(uuid);
