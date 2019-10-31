@@ -41,7 +41,7 @@ public class DepartmentManageImpl implements DepartmentManage {
                 .organizationName(rootDept.getDeptName()).build();
 
         return !CollectionUtils.isEmpty(deptList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
-                deptList.stream().filter(s -> s.getOrgId().compareTo(orgId) != 0).collect(Collectors.toList()))
+                deptList.stream().filter(s -> !Objects.isNull(s.getOrgId()) && s.getOrgId().compareTo(orgId) != 0).collect(Collectors.toList()))
                 .getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
     }
 
