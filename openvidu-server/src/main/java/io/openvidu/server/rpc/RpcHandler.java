@@ -373,6 +373,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			if (!Objects.isNull(previousRpc)) {
 				log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",
 						rpcConnection.getParticipantPrivateId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
+				// TODO. 原有断线重连服务端无法及时捕捉原有链接断开信息，此处根据mac及online状态直接判定为重连
 				if (Objects.equals(previousRpc.getMacAddr(), deviceMac) &&
 						Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
 					log.info("the account:{} now reconnect.", uuid);
