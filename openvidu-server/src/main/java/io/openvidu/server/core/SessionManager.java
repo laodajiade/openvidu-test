@@ -215,10 +215,10 @@ public abstract class SessionManager {
 			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
 		}
 		Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
-		if (participant == null) {
+		/*if (participant == null) {
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
-		}
+		}*/
 		return participant;
 	}
 

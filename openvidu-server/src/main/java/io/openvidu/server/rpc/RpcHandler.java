@@ -1672,16 +1672,38 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private void closeRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
+        ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
+		if (Objects.isNull(sessionManager.getSession(sessionId))) {
+			errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+		}
 
-		updateReconnectInfo(rpcConnection);
-		ErrorCodeEnum errCode = cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), true, EndReason.forceCloseSessionByUser);
+		if (sessionManager.getSession(sessionId).isClosed()) {
+			errCode = ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED;
+		}
+
+		Participant participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId());
+		if (!Objects.isNull(participant)) {
+			if (participant.getRole() != OpenViduRole.MODERATOR)
+				errCode = ErrorCodeEnum.PERMISSION_LIMITED;
+		} else {
+			// once participant reconnected, close the room directly without joining room
+			// find the participant related to the previous connection and verify the operation permission
+			Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
+			participant = sessionManager.getParticipant(sessionId, String.valueOf(userInfo.get("reconnect")));
+			if (!Objects.isNull(participant) && participant.getRole() != OpenViduRole.MODERATOR)
+				errCode = ErrorCodeEnum.PERMISSION_LIMITED;
+
+		}
 		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
 			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, errCode);
 			return ;
 		}
 
+		updateReconnectInfo(rpcConnection);
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+        this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
+        this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
 	}
 
 	public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
