@@ -47,7 +47,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -299,6 +298,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
 		String deviceMac = getStringParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
+		boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
 		ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         Device device = null;
 		RpcConnection previousRpc = null;
@@ -361,6 +361,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			if (!Objects.isNull(previousRpc) && Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name())
                     && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
 				reconnect = true;
+				rpcConnection.setReconnected(true);
 				cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
 				rpcConnection.setUserUuid(uuid);
 				previousRpc.setUserUuid(null);
@@ -369,57 +370,45 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 
 			if (!Objects.isNull(previousRpc)) {
+				log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",
+						rpcConnection.getSessionId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
 				errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
-				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+				break;
+				/*notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 						null, errCode);
 				sessionManager.accessOut(rpcConnection);
-				return;
+				return;*/
 			}
 
 			rpcConnection.setUserUuid(uuid);
-			log.info("rpcConnection userUuid:{}, macAddr:{}, userId:{}", rpcConnection.getUserUuid(), rpcConnection.getMacAddr(), rpcConnection.getUserId());
-
-			/*for (RpcConnection c : notificationService.getRpcConnections()) {
-				if (!Objects.isNull(c.getUserId()) && accessInUserId.compareTo(c.getUserId()) == 0
-						&& !Objects.equals(rpcConnection, c)) {
-					if (!deviceSerialNumber.equals(c.getSerialNumber())) {		// 同一个账号不同设备同时登录，暂时禁止这样操作
-						log.warn("the account:{} now login another device:{}, previous device:{}", c.getUserUuid(),
-								deviceSerialNumber, c.getSerialNumber());
-						errCode = ErrorCodeEnum.SERVER_UNKNOWN_ERROR;
-					} else {													// 同一个账号同一设备登录，断线重连
-						reconnect = true;
-						cacheManage.updateReconnectInfo(uuid, c.getParticipantPrivateId());
-						log.info("the account:{} now reconnect.", c.getUserUuid());
-					}
-					break;
-				}
-			}*/
-
+			log.info("NORMAL METHOD CALL ==> rpcConnection userUuid:{}, macAddr:{}, userId:{}",
+					rpcConnection.getUserUuid(), rpcConnection.getMacAddr(), rpcConnection.getUserId());
 		} while (false);
 
 		if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
-			log.warn("AccessIn failed. privateId:{}, errCode:{}", rpcConnection.getParticipantPrivateId(), errCode.name());
-			JsonObject result = new JsonObject();
-			result.addProperty(ProtocolElements.ACCESS_IN_MAC_PARAM, StringUtils.isEmpty(deviceMac) ? "" : deviceMac);
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE) ? result : null, errCode);
-//			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
-
+			log.warn("AccessIn Warning. privateId:{}, errCode:{}", rpcConnection.getParticipantPrivateId(), errCode.name());
 			if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
-                sessionManager.accessOut(rpcConnection);
+				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
+                sessionManager.accessOut(rpcConnection);	// TODO. ???
+
+				return;
             } else {
-			    // send login apply notify to current terminal
-				if (Objects.isNull(previousRpc)) return;
-                JsonObject param = new JsonObject();
-                param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_TOKEN_PARAM, token);
-                if (!StringUtils.isEmpty(deviceSerialNumber))
-                	param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_DEVICE_NAME_PARAM, deviceSerialNumber);
-                param.addProperty(ProtocolElements.APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM, rpcConnection.getParticipantPrivateId());
+				if (!forceLogin) {
+					JsonObject result = new JsonObject();
+					result.addProperty(ProtocolElements.ACCESS_IN_MAC_PARAM, !StringUtils.isEmpty(deviceMac) ? deviceMac : "");
+					if (!Objects.isNull(device))
+						result.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
+					notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), result, errCode);
 
-                notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.APPLY_FOR_LOGIN_METHOD, param);
+					return;
+				} else {
+					// send remote login notify to current terminal
+					assert previousRpc != null;
+					notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY, new JsonObject());
+					leaveRoomAfterConnClosed(previousRpc.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+					notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+				}
             }
-
-			return;
 		}
 		// update user online status in cache
 		cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());

@@ -142,8 +142,11 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";
+    public static final String ACCESS_IN_FORCE_LOGIN_PARAM = "forceLogin";
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
+
+	public static final String REMOTE_LOGIN_NOTIFY = "remoteLoginNotify";
 
 	public static final String APPLY_FOR_LOGIN_METHOD = "applyForLogin";
 	public static final String APPLY_FOR_LOGIN_TOKEN_PARAM = "token";
@@ -336,6 +339,7 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
+	public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";
 
 
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";

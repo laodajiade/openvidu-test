@@ -45,6 +45,7 @@ public class RpcConnection {
 	private String userUuid;	// the uuid of user
 	private String serialNumber;
 	private String macAddr;
+	private boolean isReconnected;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -82,6 +83,14 @@ public class RpcConnection {
 
 	public void setMacAddr(String macAddr) {
 		this.macAddr = macAddr;
+	}
+
+	public boolean isReconnected() {
+		return isReconnected;
+	}
+
+	public void setReconnected(boolean reconnected) {
+		isReconnected = reconnected;
 	}
 
 	public String getSessionId() {
