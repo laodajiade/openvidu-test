@@ -146,7 +146,10 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
 
-	public static final String REMOTE_LOGIN_NOTIFY = "remoteLoginNotify";
+	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
+	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";
+
+	public static final String REMOTE_LOGIN_NOTIFY_METHOD = "remoteLoginNotify";
 
 	public static final String APPLY_FOR_LOGIN_METHOD = "applyForLogin";
 	public static final String APPLY_FOR_LOGIN_TOKEN_PARAM = "token";

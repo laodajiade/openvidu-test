@@ -414,7 +414,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				} else {
 					// send remote login notify to current terminal
 					assert previousRpc != null;
-					notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY, new JsonObject());
+					notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
 					leaveRoomAfterConnClosed(previousRpc.getParticipantPrivateId(), EndReason.sessionClosedByServer);
 					notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
 				}
@@ -423,8 +423,23 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		// update user online status in cache
 		cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
         cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
-
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+		if (reconnect) {
+			Participant preSharingPart = this.sessionManager.getParticipant(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
+			if (!Objects.isNull(preSharingPart)) {
+				// Send reconnected participant stop publish previous sharing if exists
+				JsonObject notifyObj = new JsonObject();
+				notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+						preSharingPart.getParticipantPublicId());
+				this.sessionManager.getParticipants(preSharingPart.getSessionId()).forEach(participant -> {
+					if (!Objects.equals(preSharingPart.getParticipantPrivateId(), participant.getParticipantPrivateId())) {
+						notificationService.sendNotification(participant.getParticipantPrivateId(),
+								ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
+					}
+				});
+			}
+		}
     }
 
     private void confirmApplyForLogin(RpcConnection rpcConnection, Request<JsonObject> request) {
