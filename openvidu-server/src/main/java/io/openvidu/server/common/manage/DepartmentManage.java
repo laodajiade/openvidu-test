@@ -14,4 +14,6 @@ public interface DepartmentManage {
     JsonObject genDeptTreeJsonObj(@NotNull Long orgId);
 
     List<Department> getSubFirstLevelDepts(Long deptId);
+
+    List<Long> getSubDeptIds(Long deptId);
 }

@@ -60,4 +60,24 @@ public class DepartmentManageImpl implements DepartmentManage {
         return departments;
     }
 
+    @Override
+    public List<Long> getSubDeptIds(@NotNull Long deptId) {
+        Department rootDept = departmentMapper.selectByPrimaryKey(deptId);
+        if (rootDept == null) return null;
+
+        List<Long> subDeptIds = new ArrayList<>();
+        List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
+        if (!CollectionUtils.isEmpty(deptList)) {
+            TreeToolUtils treeToolUtils = new TreeToolUtils(
+                    Collections.singletonList(DepartmentTree.builder().orgId(deptId).organizationName(rootDept.getDeptName()).build()),
+                    deptList.stream().filter(s -> !Objects.isNull(s.getOrgId()) && s.getOrgId().compareTo(deptId) != 0).collect(Collectors.toList()));
+            treeToolUtils.getTree();
+            subDeptIds = treeToolUtils.getSubDeptIds();
+        }
+
+        subDeptIds.add(deptId);
+
+        return subDeptIds;
+    }
+
 }

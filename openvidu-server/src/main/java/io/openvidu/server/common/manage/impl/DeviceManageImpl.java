@@ -1,22 +1,14 @@
 package io.openvidu.server.common.manage.impl;
 
-import io.openvidu.server.common.dao.DepartmentMapper;
 import io.openvidu.server.common.dao.DeviceMapper;
+import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.DeviceManage;
-import io.openvidu.server.common.pojo.Department;
-import io.openvidu.server.common.pojo.DepartmentTree;
 import io.openvidu.server.common.pojo.Device;
-import io.openvidu.server.utils.TreeToolUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author chosongi
@@ -24,29 +16,17 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DeviceManageImpl implements DeviceManage {
-    private static final Logger log = LoggerFactory.getLogger(DeviceManageImpl.class);
 
     @Resource
     private DeviceMapper deviceMapper;
 
     @Resource
-    private DepartmentMapper departmentMapper;
+    private DepartmentManage departmentManage;
 
     @Override
     public List<Device> getSubDeviceByDeptId(Long deptId) {
-        Department rootDept = departmentMapper.selectByPrimaryKey(deptId);
-        if (rootDept == null) return null;
-
-        List<Long> subDeptIds = new ArrayList<>();
-        List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
-        if (!CollectionUtils.isEmpty(deptList)) {
-            TreeToolUtils treeToolUtils = new TreeToolUtils(
-                    Collections.singletonList(DepartmentTree.builder().orgId(deptId).organizationName(rootDept.getDeptName()).build()),
-                    deptList.stream().filter(s -> s.getOrgId().compareTo(deptId) != 0).collect(Collectors.toList()));
-            treeToolUtils.getTree();
-            subDeptIds = treeToolUtils.getSubDeptIds();
-        }
-        subDeptIds.add(deptId);
+        List<Long> subDeptIds = departmentManage.getSubDeptIds(deptId);
+        if (CollectionUtils.isEmpty(subDeptIds)) return null;
 
         List<String> deviceSerialNumbers = deviceMapper.selectDevSerialNumsByDeptIds(subDeptIds);
         return !CollectionUtils.isEmpty(deviceSerialNumbers) ?
