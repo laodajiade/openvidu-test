@@ -67,7 +67,7 @@ CREATE TABLE `sd_corporation` (
 
 LOCK TABLES `sd_corporation` WRITE;
 /*!40000 ALTER TABLE `sd_corporation` DISABLE KEYS */;
-INSERT INTO `sd_corporation` VALUES (1,'杭州速递科技有限公司','Base','2019-10-18 16:45:06','2019-10-22 10:47:00');
+INSERT INTO `sd_corporation` VALUES (1,'杭州速递科技有限公司','Base',1,'2019-10-18 16:45:06','2019-10-22 10:47:00');
 /*!40000 ALTER TABLE `sd_corporation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -167,6 +167,12 @@ CREATE TABLE `sd_industry` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='行业表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+LOCK TABLES `sd_industry` WRITE;
+/*!40000 ALTER TABLE `sd_industry` DISABLE KEYS */;
+INSERT INTO `sd_industry` VALUES (1, 'Customer', now(), now());
+/*!40000 ALTER TABLE `sd_industry` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_role`
