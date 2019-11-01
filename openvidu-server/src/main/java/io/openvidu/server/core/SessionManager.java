@@ -28,6 +28,7 @@ import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
@@ -35,6 +36,7 @@ import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.FormatChecker;
 import io.openvidu.server.utils.GeoLocation;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -72,6 +74,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	protected CacheManage cacheManage;
+
+	@Autowired
+	RpcNotificationService notificationService;
 
 	@Resource
 	ConferenceMapper conferenceMapper;
@@ -494,7 +499,9 @@ public abstract class SessionManager {
 	 */
 	@PreDestroy
 	public void close() {
-		log.info("Closing all sessions");
+		log.info("Closing all sessions and update user online status");
+		notificationService.getRpcConnections().forEach(rpcConnection ->
+				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline));
 		for (String sessionId : sessions.keySet()) {
 			try {
 				closeSession(sessionId, EndReason.openviduServerStopped);
