@@ -2101,6 +2101,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 // room info
                 params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ID_PARAM, p.getSessionId());
                 params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, p.getRoomSubject());
+                String roomPwd = sessionManager.getSession(p.getSessionId()).getConference().getPassword();
+                params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_PASSWORD_PARAM, !StringUtils.isEmpty(roomPwd) ? roomPwd : "");
                 params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_REMAINTIME_PARAM, p.getSession().getConfRemainTime());
 
                 // participant info.
