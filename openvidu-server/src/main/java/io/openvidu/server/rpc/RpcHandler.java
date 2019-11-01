@@ -977,7 +977,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				}
 
 				// verify conference password
-				if (!Objects.equals(joinType,ParticipantJoinType.invited.name()) && !StringUtils.isEmpty(conference.get(0).getPassword())
+				if (!Objects.equals(joinType, ParticipantJoinType.invited.name()) && !StringUtils.isEmpty(conference.get(0).getPassword())
 						&& !Objects.equals(conference.get(0).getPassword(), password)) {
 					log.error("invalid room password:{}", password);
 					errCode = ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR;
