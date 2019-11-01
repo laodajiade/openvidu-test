@@ -23,32 +23,23 @@ DROP TABLE IF EXISTS `sd_conference`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sd_conference` (
-   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-   `room_id` varchar(128) NOT NULL COMMENT '会议室名称',
-   `conference_subject` varchar(256) DEFAULT NULL COMMENT '主题',
-   `conference_desc` varchar(1024) DEFAULT NULL COMMENT '会议描述',
-   `start_time` datetime DEFAULT NULL COMMENT '开始时间',
-   `end_time` datetime DEFAULT NULL COMMENT '结束时间',
-   `room_capacity` int(6) unsigned NOT NULL DEFAULT '50' COMMENT '容量',
-   `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '会议状态（0：未开始，1：进行中，2：已结束）',
-   `password` varchar(256) DEFAULT NULL COMMENT '入会密码',
-   `invite_limit` tinyint(2) unsigned DEFAULT '1' COMMENT '会议邀请（0：不允许，1：允许）',
-   `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
-   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-   PRIMARY KEY (`id`),
-   KEY `index_room_id` (`room_id`) USING BTREE
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `room_id` varchar(128) NOT NULL COMMENT '会议室名称',
+  `conference_subject` varchar(256) DEFAULT NULL COMMENT '主题',
+  `conference_desc` varchar(1024) DEFAULT NULL COMMENT '会议描述',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `room_capacity` int(6) unsigned NOT NULL DEFAULT '50' COMMENT '容量',
+  `status` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '会议状态（0：未开始，1：进行中，2：已结束）',
+  `password` varchar(256) DEFAULT NULL COMMENT '入会密码',
+  `invite_limit` tinyint(2) unsigned DEFAULT '1' COMMENT '会议邀请（0：不允许，1：允许）',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `index_room_id` (`room_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='会议表';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sd_conference`
---
-
-LOCK TABLES `sd_conference` WRITE;
-/*!40000 ALTER TABLE `sd_conference` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sd_conference` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_corporation`
@@ -61,21 +52,14 @@ CREATE TABLE `sd_corporation` (
   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `corp_name` varchar(256) NOT NULL COMMENT '企业名称',
   `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `industry_id` bigint(11) unsigned NOT NULL COMMENT '行业ID',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='企业表';
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_project` (`project`) USING BTREE,
+  KEY `index_industry` (`industry_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='企业表';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sd_corporation`
---
-
-LOCK TABLES `sd_corporation` WRITE;
-/*!40000 ALTER TABLE `sd_corporation` DISABLE KEYS */;
-INSERT INTO `sd_corporation` VALUES (1,'杭州速递科技有限公司','Base','2019-10-18 16:45:06','2019-10-22 10:47:00');
-/*!40000 ALTER TABLE `sd_corporation` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_department`
@@ -95,18 +79,8 @@ CREATE TABLE `sd_department` (
   PRIMARY KEY (`id`),
   KEY `index_corp_id` (`corp_id`) USING BTREE,
   KEY `index_parent_id` (`parent_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='部门表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='部门表';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sd_department`
---
-
-LOCK TABLES `sd_department` WRITE;
-/*!40000 ALTER TABLE `sd_department` DISABLE KEYS */;
-INSERT INTO `sd_department` VALUES (1,'杭州速递',8,1,'Base','2019-10-19 15:16:27','2019-10-23 11:36:35');
-/*!40000 ALTER TABLE `sd_department` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_device`
@@ -136,15 +110,6 @@ CREATE TABLE `sd_device` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sd_device`
---
-
-LOCK TABLES `sd_device` WRITE;
-/*!40000 ALTER TABLE `sd_device` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sd_device` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `sd_device_dept`
 --
 
@@ -167,13 +132,20 @@ CREATE TABLE `sd_device_dept` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sd_device_dept`
+-- Table structure for table `sd_industry`
 --
 
-LOCK TABLES `sd_device_dept` WRITE;
-/*!40000 ALTER TABLE `sd_device_dept` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sd_device_dept` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `sd_industry`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sd_industry` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `industry_name` varchar(256) NOT NULL COMMENT '行业名称',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='行业表';
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `sd_role`
@@ -197,15 +169,6 @@ CREATE TABLE `sd_role` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sd_role`
---
-
-LOCK TABLES `sd_role` WRITE;
-/*!40000 ALTER TABLE `sd_role` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sd_role` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `sd_user`
 --
 
@@ -227,18 +190,8 @@ CREATE TABLE `sd_user` (
   UNIQUE KEY `unique_uuid` (`uuid`) USING BTREE,
   UNIQUE KEY `unique_phone` (`phone`,`project`) USING BTREE,
   UNIQUE KEY `unique_email` (`email`,`project`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sd_user`
---
-
-LOCK TABLES `sd_user` WRITE;
-/*!40000 ALTER TABLE `sd_user` DISABLE KEYS */;
-INSERT INTO `sd_user` VALUES (1,'administrator','超级管理员',NULL,NULL,'e10adc3949ba59abbe56e057f20f883e',NULL,'Base','2019-10-22 10:46:38','2019-10-22 10:46:38');
-/*!40000 ALTER TABLE `sd_user` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_user_dept`
@@ -257,18 +210,8 @@ CREATE TABLE `sd_user_dept` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `unique_user_dept` (`user_id`,`dept_id`) USING BTREE,
   KEY `index_dept` (`dept_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户部门关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户部门关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sd_user_dept`
---
-
-LOCK TABLES `sd_user_dept` WRITE;
-/*!40000 ALTER TABLE `sd_user_dept` DISABLE KEYS */;
-INSERT INTO `sd_user_dept` VALUES (1,1,1,'Base','2019-10-22 10:50:10','2019-10-22 10:50:10');
-/*!40000 ALTER TABLE `sd_user_dept` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_user_role`
@@ -289,15 +232,6 @@ CREATE TABLE `sd_user_role` (
   KEY `index_role` (`role_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户角色关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sd_user_role`
---
-
-LOCK TABLES `sd_user_role` WRITE;
-/*!40000 ALTER TABLE `sd_user_role` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sd_user_role` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -308,4 +242,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-23 19:11:00
+-- Dump completed on 2019-11-01 22:21:46
