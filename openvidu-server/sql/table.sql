@@ -62,6 +62,16 @@ CREATE TABLE `sd_corporation` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `sd_corporation`
+--
+
+LOCK TABLES `sd_corporation` WRITE;
+/*!40000 ALTER TABLE `sd_corporation` DISABLE KEYS */;
+INSERT INTO `sd_corporation` VALUES (1,'杭州速递科技有限公司','Base','2019-10-18 16:45:06','2019-10-22 10:47:00');
+/*!40000 ALTER TABLE `sd_corporation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sd_department`
 --
 
@@ -82,6 +92,17 @@ CREATE TABLE `sd_department` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='部门表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `sd_department`
+--
+
+LOCK TABLES `sd_department` WRITE;
+/*!40000 ALTER TABLE `sd_department` DISABLE KEYS */;
+INSERT INTO `sd_department` VALUES (1,'杭州速递',null,1,'Base','2019-10-19 15:16:27','2019-10-23 11:36:35');
+/*!40000 ALTER TABLE `sd_department` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 --
 -- Table structure for table `sd_device`
 --
@@ -194,6 +215,16 @@ CREATE TABLE `sd_user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `sd_user`
+--
+
+LOCK TABLES `sd_user` WRITE;
+/*!40000 ALTER TABLE `sd_user` DISABLE KEYS */;
+INSERT INTO `sd_user` VALUES (1,'administrator','超级管理员',NULL,NULL,'e10adc3949ba59abbe56e057f20f883e',NULL,'Base','2019-10-22 10:46:38','2019-10-22 10:46:38');
+/*!40000 ALTER TABLE `sd_user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sd_user_dept`
 --
 
@@ -212,6 +243,16 @@ CREATE TABLE `sd_user_dept` (
   KEY `index_dept` (`dept_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户部门关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sd_user_dept`
+--
+
+LOCK TABLES `sd_user_dept` WRITE;
+/*!40000 ALTER TABLE `sd_user_dept` DISABLE KEYS */;
+INSERT INTO `sd_user_dept` VALUES (1,1,1,'Base','2019-10-22 10:50:10','2019-10-22 10:50:10');
+/*!40000 ALTER TABLE `sd_user_dept` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sd_user_role`
