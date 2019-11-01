@@ -957,7 +957,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			do {
 				// verify room join type
 				String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
-				if (StreamType.MAJOR.equals(StreamType.valueOf(streamType)) &&
+				if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(StreamType.valueOf(streamType)) &&
 						SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
 					if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
 						log.error("disable participant active join room:{}", sessionId);
@@ -984,7 +984,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				}
 
 				// verify conference ever locked
-				if (!Objects.isNull(sessionManager.getSession(sessionId)) && sessionManager.getSession(sessionId).isLocking()) {
+				if (!rpcConnection.isReconnected() && !Objects.isNull(sessionManager.getSession(sessionId)) &&
+						sessionManager.getSession(sessionId).isLocking()) {
 					log.error("room:{} is locked.", sessionId);
 					errCode = ErrorCodeEnum.CONFERENCE_IS_LOCKED;
 					break;

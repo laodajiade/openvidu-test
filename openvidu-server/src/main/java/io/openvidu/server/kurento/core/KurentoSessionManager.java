@@ -191,8 +191,6 @@ public class KurentoSessionManager extends SessionManager {
 			}
 		}
 
-		showTokens();
-
 		// record share status.
 		if (StreamType.SHARING.equals(participant.getStreamType())) {
 			participant.setShareStatus(ParticipantShareStatus.off);
