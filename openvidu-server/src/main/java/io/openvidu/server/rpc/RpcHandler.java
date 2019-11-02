@@ -426,19 +426,33 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
 		if (reconnect) {
+			// Send user break line notify
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, accessInUserId);
+
 			Participant preSharingPart = this.sessionManager.getParticipant(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
-			if (!Objects.isNull(preSharingPart)) {
+			JsonObject notifyObj = new JsonObject();
+			boolean shareNotify = !Objects.isNull(preSharingPart);
+			if (shareNotify) {
 				// Send reconnected participant stop publish previous sharing if exists
-				JsonObject notifyObj = new JsonObject();
 				notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
 						preSharingPart.getParticipantPublicId());
-				this.sessionManager.getParticipants(preSharingPart.getSessionId()).forEach(participant -> {
-					if (!Objects.equals(preSharingPart.getParticipantPrivateId(), participant.getParticipantPrivateId())) {
-						notificationService.sendNotification(participant.getParticipantPrivateId(),
-								ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
-					}
-				});
 			}
+
+			this.sessionManager.getParticipants(preSharingPart.getSessionId()).forEach(participant -> {
+				if (!Objects.equals(preSharingPart.getParticipantPrivateId(), participant.getParticipantPrivateId())) {
+					RpcConnection rpc = notificationService.getRpcConnection(participant.getParticipantPrivateId());
+					if (!Objects.isNull(rpc)) {
+						if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
+							if (shareNotify) {
+								notificationService.sendNotification(participant.getParticipantPrivateId(),
+										ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
+							}
+							notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+						}
+					}
+				}
+			});
 		}
     }
 
@@ -1489,7 +1503,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
-					notifyUserBreakLine(session.getSessionId(), rpc.getUserId());
+					/*notifyUserBreakLine(session.getSessionId(), rpc.getUserId());*/
 				}
 			}
 		}
