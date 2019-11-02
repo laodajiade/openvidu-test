@@ -426,11 +426,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
 		if (reconnect) {
+			String conferenceId = previousRpc.getSessionId();
+			String previousRpcConnectId = previousRpc.getParticipantPrivateId();
 			// Send user break line notify
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, accessInUserId);
 
-			Participant preSharingPart = this.sessionManager.getParticipant(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
+			Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
 			JsonObject notifyObj = new JsonObject();
 			boolean shareNotify = !Objects.isNull(preSharingPart);
 			if (shareNotify) {
@@ -439,8 +441,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						preSharingPart.getParticipantPublicId());
 			}
 
-			this.sessionManager.getParticipants(preSharingPart.getSessionId()).forEach(participant -> {
-				if (!Objects.equals(preSharingPart.getParticipantPrivateId(), participant.getParticipantPrivateId())) {
+			this.sessionManager.getParticipants(conferenceId).forEach(participant -> {
+				if (!Objects.equals(previousRpcConnectId, participant.getParticipantPrivateId())) {
 					RpcConnection rpc = notificationService.getRpcConnection(participant.getParticipantPrivateId());
 					if (!Objects.isNull(rpc)) {
 						if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
