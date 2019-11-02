@@ -428,6 +428,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (reconnect) {
 			String conferenceId = previousRpc.getSessionId();
 			String previousRpcConnectId = previousRpc.getParticipantPrivateId();
+			rpcConnection.setSessionId(conferenceId);
 			// Send user break line notify
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, accessInUserId);
