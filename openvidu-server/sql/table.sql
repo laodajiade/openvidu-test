@@ -171,6 +171,7 @@ CREATE TABLE `sd_industry` (
 LOCK TABLES `sd_industry` WRITE;
 /*!40000 ALTER TABLE `sd_industry` DISABLE KEYS */;
 INSERT INTO `sd_industry` VALUES (1, 'Customer', now(), now());
+INSERT INTO `sd_industry` VALUES (2, 'Business', now(), now());
 /*!40000 ALTER TABLE `sd_industry` ENABLE KEYS */;
 UNLOCK TABLES;
 
