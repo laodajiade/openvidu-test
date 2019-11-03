@@ -90,6 +90,7 @@
 						<artifactId>spring-boot-maven-plugin</artifactId>
 						<version>${version.spring-boot}</version>
 						<configuration>
+							<includeSystemScope>true</includeSystemScope>
 							<mainClass>${start-class}</mainClass>
 							<layout>ZIP</layout>
 						</configuration>
@@ -173,6 +174,13 @@
 							</execution>
 						</executions>
 					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
 
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -186,7 +194,7 @@
 	</profiles>
 
 	<dependencies>
-		<dependency>
+		<!--<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-jsonrpc-server</artifactId>
 			<version>${version.kurento}</version>
@@ -204,6 +212,18 @@
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>-->
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-jsonrpc-server</artifactId>
+			<version>6.12.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/kurento-jsonrpc-server-6.12.1-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-websocket</artifactId>
+			<version>5.1.7.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.openvidu</groupId>
