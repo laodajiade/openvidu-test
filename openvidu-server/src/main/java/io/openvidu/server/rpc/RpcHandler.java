@@ -431,7 +431,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			rpcConnection.setSessionId(conferenceId);
 			// Send user break line notify
 			JsonObject params = new JsonObject();
-			params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, accessInUserId);
+			params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
+					this.sessionManager.getParticipant(previousRpcConnectId, StreamType.MAJOR).getParticipantPublicId());
 
 			Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
 			JsonObject notifyObj = new JsonObject();
@@ -1501,12 +1502,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			RpcConnection rpc = this.notificationService.getRpcConnection(rpcSessionId);
 			if (rpc != null && rpc.getSessionId() != null) {
 				io.openvidu.server.core.Session session = this.sessionManager.getSession(rpc.getSessionId());
-				if (session != null && session.getParticipantByPrivateId(rpc.getParticipantPrivateId()) != null) {
+				Participant participant;
+				if (session != null && (participant = session.getParticipantByPrivateId(rpc.getParticipantPrivateId())) != null) {
 					log.info(message, rpc.getParticipantPrivateId());
 //					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
-					/*notifyUserBreakLine(session.getSessionId(), rpc.getUserId());*/
+					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
 				}
 			}
 		}
@@ -2093,9 +2095,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}
 
-	private void notifyUserBreakLine(String sessionId, Long userId) {
+	private void notifyUserBreakLine(String sessionId, String publicId) {
 		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.USER_BREAK_LINE_ID_PARAM, userId);
+		params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, publicId);
 
 		sessionManager.getParticipants(sessionId).forEach(p -> {
 			RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());

@@ -322,7 +322,7 @@ public class ProtocolElements {
 	public static final String GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM = "handStatus";
 
 	public static final String USER_BREAK_LINE_METHOD = "userBreakLine";
-	public static final String USER_BREAK_LINE_ID_PARAM = "userId";
+	public static final String USER_BREAK_LINE_CONNECTION_ID_PARAM = "connectionId";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
