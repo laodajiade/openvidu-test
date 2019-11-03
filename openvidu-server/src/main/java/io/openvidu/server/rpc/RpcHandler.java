@@ -663,10 +663,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
 
                 // get device info if have device.
-				String serialNumber = onlineUserList.get(String.valueOf(user.getId()));
+				String serialNumber = onlineUserList.get(user.getId());
 				if (!StringUtils.isEmpty(serialNumber)) {
 					log.info("select userId:{} online key(userId):{} serialNumber:{}", user.getId(),
-							onlineUserList.get(String.valueOf(user.getId())), serialNumber);
+							onlineUserList.get(user.getId()), serialNumber);
 
 					// device and dept info.
 					DeviceSearch deviceSearch = new DeviceSearch();
