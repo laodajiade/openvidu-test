@@ -634,8 +634,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			List<User> userList = userMapper.selectByPrimaryKeys(userIds);
 			userList.forEach(user -> {
 				KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
-						.compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
-								.getAsLong()) == 0).findFirst().get();
+						.compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()) == 0 &&
+						Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().get();
 
 				// User and dept info.
 				UserDeptSearch udSearch = new UserDeptSearch();
