@@ -6,7 +6,7 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
@@ -16,7 +16,7 @@ import java.util.Objects;
  */
 
 @Slf4j
-@Component
+@Service
 public class ConfirmApplyForLoginHandler extends RpcAbstractHandler {
 
     @Override
