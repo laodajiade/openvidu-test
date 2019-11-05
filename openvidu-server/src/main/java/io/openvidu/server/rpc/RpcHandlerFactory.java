@@ -83,6 +83,9 @@ public class RpcHandlerFactory {
     @Resource
     private UnsubscribeFromVideoHandler unsubscribeFromVideoHandler;
 
+    @Resource
+    private OnIceCandidateHandler onIceCandidateHandler;
+
 
 
     @PostConstruct
@@ -108,6 +111,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.PUBLISHVIDEO_METHOD, publishVideoHandler);
         handlersMap.put(ProtocolElements.RECEIVEVIDEO_METHOD, receiveVideoFromHandler);
         handlersMap.put(ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD, unsubscribeFromVideoHandler);
+        handlersMap.put(ProtocolElements.ONICECANDIDATE_METHOD, onIceCandidateHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

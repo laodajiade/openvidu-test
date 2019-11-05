@@ -1207,7 +1207,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.unsubscribe(participant, senderName, request.getId());
 	}*/
 
-	private void onIceCandidate(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void onIceCandidate(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 
 		String endpointName = getStringParam(request, ProtocolElements.ONICECANDIDATE_EPNAME_PARAM);
@@ -1223,7 +1223,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		sessionManager.onIceCandidate(participant, endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
-	}
+	}*/
 
 	private void sendMessage(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
