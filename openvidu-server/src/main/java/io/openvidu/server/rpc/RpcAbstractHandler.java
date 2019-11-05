@@ -211,7 +211,7 @@ public abstract class RpcAbstractHandler {
         return false;
     }
 
-    public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
+    protected ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
             return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
         }

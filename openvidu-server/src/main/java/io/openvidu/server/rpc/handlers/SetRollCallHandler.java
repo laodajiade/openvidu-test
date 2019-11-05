@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -25,14 +27,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
+        sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.speaker);
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
-        participants.stream().filter(part ->
-                targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
 
         int raiseHandNum = 0;
-        for (Participant p : sessionManager.getParticipants(sessionId)) {
-            if (p.getHandStatus() == ParticipantHandStatus.up) {
+        for (Participant p : participants) {
+            if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && p.getHandStatus() == ParticipantHandStatus.up) {
                 ++raiseHandNum;
             }
         }

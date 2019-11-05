@@ -1,10 +1,6 @@
 package io.openvidu.server.core;
 
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,18 +9,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.Date;
-
 @EnableScheduling
 @Service
 public class RoomCountdownService {
     private static final Logger log = LoggerFactory.getLogger(RoomCountdownService.class);
 
-    @Resource
-    private RpcAbstractHandler rpcAbstractHandler;
-
-    @Resource
+    @Autowired
     protected OpenviduConfig openviduConfig;
 
     private RpcHandler handler;
@@ -45,7 +35,7 @@ public class RoomCountdownService {
 //            log.info("sessionId:{} remainTime:{} startTime:{} confEndTime:{}", sessionId, remainTime, confStartTime, confEndTime);
             if (remainTime <= 0) {
                 log.info("session:{} no have remain time. should be closed.", sessionId);
-                rpcAbstractHandler.cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
+                handler.cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
             } else if (remainTime <= voipCountdownShortTime * 60) {
                 if (!s.getNotifyCountdown1Min()) {
                     handler.notifyRoomCountdown(sessionId, voipCountdownShortTime);
