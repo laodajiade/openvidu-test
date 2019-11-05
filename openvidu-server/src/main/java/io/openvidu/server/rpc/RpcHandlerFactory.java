@@ -92,6 +92,9 @@ public class RpcHandlerFactory {
     @Resource
     private UnpublishVideoHandler unpublishVideoHandler;
 
+    @Resource
+    private StreamPropertyChangedHandler streamPropertyChangedHandler;
+
 
     @PostConstruct
     public void init() {
@@ -119,6 +122,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.ONICECANDIDATE_METHOD, onIceCandidateHandler);
         handlersMap.put(ProtocolElements.SENDMESSAGE_ROOM_METHOD, sendMessageHandler);
         handlersMap.put(ProtocolElements.UNPUBLISHVIDEO_METHOD, unpublishVideoHandler);
+        handlersMap.put(ProtocolElements.STREAMPROPERTYCHANGED_METHOD, streamPropertyChangedHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

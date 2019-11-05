@@ -1248,7 +1248,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.unpublishVideo(participant, null, request.getId(), EndReason.unpublish);
 	}*/
 
-	private void streamPropertyChanged(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void streamPropertyChanged(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "onStreamPropertyChanged");
@@ -1262,7 +1262,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String reason = getStringParam(request, ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM);
 
 		sessionManager.streamPropertyChanged(participant, request.getId(), streamId, property, newValue, reason);
-	}
+	}*/
 
 	private void forceDisconnect(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
