@@ -11,6 +11,7 @@ import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
@@ -50,6 +51,9 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected CacheManage cacheManage;
+
+    @Resource
+    protected DepartmentManage departmentManage;
 
     @Resource
     protected DeviceMapper deviceMapper;

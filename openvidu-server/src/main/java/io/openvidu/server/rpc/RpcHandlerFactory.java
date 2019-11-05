@@ -137,6 +137,9 @@ public class RpcHandlerFactory {
     @Resource
     private TransferModeratorHandler transferModeratorHandler;
 
+    @Resource
+    private GetOrgListHandler getOrgListHandler;
+
 
     @PostConstruct
     public void init() {
@@ -179,6 +182,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD,   setAudioSpeakerStatusHandler);
         handlersMap.put(ProtocolElements.SET_SHARE_POWER_METHOD,            setSharePowerHandler);
         handlersMap.put(ProtocolElements.TRANSFER_MODERATOR_METHOD,         transferModeratorHandler);
+        handlersMap.put(ProtocolElements.GET_ORG_METHOD,                    getOrgListHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

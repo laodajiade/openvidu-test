@@ -275,7 +275,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				endRollCall(rpcConnection, request);
 				break;
 			case ProtocolElements.GET_ORG_METHOD:
-				getOrgList(rpcConnection, request);
+				GetOrgListHandler(rpcConnection, request);
 				break;
 			case ProtocolElements.GET_USER_DEVICE_METHOD:
 				getUserDeviceList(rpcConnection, request);
@@ -1949,7 +1949,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}*/
 
-	private void getOrgList(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void getOrgList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
 		log.info("deptId:{}", userInfo.get("deptId"));
 		Long userDeptId = Long.valueOf(String.valueOf(userInfo.get("deptId")));
@@ -1972,7 +1972,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.add(ProtocolElements.GET_ORG_LIST_PARAM, orgList);
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
-	}
+	}*/
 
 	private void getUserDeviceList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Long orgId = getLongParam(request, ProtocolElements.GET_USER_DEVICE_ORGID_PARAM);
