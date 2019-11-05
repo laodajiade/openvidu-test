@@ -1,6 +1,6 @@
 package io.openvidu.server.rpc;
 
-import io.openvidu.server.rpc.handlers.AccessInHandler;
+import io.openvidu.server.rpc.handlers.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static io.openvidu.client.internal.ProtocolElements.ACCESS_IN_METHOD;
+import static io.openvidu.client.internal.ProtocolElements.*;
 
 /**
  * @author chosongi
@@ -24,9 +24,26 @@ public class RpcHandlerFactory {
     @Resource
     private AccessInHandler accessInHandler;
 
+    @Resource
+    private ConfirmApplyForLoginHandler confirmApplyForLoginHandler;
+
+    @Resource
+    private AccessOutHandler accessOutHandler;
+
+    @Resource
+    private CreateRoomHandler createRoomHandler;
+
+    @Resource
+    private ShareScreenHandler shareScreenHandler;
+
+
     @PostConstruct
     public void init() {
         handlersMap.put(ACCESS_IN_METHOD, accessInHandler);
+        handlersMap.put(CONFIRM_APPLY_FOR_LOGIN_METHOD, confirmApplyForLoginHandler);
+        handlersMap.put(ACCESS_OUT_METHOD, accessOutHandler);
+        handlersMap.put(CREATE_ROOM_METHOD, createRoomHandler);
+        handlersMap.put(SHARE_SCREEN_METHOD, shareScreenHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
