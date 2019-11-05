@@ -65,6 +65,10 @@ public class RpcHandlerFactory {
     @Resource
     private LockSessionHandler lockSessionHandler;
 
+    @Resource
+    private UnlockSessionHandler unlockSessionHandler;
+
+
 
     @PostConstruct
     public void init() {
@@ -83,6 +87,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.END_ROLL_CALL_METHOD, endRollCallHandler);
         handlersMap.put(ProtocolElements.REPLACE_ROLL_CALL_METHOD, replaceRollCallHandler);
         handlersMap.put(ProtocolElements.LOCK_SESSION_METHOD, lockSessionHandler);
+        handlersMap.put(ProtocolElements.UNLOCK_SESSION_METHOD, unlockSessionHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

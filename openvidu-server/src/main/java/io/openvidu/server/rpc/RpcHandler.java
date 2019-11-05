@@ -960,7 +960,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	}*/
 
-	private void unlockSession(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void unlockSession(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM);
 		if (sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
 			this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.PERMISSION_LIMITED);
@@ -977,7 +977,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
-	}
+	}*/
 
     public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
