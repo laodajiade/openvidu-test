@@ -152,6 +152,9 @@ public class RpcHandlerFactory {
     @Resource
     private RoomDelayHandler roomDelayHandler;
 
+    @Resource
+    private GetNotFinishedRoomHandler getNotFinishedRoomHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                  accessInHandler);
@@ -198,6 +201,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_DEVICE_INFO_METHOD,            getDeviceInfoHandler);
         handlersMap.put(ProtocolElements.UPDATE_DEVICE_INFO_METHOD,         updateDeviceInfoHandler);
         handlersMap.put(ProtocolElements.ROOM_DELAY_METHOD,                 roomDelayHandler);
+        handlersMap.put(ProtocolElements.GET_NOT_FINISHED_ROOM_METHOD,      getNotFinishedRoomHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

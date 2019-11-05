@@ -2115,7 +2115,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		});
 	}
 
-	private void getNotFinishedRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void getNotFinishedRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		JsonObject params = new JsonObject();
 		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
 		if (Objects.isNull(userInfo)) {
@@ -2158,7 +2158,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
-	}
+	}*/
 
 	private boolean updateReconnectInfo(RpcConnection rpcConnection) {
 		try {
