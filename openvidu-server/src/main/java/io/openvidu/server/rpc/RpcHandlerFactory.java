@@ -53,6 +53,9 @@ public class RpcHandlerFactory {
     @Resource
     private PutDownHandHandler putDownHandHandler;
 
+    @Resource
+    private SetRollCallHandler setRollCallHandler;
+
 
     @PostConstruct
     public void init() {
@@ -67,6 +70,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SET_VIDEO_STATUS_METHOD, setVideoStatusHandler);
         handlersMap.put(ProtocolElements.RAISE_HAND_METHOD, raiseHandHandler);
         handlersMap.put(ProtocolElements.PUT_DOWN_HAND_METHOD, putDownHandHandler);
+        handlersMap.put(ProtocolElements.SET_ROLL_CALL_METHOD, setRollCallHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
