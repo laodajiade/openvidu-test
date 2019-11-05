@@ -1225,7 +1225,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.onIceCandidate(participant, endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
 	}*/
 
-	private void sendMessage(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void sendMessage(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "signal");
@@ -1235,7 +1235,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		String message = getStringParam(request, ProtocolElements.SENDMESSAGE_MESSAGE_PARAM);
 		sessionManager.sendMessage(participant, message, request.getId());
-	}
+	}*/
 
 	private void unpublishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
