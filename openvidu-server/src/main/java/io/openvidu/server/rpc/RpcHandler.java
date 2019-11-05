@@ -846,14 +846,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
+		sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.speaker);
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
-		participants.stream().filter(part ->
-				targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-				.findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
 
 		int raiseHandNum = 0;
-		for (Participant p : sessionManager.getParticipants(sessionId)) {
-			if (p.getHandStatus() == ParticipantHandStatus.up) {
+		for (Participant p : participants) {
+			if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && p.getHandStatus() == ParticipantHandStatus.up) {
 				++raiseHandNum;
 			}
 		}
@@ -875,14 +873,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sourceId = getStringParam(request, ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
 
+		sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.endSpeaker);
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
-		participants.stream().filter(part ->
-				targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-				.findFirst().get().setHandStatus(ParticipantHandStatus.endSpeaker);
+
 		int raiseHandNum = 0;
-		for (Participant p : sessionManager.getParticipants(sessionId)) {
-			if (p.getHandStatus() == ParticipantHandStatus.up) {
-				++raiseHandNum;
+		for (Participant p : participants) {
+			if (p.getHandStatus() == ParticipantHandStatus.up && Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+				raiseHandNum++;
 			}
 		}
 
