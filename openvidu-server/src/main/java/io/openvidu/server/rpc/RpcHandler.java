@@ -979,7 +979,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	}*/
 
-    public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+    /*public void joinRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
@@ -1134,7 +1134,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				sessionManager.cleanCacheCollections(sessionId);
 			}
 		}
-	}
+	}*/
 
 	private void leaveRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.LEAVEROOM_ROOM_ID_PARAM);

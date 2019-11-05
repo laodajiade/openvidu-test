@@ -8,18 +8,22 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,6 +35,9 @@ import java.util.Objects;
 public abstract class RpcAbstractHandler {
 
     protected static final Gson gson = new GsonBuilder().create();
+
+    @Resource
+    protected OpenviduConfig openviduConfig;
 
     @Resource
     protected SessionManager sessionManager;
@@ -187,4 +194,44 @@ public abstract class RpcAbstractHandler {
         return ErrorCodeEnum.SUCCESS;
     }
 
+    protected static boolean isModerator(String role) {
+        // TODO. Fixme. user account have moderator power.
+        if (Objects.equals(OpenViduRole.MODERATOR.name(), role)) {
+//		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
+        try {
+            Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
+            if (Objects.isNull(userInfo)) {
+                log.warn("user:{} info is null.", rpcConnection.getUserUuid());
+                return false;
+            }
+
+            if (Objects.equals(UserOnlineStatusEnum.reconnect.name(), userInfo.get("status"))) {
+                log.info("reconnect userId:{} mac:{}", rpcConnection.getUserId(), rpcConnection.getMacAddr());
+                String oldPrivateId = String.valueOf(userInfo.get("reconnect"));
+                if (StringUtils.isEmpty(oldPrivateId)) {
+                    log.warn("reconnect privateId:{}", oldPrivateId);
+                    return false;
+                }
+
+                RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
+                cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
+                cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
+                leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
+//				accessOut(oldRpcConnection, null);
+                sessionManager.accessOut(oldRpcConnection);
+                return true;
+            }
+        } catch (Exception e) {
+            log.warn("exception:{}", e);
+            return false;
+        }
+
+        return true;
+    }
 }
