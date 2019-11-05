@@ -18,6 +18,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -110,6 +111,16 @@ public abstract class RpcAbstractHandler {
         }
 
         return request.getParams().get(key).getAsFloat();
+    }
+
+    protected static List<String> getStringListParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
+            return null;
+        }
+
+        List<String> values = new ArrayList<>();
+        request.getParams().get(key).getAsJsonArray().forEach(s -> values.add(s.getAsString()));
+        return values;
     }
 
     protected String generalRoomId() {

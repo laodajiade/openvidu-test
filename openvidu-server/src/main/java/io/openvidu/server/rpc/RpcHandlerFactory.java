@@ -42,6 +42,9 @@ public class RpcHandlerFactory {
     @Resource
     private GetParticipantsHandler getParticipantsHandler;
 
+    @Resource
+    private SetAudioStatusHandler setAudioStatusHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ACCESS_IN_METHOD, accessInHandler);
@@ -51,6 +54,7 @@ public class RpcHandlerFactory {
         handlersMap.put(SHARE_SCREEN_METHOD, shareScreenHandler);
         handlersMap.put(STOP_SHARE_SCREEN_METHOD, stopShareScreenHandler);
         handlersMap.put(GET_PARTICIPANTS_METHOD, getParticipantsHandler);
+        handlersMap.put(SET_AUDIO_SPEAKER_STATUS_METHOD, setAudioStatusHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
