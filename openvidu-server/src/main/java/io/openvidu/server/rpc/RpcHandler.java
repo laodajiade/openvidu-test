@@ -17,21 +17,17 @@
 
 package io.openvidu.server.rpc;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.utils.GeoLocationByIp;
@@ -44,7 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -222,7 +218,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
 					exception.getMessage());
 			if ("IOException".equals(exception.getClass().getSimpleName())) {
-//					&& "Broken pipe".equals(exception.getCause().getMessage())) {
 				log.warn("Parcipant with private id {} unexpectedly closed the websocket", rpcSession.getSessionId());
 			}
 			if ("EOFException".equals(exception.getClass().getSimpleName())) {
@@ -240,63 +235,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Override
 	public List<String> allowedOrigins() {
-		return Arrays.asList("*");
-	}
-
-    public static String getStringParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
-		}
-		return request.getParams().get(key).getAsString();
-	}
-
-	public static int getIntParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			throw new RuntimeException("RMBER");
-		}
-		return request.getParams().get(key).getAsInt();
-	}
-
-    public static boolean getBooleanParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
-		}
-		return request.getParams().get(key).getAsBoolean();
-	}
-
-    public static JsonElement getParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
-		}
-		return request.getParams().get(key);
-	}
-
-    public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
-		if (Objects.isNull(sessionManager.getSession(sessionId))) {
-			return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
-		}
-
-		if (sessionManager.getSession(sessionId).isClosed()) {
-			return ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED;
-		}
-
-		if (checkModerator && sessionManager.getParticipant(sessionId, privateId).getRole() != OpenViduRole.MODERATOR) {
-			return ErrorCodeEnum.PERMISSION_LIMITED;
-		}
-
-		// 1. notify all participant stop publish and receive stream.
-		// 2. close session but can not disconnect the connection.
-		this.sessionManager.unpublishAllStream(sessionId, reason);
-		this.sessionManager.closeSession(sessionId, reason);
-
-		return ErrorCodeEnum.SUCCESS;
+		return Collections.singletonList("*");
 	}
 
 
-    public SessionManager getSessionManager() { return this.sessionManager; }
+	public SessionManager getSessionManager() { return this.sessionManager; }
 
 	public void notifyRoomCountdown(String sessionId, long remainTime) {
 		JsonObject params = new JsonObject();

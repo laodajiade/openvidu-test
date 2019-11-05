@@ -84,7 +84,7 @@ public abstract class RpcAbstractHandler {
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);
 
-    protected static String getStringParam(Request<JsonObject> request, String key) {
+    public static String getStringParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
                     + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
@@ -100,7 +100,7 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsString();
     }
 
-    protected static boolean getBooleanParam(Request<JsonObject> request, String key) {
+    public static boolean getBooleanParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
                     + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
@@ -153,14 +153,14 @@ public abstract class RpcAbstractHandler {
         return values;
     }
 
-    protected static int getIntParam(Request<JsonObject> request, String key) {
+    public static int getIntParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("RMBER");
         }
         return request.getParams().get(key).getAsInt();
     }
 
-    protected static JsonElement getParam(Request<JsonObject> request, String key) {
+    public static JsonElement getParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
                     + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
@@ -211,7 +211,7 @@ public abstract class RpcAbstractHandler {
         return false;
     }
 
-    protected ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
+    public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
             return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
         }
