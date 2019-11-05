@@ -128,6 +128,9 @@ public class RpcHandlerFactory {
     @Resource
     private GetPresetInfoHandler getPresetInfoHandler;
 
+    @Resource
+    private SetAudioSpeakerStatusHandler setAudioSpeakerStatusHandler;
+
 
 
 
@@ -140,7 +143,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SHARE_SCREEN_METHOD,               shareScreenHandler);
         handlersMap.put(ProtocolElements.STOP_SHARE_SCREEN_METHOD,          stopShareScreenHandler);
         handlersMap.put(ProtocolElements.GET_PARTICIPANTS_METHOD,           getParticipantsHandler);
-        handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD,   setAudioStatusHandler);
+        handlersMap.put(ProtocolElements.SET_AUDIO_STATUS_METHOD,           setAudioStatusHandler);
         handlersMap.put(ProtocolElements.SET_VIDEO_STATUS_METHOD,           setVideoStatusHandler);
         handlersMap.put(ProtocolElements.RAISE_HAND_METHOD,                 raiseHandHandler);
         handlersMap.put(ProtocolElements.PUT_DOWN_HAND_METHOD,              putDownHandHandler);
@@ -169,6 +172,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.INVITE_PARTICIPANT_METHOD,         inviteParticipantHandler);
         handlersMap.put(ProtocolElements.REFUSE_INVITE_METHOD,              refuseInviteHandler);
         handlersMap.put(ProtocolElements.GET_PRESET_INFO_METHOD,            getPresetInfoHandler);
+        handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD,   setAudioSpeakerStatusHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

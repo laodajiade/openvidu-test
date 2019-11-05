@@ -1848,7 +1848,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}*/
 
-	private void setAudioSpeakerStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void setAudioSpeakerStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM);
 		String targetId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM);
@@ -1881,7 +1881,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 		}
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_ID_PARAM);
