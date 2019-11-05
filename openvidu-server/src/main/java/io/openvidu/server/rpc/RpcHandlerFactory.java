@@ -116,6 +116,9 @@ public class RpcHandlerFactory {
     @Resource
     private RemoveFilterEventListenerHandler removeFilterEventListenerHandler;
 
+    @Resource
+    private CloseRoomHandler closeRoomHandler;
+
 
     @PostConstruct
     public void init() {
@@ -151,6 +154,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.EXECFILTERMETHOD_METHOD,           execFilterMethodHandler);
         handlersMap.put(ProtocolElements.ADDFILTEREVENTLISTENER_METHOD,     addFilterEventListenerHandler);
         handlersMap.put(ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD,  removeFilterEventListenerHandler);
+        handlersMap.put(ProtocolElements.CLOSE_ROOM_METHOD,                 closeRoomHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

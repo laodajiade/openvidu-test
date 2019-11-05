@@ -1711,7 +1711,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				.equals(this.sessionManager.getParticipantPrivateIdFromStreamId(sessionId, streamId));
 	}
 
-	private void closeRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void closeRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 		if (Objects.isNull(sessionManager.getSession(sessionId)) || sessionManager.getSession(sessionId).isClosed()) {
@@ -1744,7 +1744,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
         this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
-	}
+	}*/
 
 	public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
 		if (Objects.isNull(sessionManager.getSession(sessionId))) {
