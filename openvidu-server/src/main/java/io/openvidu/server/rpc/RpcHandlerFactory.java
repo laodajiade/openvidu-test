@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc;
 
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.rpc.handlers.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -8,8 +9,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static io.openvidu.client.internal.ProtocolElements.*;
 
 /**
  * @author chosongi
@@ -51,18 +50,23 @@ public class RpcHandlerFactory {
     @Resource
     private RaiseHandHandler raiseHandHandler;
 
+    @Resource
+    private PutDownHandHandler putDownHandHandler;
+
+
     @PostConstruct
     public void init() {
-        handlersMap.put(ACCESS_IN_METHOD, accessInHandler);
-        handlersMap.put(CONFIRM_APPLY_FOR_LOGIN_METHOD, confirmApplyForLoginHandler);
-        handlersMap.put(ACCESS_OUT_METHOD, accessOutHandler);
-        handlersMap.put(CREATE_ROOM_METHOD, createRoomHandler);
-        handlersMap.put(SHARE_SCREEN_METHOD, shareScreenHandler);
-        handlersMap.put(STOP_SHARE_SCREEN_METHOD, stopShareScreenHandler);
-        handlersMap.put(GET_PARTICIPANTS_METHOD, getParticipantsHandler);
-        handlersMap.put(SET_AUDIO_SPEAKER_STATUS_METHOD, setAudioStatusHandler);
-        handlersMap.put(SET_VIDEO_STATUS_METHOD, setVideoStatusHandler);
-        handlersMap.put(RAISE_HAND_METHOD, raiseHandHandler);
+        handlersMap.put(ProtocolElements.ACCESS_IN_METHOD, accessInHandler);
+        handlersMap.put(ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_METHOD, confirmApplyForLoginHandler);
+        handlersMap.put(ProtocolElements.ACCESS_OUT_METHOD, accessOutHandler);
+        handlersMap.put(ProtocolElements.CREATE_ROOM_METHOD, createRoomHandler);
+        handlersMap.put(ProtocolElements.SHARE_SCREEN_METHOD, shareScreenHandler);
+        handlersMap.put(ProtocolElements.STOP_SHARE_SCREEN_METHOD, stopShareScreenHandler);
+        handlersMap.put(ProtocolElements.GET_PARTICIPANTS_METHOD, getParticipantsHandler);
+        handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, setAudioStatusHandler);
+        handlersMap.put(ProtocolElements.SET_VIDEO_STATUS_METHOD, setVideoStatusHandler);
+        handlersMap.put(ProtocolElements.RAISE_HAND_METHOD, raiseHandHandler);
+        handlersMap.put(ProtocolElements.PUT_DOWN_HAND_METHOD, putDownHandHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

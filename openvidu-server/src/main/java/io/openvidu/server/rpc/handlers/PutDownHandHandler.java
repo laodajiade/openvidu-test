@@ -1,0 +1,58 @@
+package io.openvidu.server.rpc.handlers;
+
+import com.google.gson.JsonObject;
+import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.core.Participant;
+import io.openvidu.server.rpc.RpcAbstractHandler;
+import io.openvidu.server.rpc.RpcConnection;
+import lombok.extern.slf4j.Slf4j;
+import org.kurento.jsonrpc.message.Request;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * @author chosongi
+ * @date 2019/11/5 16:57
+ */
+@Slf4j
+@Service
+public class PutDownHandHandler extends RpcAbstractHandler {
+    @Override
+    public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        String sessionId = getStringParam(request, ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM);
+        String sourceId = getStringParam(request, ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM);
+        String targetId = request.getParams().has(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM) ?
+                request.getParams().get(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM).getAsString() : null;
+        Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        if (!StringUtils.isEmpty(targetId)) {
+            sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), StreamType.MAJOR)
+                    .setHandStatus(ParticipantHandStatus.down);
+        } else {
+            participants.forEach(part -> part.setHandStatus(ParticipantHandStatus.down));
+        }
+
+        JsonObject params = new JsonObject();
+        params.addProperty(ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM, sessionId);
+        params.addProperty(ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM, sourceId);
+        if (!StringUtils.isEmpty(targetId)) {
+            params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
+            int raiseHandNum = 0;
+            for (Participant p : sessionManager.getParticipants(sessionId)) {
+                if (Objects.equals(ParticipantHandStatus.up, p.getHandStatus()) &&
+                        Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+                    ++raiseHandNum;
+                }
+            }
+            params.addProperty(ProtocolElements.PUT_DOWN_HAND_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+        }
+        participants.forEach(participant ->
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.PUT_DOWN_HAND_METHOD, params));
+
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+}
