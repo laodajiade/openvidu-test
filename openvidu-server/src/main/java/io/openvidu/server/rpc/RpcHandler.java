@@ -58,6 +58,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private static final Gson gson = new GsonBuilder().create();
 
+	@Resource
+	RpcHandlerFactory rpcHandlerFactory;
+
 	@Autowired
 	OpenviduConfig openviduConfig;
 
@@ -153,8 +156,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		transaction.startAsync();
+		RpcAbstractHandler rpcAbstractHandler = rpcHandlerFactory.getRpcHandler(request.getMethod());
+		rpcAbstractHandler.handRpcRequest(rpcConnection, request);
 
-		switch (request.getMethod()) {
+		/*switch (request.getMethod()) {
             case ProtocolElements.ACCESS_IN_METHOD:
                 accessIn(rpcConnection, request);
                 break;
@@ -290,11 +295,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			default:
 				log.error("Unrecognized request {}", request);
 				break;
-		}
+		}*/
 	}
 
     private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
-	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
+	    /*String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
 		String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
 		String deviceMac = getStringParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
@@ -347,8 +352,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			// SINGLE LOGIN
 			if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
-				/*previousRpc = notificationService.getRpcConnections().stream().filter(s -> !Objects.equals(rpcConnection, s)
-						&& Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);*/
+				*//*previousRpc = notificationService.getRpcConnections().stream().filter(s -> !Objects.equals(rpcConnection, s)
+						&& Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);*//*
 				if (!Objects.isNull(previousRpc) && !Objects.equals(previousRpc.getParticipantPrivateId(),
 						rpcConnection.getParticipantPrivateId()) && !Objects.equals(deviceMac, previousRpc.getMacAddr())) {
 					log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
@@ -457,7 +462,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					}
 				}
 			});
-		}
+		}*/
     }
 
     private void confirmApplyForLogin(RpcConnection rpcConnection, Request<JsonObject> request) {
