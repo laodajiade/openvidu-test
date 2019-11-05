@@ -465,7 +465,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}*/
     }
 
-    private void confirmApplyForLogin(RpcConnection rpcConnection, Request<JsonObject> request) {
+    /*private void confirmApplyForLogin(RpcConnection rpcConnection, Request<JsonObject> request) {
 	    boolean accept = getBooleanParam(request, ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_ACCEPT_PARAM);
 	    String applicantSessionId = getStringOptionalParam(request, ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM);
 
@@ -480,7 +480,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
                 sessionManager.accessOut(rpcConnection);
             }
         }
-    }
+    }*/
 
     private void accessOut(RpcConnection rpcConnection, Request<JsonObject> request) {
 		if (request != null) {
