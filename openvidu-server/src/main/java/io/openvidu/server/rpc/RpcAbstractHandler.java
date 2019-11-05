@@ -206,7 +206,7 @@ public abstract class RpcAbstractHandler {
                 return true;
             }
         } catch (Exception e) {
-            log.info("conferenceMapper selectBySearchCondition(search) exception {}", e);
+            log.info("exception {}", e);
         }
         return false;
     }

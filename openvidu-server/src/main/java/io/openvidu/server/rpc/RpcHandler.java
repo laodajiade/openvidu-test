@@ -17,25 +17,24 @@
 
 package io.openvidu.server.rpc;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.dao.*;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.manage.UserManage;
-import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.*;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-import io.openvidu.server.utils.GeoLocation;
+import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.utils.GeoLocationByIp;
-import io.openvidu.server.utils.StringUtil;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -43,22 +42,19 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private static final Logger log = LoggerFactory.getLogger(RpcHandler.class);
 
-	private static final Gson gson = new GsonBuilder().create();
-
-	@Resource
+    @Resource
 	RpcHandlerFactory rpcHandlerFactory;
 
 	@Autowired
@@ -76,22 +72,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Autowired
 	CacheManage cacheManage;
 
-	@Resource
-    ConferenceMapper conferenceMapper;
-
-	@Resource
-	DeviceMapper deviceMapper;
-
-	@Resource
-	DeviceDeptMapper deviceDeptMapper;
-
-	@Resource
-	UserDeptMapper userDeptMapper;
-
-	@Resource
-	DepartmentMapper depMapper;
-
-	@Autowired
+    @Autowired
     AuthorizationManage authorizationManage;
 
 	@Autowired
@@ -157,44 +138,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		rpcAbstractHandler.handRpcRequest(rpcConnection, request);
 	}
 
-
-	private boolean isExistingRoom(String sessionId, String userUuid) {
-		// verify room id ever exists
-		ConferenceSearch search = new ConferenceSearch();
-		search.setRoomId(sessionId);
-		// 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
-		search.setStatus(1);
-		try {
-			List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
-			if (conferences != null && !conferences.isEmpty()) {
-				if (sessionId.equals(userUuid)) {
-					// force close previous room when sessionId is userUuid.
-					log.warn("conference:{} will be force closed.", sessionId);
-					// TODO
-					conferences.forEach(conference -> sessionManager.endConferenceInfo(conference));
-					cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
-					return false;
-				}
-
-				log.warn("conference:{} already exist.", sessionId);
-				return true;
-			}
-		} catch (Exception e) {
-			log.info("conferenceMapper selectBySearchCondition(search) exception {}", e);
-		}
-		return false;
-	}
-
-	public void leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {
-		try {
-			sessionManager.evictParticipant(this.sessionManager.getParticipant(participantPrivateId), null, null,
-					reason);
-			log.info("Evicted participant with privateId {}", participantPrivateId);
-		} catch (OpenViduException e) {
-			log.warn("Unable to evict: {}", e.getMessage());
-			log.trace("Unable to evict user", e);
-		}
-	}
 
 	@Override
 	public void afterConnectionEstablished(Session rpcSession) {
@@ -300,29 +243,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return Arrays.asList("*");
 	}
 
-	public static List<String> getStringListParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
-			return null;
-		}
-
-		List<String> values = new ArrayList<>();
-		request.getParams().get(key).getAsJsonArray().forEach(s -> values.add(s.getAsString()));
-		return values;
-	}
-
-	public static String getStringParam(Request<JsonObject> request, String key) {
+    public static String getStringParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
 			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
 					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
 		}
-		return request.getParams().get(key).getAsString();
-	}
-
-	public static String getStringOptionalParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			return null;
-		}
-
 		return request.getParams().get(key).getAsString();
 	}
 
@@ -333,23 +258,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return request.getParams().get(key).getAsInt();
 	}
 
-	public static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			return null;
-		}
-
-		return request.getParams().get(key).getAsInt();
-	}
-
-	public static Float getFloatOptionalParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			return null;
-		}
-
-		return request.getParams().get(key).getAsFloat();
-	}
-
-	public static boolean getBooleanParam(Request<JsonObject> request, String key) {
+    public static boolean getBooleanParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
 			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
 					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
@@ -357,15 +266,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return request.getParams().get(key).getAsBoolean();
 	}
 
-	public static long getLongParam(Request<JsonObject> request, String key) {
-		if (request.getParams() == null || request.getParams().get(key) == null) {
-			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
-		}
-		return request.getParams().get(key).getAsLong();
-	}
-
-	public static JsonElement getParam(Request<JsonObject> request, String key) {
+    public static JsonElement getParam(Request<JsonObject> request, String key) {
 		if (request.getParams() == null || request.getParams().get(key) == null) {
 			throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
 					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
@@ -373,80 +274,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		return request.getParams().get(key);
 	}
 
-	private Participant sanityCheckOfSession(RpcConnection rpcConnection, String methodName) throws OpenViduException {
-		String participantPrivateId = rpcConnection.getParticipantPrivateId();
-		String sessionId = rpcConnection.getSessionId();
-		String errorMsg;
-
-		if (sessionId == null) { // null when afterConnectionClosed
-			errorMsg = "No session information found for participant with privateId " + participantPrivateId
-					+ ". Using the admin method to evict the user.";
-			log.warn(errorMsg);
-			leaveRoomAfterConnClosed(participantPrivateId, null);
-			throw new OpenViduException(Code.GENERIC_ERROR_CODE, errorMsg);
-		} else {
-			// Sanity check: don't call RPC method unless the id checks out
-			Participant participant = sessionManager.getParticipant(sessionId, participantPrivateId);
-			if (participant != null) {
-				errorMsg = "Participant " + participant.getParticipantPublicId() + " is calling method '" + methodName
-						+ "' in session " + sessionId;
-				log.info(errorMsg);
-				return participant;
-			} else {
-				errorMsg = "Participant with private id " + participantPrivateId + " not found in session " + sessionId
-						+ ". Using the admin method to evict the user.";
-				log.warn(errorMsg);
-				leaveRoomAfterConnClosed(participantPrivateId, null);
-				throw new OpenViduException(Code.GENERIC_ERROR_CODE, errorMsg);
-			}
-		}
-	}
-
-	private Participant sanityCheckOfSession(RpcConnection rpcConnection, StreamType streamType) throws OpenViduException {
-		Participant participant = sessionManager.getParticipant(rpcConnection.getSessionId(),
-				rpcConnection.getParticipantPrivateId(), streamType);
-		if (participant == null) {
-			leaveRoomAfterConnClosed(rpcConnection.getParticipantPrivateId(), null);
-			throw new OpenViduException(Code.GENERIC_ERROR_CODE, "Participant not exists.");
-		}
-		return participant;
-	}
-
-	private Participant sanityCheckOfSession(RpcConnection rpcConnection, String participantPublicId, String methodName) throws OpenViduException {
-		String participantPrivateId = rpcConnection.getParticipantPrivateId();
-		String sessionId = rpcConnection.getSessionId();
-		String errorMsg;
-
-		if (sessionId == null) { // null when afterConnectionClosed
-			errorMsg = "No session information found for participant with privateId " + participantPrivateId
-					+ ". Using the admin method to evict the user.";
-			log.warn(errorMsg);
-			leaveRoomAfterConnClosed(participantPrivateId, null);
-			throw new OpenViduException(Code.GENERIC_ERROR_CODE, errorMsg);
-		} else {
-			// Sanity check: don't call RPC method unless the id checks out
-			Participant participant = sessionManager.getParticipantByPrivateAndPublicId(sessionId, participantPrivateId, participantPublicId);
-			if (participant != null) {
-				errorMsg = "Participant " + participant.getParticipantPublicId() + " is calling method '" + methodName
-						+ "' in session " + sessionId;
-				log.info(errorMsg);
-				return participant;
-			} else {
-				errorMsg = "Participant with private id " + participantPrivateId + " not found in session " + sessionId
-						+ ". Using the admin method to evict the user.";
-				log.warn(errorMsg);
-				leaveRoomAfterConnClosed(participantPrivateId, null);
-				throw new OpenViduException(Code.GENERIC_ERROR_CODE, errorMsg);
-			}
-		}
-	}
-
-	private boolean userIsStreamOwner(String sessionId, Participant participant, String streamId) {
-		return participant.getParticipantPrivateId()
-				.equals(this.sessionManager.getParticipantPrivateIdFromStreamId(sessionId, streamId));
-	}
-
-	public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
+    public ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
 		if (Objects.isNull(sessionManager.getSession(sessionId))) {
 			return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
 		}
@@ -468,16 +296,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 
-	private boolean isModerator(String role) {
-		// TODO. Fixme. user account have moderator power.
-		if (Objects.equals(OpenViduRole.MODERATOR.name(), role)) {
-//		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
-			return true;
-		}
-		return false;
-	}
-
-	public SessionManager getSessionManager() { return this.sessionManager; }
+    public SessionManager getSessionManager() { return this.sessionManager; }
 
 	public void notifyRoomCountdown(String sessionId, long remainTime) {
 		JsonObject params = new JsonObject();
@@ -501,38 +320,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				}
 			}
 		});
-	}
-
-	private boolean updateReconnectInfo(RpcConnection rpcConnection) {
-		try {
-			Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-			if (Objects.isNull(userInfo)) {
-				log.warn("user:{} info is null.", rpcConnection.getUserUuid());
-				return false;
-			}
-
-			if (Objects.equals(UserOnlineStatusEnum.reconnect.name(), userInfo.get("status"))) {
-				log.info("reconnect userId:{} mac:{}", rpcConnection.getUserId(), rpcConnection.getMacAddr());
-				String oldPrivateId = String.valueOf(userInfo.get("reconnect"));
-				if (StringUtils.isEmpty(oldPrivateId)) {
-					log.warn("reconnect privateId:{}", oldPrivateId);
-					return false;
-				}
-
-				RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
-				cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
-				leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
-//				accessOut(oldRpcConnection, null);
-				sessionManager.accessOut(oldRpcConnection);
-				return true;
-			}
-		} catch (Exception e) {
-			log.warn("exception:{}", e);
-			return false;
-		}
-
-		return true;
 	}
 
 	public RpcNotificationService getNotificationService() {
