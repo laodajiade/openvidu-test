@@ -600,7 +600,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}*/
 
-	private void stopShareScreen(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void stopShareScreen(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.STOP_SHARE_ROOM_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.STOP_SHARE_SOURCE_ID_PARAM);
 		if (sessionManager.isSessionIdValid(sessionId)) {
@@ -615,7 +615,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
 		}
-	}
+	}*/
 
 	private void getParticipants(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.GET_PARTICIPANTS_ROOM_ID_PARAM);
