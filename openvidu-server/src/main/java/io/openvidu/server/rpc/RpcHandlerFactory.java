@@ -80,6 +80,9 @@ public class RpcHandlerFactory {
     @Resource
     private ReceiveVideoFromHandler receiveVideoFromHandler;
 
+    @Resource
+    private UnsubscribeFromVideoHandler unsubscribeFromVideoHandler;
+
 
 
     @PostConstruct
@@ -104,6 +107,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.LEAVEROOM_METHOD, leaveRoomHandler);
         handlersMap.put(ProtocolElements.PUBLISHVIDEO_METHOD, publishVideoHandler);
         handlersMap.put(ProtocolElements.RECEIVEVIDEO_METHOD, receiveVideoFromHandler);
+        handlersMap.put(ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD, unsubscribeFromVideoHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
