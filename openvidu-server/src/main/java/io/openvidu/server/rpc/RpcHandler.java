@@ -789,11 +789,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.up);
 
 		List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
-				.stream().map(p -> p.getParticipantPrivateId()).collect(Collectors.toList());
+				.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
 		if (!CollectionUtils.isEmpty(notifyClientPrivateIds)) {
 			int raiseHandNum = 0;
 			for (Participant p : sessionManager.getParticipants(sessionId)) {
-				if (p.getHandStatus() == ParticipantHandStatus.up) {
+				if (Objects.equals(StreamType.MAJOR, p.getStreamType()) &&
+						p.getHandStatus() == ParticipantHandStatus.up) {
 					++raiseHandNum;
 				}
 			}
@@ -814,9 +815,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				request.getParams().get(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM).getAsString() : null;
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		if (!StringUtils.isEmpty(targetId)) {
-			participants.stream().filter(part ->
-					targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-					.findFirst().get().setHandStatus(ParticipantHandStatus.down);
+			sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), StreamType.MAJOR)
+					.setHandStatus(ParticipantHandStatus.down);
 		} else {
 			participants.forEach(part -> part.setHandStatus(ParticipantHandStatus.down));
 		}
@@ -828,7 +828,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
 			int raiseHandNum = 0;
 			for (Participant p : sessionManager.getParticipants(sessionId)) {
-				if (p.getHandStatus() == ParticipantHandStatus.up) {
+				if (Objects.equals(ParticipantHandStatus.up, p.getHandStatus()) &&
+						Objects.equals(StreamType.MAJOR, p.getStreamType())) {
 					++raiseHandNum;
 				}
 			}
