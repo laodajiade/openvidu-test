@@ -149,7 +149,8 @@ public class RpcHandlerFactory {
     @Resource
     private UpdateDeviceInfoHandler updateDeviceInfoHandler;
 
-
+    @Resource
+    private RoomDelayHandler roomDelayHandler;
 
     @PostConstruct
     public void init() {
@@ -196,6 +197,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_USER_DEVICE_METHOD,            getUserDeviceListHandler);
         handlersMap.put(ProtocolElements.GET_DEVICE_INFO_METHOD,            getDeviceInfoHandler);
         handlersMap.put(ProtocolElements.UPDATE_DEVICE_INFO_METHOD,         updateDeviceInfoHandler);
+        handlersMap.put(ProtocolElements.ROOM_DELAY_METHOD,                 roomDelayHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

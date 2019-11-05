@@ -2085,7 +2085,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params));
 	}
 
-	private void roomDelay(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void roomDelay(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.ROOM_DELAY_ID_PARAM);
 
 		if (sessionManager.getSession(sessionId).getConfDelayTime() > openviduConfig.getVoipDelayMaxTime() * 60 * 60) {
@@ -2099,7 +2099,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.getSession(sessionId).getParticipants().forEach(p ->
 				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_DELAY_METHOD, new JsonObject()));
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private void notifyUserBreakLine(String sessionId, String publicId) {
 		JsonObject params = new JsonObject();
