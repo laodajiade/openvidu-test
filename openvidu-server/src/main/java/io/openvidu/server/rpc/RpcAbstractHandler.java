@@ -12,6 +12,8 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.manage.DepartmentManage;
+import io.openvidu.server.common.manage.DeviceManage;
+import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
@@ -56,6 +58,12 @@ public abstract class RpcAbstractHandler {
     protected DepartmentManage departmentManage;
 
     @Resource
+    protected DeviceManage deviceManage;
+
+    @Resource
+    protected UserManage userManage;
+
+    @Resource
     protected DeviceMapper deviceMapper;
 
     @Resource
@@ -98,6 +106,14 @@ public abstract class RpcAbstractHandler {
                     + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
         }
         return request.getParams().get(key).getAsBoolean();
+    }
+
+    protected static long getLongParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null) {
+            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
+                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+        }
+        return request.getParams().get(key).getAsLong();
     }
 
     protected void leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {

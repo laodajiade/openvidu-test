@@ -1974,7 +1974,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}*/
 
-	private void getUserDeviceList(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void getUserDeviceList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Long orgId = getLongParam(request, ProtocolElements.GET_USER_DEVICE_ORGID_PARAM);
 		String localSerialNumber = rpcConnection.getSerialNumber();
 		Long localUserId = rpcConnection.getUserId();
@@ -2037,7 +2037,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.add(ProtocolElements.GET_USER_DEVICE_LIST_PARAM, userDevList);
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
-	}
+	}*/
 
 	private void getDeviceInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String serialNumber = rpcConnection.getSerialNumber();

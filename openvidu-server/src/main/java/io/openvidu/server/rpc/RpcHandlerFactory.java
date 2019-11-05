@@ -140,6 +140,11 @@ public class RpcHandlerFactory {
     @Resource
     private GetOrgListHandler getOrgListHandler;
 
+    @Resource
+    private GetUserDeviceListHandler getUserDeviceListHandler;
+
+
+
 
     @PostConstruct
     public void init() {
@@ -183,6 +188,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SET_SHARE_POWER_METHOD,            setSharePowerHandler);
         handlersMap.put(ProtocolElements.TRANSFER_MODERATOR_METHOD,         transferModeratorHandler);
         handlersMap.put(ProtocolElements.GET_ORG_METHOD,                    getOrgListHandler);
+        handlersMap.put(ProtocolElements.GET_USER_DEVICE_METHOD,            getUserDeviceListHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
