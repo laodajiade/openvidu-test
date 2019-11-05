@@ -1364,7 +1364,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}*/
 
-	private void execFilterMethod(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void execFilterMethod(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "execFilterMethod");
@@ -1388,7 +1388,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
 					"Unable to execute filter method. The user does not have a valid token");
 		}
-	}
+	}*/
 
 	private void addFilterEventListener(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;

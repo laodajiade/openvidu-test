@@ -107,6 +107,9 @@ public class RpcHandlerFactory {
     @Resource
     private RemoveFilterHandler removeFilterHandler;
 
+    @Resource
+    private ExecFilterMethodHandler execFilterMethodHandler;
+
 
     @PostConstruct
     public void init() {
@@ -139,6 +142,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.FORCEUNPUBLISH_METHOD, forceUnpublishHandler);
         handlersMap.put(ProtocolElements.APPLYFILTER_METHOD, applyFilterHandler);
         handlersMap.put(ProtocolElements.REMOVEFILTER_METHOD, removeFilterHandler);
+        handlersMap.put(ProtocolElements.EXECFILTERMETHOD_METHOD, execFilterMethodHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
