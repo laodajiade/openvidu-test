@@ -1,11 +1,12 @@
 package io.openvidu.server.rpc;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.dao.DeviceMapper;
+import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
@@ -28,8 +29,13 @@ import java.util.Objects;
 @Component
 public abstract class RpcAbstractHandler {
 
+    protected static final Gson gson = new GsonBuilder().create();
+
     @Resource
     protected SessionManager sessionManager;
+
+    @Resource
+    protected RpcNotificationService notificationService;
 
     @Resource
     protected CacheManage cacheManage;
@@ -41,7 +47,17 @@ public abstract class RpcAbstractHandler {
     protected ConferenceMapper conferenceMapper;
 
     @Resource
-    protected RpcNotificationService notificationService;
+    protected UserMapper userMapper;
+
+    @Resource
+    protected UserDeptMapper userDeptMapper;
+
+    @Resource
+    protected DepartmentMapper depMapper;
+
+    @Resource
+    protected DeviceDeptMapper deviceDeptMapper;
+
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);
 
