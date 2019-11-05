@@ -2039,7 +2039,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}*/
 
-	private void getDeviceInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void getDeviceInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String serialNumber = rpcConnection.getSerialNumber();
 
 		DeviceSearch deviceSearch = new DeviceSearch();
@@ -2049,7 +2049,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.GET_DEVICE_NANE_PARAM, device.getDeviceName());
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
-	}
+	}*/
 
 	private void updateDeviceInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String deviceName = getStringParam(request, ProtocolElements.UPDATE_DEVICE_NANE_PARAM);
