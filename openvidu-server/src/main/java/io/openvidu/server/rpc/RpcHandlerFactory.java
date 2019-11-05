@@ -36,6 +36,9 @@ public class RpcHandlerFactory {
     @Resource
     private ShareScreenHandler shareScreenHandler;
 
+    @Resource
+    private StopShareScreenHandler stopShareScreenHandler;
+
 
     @PostConstruct
     public void init() {
@@ -44,6 +47,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ACCESS_OUT_METHOD, accessOutHandler);
         handlersMap.put(CREATE_ROOM_METHOD, createRoomHandler);
         handlersMap.put(SHARE_SCREEN_METHOD, shareScreenHandler);
+        handlersMap.put(STOP_SHARE_SCREEN_METHOD, stopShareScreenHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
