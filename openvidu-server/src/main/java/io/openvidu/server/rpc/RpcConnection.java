@@ -41,6 +41,11 @@ public class RpcConnection {
 	private ConcurrentMap<Integer, Transaction> transactions;
 	private String sessionId;
 	private String participantPrivateId;
+	private Long userId;
+	private String userUuid;	// the uuid of user
+	private String serialNumber;
+	private String macAddr;
+	private boolean isReconnected;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -58,6 +63,34 @@ public class RpcConnection {
 
 	public void setParticipantPrivateId(String participantPrivateId) {
 		this.participantPrivateId = participantPrivateId;
+	}
+
+	public Long getUserId() { return this.userId; }
+
+	public void setUserId(Long userId) { this.userId = userId; }
+
+	public String getUserUuid() { return this.userUuid; }
+
+	public void setUserUuid(String userUuid) { this.userUuid = userUuid; }
+
+	public String getSerialNumber() { return this.serialNumber; }
+
+	public void setDeviceSerailNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+	public String getMacAddr() {
+		return macAddr;
+	}
+
+	public void setMacAddr(String macAddr) {
+		this.macAddr = macAddr;
+	}
+
+	public boolean isReconnected() {
+		return isReconnected;
+	}
+
+	public void setReconnected(boolean reconnected) {
+		isReconnected = reconnected;
 	}
 
 	public String getSessionId() {

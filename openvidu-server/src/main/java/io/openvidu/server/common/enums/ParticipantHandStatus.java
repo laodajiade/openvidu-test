@@ -5,6 +5,8 @@ package io.openvidu.server.common.enums;
  * @date 2019/9/17 10:20
  */
 public enum ParticipantHandStatus {
-    down,   // 放下手
-    up     // 举手
+    down,           // 放下手
+    speaker,        // 发言
+    endSpeaker,     // 结束发言
+    up              // 举手
 }

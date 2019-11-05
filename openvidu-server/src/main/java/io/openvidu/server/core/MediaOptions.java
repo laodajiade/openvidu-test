@@ -53,11 +53,19 @@ public class MediaOptions {
 	}
 
 	public boolean isAudioActive() {
-		return this.hasAudio && this.audioActive;
+		return (this.hasAudio != null) && (this.audioActive != null) && this.hasAudio && this.audioActive;
 	}
 
 	public boolean isVideoActive() {
-		return this.hasVideo && this.videoActive;
+		return (this.hasVideo != null) && (this.videoActive != null) && this.hasVideo && this.videoActive;
+	}
+
+	public void setAudioActive(Boolean audioActive) {
+		this.audioActive = audioActive;
+	}
+
+	public void setVideoActive(Boolean videoActive) {
+		this.videoActive = videoActive;
 	}
 
 	public String getTypeOfVideo() {

@@ -23,6 +23,8 @@ import com.google.gson.JsonObject;
 
 import io.openvidu.java.client.SessionProperties;
 
+import javax.servlet.http.Part;
+
 public interface SessionInterface {
 
 	String getSessionId();
@@ -32,6 +34,8 @@ public interface SessionInterface {
 	void join(Participant participant);
 
 	void leave(String participantPrivateId, EndReason reason);
+
+	void leaveRoom(Participant p, EndReason reason);
 
 	boolean close(EndReason reason);
 

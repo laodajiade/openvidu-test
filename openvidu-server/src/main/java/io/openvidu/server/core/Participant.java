@@ -17,9 +17,11 @@
 
 package io.openvidu.server.core;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.utils.GeoLocation;
 
 public class Participant {
@@ -33,6 +35,7 @@ public class Participant {
 	protected String serverMetadata = ""; // Metadata provided on server side
 //	protected Token token; // Token associated to this participant
 	private OpenViduRole role;
+	private StreamType streamType;
 	protected GeoLocation location; // Location of the participant
 	protected String platform; // Platform used by the participant to connect to the session
 
@@ -40,11 +43,23 @@ public class Participant {
 	protected volatile boolean closed;
 
 	protected ParticipantHandStatus handStatus;
+	protected ParticipantMicStatus micStatus;
+	protected ParticipantSharePowerStatus sharePowerStatus;
+	protected ParticipantVideoStatus videoStatus;
+	protected String roomSubject;
+
+	protected String appShowName;
+	protected String appShowDesc;
+	protected ParticipantSpeakerStatus speakerStatus;
+	protected ParticipantShareStatus shareStatus;
+	protected SessionPreset preset;
+	protected ParticipantJoinType joinType;
 
 	private final String METADATA_SEPARATOR = "%/%";
+    protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
-					   String clientMetadata, GeoLocation location, String platform, Long createdAt) {
+					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
@@ -59,9 +74,16 @@ public class Participant {
 		/*if (!token.getServerMetadata().isEmpty())
 			this.serverMetadata = token.getServerMetadata();*/
 		this.role = role;
+		this.streamType = streamType;
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
+		this.micStatus = ParticipantMicStatus.off;
+		this.sharePowerStatus = ParticipantSharePowerStatus.off;
+		this.videoStatus = ParticipantVideoStatus.on;
+		this.speakerStatus = ParticipantSpeakerStatus.on;
+		this.shareStatus = ParticipantShareStatus.off;
+		this.joinType = ParticipantJoinType.active;
 	}
 
 	public String getFinalUserId() {
@@ -120,6 +142,15 @@ public class Participant {
 		return role;
 	}
 
+	// 仅仅在 主持人和发布者之间角色切换
+	public void setRole(OpenViduRole role) {
+		this.role = role;
+	}
+
+	public StreamType getStreamType() {
+		return streamType;
+	}
+
 	public ParticipantHandStatus getHandStatus() {
 		return handStatus;
 	}
@@ -127,6 +158,48 @@ public class Participant {
 	public void setHandStatus(ParticipantHandStatus handStatus) {
 		this.handStatus = handStatus;
 	}
+
+	public ParticipantMicStatus getMicStatus() { return micStatus; }
+
+	public void setMicStatus(ParticipantMicStatus micStatus) { this.micStatus = micStatus; }
+
+	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }
+
+	public void setVideoStatus(ParticipantVideoStatus status) { this.videoStatus = status; }
+
+	public ParticipantSharePowerStatus getSharePowerStatus() { return sharePowerStatus; }
+
+	public void setSharePowerStatus(ParticipantSharePowerStatus status) { this.sharePowerStatus = status; }
+
+	public String getRoomSubject() { return this.roomSubject; }
+
+	public void setRoomSubject(String subject) { this.roomSubject = subject; }
+
+	public String getAppShowName() { return this.appShowName; }
+
+	public void setAppShowName(String appShowName) { this.appShowName = appShowName; }
+
+	public String getAppShowDesc() { return this.appShowDesc; }
+
+	public void setAppShowDesc(String appShowDesc) { this.appShowDesc = appShowDesc; }
+
+	public void setAppShowInfo(String appShowName, String appShowDesc) { setAppShowName(appShowName); setAppShowDesc(appShowDesc);}
+
+	public void setSpeakerStatus(ParticipantSpeakerStatus status) { this.speakerStatus = status; }
+
+	public ParticipantSpeakerStatus getSpeakerStatus() { return this.speakerStatus; }
+
+	public void setShareStatus(ParticipantShareStatus status) { this.shareStatus = status; }
+
+	public ParticipantShareStatus getShareStatus() { return this.shareStatus; }
+
+	public void setJoinType(ParticipantJoinType joinType) { this.joinType = joinType; }
+
+	public ParticipantJoinType getJoinType() { return this.joinType; }
+
+	public void setPreset(SessionPreset preset) { this.preset = preset; }
+
+	public SessionPreset getPreset() { return this.preset; }
 
 	public GeoLocation getLocation() {
 		return this.location;
@@ -162,10 +235,12 @@ public class Participant {
 
 	public String getFullMetadata() {
 		String fullMetadata;
+        JsonObject clientMetaJson = gson.fromJson(clientMetadata, JsonObject.class);
+        clientMetaJson.addProperty("role", this.role.name());
 		if ((!this.clientMetadata.isEmpty()) && (!this.serverMetadata.isEmpty())) {
-			fullMetadata = this.clientMetadata + METADATA_SEPARATOR + this.serverMetadata;
+			fullMetadata = clientMetaJson.toString() + METADATA_SEPARATOR + this.serverMetadata;
 		} else {
-			fullMetadata = this.clientMetadata + this.serverMetadata;
+			fullMetadata = clientMetaJson.toString() + this.serverMetadata;
 		}
 		return fullMetadata;
 	}

@@ -137,6 +137,18 @@ public class OpenviduConfig {
 	@Value("#{'${spring.profiles.active:}'.length() > 0 ? '${spring.profiles.active:}'.split(',') : \"default\"}")
 	private String springProfile;
 
+	@Value("${voip.countdown.longTime}")
+	private int voipCountdownLongTime;	// unit is minute
+
+	@Value("${voip.countdown.shortTime}")
+	private int voipCountdownShortTime;	// unit is minute
+
+	@Value("${voip.dealy.unit}")
+	private int voipDelayUnit;			// unit is minute
+
+	@Value("${voip.delay.maxTime}")
+	private int voipDelayMaxTime;		// unit is hour
+
 	private String finalUrl;
 	private List<String> kmsUrisList;
 	private List<Header> webhookHeadersList;
@@ -369,6 +381,22 @@ public class OpenviduConfig {
 	public String getVersion() {
 //		return this.buildProperties.getVersion();
 		return "2.11.0";
+	}
+
+	public int getVoipCountdownLongTime() {
+		return this.voipCountdownLongTime;
+	}
+
+	public int getVoipCountdownShortTime() {
+		return this.voipCountdownShortTime;
+	}
+
+	public int getVoipDelayUnit() {
+		return this.voipDelayUnit;
+	}
+
+	public int getVoipDelayMaxTime() {
+		return this.voipDelayMaxTime;
 	}
 
 	public String getSpringConfigLocation() {

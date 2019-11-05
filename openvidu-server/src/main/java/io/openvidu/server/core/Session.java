@@ -17,36 +17,48 @@
 
 package io.openvidu.server.core;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
+import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Session implements SessionInterface {
 
 	protected OpenviduConfig openviduConfig;
 	protected RecordingManager recordingManager;
 
-	protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
+//	protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
+	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
+	// TODO. Maybe we should relate conference in here.
+	protected Conference conference;
+	protected SessionPreset preset;
+	protected int delayConfCnt;
+	protected int delayTimeUnit = 20 * 60;	// default 20min
+	protected boolean notifyCountdown10Min = false;
+	protected boolean notifyCountdown1Min = false;
 
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
@@ -60,6 +72,10 @@ public class Session implements SessionInterface {
 		this.sessionProperties = previousSession.getSessionProperties();
 		this.openviduConfig = previousSession.openviduConfig;
 		this.recordingManager = previousSession.recordingManager;
+
+		this.conference = previousSession.conference;
+		this.preset = previousSession.preset;
+		this.delayConfCnt = previousSession.delayConfCnt;
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
@@ -69,6 +85,9 @@ public class Session implements SessionInterface {
 		this.sessionProperties = sessionProperties;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
+
+		this.delayConfCnt = 0;
+		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
 	}
 
 	public String getSessionId() {
@@ -83,19 +102,109 @@ public class Session implements SessionInterface {
 		return this.startTime;
 	}
 
-	public Set<Participant> getParticipants() {
-		checkClosed();
-		return new HashSet<Participant>(this.participants.values());
+	public void setConference(Conference conference){ this.conference = conference; }
+
+	public Conference getConference() { return this.conference; }
+
+	public void setPresetInfo(SessionPreset preset) { this.preset = preset; }
+
+	public SessionPreset getPresetInfo() { return this.preset; }
+
+	public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
+
+	public int incDelayConfCnt() { return this.delayConfCnt++; }
+
+	public int getDelayConfCnt() { return this.delayConfCnt; }
+
+	public void setNotifyCountdown10Min(boolean notifyCountdown10Min) { this.notifyCountdown10Min = notifyCountdown10Min; }
+
+	public boolean getNotifyCountdown10Min() { return this.notifyCountdown10Min; }
+
+	public void setNotifyCountdown1Min(boolean notifyCountdown1Min) { this.notifyCountdown1Min = notifyCountdown1Min; }
+
+	public boolean getNotifyCountdown1Min() { return this.notifyCountdown1Min; }
+
+	public int getConfDelayTime() { return this.delayConfCnt * this.delayTimeUnit; }
+
+	public long getConfStartTime() {						// unit is ms
+		return getConference().getStartTime().getTime();
 	}
 
-	public Participant getParticipantByPrivateId(String participantPrivateId) {
-		checkClosed();
-		return participants.get(participantPrivateId);
+	public long getConfEndTime() {							// unit is ms
+		int confDuration = Float.valueOf(getPresetInfo().getRoomDuration() * 60 * 60 * 1000).intValue() + getConfDelayTime() * 1000;
+		return getConfStartTime() + confDuration;
 	}
+
+	public long getConfRemainTime() {						// unit is second
+		return (getConfEndTime() - new Date().getTime()) / 1000;
+	}
+
+	/*public Set<Participant> getParticipants() {
+		checkClosed();
+		return new HashSet<Participant>(this.participants.values());
+	}*/
+
+	public Set<Participant> getParticipants() {
+		checkClosed();
+		return this.participants.values().stream().flatMap(v ->
+				v.values().stream()).collect(Collectors.toSet());
+	}
+
+	public Set<Participant> getMajorPartEachConnect() {
+		checkClosed();
+		return this.participants.values().stream().map(v ->
+				v.get(StreamType.MAJOR.name())).collect(Collectors.toSet());
+	}
+
+    /*public Participant getParticipantByPrivateId(String participantPrivateId) {
+        checkClosed();
+        return participants.get(participantPrivateId);
+    }*/
+
+    public Participant getParticipantByPrivateId(String participantPrivateId) {
+        checkClosed();
+
+		if (Objects.isNull(participants.get(participantPrivateId))) {
+			return null;
+		}
+
+        return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
+    }
+
+    public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
+        checkClosed();
+
+        if (Objects.isNull(participants.get(participantPrivateId))) {
+        	return null;
+		}
+
+        return Objects.isNull(streamType) ? participants.get(participantPrivateId).get(StreamType.MAJOR.name()) :
+				participants.get(participantPrivateId).get(streamType.name());
+    }
+
+    public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
+        checkClosed();
+
+        if (Objects.isNull(participants.get(participantPrivateId))) {
+            return null;
+        }
+
+        if (participants.get(participantPrivateId).values().size() <= 1) {
+            return getParticipantByPrivateId(participantPrivateId);
+        }
+
+        for (Participant p: participants.get(participantPrivateId).values()) {
+            if (p.getParticipantPublicId().equals(participantPublicId)) {
+                return p;
+            }
+        }
+
+		return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
+    }
 
 	public Participant getParticipantByPublicId(String participantPublicId) {
 		checkClosed();
-		for (Participant p : participants.values()) {
+		for (Participant p : getParticipants()) {
 			if (p.getParticipantPublicId().equals(participantPublicId)) {
 				return p;
 			}
@@ -160,11 +269,16 @@ public class Session implements SessionInterface {
 		}
 		JsonObject connections = new JsonObject();
 		JsonArray participants = new JsonArray();
-		this.participants.values().forEach(p -> {
+		/*this.participants.values().forEach(p -> {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(p.getParticipantPublicId())) {
 				participants.add(toJsonFunction.apply((KurentoParticipant) p));
 			}
-		});
+		});*/
+		this.participants.values().stream().flatMap(m -> m.values().stream()).forEach(p -> {
+            if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(p.getParticipantPublicId())) {
+                participants.add(toJsonFunction.apply((KurentoParticipant) p));
+            }
+        });
 		connections.addProperty("numberOfElements", participants.size());
 		connections.add("content", participants);
 		json.add("connections", connections);
@@ -179,6 +293,10 @@ public class Session implements SessionInterface {
 	@Override
 	public void leave(String participantPrivateId, EndReason reason) {
 	}
+
+    @Override
+    public void leaveRoom(Participant p, EndReason reason) {
+    }
 
 	@Override
 	public boolean close(EndReason reason) {

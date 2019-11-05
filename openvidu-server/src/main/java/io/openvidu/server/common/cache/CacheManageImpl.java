@@ -1,14 +1,14 @@
 package io.openvidu.server.common.cache;
 
-import io.openvidu.server.common.Contants.CacheKeyConstants;
+import io.openvidu.server.common.contants.CacheKeyConstants;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Objects;
+import java.util.Map;
 
 /**
  * @author chosongi
@@ -21,12 +21,32 @@ public class CacheManageImpl implements CacheManage {
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
 
-
     @Override
-    public boolean accessTokenEverValid(String userId, String token) {
-        return Objects.equals(tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId).get("token").toString(), token);
+    public Map getUserInfoByUUID(String uuid) {
+        return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid);
     }
 
+    @Override
+    public String getUserAuthorization(String userId) {
+        return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId)
+                .get("privilege").toString();
+    }
 
+    @Override
+    public void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum) {
+        if (StringUtils.isEmpty(uuid)) return;
+        log.info("Update user online status in cache. uuid:{}, updateStatus:{}", uuid, onlineStatusEnum.name());
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid, "status", onlineStatusEnum.name());
+    }
+
+    @Override
+    public void updateReconnectInfo(String userUuid, String privateId) {
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "reconnect", privateId);
+    }
+
+    @Override
+    public void updateDeviceName(String userUuid, String deviceName) {
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
+    }
 
 }

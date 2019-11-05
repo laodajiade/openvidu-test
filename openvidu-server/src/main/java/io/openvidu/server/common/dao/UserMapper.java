@@ -19,4 +19,10 @@ public interface UserMapper {
     int updateByPrimaryKey(User record);
 
     List<User> selectByPrimaryKeys(List<Long> ids);
+
+    User selectByUUID(String uuid);
+
+    List<Long> selectUserIdsByDeptIds(List<Long> subDeptIds);
+
+    List<User> getUsersByUserIdsList(List<Long> userIds);
 }

@@ -21,6 +21,6 @@ public enum EndReason {
 
 	unsubscribe, unpublish, disconnect, forceUnpublishByUser, forceUnpublishByServer, forceDisconnectByUser,
 	forceDisconnectByServer, lastParticipantLeft, networkDisconnect, mediaServerDisconnect, openviduServerStopped,
-	recordingStoppedByServer, automaticStop, sessionClosedByServer
+	recordingStoppedByServer, automaticStop, sessionClosedByServer, forceCloseSessionByUser, reconnect
 
 }

@@ -17,33 +17,32 @@
 
 package io.openvidu.server.core;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CallDetailRecord;
+import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.recording.Recording;
+import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class SessionEventsHandler {
 
@@ -60,6 +59,9 @@ public class SessionEventsHandler {
 
 	@Autowired
 	protected OpenviduConfig openviduConfig;
+
+	@Autowired
+	protected CacheManage cacheManage;
 
 	Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -82,6 +84,7 @@ public class SessionEventsHandler {
 
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 
 		for (Participant existingParticipant : existingParticipants) {
 			JsonObject participantJson = new JsonObject();
@@ -89,6 +92,26 @@ public class SessionEventsHandler {
 					existingParticipant.getParticipantPublicId());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 					existingParticipant.getCreatedAt());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHARESTATUS_PARAM,
+					existingParticipant.getShareStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM,
+					existingParticipant.getSpeakerStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERHANDSTATUS_PARAM,
+					existingParticipant.getHandStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWNAME_PARAM,
+					existingParticipant.getAppShowName());
+			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,
+					existingParticipant.getAppShowDesc());
+			RpcConnection rpc = rpcNotificationService.getRpcConnection(existingParticipant.getParticipantPrivateId());
+			if (Objects.isNull(rpc)) {
+				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
+						UserOnlineStatusEnum.offline.name());
+			} else {
+				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
+				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, Objects.isNull(userInfo) ?
+						UserOnlineStatusEnum.offline.name() : String.valueOf(userInfo.get("status")));
+			}
+
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
@@ -101,6 +124,8 @@ public class SessionEventsHandler {
 				JsonObject stream = new JsonObject();
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMID_PARAM,
 						existingParticipant.getPublisherStreamId());
+				stream.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
+						existingParticipant.getStreamType().name());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 						kParticipant.getPublisher().createdAt());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,
@@ -142,19 +167,33 @@ public class SessionEventsHandler {
 				JsonObject notifParams = new JsonObject();
 
 				// Metadata associated to new participant
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM,
-						participant.getParticipantPublicId());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM,
-						participant.getFullMetadata());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM,
+						rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId()).isReconnected());
 
-				rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
+					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
+					if (Objects.isNull(publicId)) {
+						rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					}
+				}
 			}
 		}
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getPreset().getMicStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getPreset().getVideoStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
 		result.add("value", resultArray);
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
@@ -177,14 +216,16 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
 		for (Participant p : remainingParticipants) {
-			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-					ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+			}
 		}
 
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily
 			// leaving the session
-			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
+			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, params);
 		}
 
 		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
@@ -207,9 +248,12 @@ public class SessionEventsHandler {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, participant.getParticipantPublicId());
+		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM, participant.getAppShowName());
+		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM, participant.getAppShowDesc());
 		JsonObject stream = new JsonObject();
 
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, streamId);
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, participant.getStreamType().name());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, createdAt);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);
@@ -225,8 +269,12 @@ public class SessionEventsHandler {
 		streamsArray.add(stream);
 		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);
 
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 		for (Participant p : participants) {
-			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+			String publicId = alreayNotifyRPC.putIfAbsent(p.getParticipantPrivateId(), p.getParticipantPublicId());
+
+			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId()) ||
+					!Objects.isNull(publicId)) {
 				continue;
 			} else {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
@@ -254,6 +302,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
 
 		for (Participant p : participants) {
+			log.info("unPublish ParticipantPublicId {} p PublicId {}", participant.getParticipantPublicId(), p.getParticipantPublicId());
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				// Send response to the affected participant
 				if (!isRpcFromOwner) {
@@ -409,14 +458,22 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTEVICTED_REASON_PARAM, reason != null ? reason.name() : "");
 
 		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
+			log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
 			// Do not send a message when evicting RECORDER participant
-			rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
-					ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+			try {
+				rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+			} catch (Exception e) {
+				log.error("Exception:\n", e);
+			}
 		}
 		for (Participant p : participants) {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
-				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+				log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
+				if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())) {
+					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+							ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+				}
 			}
 		}
 	}
@@ -543,6 +600,9 @@ public class SessionEventsHandler {
 	}
 
 	public void closeRpcSession(String participantPrivateId) {
+		// update user online status in cache
+		cacheManage.updateUserOnlineStatus(rpcNotificationService.getRpcConnection(participantPrivateId).getUserUuid(),
+				UserOnlineStatusEnum.offline);
 		this.rpcNotificationService.closeRpcSession(participantPrivateId);
 	}
 

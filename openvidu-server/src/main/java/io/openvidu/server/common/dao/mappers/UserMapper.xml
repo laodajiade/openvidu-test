@@ -8,12 +8,13 @@
     <result column="phone" property="phone" jdbcType="VARCHAR" />
     <result column="email" property="email" jdbcType="VARCHAR" />
     <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
     <result column="project" property="project" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, uuid, username, phone, email, password, project, create_time, update_time
+    id, uuid, username, phone, email, password, title, project, create_time, update_time
   </sql>
 
   <select id="selectByPrimaryKeys" resultMap="BaseResultMap" parameterType="java.util.List">
@@ -22,7 +23,33 @@
     from sd_user
     where id in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
-      #{id,jdbcType=BIGINT}
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+  <select id="selectByUUID" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_user
+    where uuid = #{uuid,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectUserIdsByDeptIds" parameterType="java.util.List" resultType="java.lang.Long">
+    select user_id
+    from sd_user_dept
+    where dept_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+  <select id="getUsersByUserIdsList" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_user
+    where id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
     </foreach>
   </select>
 
@@ -38,11 +65,11 @@
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.User" >
     insert into sd_user (id, uuid, username, 
-      phone, email, password, 
+      phone, email, password, title,
       project, create_time, update_time
       )
     values (#{id,jdbcType=BIGINT}, #{uuid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, 
-      #{phone,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
+      #{phone,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR},
       #{project,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
       )
   </insert>
@@ -66,6 +93,9 @@
       </if>
       <if test="password != null" >
         password,
+      </if>
+      <if test="title != null" >
+        title,
       </if>
       <if test="project != null" >
         project,
@@ -96,6 +126,9 @@
       <if test="password != null" >
         #{password,jdbcType=VARCHAR},
       </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
       <if test="project != null" >
         #{project,jdbcType=VARCHAR},
       </if>
@@ -125,6 +158,9 @@
       <if test="password != null" >
         password = #{password,jdbcType=VARCHAR},
       </if>
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
       <if test="project != null" >
         project = #{project,jdbcType=VARCHAR},
       </if>
@@ -144,6 +180,7 @@
       phone = #{phone,jdbcType=VARCHAR},
       email = #{email,jdbcType=VARCHAR},
       password = #{password,jdbcType=VARCHAR},
+      title = #{title,jdbcType=VARCHAR},
       project = #{project,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP}
