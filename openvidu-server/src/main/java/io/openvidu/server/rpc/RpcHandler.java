@@ -1420,7 +1420,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}*/
 
-	private void removeFilterEventListener(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void removeFilterEventListener(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "removeFilterEventListener");
@@ -1448,7 +1448,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
 					"Unable to remove filter event listener. The user does not have a valid token");
 		}
-	}
+	}*/
 
 	public void leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {
 		try {
