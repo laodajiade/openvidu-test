@@ -1920,7 +1920,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}*/
 
-	private void transferModerator(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void transferModerator(RpcConnection rpcConnection, Request<JsonObject> request) {
 		// TODO. Need combine createConference and conferenceControl power. Not only used MODERATOR.
 		String sessionId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_ID_PARAM);
 		String targetId = getStringParam(request, ProtocolElements.TRANSFER_MODERATOR_TARGET_ID_PARAM);
@@ -1947,7 +1947,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		});
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private void getOrgList(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
