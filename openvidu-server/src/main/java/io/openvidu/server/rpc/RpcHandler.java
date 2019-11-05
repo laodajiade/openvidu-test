@@ -1818,7 +1818,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}*/
 
-	private void refuseInvite(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void refuseInvite(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.REFUSE_INVITE_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.REFUSE_INVITE_SOURCE_ID_PARAM);
 
@@ -1834,7 +1834,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.GET_PRESET_INFO_ID_PARAM);

@@ -122,6 +122,9 @@ public class RpcHandlerFactory {
     @Resource
     private InviteParticipantHandler inviteParticipantHandler;
 
+    @Resource
+    private RefuseInviteHandler refuseInviteHandler;
+
 
 
 
@@ -161,6 +164,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD,  removeFilterEventListenerHandler);
         handlersMap.put(ProtocolElements.CLOSE_ROOM_METHOD,                 closeRoomHandler);
         handlersMap.put(ProtocolElements.INVITE_PARTICIPANT_METHOD,         inviteParticipantHandler);
+        handlersMap.put(ProtocolElements.REFUSE_INVITE_METHOD,              refuseInviteHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
