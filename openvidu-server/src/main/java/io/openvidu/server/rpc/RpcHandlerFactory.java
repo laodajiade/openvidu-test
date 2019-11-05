@@ -48,6 +48,9 @@ public class RpcHandlerFactory {
     @Resource
     private SetVideoStatusHandler setVideoStatusHandler;
 
+    @Resource
+    private RaiseHandHandler raiseHandHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ACCESS_IN_METHOD, accessInHandler);
@@ -59,6 +62,7 @@ public class RpcHandlerFactory {
         handlersMap.put(GET_PARTICIPANTS_METHOD, getParticipantsHandler);
         handlersMap.put(SET_AUDIO_SPEAKER_STATUS_METHOD, setAudioStatusHandler);
         handlersMap.put(SET_VIDEO_STATUS_METHOD, setVideoStatusHandler);
+        handlersMap.put(RAISE_HAND_METHOD, raiseHandHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
