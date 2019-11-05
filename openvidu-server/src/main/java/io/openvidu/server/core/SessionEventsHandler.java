@@ -172,6 +172,7 @@ public class SessionEventsHandler {
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM,
 						rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId()).isReconnected());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
 
 				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
 					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
