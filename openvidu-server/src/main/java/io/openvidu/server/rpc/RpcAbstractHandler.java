@@ -246,4 +246,33 @@ public abstract class RpcAbstractHandler {
         }
         return participant;
     }
+
+    protected Participant sanityCheckOfSession(RpcConnection rpcConnection, String methodName) throws OpenViduException {
+        String participantPrivateId = rpcConnection.getParticipantPrivateId();
+        String sessionId = rpcConnection.getSessionId();
+        String errorMsg;
+
+        if (sessionId == null) { // null when afterConnectionClosed
+            errorMsg = "No session information found for participant with privateId " + participantPrivateId
+                    + ". Using the admin method to evict the user.";
+            log.warn(errorMsg);
+            leaveRoomAfterConnClosed(participantPrivateId, null);
+            throw new OpenViduException(OpenViduException.Code.GENERIC_ERROR_CODE, errorMsg);
+        } else {
+            // Sanity check: don't call RPC method unless the id checks out
+            Participant participant = sessionManager.getParticipant(sessionId, participantPrivateId);
+            if (participant != null) {
+                errorMsg = "Participant " + participant.getParticipantPublicId() + " is calling method '" + methodName
+                        + "' in session " + sessionId;
+                log.info(errorMsg);
+                return participant;
+            } else {
+                errorMsg = "Participant with private id " + participantPrivateId + " not found in session " + sessionId
+                        + ". Using the admin method to evict the user.";
+                log.warn(errorMsg);
+                leaveRoomAfterConnClosed(participantPrivateId, null);
+                throw new OpenViduException(OpenViduException.Code.GENERIC_ERROR_CODE, errorMsg);
+            }
+        }
+    }
 }

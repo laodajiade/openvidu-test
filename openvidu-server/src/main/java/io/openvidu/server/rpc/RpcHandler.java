@@ -1180,7 +1180,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}*/
 
-	private void receiveVideoFrom(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void receiveVideoFrom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "subscribe");
@@ -1193,7 +1193,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sdpOffer = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM);
 
 		sessionManager.subscribe(participant, senderName, sdpOffer, request.getId());
-	}
+	}*/
 
 	private void unsubscribeFromVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
