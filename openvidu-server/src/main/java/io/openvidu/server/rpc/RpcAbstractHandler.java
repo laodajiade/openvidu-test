@@ -8,11 +8,13 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -233,5 +235,15 @@ public abstract class RpcAbstractHandler {
         }
 
         return true;
+    }
+
+    protected Participant sanityCheckOfSession(RpcConnection rpcConnection, StreamType streamType) throws OpenViduException {
+        Participant participant = sessionManager.getParticipant(rpcConnection.getSessionId(),
+                rpcConnection.getParticipantPrivateId(), streamType);
+        if (participant == null) {
+            leaveRoomAfterConnClosed(rpcConnection.getParticipantPrivateId(), null);
+            throw new OpenViduException(OpenViduException.Code.GENERIC_ERROR_CODE, "Participant not exists.");
+        }
+        return participant;
     }
 }

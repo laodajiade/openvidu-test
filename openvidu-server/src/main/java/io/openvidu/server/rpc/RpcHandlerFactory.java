@@ -71,6 +71,9 @@ public class RpcHandlerFactory {
     @Resource
     private JoinRoomHandler joinRoomHandler;
 
+    @Resource
+    private LeaveRoomHandler leaveRoomHandler;
+
 
 
     @PostConstruct
@@ -92,6 +95,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.LOCK_SESSION_METHOD, lockSessionHandler);
         handlersMap.put(ProtocolElements.UNLOCK_SESSION_METHOD, unlockSessionHandler);
         handlersMap.put(ProtocolElements.JOINROOM_METHOD, joinRoomHandler);
+        handlersMap.put(ProtocolElements.LEAVEROOM_METHOD, leaveRoomHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

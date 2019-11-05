@@ -1136,7 +1136,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}*/
 
-	private void leaveRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void leaveRoom(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.LEAVEROOM_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.LEAVEROOM_SOURCE_ID_PARAM);
         String streamType = getStringParam(request, ProtocolElements.LEAVEROOM_STREAM_TYPE_PARAM);
@@ -1159,7 +1159,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 		log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
 				rpcConnection.getSessionId());
-	}
+	}*/
 
 	private void publishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
