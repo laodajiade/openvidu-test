@@ -98,6 +98,9 @@ public class RpcHandlerFactory {
     @Resource
     private ForceDisconnectHandler forceDisconnectHandler;
 
+    @Resource
+    private ForceUnpublishHandler forceUnpublishHandler;
+
 
     @PostConstruct
     public void init() {
@@ -127,6 +130,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.UNPUBLISHVIDEO_METHOD, unpublishVideoHandler);
         handlersMap.put(ProtocolElements.STREAMPROPERTYCHANGED_METHOD, streamPropertyChangedHandler);
         handlersMap.put(ProtocolElements.FORCEDISCONNECT_METHOD, forceDisconnectHandler);
+        handlersMap.put(ProtocolElements.FORCEUNPUBLISH_METHOD, forceUnpublishHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
