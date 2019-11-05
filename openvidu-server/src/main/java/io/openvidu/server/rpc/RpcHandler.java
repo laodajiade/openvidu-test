@@ -1264,7 +1264,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.streamPropertyChanged(participant, request.getId(), streamId, property, newValue, reason);
 	}*/
 
-	private void forceDisconnect(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void forceDisconnect(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "forceDisconnect");
@@ -1282,7 +1282,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
 					"Unable to force disconnect. The user does not have a valid token");
 		}
-	}
+	}*/
 
 	private void forceUnpublish(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
