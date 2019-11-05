@@ -1836,7 +1836,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}*/
 
-	private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void getPresetInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.GET_PRESET_INFO_ID_PARAM);
 		SessionPreset preset = sessionManager.getPresetInfo(sessionId);
 		JsonObject params = new JsonObject();
@@ -1846,7 +1846,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.GET_PRESET_INFO_VIDEO_STATUS_PARAM, preset.getVideoStatusInRoom().name());
 		params.addProperty(ProtocolElements.GET_PRESET_INFO_SUBJECT_PARAM, preset.getRoomSubject());
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
-	}
+	}*/
 
 	private void setAudioSpeakerStatus(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM);
