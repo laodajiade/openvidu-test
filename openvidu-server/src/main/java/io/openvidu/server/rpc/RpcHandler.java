@@ -2051,7 +2051,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}*/
 
-	private void updateDeviceInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void updateDeviceInfo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String deviceName = getStringParam(request, ProtocolElements.UPDATE_DEVICE_NANE_PARAM);
 		String serialNumber = rpcConnection.getSerialNumber();
 
@@ -2063,7 +2063,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		device.setUpdateTime(new Date());
 		deviceMapper.updateByPrimaryKey(device);
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private boolean isModerator(String role) {
 		// TODO. Fixme. user account have moderator power.

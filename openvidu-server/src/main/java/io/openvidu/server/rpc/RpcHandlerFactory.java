@@ -146,6 +146,8 @@ public class RpcHandlerFactory {
     @Resource
     private GetDeviceInfoHandler getDeviceInfoHandler;
 
+    @Resource
+    private UpdateDeviceInfoHandler updateDeviceInfoHandler;
 
 
 
@@ -193,6 +195,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_ORG_METHOD,                    getOrgListHandler);
         handlersMap.put(ProtocolElements.GET_USER_DEVICE_METHOD,            getUserDeviceListHandler);
         handlersMap.put(ProtocolElements.GET_DEVICE_INFO_METHOD,            getDeviceInfoHandler);
+        handlersMap.put(ProtocolElements.UPDATE_DEVICE_INFO_METHOD,         updateDeviceInfoHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
