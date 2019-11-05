@@ -1237,7 +1237,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.sendMessage(participant, message, request.getId());
 	}*/
 
-	private void unpublishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void unpublishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
 		try {
 			participant = sanityCheckOfSession(rpcConnection, "unpublish");
@@ -1246,7 +1246,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		sessionManager.unpublishVideo(participant, null, request.getId(), EndReason.unpublish);
-	}
+	}*/
 
 	private void streamPropertyChanged(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
