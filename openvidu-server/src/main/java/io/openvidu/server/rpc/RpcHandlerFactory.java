@@ -56,6 +56,9 @@ public class RpcHandlerFactory {
     @Resource
     private SetRollCallHandler setRollCallHandler;
 
+    @Resource
+    private EndRollCallHandler endRollCallHandler;
+
 
     @PostConstruct
     public void init() {
@@ -71,6 +74,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.RAISE_HAND_METHOD, raiseHandHandler);
         handlersMap.put(ProtocolElements.PUT_DOWN_HAND_METHOD, putDownHandHandler);
         handlersMap.put(ProtocolElements.SET_ROLL_CALL_METHOD, setRollCallHandler);
+        handlersMap.put(ProtocolElements.END_ROLL_CALL_METHOD, endRollCallHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
