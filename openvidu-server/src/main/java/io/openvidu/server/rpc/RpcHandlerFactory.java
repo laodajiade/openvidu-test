@@ -131,6 +131,9 @@ public class RpcHandlerFactory {
     @Resource
     private SetAudioSpeakerStatusHandler setAudioSpeakerStatusHandler;
 
+    @Resource
+    private SetSharePowerHandler setSharePowerHandler;
+
 
 
 
@@ -173,6 +176,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.REFUSE_INVITE_METHOD,              refuseInviteHandler);
         handlersMap.put(ProtocolElements.GET_PRESET_INFO_METHOD,            getPresetInfoHandler);
         handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD,   setAudioSpeakerStatusHandler);
+        handlersMap.put(ProtocolElements.SET_SHARE_POWER_METHOD,            setSharePowerHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

@@ -1883,7 +1883,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}*/
 
-	private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void setSharePower(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.SET_SHARE_POWER_SOURCE_ID_PARAM);
 		List<String> targetIds = getStringListParam(request, ProtocolElements.SET_SHARE_POWER_TARGET_IDS_PARAM);
@@ -1918,7 +1918,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private void transferModerator(RpcConnection rpcConnection, Request<JsonObject> request) {
 		// TODO. Need combine createConference and conferenceControl power. Not only used MODERATOR.
