@@ -320,4 +320,9 @@ public abstract class RpcAbstractHandler {
             }
         }
     }
+
+    protected boolean userIsStreamOwner(String sessionId, Participant participant, String streamId) {
+        return participant.getParticipantPrivateId()
+                .equals(this.sessionManager.getParticipantPrivateIdFromStreamId(sessionId, streamId));
+    }
 }
