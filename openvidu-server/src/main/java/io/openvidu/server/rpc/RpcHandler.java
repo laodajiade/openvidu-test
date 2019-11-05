@@ -902,7 +902,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 	}*/
 
-	private void replaceRollCall(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void replaceRollCall(RpcConnection rpcConnection, Request<JsonObject> request) {
 		// TODO, Fixme. Maybe have good way to do it. for example: add a roll call type.
 		String sessionId = getStringParam(request, ProtocolElements.REPLACE_ROLL_CALL_ROOM_ID_PARAM);
 		String sourceId = getStringParam(request, ProtocolElements.REPLACE_ROLL_CALL_SOURCE_ID_PARAM);
@@ -935,7 +935,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.REPLACE_ROLL_CALL_METHOD, params));
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-	}
+	}*/
 
 	private void lockSession(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String sessionId = getStringParam(request, ProtocolElements.LOCK_SESSION_ROOM_ID_PARAM);
