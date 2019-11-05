@@ -1161,7 +1161,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				rpcConnection.getSessionId());
 	}*/
 
-	private void publishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
+	/*private void publishVideo(RpcConnection rpcConnection, Request<JsonObject> request) {
 		String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
 		Participant participant;
 		try {
@@ -1178,7 +1178,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw new OpenViduException(Code.USER_UNAUTHORIZED_ERROR_CODE,
 					"Unable to publish video. The user does not have a valid token");
 		}
-	}
+	}*/
 
 	private void receiveVideoFrom(RpcConnection rpcConnection, Request<JsonObject> request) {
 		Participant participant;
