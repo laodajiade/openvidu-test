@@ -26,8 +26,10 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
 
-        sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.endSpeaker);
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        participants.stream().filter(part -> Objects.equals(part.getStreamType(), StreamType.MAJOR) &&
+                targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
+                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
 
         int raiseHandNum = 0;
         for (Participant p : participants) {

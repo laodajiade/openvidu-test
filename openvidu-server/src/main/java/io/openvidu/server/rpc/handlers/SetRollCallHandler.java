@@ -27,8 +27,11 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
-        sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.speaker);
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        participants.stream().filter(part ->
+                targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString())
+                        && Objects.equals(part.getStreamType(), StreamType.MAJOR))
+                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
 
         int raiseHandNum = 0;
         for (Participant p : participants) {
