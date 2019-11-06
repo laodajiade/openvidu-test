@@ -511,7 +511,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			int insertResult = conferenceMapper.insert(conference);
 
             // setPresetInfo.
-			String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
+			String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);//subject
 			String micStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MIC_STATUS_PARAM);
 			String videoStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_VIDEO_STATUS_PARAM);
 			String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
@@ -523,9 +523,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
 					roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare);
-			sessionManager.setPresetInfo(sessionId, preset);
 
-            // store this inactive session
+			sessionManager.setPresetInfo(sessionId, preset);
+			// store this inactive session
             sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
 			notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
 		} else {
@@ -798,11 +798,25 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					++raiseHandNum;
 				}
 			}
+			// User  info.
+			User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
+
+			// get device info if have device.
+			String serialNumber = rpcConnection.getSerialNumber();
+			if (!StringUtils.isEmpty(serialNumber))
+				log.info("serialNumber:{}",serialNumber);
+
+			// device info.
+			DeviceSearch deviceSearch = new DeviceSearch();
+			deviceSearch.setSerialNumber(serialNumber);
+			Device device = deviceMapper.selectBySearchCondition(deviceSearch);
 
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.RAISE_HAND_ROOM_ID_PARAM, sessionId);
 			params.addProperty(ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM, sourceId);
 			params.addProperty(ProtocolElements.RAISE_HAND_NUMBER_PARAM, String.valueOf(raiseHandNum));
+			params.addProperty(ProtocolElements.RAISE_HAND_USERNAME_PARAM, user.getUsername());
+			params.addProperty(ProtocolElements.RAISE_HAND_APPSHOW_NAME_PARAM, device.getDeviceName());
 			notifyClientPrivateIds.forEach(client -> this.notificationService.sendNotification(client, ProtocolElements.RAISE_HAND_METHOD, params));
 		}
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -821,9 +835,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			participants.forEach(part -> part.setHandStatus(ParticipantHandStatus.down));
 		}
 
+		User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
+
+		String serialNumber = rpcConnection.getSerialNumber();
+		if (!Objects.isNull(serialNumber))
+		    log.info("serialNumber", serialNumber);
+		// device info.
+		DeviceSearch deviceSearch = new DeviceSearch();
+		deviceSearch.setSerialNumber(serialNumber);
+		Device device = deviceMapper.selectBySearchCondition(deviceSearch);
+
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM, sourceId);
+		params.addProperty(ProtocolElements.PUT_DOWN_USERNAME_PARAM, user.getUsername());
+		params.addProperty(ProtocolElements.PUT_DOWN_APPSHOW_NAME_PARAM, device.getDeviceName());
 		if (!StringUtils.isEmpty(targetId)) {
 			params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
 			int raiseHandNum = 0;
@@ -1578,6 +1604,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					+ "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
 		}
 		return request.getParams().get(key).getAsString();
+
 	}
 
 	public static String getStringOptionalParam(Request<JsonObject> request, String key) {

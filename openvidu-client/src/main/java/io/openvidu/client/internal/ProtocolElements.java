@@ -205,12 +205,17 @@ public class ProtocolElements {
 	public static final String RAISE_HAND_ROOM_ID_PARAM = "roomId";
 	public static final String RAISE_HAND_SOURCE_ID_PARAM = "sourceId";
 	public static final String RAISE_HAND_NUMBER_PARAM = "raiseHandNum";
+	public static final String RAISE_HAND_USERNAME_PARAM = "username";
+	public static final String RAISE_HAND_APPSHOW_NAME_PARAM = "appShowName";
 
 	public static final String PUT_DOWN_HAND_METHOD = "putDownHand";
 	public static final String PUT_DOWN_HAND_ROOM_ID_PARAM = "roomId";
 	public static final String PUT_DOWN_HAND_SOURCE_ID_PARAM = "sourceId";
 	public static final String PUT_DOWN_HAND_TARGET_ID_PARAM = "targetId";
 	public static final String PUT_DOWN_HAND_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
+	public static final String PUT_DOWN_USERNAME_PARAM = "username";
+	public static final String PUT_DOWN_APPSHOW_NAME_PARAM = "appShowName";
+
 
 	public static final String SET_ROLL_CALL_METHOD = "setRollCall";
 	public static final String SET_ROLL_CALL_ROOM_ID_PARAM = "roomId";
@@ -344,7 +349,6 @@ public class ProtocolElements {
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
 	public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";
-	public static final String PARTICIPANTJOINED_STREAM_TYPE_PARAM = "streamType";
 
 
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
