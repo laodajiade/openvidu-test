@@ -800,9 +800,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 			// User  info.
 			User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
-
+			String serialNumber = null;
 			// get device info if have device.
-			String serialNumber = rpcConnection.getSerialNumber();
+			for (RpcConnection c : notificationService.getRpcConnections()){
+				if (c.getUserId().equals(Long.valueOf(sourceId))){
+					serialNumber = c.getSerialNumber();
+				}
+			}
+
 			if (!StringUtils.isEmpty(serialNumber))
 				log.info("serialNumber:{}",serialNumber);
 
@@ -836,8 +841,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
-
-		String serialNumber = rpcConnection.getSerialNumber();
+		String serialNumber=null;
+		for (RpcConnection c : notificationService.getRpcConnections()){
+			if (c.getUserId().equals(Long.valueOf(sourceId))){
+				serialNumber = c.getSerialNumber();
+			}
+		}
 		if (!Objects.isNull(serialNumber))
 		    log.info("serialNumber", serialNumber);
 		// device info.
