@@ -800,28 +800,27 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 			// User  info.
 			User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
-			String serialNumber = null;
-			// get device info if have device.
-			for (RpcConnection c : notificationService.getRpcConnections()){
-				if (c.getUserId().equals(Long.valueOf(sourceId))){
-					serialNumber = c.getSerialNumber();
-				}
-			}
 
+			// get device info if have device.
+			String	serialNumber = rpcConnection.getSerialNumber();
 			if (!StringUtils.isEmpty(serialNumber))
 				log.info("serialNumber:{}",serialNumber);
 
 			// device info.
-			DeviceSearch deviceSearch = new DeviceSearch();
-			deviceSearch.setSerialNumber(serialNumber);
-			Device device = deviceMapper.selectBySearchCondition(deviceSearch);
+			Device device = null;
+			if (!StringUtils.isEmpty(serialNumber)) {
+				DeviceSearch deviceSearch = new DeviceSearch();
+				deviceSearch.setSerialNumber(serialNumber);
+				device = deviceMapper.selectBySearchCondition(deviceSearch);
+			}
 
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.RAISE_HAND_ROOM_ID_PARAM, sessionId);
 			params.addProperty(ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM, sourceId);
 			params.addProperty(ProtocolElements.RAISE_HAND_NUMBER_PARAM, String.valueOf(raiseHandNum));
 			params.addProperty(ProtocolElements.RAISE_HAND_USERNAME_PARAM, user.getUsername());
-			params.addProperty(ProtocolElements.RAISE_HAND_APPSHOW_NAME_PARAM, device.getDeviceName());
+			if (!Objects.isNull(device))
+				params.addProperty(ProtocolElements.RAISE_HAND_APPSHOW_NAME_PARAM, device.getDeviceName());
 			notifyClientPrivateIds.forEach(client -> this.notificationService.sendNotification(client, ProtocolElements.RAISE_HAND_METHOD, params));
 		}
 		notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -841,24 +840,22 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
-		String serialNumber=null;
-		for (RpcConnection c : notificationService.getRpcConnections()){
-			if (c.getUserId().equals(Long.valueOf(sourceId))){
-				serialNumber = c.getSerialNumber();
-			}
-		}
+		String	serialNumber = rpcConnection.getSerialNumber();
 		if (!Objects.isNull(serialNumber))
 		    log.info("serialNumber", serialNumber);
 		// device info.
-		DeviceSearch deviceSearch = new DeviceSearch();
-		deviceSearch.setSerialNumber(serialNumber);
-		Device device = deviceMapper.selectBySearchCondition(deviceSearch);
-
+		Device device=null;
+		if (!StringUtils.isEmpty(serialNumber)) {
+			DeviceSearch deviceSearch = new DeviceSearch();
+			deviceSearch.setSerialNumber(serialNumber);
+			device = deviceMapper.selectBySearchCondition(deviceSearch);
+		}
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM, sourceId);
 		params.addProperty(ProtocolElements.PUT_DOWN_USERNAME_PARAM, user.getUsername());
-		params.addProperty(ProtocolElements.PUT_DOWN_APPSHOW_NAME_PARAM, device.getDeviceName());
+		if (!StringUtils.isEmpty(device))
+			params.addProperty(ProtocolElements.PUT_DOWN_APPSHOW_NAME_PARAM, device.getDeviceName());
 		if (!StringUtils.isEmpty(targetId)) {
 			params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
 			int raiseHandNum = 0;
