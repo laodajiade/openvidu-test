@@ -296,6 +296,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}
 
+
     private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
 	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
 	    String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
@@ -2192,6 +2193,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
+
+    private void getRoomLayout(RpcConnection rpcConnection, Request<JsonObject> request) {
+
+    }
 
 	private boolean updateReconnectInfo(RpcConnection rpcConnection) {
 		try {
