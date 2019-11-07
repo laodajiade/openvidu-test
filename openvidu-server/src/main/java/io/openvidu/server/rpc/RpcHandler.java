@@ -1546,6 +1546,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
+		Participant p = null;
 
 		// update user online status in cache
         if (notificationService.getRpcConnection(rpcSessionId) != null)
@@ -1555,7 +1556,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			message = "Evicting participant with private id {} because of a network disconnection";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
 			try {
-				Participant p = sessionManager.getParticipant(rpcSession.getSessionId());
+				p = sessionManager.getParticipant(rpcSession.getSessionId());
 				if (p != null) {
 					message = "Evicting participant with private id {} because its websocket unexpectedly closed in the client side";
 				}
@@ -1576,6 +1577,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
 					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+
+					// send end roll notify if the offline connection's hand status is speaker
+					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
+					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
+						p.setHandStatus(ParticipantHandStatus.endSpeaker);
+
+						JsonObject params = new JsonObject();
+						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, p.getSessionId());
+						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
+						this.sessionManager.getParticipants(p.getSessionId()).forEach(part -> {
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId()))
+								this.notificationService.sendNotification(part.getParticipantPrivateId(),
+										ProtocolElements.END_ROLL_CALL_METHOD, params);
+						});
+					}
 				}
 			}
 		}
