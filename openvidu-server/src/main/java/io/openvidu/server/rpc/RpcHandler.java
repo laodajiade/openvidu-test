@@ -2203,7 +2203,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
 	}
 
-    private void getRoomLayout(RpcConnection rpcConnection, Request<JsonObject> request) {
+    private	 void getRoomLayout(RpcConnection rpcConnection, Request<JsonObject> request) {
+			String sessionId = getStringParam(request, ProtocolElements.GETROOMLAYOUT_ROOM_ID_PARAM);
+			if (Objects.isNull(sessionId)){
+				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+				return;
+			}
+			io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(sessionId);
+		    LayoutModeEnum layoutModeEnum = conferenceSession.getLayoutMode();
+		    JsonArray layoutInfo = conferenceSession.getLayoutInfo();
+			JsonObject jsonObject = new JsonObject();
+			jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODE_PARAM, layoutModeEnum.getMode());
+			jsonObject.add(ProtocolElements.GETROOMLAYOUT_LAYOUT_PARAM, layoutInfo);
+
+			this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
 
     }
 

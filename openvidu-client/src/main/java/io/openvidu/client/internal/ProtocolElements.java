@@ -164,6 +164,8 @@ public class ProtocolElements {
 
 	public static final String GETROOMLAYOUT_METHOD = "getRoomLayout";
 	public static final String GETROOMLAYOUT_ROOM_ID_PARAM = "roomId";
+	public static final String GETROOMLAYOUT_MODE_PARAM = "mode";
+	public static final String GETROOMLAYOUT_LAYOUT_PARAM = "layout";
 
 	public static final String BROADCASTMAJORLAYOUT_METHOD = "broadcastMajorLayout";
 	public static final String BROADCASTMAJORLAYOUT_MODE_PARAM = "mode";

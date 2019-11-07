@@ -120,6 +120,7 @@ public class Session implements SessionInterface {
 		return layoutMode;
 	}
 
+
 	public void setLayoutMode(LayoutModeEnum layoutMode) {
 		this.layoutMode = layoutMode;
 	}
