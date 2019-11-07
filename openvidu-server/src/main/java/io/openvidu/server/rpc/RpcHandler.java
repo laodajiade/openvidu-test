@@ -1190,6 +1190,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 			return;
 		}
+		if (Objects.isNull(this.getSessionManager().getSession(sessionId))) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            return;
+        }
+
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
