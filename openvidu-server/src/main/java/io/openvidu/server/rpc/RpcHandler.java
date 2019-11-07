@@ -2215,7 +2215,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		    JsonArray layoutInfo = conferenceSession.getLayoutInfo();
 			JsonObject jsonObject = new JsonObject();
 			jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODE_PARAM, layoutModeEnum.getMode());
-			jsonObject.add(ProtocolElements.GETROOMLAYOUT_LAYOUT_PARAM, layoutInfo);
+			if (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum))
+			    jsonObject.add(ProtocolElements.GETROOMLAYOUT_LAYOUT_PARAM, layoutInfo);
 
 			this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
 
@@ -2247,7 +2248,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             // broadcast the changes of layout
             JsonObject notifyResult = new JsonObject();
             notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_MODE_PARAM, layoutModeEnum.getMode());
-            notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM_, layout);
+            if (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum))
+                notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM_, layout);
 
             sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
                     notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult));
