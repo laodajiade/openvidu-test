@@ -2211,7 +2211,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				return;
 			}
 			io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(sessionId);
-		    LayoutModeEnum layoutModeEnum = conferenceSession.getLayoutMode();
+			if (Objects.isNull(conferenceSession)) {
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                return;
+            }
+			LayoutModeEnum layoutModeEnum = conferenceSession.getLayoutMode();
 		    JsonArray layoutInfo = conferenceSession.getLayoutInfo();
 			JsonObject jsonObject = new JsonObject();
 			jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODE_PARAM, layoutModeEnum.getMode());
@@ -2248,8 +2253,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             // broadcast the changes of layout
             JsonObject notifyResult = new JsonObject();
             notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_MODE_PARAM, layoutModeEnum.getMode());
-            if (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum))
-                notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM_, layout);
+            notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM_, layout);
 
             sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
                     notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult));
