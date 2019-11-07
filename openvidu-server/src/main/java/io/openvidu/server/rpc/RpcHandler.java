@@ -433,8 +433,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		if (reconnect) {
 			String conferenceId = previousRpc.getSessionId();
-			String previousRpcConnectId = previousRpc.getParticipantPrivateId();
-			rpcConnection.setSessionId(conferenceId);
+            String previousRpcConnectId = previousRpc.getParticipantPrivateId();
+            rpcConnection.setSessionId(conferenceId);
 			// Send user break line notify
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
@@ -442,23 +442,42 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
 			JsonObject notifyObj = new JsonObject();
-			boolean shareNotify = !Objects.isNull(preSharingPart);
-			if (shareNotify) {
+			boolean endShareNotify = !Objects.isNull(preSharingPart);
+			if (endShareNotify) {
 				// Send reconnected participant stop publish previous sharing if exists
 				notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
 						preSharingPart.getParticipantPublicId());
 			}
 
+            Participant preMajorPart = this.sessionManager.getParticipant(conferenceId, previousRpcConnectId, StreamType.MAJOR);
+            boolean endRollNotify = !Objects.isNull(preMajorPart) && Objects.equals(ParticipantHandStatus.speaker,
+                    preMajorPart.getHandStatus());
+            JsonObject endRollNotifyObj = new JsonObject();
+            if (endRollNotify) {
+                endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceId);
+                endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, previousRpc.getUserId());
+
+                preMajorPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+            }
+
 			this.sessionManager.getParticipants(conferenceId).forEach(participant -> {
 				if (!Objects.equals(previousRpcConnectId, participant.getParticipantPrivateId())) {
 					RpcConnection rpc = notificationService.getRpcConnection(participant.getParticipantPrivateId());
 					if (!Objects.isNull(rpc)) {
-						if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
-							if (shareNotify) {
+						if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"),
+                                UserOnlineStatusEnum.online.name())) {
+							if (endShareNotify) {
 								notificationService.sendNotification(participant.getParticipantPrivateId(),
 										ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
 							}
-							notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+
+							notificationService.sendNotification(participant.getParticipantPrivateId(),
+                                    ProtocolElements.USER_BREAK_LINE_METHOD, params);
+
+							if (endRollNotify) {
+                                notificationService.sendNotification(participant.getParticipantPrivateId(),
+                                        ProtocolElements.END_ROLL_CALL_METHOD, endRollNotifyObj);
+                            }
 						}
 					}
 				}
@@ -917,7 +936,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
         participants.stream().filter(part -> Objects.equals(part.getStreamType(), StreamType.MAJOR) &&
                 targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
+                .findFirst().get().setHandStatus(ParticipantHandStatus.endSpeaker);
 
 		int raiseHandNum = 0;
 		for (Participant p : participants) {
@@ -1533,6 +1552,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
+		Participant p = null;
 
 		// update user online status in cache
         if (notificationService.getRpcConnection(rpcSessionId) != null)
@@ -1542,7 +1562,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			message = "Evicting participant with private id {} because of a network disconnection";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
 			try {
-				Participant p = sessionManager.getParticipant(rpcSession.getSessionId());
+				p = sessionManager.getParticipant(rpcSession.getSessionId());
 				if (p != null) {
 					message = "Evicting participant with private id {} because its websocket unexpectedly closed in the client side";
 				}
@@ -1563,6 +1583,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
 					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+
+					// send end roll notify if the offline connection's hand status is speaker
+					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
+					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
+						p.setHandStatus(ParticipantHandStatus.endSpeaker);
+
+						JsonObject params = new JsonObject();
+						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, p.getSessionId());
+						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
+						this.sessionManager.getParticipants(p.getSessionId()).forEach(part -> {
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId()))
+								this.notificationService.sendNotification(part.getParticipantPrivateId(),
+										ProtocolElements.END_ROLL_CALL_METHOD, params);
+						});
+					}
 				}
 			}
 		}
