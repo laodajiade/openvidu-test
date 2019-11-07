@@ -1192,8 +1192,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 		Set<Participant> participants = sessionManager.getParticipants(sessionId);
 		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.LEAVEROOM_ROOM_ID_PARAM, sessionId);
-		params.addProperty(ProtocolElements.LEAVEROOM_SOURCE_ID_PARAM, sourceId);
+		params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+		params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
 		for (Participant participant1 : participants) {
 			 this.notificationService.sendNotification(participant1.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
 		}
