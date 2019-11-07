@@ -7,6 +7,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author chosongi
@@ -36,7 +37,8 @@ public class TreeToolUtils {
         List<DepartmentTree> childList = Lists.newArrayList();
         bodyList.stream()
                 .filter(c -> !map.containsKey(c.getOrgId()))
-                .filter(c -> c.getParentId().compareTo(beanTree.getOrgId()) == 0)
+                .filter(c -> !Objects.isNull(c.getParentId()) &&
+                        c.getParentId().compareTo(beanTree.getOrgId()) == 0)
                 .forEach(c -> {
                     map.put(c.getOrgId(), c.getParentId());
                     getChild(c, map);
