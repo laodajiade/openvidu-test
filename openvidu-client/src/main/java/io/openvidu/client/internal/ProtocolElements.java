@@ -169,6 +169,10 @@ public class ProtocolElements {
 	public static final String BROADCASTMAJORLAYOUT_MODE_PARAM = "mode";
 	public static final String BROADCASTMAJORLAYOUT_LAYOUT_PARAM = "layout";
 
+	public static final String MAJORLAYOUTNOTIFY_METHOD = "majorLayoutNotify";
+	public static final String MAJORLAYOUTNOTIFY_MODE_PARAM = "mode";
+	public static final String MAJORLAYOUTNOTIFY_LAYOUT_PARAM_= "layout";
+
 
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 

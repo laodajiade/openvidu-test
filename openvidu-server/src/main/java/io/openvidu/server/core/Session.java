@@ -25,6 +25,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
+import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
@@ -55,6 +56,8 @@ public class Session implements SessionInterface {
 	// TODO. Maybe we should relate conference in here.
 	protected Conference conference;
 	protected SessionPreset preset;
+	protected LayoutModeEnum layoutMode;
+	protected JsonArray layoutInfo;
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean notifyCountdown10Min = false;
@@ -75,6 +78,8 @@ public class Session implements SessionInterface {
 
 		this.conference = previousSession.conference;
 		this.preset = previousSession.preset;
+		this.layoutMode = previousSession.getLayoutMode();
+		this.layoutInfo = previousSession.getLayoutInfo();
 		this.delayConfCnt = previousSession.delayConfCnt;
 	}
 
@@ -86,6 +91,7 @@ public class Session implements SessionInterface {
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
 
+		this.layoutMode = LayoutModeEnum.DEFAULT;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
 	}
@@ -109,6 +115,22 @@ public class Session implements SessionInterface {
 	public void setPresetInfo(SessionPreset preset) { this.preset = preset; }
 
 	public SessionPreset getPresetInfo() { return this.preset; }
+
+	public LayoutModeEnum getLayoutMode() {
+		return layoutMode;
+	}
+
+	public void setLayoutMode(LayoutModeEnum layoutMode) {
+		this.layoutMode = layoutMode;
+	}
+
+	public JsonArray getLayoutInfo() {
+		return layoutInfo;
+	}
+
+	public void setLayoutInfo(JsonArray layoutInfo) {
+		this.layoutInfo = layoutInfo;
+	}
 
 	public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
 

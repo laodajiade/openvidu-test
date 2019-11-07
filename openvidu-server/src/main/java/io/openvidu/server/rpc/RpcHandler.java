@@ -290,12 +290,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.GETROOMLAYOUT_METHOD:
 				getRoomLayout(rpcConnection, request);
 				break;
+            case ProtocolElements.BROADCASTMAJORLAYOUT_METHOD:
+                broadcastMajorLayout(rpcConnection, request);
+                break;
 			default:
 				log.error("Unrecognized request {}", request);
 				break;
 		}
 	}
-
 
     private void accessIn(RpcConnection rpcConnection, Request<JsonObject> request) {
 	    String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
@@ -2197,6 +2199,41 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     private void getRoomLayout(RpcConnection rpcConnection, Request<JsonObject> request) {
 
     }
+
+    private void broadcastMajorLayout(RpcConnection rpcConnection, Request<JsonObject> request) {
+	    JsonArray layout = null;
+        LayoutModeEnum layoutModeEnum = LayoutModeEnum.getLayoutMode(getIntParam(request, ProtocolElements.BROADCASTMAJORLAYOUT_MODE_PARAM));
+        if (Objects.isNull(layoutModeEnum) || (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum) &&
+                (layout = request.getParams().getAsJsonArray(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM)).size() == 0)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+            return;
+        }
+
+        // record the room layout info
+        io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(rpcConnection.getSessionId());
+        if (!Objects.isNull(conferenceSession)) {
+        	// verify current user role
+			if (Objects.equals(OpenViduRole.MODERATOR, sessionManager.getParticipant(rpcConnection.getSessionId(),
+					rpcConnection.getParticipantPrivateId()).getRole())) {
+				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.PERMISSION_LIMITED);
+				return;
+			}
+
+            conferenceSession.setLayoutMode(layoutModeEnum);
+            conferenceSession.setLayoutInfo(layout);
+
+            // broadcast the changes of layout
+            JsonObject notifyResult = new JsonObject();
+            notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_MODE_PARAM, layoutModeEnum.getMode());
+            notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM_, layout);
+
+            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
+                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult));
+
+            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+        }
+	}
 
 	private boolean updateReconnectInfo(RpcConnection rpcConnection) {
 		try {
