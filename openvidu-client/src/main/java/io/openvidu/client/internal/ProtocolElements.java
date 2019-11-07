@@ -162,6 +162,10 @@ public class ProtocolElements {
 
 	public static final String RESULT_OF_LOGIN_APPLY_NOTIFY = "resultOfLoginApplyNotify";
 
+	public static final String GETROOMLAYOUT_METHOD = "getRoomLayout";
+	public static final String GETROOMLAYOUT_ROOM_ID_METHOD = "roomId";
+
+
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
 	public static final String CREATE_ROOM_METHOD = "createRoom";

@@ -287,6 +287,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			case ProtocolElements.GET_NOT_FINISHED_ROOM_METHOD:
 				getNotFinishedRoom(rpcConnection, request);
 				break;
+			case ProtocolElements.GETROOMLAYOUT_METHOD:
+				getRoomLayout(rpcConnection, request);
+				break;
 			default:
 				log.error("Unrecognized request {}", request);
 				break;
