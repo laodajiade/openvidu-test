@@ -4,6 +4,9 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.pojo.Device;
+import io.openvidu.server.common.pojo.DeviceSearch;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -36,9 +39,23 @@ public class PutDownHandHandler extends RpcAbstractHandler {
             participants.forEach(part -> part.setHandStatus(ParticipantHandStatus.down));
         }
 
+        User user = userMapper.selectByPrimaryKey(Long.valueOf(sourceId));
+        String	serialNumber = rpcConnection.getSerialNumber();
+        if (!Objects.isNull(serialNumber))
+            log.info("serialNumber", serialNumber);
+        // device info.
+        Device device=null;
+        if (!StringUtils.isEmpty(serialNumber)) {
+            DeviceSearch deviceSearch = new DeviceSearch();
+            deviceSearch.setSerialNumber(serialNumber);
+            device = deviceMapper.selectBySearchCondition(deviceSearch);
+        }
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.PUT_DOWN_HAND_ROOM_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.PUT_DOWN_HAND_SOURCE_ID_PARAM, sourceId);
+        params.addProperty(ProtocolElements.PUT_DOWN_USERNAME_PARAM, user.getUsername());
+        if (!StringUtils.isEmpty(device))
+            params.addProperty(ProtocolElements.PUT_DOWN_APPSHOW_NAME_PARAM, device.getDeviceName());
         if (!StringUtils.isEmpty(targetId)) {
             params.addProperty(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM, targetId);
             int raiseHandNum = 0;

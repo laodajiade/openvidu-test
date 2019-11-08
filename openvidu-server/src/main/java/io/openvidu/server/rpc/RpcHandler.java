@@ -23,6 +23,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
@@ -132,16 +133,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
+		Participant p = null;
 
 		// update user online status in cache
-        if (notificationService.getRpcConnection(rpcSessionId) != null)
-		    cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
-				UserOnlineStatusEnum.offline);
+		if (notificationService.getRpcConnection(rpcSessionId) != null)
+			cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
+					UserOnlineStatusEnum.offline);
 		if ("Close for not receive ping from client".equals(status)) {
 			message = "Evicting participant with private id {} because of a network disconnection";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
 			try {
-				Participant p = sessionManager.getParticipant(rpcSession.getSessionId());
+				p = sessionManager.getParticipant(rpcSession.getSessionId());
 				if (p != null) {
 					message = "Evicting participant with private id {} because its websocket unexpectedly closed in the client side";
 				}
@@ -151,13 +153,32 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		if (!message.isEmpty()) {
+//			RpcConnection rpc = this.notificationService.closeRpcSession(rpcSessionId);
 			RpcConnection rpc = this.notificationService.getRpcConnection(rpcSessionId);
 			if (rpc != null && rpc.getSessionId() != null) {
 				io.openvidu.server.core.Session session = this.sessionManager.getSession(rpc.getSessionId());
 				Participant participant;
 				if (session != null && (participant = session.getParticipantByPrivateId(rpc.getParticipantPrivateId())) != null) {
 					log.info(message, rpc.getParticipantPrivateId());
+//					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
+//					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
+
 					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+
+					// send end roll notify if the offline connection's hand status is speaker
+					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
+					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
+						p.setHandStatus(ParticipantHandStatus.endSpeaker);
+
+						JsonObject params = new JsonObject();
+						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, p.getSessionId());
+						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
+						this.sessionManager.getParticipants(p.getSessionId()).forEach(part -> {
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId()))
+								this.notificationService.sendNotification(part.getParticipantPrivateId(),
+										ProtocolElements.END_ROLL_CALL_METHOD, params);
+						});
+					}
 				}
 			}
 		}
@@ -166,6 +187,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			log.warn(
 					"Evicting participant with private id {} because a transport error took place and its web socket connection is now closed",
 					rpcSession.getSessionId());
+//			this.leaveRoomAfterConnClosed(rpcSessionId, EndReason.networkDisconnect);
+			/*try {
+				Participant p = this.sessionManager.getParticipant(rpcSessionId);
+				RpcConnection c = this.notificationService.getRpcConnection(rpcSessionId);
+				notifyUserBreakLine(p.getSessionId(), c.getUserId());
+			} catch(OpenViduException e) {
+				log.info("exception:{}", e);
+			}*/
 		}
 	}
 

@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.Device;
@@ -171,27 +172,47 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
             JsonObject notifyObj = new JsonObject();
-            boolean shareNotify = !Objects.isNull(preSharingPart);
-            if (shareNotify) {
+            boolean endShareNotify = !Objects.isNull(preSharingPart);
+            if (endShareNotify) {
                 // Send reconnected participant stop publish previous sharing if exists
                 notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
                         preSharingPart.getParticipantPublicId());
+            }
+
+            Participant preMajorPart = this.sessionManager.getParticipant(conferenceId, previousRpcConnectId, StreamType.MAJOR);
+            boolean endRollNotify = !Objects.isNull(preMajorPart) && Objects.equals(ParticipantHandStatus.speaker,
+                    preMajorPart.getHandStatus());
+            JsonObject endRollNotifyObj = new JsonObject();
+            if (endRollNotify) {
+                endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceId);
+                endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, previousRpc.getUserId());
+
+                preMajorPart.setHandStatus(ParticipantHandStatus.endSpeaker);
             }
 
             this.sessionManager.getParticipants(conferenceId).forEach(participant -> {
                 if (!Objects.equals(previousRpcConnectId, participant.getParticipantPrivateId())) {
                     RpcConnection rpc = notificationService.getRpcConnection(participant.getParticipantPrivateId());
                     if (!Objects.isNull(rpc)) {
-                        if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
-                            if (shareNotify) {
+                        if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"),
+                                UserOnlineStatusEnum.online.name())) {
+                            if (endShareNotify) {
                                 notificationService.sendNotification(participant.getParticipantPrivateId(),
                                         ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
                             }
-                            notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+
+                            notificationService.sendNotification(participant.getParticipantPrivateId(),
+                                    ProtocolElements.USER_BREAK_LINE_METHOD, params);
+
+                            if (endRollNotify) {
+                                notificationService.sendNotification(participant.getParticipantPrivateId(),
+                                        ProtocolElements.END_ROLL_CALL_METHOD, endRollNotifyObj);
+                            }
                         }
                     }
                 }
             });
         }
     }
+
 }

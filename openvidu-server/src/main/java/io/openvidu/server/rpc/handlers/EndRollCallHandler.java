@@ -29,7 +29,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         participants.stream().filter(part -> Objects.equals(part.getStreamType(), StreamType.MAJOR) &&
                 targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString()))
-                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
+                .findFirst().get().setHandStatus(ParticipantHandStatus.endSpeaker);
 
         int raiseHandNum = 0;
         for (Participant p : participants) {

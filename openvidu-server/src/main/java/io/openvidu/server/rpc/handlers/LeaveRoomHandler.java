@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -13,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author chosongi
@@ -41,8 +45,26 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             }
             return;
         }
+        if (Objects.isNull(sessionManager.getSession(sessionId))) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            return;
+        }
+        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+            participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+
+            Set<Participant> participants = sessionManager.getParticipants(sessionId);
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
+            for (Participant participant1 : participants) {
+                this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                        ProtocolElements.END_ROLL_CALL_METHOD, params);
+            }
+        }
 
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
+
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
     }
