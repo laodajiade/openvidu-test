@@ -17,21 +17,6 @@
 
 package io.openvidu.server.kurento.core;
 
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import io.openvidu.server.common.enums.StreamType;
-import org.kurento.client.Continuation;
-import org.kurento.client.ErrorEvent;
-import org.kurento.client.EventListener;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.MediaPipeline;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
@@ -40,6 +25,14 @@ import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.kms.Kms;
+import org.kurento.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
