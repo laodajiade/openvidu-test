@@ -57,7 +57,7 @@ public class Session implements SessionInterface {
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected LayoutModeEnum layoutMode;
-	protected JsonArray layoutInfo;
+	protected JsonArray layoutInfo = new JsonArray(1);
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean notifyCountdown10Min = false;
