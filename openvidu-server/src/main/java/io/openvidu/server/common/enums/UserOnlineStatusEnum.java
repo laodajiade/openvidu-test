@@ -1,7 +1,7 @@
 package io.openvidu.server.common.enums;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/21 21:30
  */
 public enum UserOnlineStatusEnum {

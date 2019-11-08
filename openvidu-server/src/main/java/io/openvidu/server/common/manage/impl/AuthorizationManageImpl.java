@@ -13,7 +13,7 @@ import java.util.*;
 import static io.openvidu.client.internal.ProtocolElements.*;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/16 17:12
  */
 

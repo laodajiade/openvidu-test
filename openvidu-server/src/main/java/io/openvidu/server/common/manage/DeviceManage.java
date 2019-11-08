@@ -5,7 +5,7 @@ import io.openvidu.server.common.pojo.Device;
 import java.util.List;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/21 14:41
  */
 public interface DeviceManage {

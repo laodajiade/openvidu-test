@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/25 18:17
  */
 

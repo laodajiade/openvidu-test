@@ -3,7 +3,7 @@ package io.openvidu.server.common.contants;
 import io.openvidu.server.common.enums.StreamType;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/9/12 15:17
  */
 public class CacheKeyConstants {
