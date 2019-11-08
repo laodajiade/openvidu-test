@@ -1209,7 +1209,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 			return;
 		}
-		if (Objects.isNull(this.getSessionManager().getSession(sessionId))) {
+		if (!this.getSessionManager().isSessionIdValid(sessionId)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
@@ -2277,7 +2277,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	    JsonArray layout = null;
         LayoutModeEnum layoutModeEnum = LayoutModeEnum.getLayoutMode(getIntParam(request, ProtocolElements.BROADCASTMAJORLAYOUT_MODE_PARAM));
         if (Objects.isNull(layoutModeEnum) || (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum) &&
-                (layout = request.getParams().getAsJsonArray(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM)).size() == 0)) {
+                (layout = request.getParams().getAsJsonArray(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM)).size() != layoutModeEnum.getMode())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
@@ -2286,7 +2286,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
         io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(rpcConnection.getSessionId());
         if (!Objects.isNull(conferenceSession)) {
         	// verify current user role
-			if (Objects.equals(OpenViduRole.MODERATOR, sessionManager.getParticipant(rpcConnection.getSessionId(),
+			if (!Objects.equals(OpenViduRole.MODERATOR, sessionManager.getParticipant(rpcConnection.getSessionId(),
 					rpcConnection.getParticipantPrivateId()).getRole())) {
 				this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 						null, ErrorCodeEnum.PERMISSION_LIMITED);
@@ -2299,7 +2299,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
             // broadcast the changes of layout
             JsonObject notifyResult = new JsonObject();
             notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_MODE_PARAM, layoutModeEnum.getMode());
-            notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM_, layout);
+            notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM, layout);
 
             sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
                     notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult));
