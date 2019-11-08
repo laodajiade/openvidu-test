@@ -187,14 +187,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			log.warn(
 					"Evicting participant with private id {} because a transport error took place and its web socket connection is now closed",
 					rpcSession.getSessionId());
-//			this.leaveRoomAfterConnClosed(rpcSessionId, EndReason.networkDisconnect);
-			/*try {
-				Participant p = this.sessionManager.getParticipant(rpcSessionId);
-				RpcConnection c = this.notificationService.getRpcConnection(rpcSessionId);
-				notifyUserBreakLine(p.getSessionId(), c.getUserId());
-			} catch(OpenViduException e) {
-				log.info("exception:{}", e);
-			}*/
 		}
 	}
 
