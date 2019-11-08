@@ -37,7 +37,8 @@ public class TreeToolUtils {
         List<DepartmentTree> childList = Lists.newArrayList();
         bodyList.stream()
                 .filter(c -> !map.containsKey(c.getOrgId()))
-                .filter(c -> !Objects.isNull(c.getParentId()) && c.getParentId().compareTo(beanTree.getOrgId()) == 0)
+                .filter(c -> !Objects.isNull(c.getParentId()) &&
+                        c.getParentId().compareTo(beanTree.getOrgId()) == 0)
                 .forEach(c -> {
                     map.put(c.getOrgId(), c.getParentId());
                     getChild(c, map);

@@ -17,12 +17,26 @@
 
 package io.openvidu.server.kurento.core;
 
-import java.util.*;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
+import io.openvidu.server.kurento.endpoint.KurentoFilter;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
+import io.openvidu.server.kurento.endpoint.SdpType;
+import io.openvidu.server.kurento.kms.Kms;
+import io.openvidu.server.kurento.kms.KmsManager;
+import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.ListenerSubscription;
@@ -32,26 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.MediaMode;
-import io.openvidu.java.client.RecordingLayout;
-import io.openvidu.java.client.RecordingMode;
-import io.openvidu.java.client.RecordingProperties;
-import io.openvidu.java.client.SessionProperties;
-import io.openvidu.server.kurento.endpoint.KurentoFilter;
-import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
-import io.openvidu.server.kurento.endpoint.SdpType;
-import io.openvidu.server.kurento.kms.Kms;
-import io.openvidu.server.kurento.kms.KmsManager;
-import io.openvidu.server.rpc.RpcHandler;
-import io.openvidu.server.utils.JsonUtils;
+import java.util.*;
 
 public class KurentoSessionManager extends SessionManager {
 
@@ -599,9 +594,9 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public KurentoMediaOptions generateMediaOptions(Request<JsonObject> request) throws OpenViduException {
 
-		String sdpOffer = RpcHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_SDPOFFER_PARAM);
-		boolean hasAudio = RpcHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_HASAUDIO_PARAM);
-		boolean hasVideo = RpcHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_HASVIDEO_PARAM);
+		String sdpOffer = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_SDPOFFER_PARAM);
+		boolean hasAudio = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_HASAUDIO_PARAM);
+		boolean hasVideo = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_HASVIDEO_PARAM);
 
 		Boolean audioActive = null, videoActive = null;
 		String typeOfVideo = null, videoDimensions = null;
@@ -609,27 +604,27 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoFilter kurentoFilter = null;
 
 		try {
-			audioActive = RpcHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
+			audioActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
 		} catch (RuntimeException noParameterFound) {
 		}
 		try {
-			videoActive = RpcHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
+			videoActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
 		} catch (RuntimeException noParameterFound) {
 		}
 		try {
-			typeOfVideo = RpcHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
+			typeOfVideo = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
 		} catch (RuntimeException noParameterFound) {
 		}
 		try {
-			videoDimensions = RpcHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);
+			videoDimensions = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);
 		} catch (RuntimeException noParameterFound) {
 		}
 		try {
-			frameRate = RpcHandler.getIntParam(request, ProtocolElements.PUBLISHVIDEO_FRAMERATE_PARAM);
+			frameRate = RpcAbstractHandler.getIntParam(request, ProtocolElements.PUBLISHVIDEO_FRAMERATE_PARAM);
 		} catch (RuntimeException noParameterFound) {
 		}
 		try {
-			JsonObject kurentoFilterJson = (JsonObject) RpcHandler.getParam(request,
+			JsonObject kurentoFilterJson = (JsonObject) RpcAbstractHandler.getParam(request,
 					ProtocolElements.PUBLISHVIDEO_KURENTOFILTER_PARAM);
 			if (kurentoFilterJson != null) {
 				try {
@@ -645,7 +640,7 @@ public class KurentoSessionManager extends SessionManager {
 		} catch (RuntimeException noParameterFound) {
 		}
 
-		boolean doLoopback = RpcHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_DOLOOPBACK_PARAM);
+		boolean doLoopback = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_DOLOOPBACK_PARAM);
 
 		return new KurentoMediaOptions(true, sdpOffer, null, null, hasAudio, hasVideo, audioActive, videoActive,
 				typeOfVideo, frameRate, videoDimensions, kurentoFilter, doLoopback);

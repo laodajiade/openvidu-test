@@ -214,18 +214,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!--<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-jsonrpc-server</artifactId>
-			<version>6.12.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/kurento-jsonrpc-server-6.12.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-websocket</artifactId>
-			<version>5.1.7.RELEASE</version>
-		</dependency>-->
 		<dependency>
 			<groupId>io.openvidu</groupId>
 			<artifactId>openvidu-client</artifactId>

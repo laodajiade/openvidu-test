@@ -16,7 +16,7 @@ public enum ErrorCodeEnum {
     SERVER_INTERNAL_ERROR(11001, "server internal error"),
     PERFORMANCE_EXCEED(11002, "performance exceed"),
     INVALID_METHOD_CALL(11003, "invalid method call"),
-
+    UNRECOGNIZED_API(11005, "unrecognized api"),
 
     TOKEN_INVALID(12003, "token invalid"),
     TOKEN_ERROR(12004, "token error"),
