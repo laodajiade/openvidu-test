@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 /**
- * @author geedow
+ * @author chosongi
  * @date 2019/11/5 16:34
  */
 @Slf4j
@@ -93,7 +93,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
 
                     userObj.addProperty("deviceName", device.getDeviceName());
-                    userObj.addProperty("deviceOrgName", user.getUsername());
+                    userObj.addProperty("deviceOrgName", devDep.getDeptName());
                     userObj.addProperty("appShowName", device.getDeviceName());
                     userObj.addProperty("appShowDesc", "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
                 } else {
