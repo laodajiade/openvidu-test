@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/18 22:34
  */
 public interface DepartmentManage {

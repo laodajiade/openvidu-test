@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/11/8 10:58
  */
 @Slf4j
@@ -23,13 +23,17 @@ import java.util.Objects;
 public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        JsonArray layout = null;
-        LayoutModeEnum layoutModeEnum = LayoutModeEnum.getLayoutMode(getIntParam(request, ProtocolElements.BROADCASTMAJORLAYOUT_MODE_PARAM));
-        if (Objects.isNull(layoutModeEnum) || (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum) &&
-                (layout = request.getParams().getAsJsonArray(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM)).size() != layoutModeEnum.getMode())) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+        LayoutModeEnum layoutModeEnum = LayoutModeEnum.getLayoutMode(getIntParam(request,
+                ProtocolElements.BROADCASTMAJORLAYOUT_MODE_PARAM));
+        if (Objects.isNull(layoutModeEnum)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
+        JsonArray layout = (!Objects.isNull(request.getParams()) &&
+                request.getParams().has(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM)) ?
+                request.getParams().getAsJsonArray(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM) : new JsonArray(1);
+
 
         // record the room layout info
         io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(rpcConnection.getSessionId());

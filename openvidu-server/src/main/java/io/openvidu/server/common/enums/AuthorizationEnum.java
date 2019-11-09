@@ -3,7 +3,7 @@ package io.openvidu.server.common.enums;
 import lombok.Getter;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/16 17:50
  */
 @Getter

@@ -14,13 +14,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/11/5 20:22
  */
 @Slf4j
@@ -68,11 +65,12 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
             });
         }
 
+        Collection<Long> loginByDeviceUserList = onlineDeviceList.values();
         List<User> userList = userManage.getSubUserByDeptId(orgId);
         if (!CollectionUtils.isEmpty(userList)) {
             userList.forEach(user -> {
                 // 返回列表中排除自己的用户
-                if (user.getId().equals(localUserId))
+                if (user.getId().equals(localUserId) || loginByDeviceUserList.contains(localUserId))
                     return ;
 
                 JsonObject userObj = new JsonObject();

@@ -605,24 +605,14 @@ public class KurentoSessionManager extends SessionManager {
 
 		try {
 			audioActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
-		} catch (RuntimeException noParameterFound) {
-		}
-		try {
 			videoActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
-		} catch (RuntimeException noParameterFound) {
-		}
-		try {
 			typeOfVideo = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
-		} catch (RuntimeException noParameterFound) {
-		}
-		try {
 			videoDimensions = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);
-		} catch (RuntimeException noParameterFound) {
-		}
-		try {
 			frameRate = RpcAbstractHandler.getIntParam(request, ProtocolElements.PUBLISHVIDEO_FRAMERATE_PARAM);
 		} catch (RuntimeException noParameterFound) {
+			log.error("Exception:{}\n", noParameterFound);
 		}
+
 		try {
 			JsonObject kurentoFilterJson = (JsonObject) RpcAbstractHandler.getParam(request,
 					ProtocolElements.PUBLISHVIDEO_KURENTOFILTER_PARAM);

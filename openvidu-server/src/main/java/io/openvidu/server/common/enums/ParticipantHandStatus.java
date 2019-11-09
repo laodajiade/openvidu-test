@@ -1,7 +1,7 @@
 package io.openvidu.server.common.enums;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/9/17 10:20
  */
 public enum ParticipantHandStatus {

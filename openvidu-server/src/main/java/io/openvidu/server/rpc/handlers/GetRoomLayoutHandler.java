@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/11/8 10:57
  */
 @Slf4j
@@ -23,7 +23,7 @@ public class GetRoomLayoutHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.GETROOMLAYOUT_ROOM_ID_PARAM);
-        if (Objects.isNull(sessionId)){
+        if (Objects.isNull(sessionId)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
@@ -38,8 +38,7 @@ public class GetRoomLayoutHandler extends RpcAbstractHandler {
         JsonArray layoutInfo = conferenceSession.getLayoutInfo();
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODE_PARAM, layoutModeEnum.getMode());
-        if (!Objects.equals(LayoutModeEnum.DEFAULT, layoutModeEnum))
-            jsonObject.add(ProtocolElements.GETROOMLAYOUT_LAYOUT_PARAM, layoutInfo);
+        jsonObject.add(ProtocolElements.GETROOMLAYOUT_LAYOUT_PARAM, layoutInfo);
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
