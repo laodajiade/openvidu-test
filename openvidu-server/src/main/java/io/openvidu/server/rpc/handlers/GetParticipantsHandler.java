@@ -93,7 +93,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
 
                     userObj.addProperty("deviceName", device.getDeviceName());
-                    userObj.addProperty("deviceOrgName", devDep.getDeptName());
+                    userObj.addProperty("deviceOrgName", user.getUsername());
                     userObj.addProperty("appShowName", device.getDeviceName());
                     userObj.addProperty("appShowDesc", "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
                 } else {
