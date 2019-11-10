@@ -26,6 +26,8 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CallDetailRecord;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
@@ -216,13 +218,20 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
+		int raiseHandNum = 0;
 		for (Participant p : remainingParticipants) {
 			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
 			}
+
+			if (p.getHandStatus() == ParticipantHandStatus.up && Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+				raiseHandNum++;
+			}
 		}
 
+		// Fixme. Android端统计出问题,暂时加上。端上重构后，云端删除该字段
+		params.addProperty(ProtocolElements.PARTICIPANTLEFT_RAISE_HAND_NUMBER_PARAM, raiseHandNum);
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily
 			// leaving the session

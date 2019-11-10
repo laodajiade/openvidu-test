@@ -35,7 +35,9 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
             if (Objects.isNull(userInfo)) continue;
             String status = String.valueOf(userInfo.get("status"));
             if (Objects.equals(UserOnlineStatusEnum.online.name(), status)) {
-                onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
+                if (!Objects.isNull(c.getSerialNumber())) {
+                    onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
+                }
                 onlineUserList.put(c.getUserId(), c.getSerialNumber());
                 log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
             }
@@ -70,7 +72,7 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
         if (!CollectionUtils.isEmpty(userList)) {
             userList.forEach(user -> {
                 // 返回列表中排除自己的用户
-                if (user.getId().equals(localUserId) || loginByDeviceUserList.contains(localUserId))
+                if (user.getId().equals(localUserId) || loginByDeviceUserList.contains(user.getId()))
                     return ;
 
                 JsonObject userObj = new JsonObject();
