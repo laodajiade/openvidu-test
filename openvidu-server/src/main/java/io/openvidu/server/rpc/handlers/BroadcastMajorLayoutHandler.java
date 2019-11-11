@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -30,6 +31,8 @@ public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
+        LayoutChangeTypeEnum changeType = LayoutChangeTypeEnum.valueOf(getStringParam(request,
+                ProtocolElements.BROADCASTMAJORLAYOUT_TYPE_PARAM));
         JsonArray layout = (!Objects.isNull(request.getParams()) &&
                 request.getParams().has(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM)) ?
                 request.getParams().getAsJsonArray(ProtocolElements.BROADCASTMAJORLAYOUT_LAYOUT_PARAM) : new JsonArray(1);
@@ -47,11 +50,13 @@ public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
             }
 
             conferenceSession.setLayoutMode(layoutModeEnum);
+            conferenceSession.setLayoutChangeTypeEnum(changeType);
             conferenceSession.setLayoutInfo(layout);
 
             // broadcast the changes of layout
             JsonObject notifyResult = new JsonObject();
             notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_MODE_PARAM, layoutModeEnum.getMode());
+            notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_TYPE_PARAM, changeType.name());
             notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM, layout);
 
             sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->

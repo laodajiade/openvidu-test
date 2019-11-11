@@ -25,6 +25,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
+import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
@@ -33,7 +34,6 @@ import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,6 +57,7 @@ public class Session implements SessionInterface {
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected LayoutModeEnum layoutMode;
+	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
@@ -79,6 +80,7 @@ public class Session implements SessionInterface {
 		this.conference = previousSession.conference;
 		this.preset = previousSession.preset;
 		this.layoutMode = previousSession.getLayoutMode();
+		this.layoutChangeTypeEnum = previousSession.getLayoutChangeTypeEnum();
 		this.layoutInfo = previousSession.getLayoutInfo();
 		this.delayConfCnt = previousSession.delayConfCnt;
 	}
@@ -92,6 +94,7 @@ public class Session implements SessionInterface {
 		this.recordingManager = recordingManager;
 
 		this.layoutMode = LayoutModeEnum.DEFAULT;
+		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
 	}
@@ -120,9 +123,16 @@ public class Session implements SessionInterface {
 		return layoutMode;
 	}
 
-
 	public void setLayoutMode(LayoutModeEnum layoutMode) {
 		this.layoutMode = layoutMode;
+	}
+
+	public LayoutChangeTypeEnum getLayoutChangeTypeEnum() {
+		return layoutChangeTypeEnum;
+	}
+
+	public void setLayoutChangeTypeEnum(LayoutChangeTypeEnum layoutChangeTypeEnum) {
+		this.layoutChangeTypeEnum = layoutChangeTypeEnum;
 	}
 
 	public JsonArray getLayoutInfo() {
