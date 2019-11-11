@@ -214,17 +214,12 @@ public class SessionEventsHandler {
 			return;
 		}
 
+		int raiseHandNum = 0;
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
-		int raiseHandNum = 0;
 		for (Participant p : remainingParticipants) {
-			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
-				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
-			}
-
 			if (p.getHandStatus() == ParticipantHandStatus.up && Objects.equals(StreamType.MAJOR, p.getStreamType())) {
 				raiseHandNum++;
 			}
@@ -232,6 +227,13 @@ public class SessionEventsHandler {
 
 		// Fixme. Android端统计出问题,暂时加上。端上重构后，云端删除该字段
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_RAISE_HAND_NUMBER_PARAM, raiseHandNum);
+		for (Participant p : remainingParticipants) {
+			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+			}
+		}
+
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily
 			// leaving the session
