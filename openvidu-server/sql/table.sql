@@ -247,7 +247,8 @@ CREATE TABLE `sd_user_dept` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `unique_user_dept` (`user_id`,`dept_id`) USING BTREE,
-  KEY `index_dept` (`dept_id`) USING BTREE
+  KEY `index_dept` (`dept_id`) USING BTREE,
+  KEY `index_project` (`project`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户部门关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
