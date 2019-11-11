@@ -66,6 +66,11 @@ public class AccessInHandler extends RpcAbstractHandler {
                 if (Objects.isNull(device = deviceMapper.selectBySearchCondition(search))) {
                     errCode = ErrorCodeEnum.DEVICE_NOT_FOUND;
                     break;
+                } else {
+                    if (!Objects.equals(String.valueOf(userInfo.get("project")), device.getProject())) {
+                        errCode = ErrorCodeEnum.PERMISSION_LIMITED;
+                        break;
+                    }
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
             }
@@ -135,7 +140,6 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
                 sessionManager.accessOut(rpcConnection);
-
                 return;
             } else {
                 if (!forceLogin) {

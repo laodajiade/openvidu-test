@@ -70,7 +70,7 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
         if (!CollectionUtils.isEmpty(userList)) {
             userList.forEach(user -> {
                 // 返回列表中排除自己的用户
-                if (user.getId().equals(localUserId) || loginByDeviceUserList.contains(localUserId))
+                if (user.getId().equals(localUserId) || loginByDeviceUserList.contains(user.getId()))
                     return ;
 
                 JsonObject userObj = new JsonObject();
