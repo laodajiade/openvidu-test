@@ -35,7 +35,9 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
             if (Objects.isNull(userInfo)) continue;
             String status = String.valueOf(userInfo.get("status"));
             if (Objects.equals(UserOnlineStatusEnum.online.name(), status)) {
-                onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
+                if (!Objects.isNull(c.getSerialNumber())) {
+                    onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
+                }
                 onlineUserList.put(c.getUserId(), c.getSerialNumber());
                 log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
             }

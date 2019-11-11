@@ -100,7 +100,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             // OFFLINE RECONNECT
-            if (!Objects.isNull(previousRpc) && Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name())
+            if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name()))
                     && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
                 reconnect = true;
                 rpcConnection.setReconnected(true);
@@ -108,6 +108,33 @@ public class AccessInHandler extends RpcAbstractHandler {
                 rpcConnection.setUserUuid(uuid);
                 previousRpc.setUserUuid(null);
                 log.info("the account:{} now reconnect.", uuid);
+                break;
+            }
+
+            // RECONNECT AFTER RECONNECT
+            if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.reconnect.name()))
+                    && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
+                if (previousRpc.isReconnected()) {
+                    log.info("the account:{} now reconnect after reconnect. previous connect id:{} userId:{} sessionId:{}",
+                            uuid, previousRpc.getParticipantPrivateId(), previousRpc.getUserId(), previousRpc.getSessionId());
+                    previousRpc.setUserUuid(null);
+                    sessionManager.accessOut(previousRpc);
+
+                    String firstConnectPrivateId = String.valueOf(userInfo.get("reconnect"));
+                    previousRpc = notificationService.getRpcConnection(firstConnectPrivateId);
+                }
+
+                if (!Objects.isNull(previousRpc)) {
+                    reconnect = true;
+                    rpcConnection.setReconnected(true);
+                    rpcConnection.setUserUuid(uuid);
+                    log.info("the account:{} now reconnect after reconnect. first connect id:{} userId:{} sessionId:{}",
+                            uuid, previousRpc.getParticipantPrivateId(), previousRpc.getUserId(), previousRpc.getSessionId());
+                    break;
+                }
+
+                log.warn("RECONNECT AFTER RECONNECT PREVIOUS RPC IS NULL. maybe server is restart, the account:{} now reconnect after reconnect warning.", uuid);
+                errCode = ErrorCodeEnum.SERVER_INTERNAL_ERROR;
                 break;
             }
 
@@ -169,10 +196,22 @@ public class AccessInHandler extends RpcAbstractHandler {
             String conferenceId = previousRpc.getSessionId();
             String previousRpcConnectId = previousRpc.getParticipantPrivateId();
             rpcConnection.setSessionId(conferenceId);
+            if (StringUtils.isEmpty(conferenceId)) {
+                log.info("the account:{} previous rpc connect id:{} not in conference when reconnect", uuid, previousRpcConnectId);
+                return ;
+            }
+
             // Send user break line notify
             JsonObject params = new JsonObject();
+            Participant part = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.MAJOR);
+            if (part == null) {
+                // maybe can not find participant,because of server is restart
+                log.warn("CAN NOT FIND THE PARTICIPANT, the account:{} previous rpc connect id:{} userId:{} in conferenceId:{} when reconnect",
+                        uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
+            }
+
             params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
-                    this.sessionManager.getParticipant(previousRpcConnectId, StreamType.MAJOR).getParticipantPublicId());
+                    part.getParticipantPublicId());
 
             Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
             JsonObject notifyObj = new JsonObject();

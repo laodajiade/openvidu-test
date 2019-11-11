@@ -165,14 +165,17 @@ public class ProtocolElements {
 	public static final String GETROOMLAYOUT_METHOD = "getRoomLayout";
 	public static final String GETROOMLAYOUT_ROOM_ID_PARAM = "roomId";
 	public static final String GETROOMLAYOUT_MODE_PARAM = "mode";
+	public static final String GETROOMLAYOUT_TYPE_PARAM = "type";
 	public static final String GETROOMLAYOUT_LAYOUT_PARAM = "layout";
 
 	public static final String BROADCASTMAJORLAYOUT_METHOD = "broadcastMajorLayout";
 	public static final String BROADCASTMAJORLAYOUT_MODE_PARAM = "mode";
+	public static final String BROADCASTMAJORLAYOUT_TYPE_PARAM = "type";
 	public static final String BROADCASTMAJORLAYOUT_LAYOUT_PARAM = "layout";
 
 	public static final String MAJORLAYOUTNOTIFY_METHOD = "majorLayoutNotify";
 	public static final String MAJORLAYOUTNOTIFY_MODE_PARAM = "mode";
+	public static final String MAJORLAYOUTNOTIFY_TYPE_PARAM = "type";
 	public static final String MAJORLAYOUTNOTIFY_LAYOUT_PARAM = "layout";
 
 
@@ -368,6 +371,7 @@ public class ProtocolElements {
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
 	public static final String PARTICIPANTLEFT_NAME_PARAM = "connectionId";
 	public static final String PARTICIPANTLEFT_REASON_PARAM = "reason";
+	public static final String PARTICIPANTLEFT_RAISE_HAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String PARTICIPANTEVICTED_METHOD = "participantEvicted";
 	public static final String PARTICIPANTEVICTED_CONNECTIONID_PARAM = "connectionId";
