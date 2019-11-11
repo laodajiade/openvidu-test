@@ -45,6 +45,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
             conference.setStatus(1);
             conference.setStartTime(new Date());
+            String project = userDeptMapper.selectByUserId(rpcConnection.getUserId());
+            conference.setProject(project);
             int insertResult = conferenceMapper.insert(conference);
 
             // setPresetInfo.

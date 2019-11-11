@@ -5,6 +5,8 @@ import io.openvidu.server.common.pojo.UserDeptSearch;
 
 public interface UserDeptMapper {
 
+    String selectByUserId(Long userId);
+
     int deleteByPrimaryKey(Long id);
 
     int insert(UserDept record);

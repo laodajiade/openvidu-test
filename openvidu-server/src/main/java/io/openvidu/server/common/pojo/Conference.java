@@ -26,6 +26,8 @@ public class Conference {
 
     private Integer inviteLimit;
 
+    private String project;
+
     private Date createTime;
 
     private Date updateTime;
