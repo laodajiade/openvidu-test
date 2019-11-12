@@ -76,17 +76,18 @@ public class KurentoSession extends Session {
 		KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 				this.openviduConfig, this.recordingManager);
 //		participants.put(participant.getParticipantPrivateId(), kurentoParticipant);
+		participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
+			Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
+			if (newPart != null)
+				log.info("RPCConnection:{} already exists the stream type:{}, now add the stream type:{} into the map.",
+						participant.getParticipantPrivateId(), participant.getStreamType().name(),
+						kurentoParticipant.getStreamType().name());
+			return parts;
+		});
 		participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
 			ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
 			connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
 			return connectionParticipants;
-		});
-		participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
-			Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
-			if (newPart != null)
-				log.error("RPCConnection:{} already exists the stream type:{}", participant.getParticipantPrivateId(),
-						participant.getStreamType().name());
-			return parts;
 		});
 
 		filterStates.forEach((filterId, state) -> {
