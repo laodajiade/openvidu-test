@@ -264,7 +264,7 @@ public class ProtocolElements {
 	public static final String CLOSE_ROOM_METHOD = "closeRoom";
 	public static final String CLOSE_ROOM_ID_PARAM = "roomId";
 
-	public static final String CLOSE_ROOM_NOTIFY_METHOD = "CloseRoomNotify";
+	public static final String CLOSE_ROOM_NOTIFY_METHOD = "closeRoomNotify";
 
 	public static final String INVITE_PARTICIPANT_METHOD = "inviteParticipant";
 	public static final String INVITE_PARTICIPANT_ID_PARAM = "roomId";
