@@ -665,7 +665,8 @@ public abstract class SessionManager {
 
 		Set<Participant> participants = getParticipants(sessionId);
 
-		if (EndReason.forceCloseSessionByUser.equals(reason)) {
+		if (EndReason.forceCloseSessionByUser.equals(reason) ||
+				EndReason.closeSessionByModerator.equals(reason)) {
 			for (Participant p : participants) {
 				try {
 					this.unpublishVideo(p, null, null, reason);

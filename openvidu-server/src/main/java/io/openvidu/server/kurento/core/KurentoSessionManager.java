@@ -203,7 +203,7 @@ public class KurentoSessionManager extends SessionManager {
 		}
 
 		if (!EndReason.forceDisconnectByUser.equals(reason) &&
-				!EndReason.forceCloseSessionByUser.equals(reason)) {
+				!EndReason.forceCloseSessionByUser.equals(reason) && !EndReason.closeSessionByModerator.equals(reason)) {
 			sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
 					reason);
 		}
@@ -395,7 +395,6 @@ public class KurentoSessionManager extends SessionManager {
 			session.cancelPublisher(participant, reason);
 
 			Set<Participant> participants = session.getParticipants();
-
 			sessionEventsHandler.onUnpublishMedia(participant, participants, moderator, transactionId, null, reason);
 
 		} catch (OpenViduException e) {

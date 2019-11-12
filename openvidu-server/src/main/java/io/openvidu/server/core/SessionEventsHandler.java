@@ -309,31 +309,33 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendResponse(moderator.getParticipantPrivateId(), transactionId, new JsonObject());
 		}
 
-		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
-		params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
+		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
+			params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
 
-		for (Participant p : participants) {
-			log.info("unPublish ParticipantPublicId {} p PublicId {}", participant.getParticipantPublicId(), p.getParticipantPublicId());
-			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
-				// Send response to the affected participant
-				if (!isRpcFromOwner) {
-					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
-				} else {
-					if (error != null) {
-						rpcNotificationService.sendErrorResponse(p.getParticipantPrivateId(), transactionId, null,
-								error);
-						return;
+			for (Participant p : participants) {
+				log.info("unPublish ParticipantPublicId {} p PublicId {}", participant.getParticipantPublicId(), p.getParticipantPublicId());
+				if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+					// Send response to the affected participant
+					if (!isRpcFromOwner) {
+						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
+					} else {
+						if (error != null) {
+							rpcNotificationService.sendErrorResponse(p.getParticipantPrivateId(), transactionId, null,
+									error);
+							return;
+						}
+						rpcNotificationService.sendResponse(p.getParticipantPrivateId(), transactionId, new JsonObject());
 					}
-					rpcNotificationService.sendResponse(p.getParticipantPrivateId(), transactionId, new JsonObject());
-				}
-			} else {
-				if (error == null) {
-					// Send response to every other user in the session different than the affected
-					// participant
-					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
+				} else {
+					if (error == null) {
+						// Send response to every other user in the session different than the affected
+						// participant
+						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
+					}
 				}
 			}
 		}
@@ -464,27 +466,29 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendResponse(moderator.getParticipantPrivateId(), transactionId, new JsonObject());
 		}
 
-		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.PARTICIPANTEVICTED_CONNECTIONID_PARAM,
-				evictedParticipant.getParticipantPublicId());
-		params.addProperty(ProtocolElements.PARTICIPANTEVICTED_REASON_PARAM, reason != null ? reason.name() : "");
+		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.PARTICIPANTEVICTED_CONNECTIONID_PARAM,
+					evictedParticipant.getParticipantPublicId());
+			params.addProperty(ProtocolElements.PARTICIPANTEVICTED_REASON_PARAM, reason != null ? reason.name() : "");
 
-		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
-			log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
-			// Do not send a message when evicting RECORDER participant
-			try {
-				rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
-			} catch (Exception e) {
-				log.error("Exception:\n", e);
-			}
-		}
-		for (Participant p : participants) {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
-				log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
-				if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())) {
-					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+				log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
+				// Do not send a message when evicting RECORDER participant
+				try {
+					rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
 							ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+				} catch (Exception e) {
+					log.error("Exception:\n", e);
+				}
+			}
+			for (Participant p : participants) {
+				if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
+					log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
+					if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())) {
+						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+					}
 				}
 			}
 		}

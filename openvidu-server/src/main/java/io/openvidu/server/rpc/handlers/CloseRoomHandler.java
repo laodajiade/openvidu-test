@@ -54,7 +54,9 @@ public class CloseRoomHandler extends RpcAbstractHandler {
 
         updateReconnectInfo(rpcConnection);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-        this.sessionManager.unpublishAllStream(sessionId, EndReason.forceCloseSessionByUser);
-        this.sessionManager.closeSession(sessionId, EndReason.forceCloseSessionByUser);
+        sessionManager.getSession(sessionId).getParticipants().forEach(p ->
+                notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
+        this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
+        this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
     }
 }
