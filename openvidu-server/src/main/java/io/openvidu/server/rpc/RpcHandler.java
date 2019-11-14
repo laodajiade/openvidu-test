@@ -17,7 +17,6 @@
 
 package io.openvidu.server.rpc;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
@@ -30,19 +29,15 @@ import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.kurento.kms.KmsManager;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -70,17 +65,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
-	@Autowired
-    KmsManager kmsManager;
-
-	/*@PostConstruct
-    public void init() throws IOException {
-	    Request<JsonObject> request = new Request<>();
-        request.setMethod("invoke");
-        request.setParams(new JsonObject());
-	    Response<JsonElement> response = kmsManager.getLessLoadedKms().getKurentoClient().sendJsonRpcRequest(request);
-	    log.info("================>:{}", response.toString());
-    }*/
 
 	@Override
 	public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
