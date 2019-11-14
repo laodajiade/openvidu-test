@@ -32,9 +32,10 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
         Map<Long, String> onlineUserList = new HashMap<>();
         for (RpcConnection c : notificationService.getRpcConnections()) {
             Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
-            if (Objects.isNull(userInfo)) continue;
+            if (Objects.isNull(userInfo) || userInfo.isEmpty()) continue;
             String status = String.valueOf(userInfo.get("status"));
-            if (!Objects.equals(UserOnlineStatusEnum.offline.name(), status)) {
+            if (Objects.equals(UserOnlineStatusEnum.online.name(), status) ||
+                    Objects.equals(UserOnlineStatusEnum.reconnect.name(), status)) {
                 if (!Objects.isNull(c.getSerialNumber())) {
                     onlineDeviceList.put(c.getSerialNumber(), c.getUserId());
                 }

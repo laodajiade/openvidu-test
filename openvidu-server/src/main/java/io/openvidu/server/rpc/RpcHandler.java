@@ -137,9 +137,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		Participant p = null;
 
 		// update user online status in cache
-		if (notificationService.getRpcConnection(rpcSessionId) != null)
+		if (notificationService.getRpcConnection(rpcSessionId) != null) {
 			cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
 					UserOnlineStatusEnum.offline);
+		} else {
+			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
+		}
 		if ("Close for not receive ping from client".equals(status)) {
 			message = "Evicting participant with private id {} because of a network disconnection";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
