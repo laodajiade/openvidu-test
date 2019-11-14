@@ -43,6 +43,7 @@ public class KurentoSession extends Session {
 	public static final int ASYNC_LATCH_TIMEOUT = 30;
 
 	private MediaPipeline pipeline;
+//	private Composite composite;
 	private CountDownLatch pipelineLatch = new CountDownLatch(1);
 	private Throwable pipelineCreationErrorCause;
 

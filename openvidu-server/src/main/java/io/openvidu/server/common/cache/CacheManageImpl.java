@@ -34,7 +34,10 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum) {
-        if (StringUtils.isEmpty(uuid)) return;
+        if (StringUtils.isEmpty(uuid)) {
+            log.info("###########uuid is null");
+            return;
+        }
         log.info("Update user online status in cache. uuid:{}, updateStatus:{}", uuid, onlineStatusEnum.name());
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid, "status", onlineStatusEnum.name());
     }
