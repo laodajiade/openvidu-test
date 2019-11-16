@@ -183,6 +183,19 @@ public class ProtocolElements {
 	public static final String MAJORLAYOUTNOTIFY_LAYOUT_PARAM = "layout";
 
 
+	public static final String SETCONFERENCELAYOUT_MODE_METHOD = "setConferenceLayout";
+	public static final String SETCONFERENCELAYOUT_MODE_PARAM = "mode";
+	public static final String SETCONFERENCELAYOUT_REPLACEINFO_PARAM = "replaceInfo";
+	public static final String SETCONFERENCELAYOUT_TARGET_PARAM = "target";
+	public static final String SETCONFERENCELAYOUT_REPLACEMENT_PARAM = "replacement";
+	public static final String SETCONFERENCELAYOUT_SHAREINCLUDE_PARAM = "shareInclude";
+
+	public static final String CONFERENCELAYOUTCHANGED_NOTIFY = "conferenceLayoutChanged";
+	public static final String CONFERENCELAYOUTCHANGED_NOTIFY_PARAM = "mode";
+	public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM = "partLinkedList";
+	public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLISTSHAREINCLUDE_PARAM = "partLinkedListShareInclude";
+
+
 	public static final String ACCESS_OUT_METHOD = "accessOut";
 
 	public static final String CREATE_ROOM_METHOD = "createRoom";

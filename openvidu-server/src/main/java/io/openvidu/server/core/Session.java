@@ -368,4 +368,10 @@ public class Session implements SessionInterface {
 		}
 	}
 
+    public void replacePartLayout(String target, String replaceMent, boolean shareInclude) {
+        if (shareInclude) {
+
+        }
+
+    }
 }
