@@ -89,12 +89,12 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
-
+		Session session = sessionManager.getSession(sessionId);
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
-		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
-
-		for (Participant existingParticipant : existingParticipants) {
+		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
+		for (JsonElement jsonElement : session.getMajorShareMixLinkedArr()) {
+			Participant existingParticipant = session.getParticipantByPublicId(jsonElement.getAsString());
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
 					existingParticipant.getParticipantPublicId());
@@ -191,6 +191,7 @@ public class SessionEventsHandler {
 				}
 			}
 		}
+
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
@@ -206,7 +207,7 @@ public class SessionEventsHandler {
 		result.add("value", resultArray);
 
 		JsonArray mixFlowsArr = new JsonArray(3);
-		KurentoSession kurentoSession = (KurentoSession) sessionManager.getSession(sessionId);
+		KurentoSession kurentoSession = (KurentoSession) session;
 		if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorStreamId())) {
 			JsonObject jsonObj = new JsonObject();
 			jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,

@@ -18,10 +18,12 @@
 package io.openvidu.server.core;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
@@ -69,6 +71,9 @@ public class Session implements SessionInterface {
 	protected AtomicInteger activePublishers = new AtomicInteger(0);
 
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
+
+	protected JsonArray majorMixLinkedArr = new JsonArray(50);
+	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -334,6 +339,33 @@ public class Session implements SessionInterface {
 	@Override
 	public boolean close(EndReason reason) {
 		return false;
+	}
+
+	public JsonArray getMajorMixLinkedArr() {
+		return majorMixLinkedArr;
+	}
+
+	public JsonArray getMajorShareMixLinkedArr() {
+		return majorShareMixLinkedArr;
+	}
+
+	protected void dealParticipantOrder(String participantPublicId, StreamType streamType) {
+    	majorMixLinkedArr.add(participantPublicId);
+		if (Objects.equals(StreamType.SHARING, streamType)) {
+			JsonArray newMajorMixLinkedArr = new JsonArray(50);
+			int size = majorShareMixLinkedArr.size();
+			for (int i = 0; i < size; i++) {
+				if (i == 2 && Objects.equals(StreamType.SHARING, streamType)) {
+					newMajorMixLinkedArr.add(participantPublicId);
+				} else {
+					newMajorMixLinkedArr.add(majorShareMixLinkedArr.get(i));
+				}
+			}
+
+			majorShareMixLinkedArr = newMajorMixLinkedArr;
+		} else {
+			majorShareMixLinkedArr.add(participantPublicId);
+		}
 	}
 
 }
