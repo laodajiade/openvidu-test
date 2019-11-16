@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -29,7 +30,9 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
         String senderName = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SENDER_PARAM);
         senderName = senderName.substring(0, senderName.indexOf("_"));
         String sdpOffer = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM);
+        StreamModeEnum streamMode = StreamModeEnum.valueOf(getStringParam(request,
+                ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM));
 
-        sessionManager.subscribe(participant, senderName, sdpOffer, request.getId());
+        sessionManager.subscribe(participant, senderName, streamMode, sdpOffer, request.getId());
     }
 }

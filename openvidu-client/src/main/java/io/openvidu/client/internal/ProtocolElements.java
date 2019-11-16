@@ -62,12 +62,15 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMFRAMERATE_PARAM = "frameRate";
 	public static final String JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
-    public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
+	public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
 	public static final String JOINROOM_PEERSPEAKERSTATUS_PARAM = "speakerStatus";
 	public static final String JOINROOM_PEERHANDSTATUS_PARAM = "handStatus";
 	public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
 	public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
 	public static final String JOINROOM_PEERONLINESTATUS_PARAM = "onlineStatus";
+	public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
+	public static final String JOINROOM_MIXFLOWS_STREAMID_PARAM = "streamId";
+	public static final String JOINROOM_MIXFLOWS_STREAMMODE_PARAM = "streamMode";
 
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
@@ -89,6 +92,7 @@ public class ProtocolElements {
 	public static final String UNPUBLISHVIDEO_METHOD = "unpublishVideo";
 
 	public static final String RECEIVEVIDEO_METHOD = "receiveVideoFrom";
+	public static final String RECEIVEVIDEO_STREAM_MODE_PARAM = "streamMode";
 	public static final String RECEIVEVIDEO_SDPOFFER_PARAM = "sdpOffer";
 	public static final String RECEIVEVIDEO_SENDER_PARAM = "sender";
 	public static final String RECEIVEVIDEO_SDPANSWER_PARAM = "sdpAnswer";

@@ -18,12 +18,15 @@
 package io.openvidu.server.kurento.core;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.Continuation;
 import org.kurento.client.ErrorEvent;
@@ -98,6 +101,9 @@ public class KurentoParticipant extends Participant {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setSharing(Objects.equals(StreamType.SHARING, participant.getStreamType()));
+			this.publisher.setCompositeService(this.session.compositeService);
 		}
 
 		for (Participant other : session.getParticipants()) {
@@ -111,6 +117,39 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public void createPublishingEndpoint(MediaOptions mediaOptions) {
+		publisher.createEndpoint(publisherLatch);
+		if (getPublisher().getEndpoint() == null) {
+			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
+		}
+		publisher.setMediaOptions(mediaOptions);
+
+		String publisherStreamId = this.getParticipantPublicId() + "_"
+				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
+				+ RandomStringUtils.random(5, true, false).toUpperCase();
+
+		if (Objects.equals(StreamType.MAJOR, getStreamType())) {
+			if (Objects.isNull(this.session.compositeService.getMixMajorStreamId())) {
+				String mixMajorStreamId = RandomStringUtils.random(8, true, false).toUpperCase()
+						+ "_" + "MAJOR-MIX";
+				this.session.compositeService.setMixMajorStreamId(mixMajorStreamId);
+			}
+		} else {
+			String mixMajorShareStreamId = RandomStringUtils.random(8, true, false).toUpperCase()
+					+ "_" + "MAJOR-SHARE-MIX";
+			this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+			this.session.compositeService.setShareStreamId(publisherStreamId);
+		}
+		this.publisher.setEndpointName(publisherStreamId);
+		this.publisher.getEndpoint().setName(publisherStreamId);
+		this.publisher.setStreamId(publisherStreamId);
+		endpointConfig.addEndpointListeners(this.publisher, "publisher");
+
+		// Remove streamId from publisher's map
+		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
+
+	}
+
+	/*public void createPublishingEndpoint(MediaOptions mediaOptions, StreamType streamType) {
 
 		publisher.createEndpoint(publisherLatch);
 		if (getPublisher().getEndpoint() == null) {
@@ -131,7 +170,7 @@ public class KurentoParticipant extends Participant {
 		// Remove streamId from publisher's map
 		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
 
-	}
+	}*/
 
 	public synchronized Filter getFilterElement(String id) {
 		return filters.get(id);
@@ -211,13 +250,13 @@ public class KurentoParticipant extends Participant {
 		log.info("PARTICIPANT {}: unpublishing media stream from room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
 		releasePublisherEndpoint(reason, kmsDisconnectionTime);
-		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(), this.getPipeline(),
-				this.openviduConfig);
+		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+				this.getPipeline(), this.openviduConfig);
 		log.info("PARTICIPANT {}: released publisher endpoint and left it initialized (ready for future streaming)",
 				this.getParticipantPublicId());
 	}
 
-	public String receiveMediaFrom(Participant sender, String sdpOffer) {
+	public String receiveMediaFrom(Participant sender, StreamModeEnum streamMode, String sdpOffer) {
 		final String senderName = sender.getParticipantPublicId();
 
 		log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getParticipantPublicId(),
@@ -280,7 +319,7 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
 		try {
-			String sdpAnswer = subscriber.subscribe(sdpOffer, kSender.getPublisher());
+			String sdpAnswer = subscriber.subscribe(sdpOffer, kSender.getPublisher(), streamMode);
 			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
 			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
 					senderName, this.session.getSessionId());
@@ -346,12 +385,13 @@ public class KurentoParticipant extends Participant {
 	 * Returns a {@link SubscriberEndpoint} for the given participant public id. The
 	 * endpoint is created if not found.
 	 *
-	 * @param remotePublicId id of another user
+	 * @param senderPublicId id of another user
 	 * @return the endpoint instance
 	 */
 	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
 				this.getPipeline(), this.openviduConfig);
+		subscriberEndpoint.setCompositeService(this.session.compositeService);
 
 		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {
@@ -359,8 +399,7 @@ public class KurentoParticipant extends Participant {
 			log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),
 					senderPublicId);
 		} else {
-			log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(),
-					senderPublicId);
+			log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(), senderPublicId);
 		}
 
 		return subscriberEndpoint;

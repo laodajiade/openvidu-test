@@ -405,7 +405,7 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
-	public void subscribe(Participant participant, String senderName, String sdpOffer, Integer transactionId) {
+	public void subscribe(Participant participant, String senderName, StreamModeEnum streamMode, String sdpOffer, Integer transactionId) {
 		String sdpAnswer = null;
 		Session session = null;
 		try {
@@ -414,7 +414,8 @@ public class KurentoSessionManager extends SessionManager {
 
 			KurentoParticipant kParticipant = (KurentoParticipant) participant;
 			session = ((KurentoParticipant) participant).getSession();
-			Participant senderParticipant = session.getParticipantByPublicId(senderName);
+			Participant senderParticipant = Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) ?
+					session.getParticipantByPublicId(senderName) : session.getParticipants().stream().findAny().orElse(participant);
 
 			if (senderParticipant == null) {
 				log.warn(
@@ -433,7 +434,7 @@ public class KurentoSessionManager extends SessionManager {
 						"User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
 			}
 
-			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, sdpOffer);
+			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer);
 			if (sdpAnswer == null) {
 				throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 						"Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()

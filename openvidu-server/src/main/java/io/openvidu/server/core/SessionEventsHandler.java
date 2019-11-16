@@ -27,11 +27,13 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CallDetailRecord;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
@@ -39,6 +41,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +67,9 @@ public class SessionEventsHandler {
 
 	@Autowired
 	protected CacheManage cacheManage;
+
+	@Autowired
+	protected SessionManager sessionManager;
 
 	Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -198,6 +204,30 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
 		result.add("value", resultArray);
+
+		JsonArray mixFlowsArr = new JsonArray(3);
+		KurentoSession kurentoSession = (KurentoSession) sessionManager.getSession(sessionId);
+		if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorStreamId())) {
+			JsonObject jsonObj = new JsonObject();
+			jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+					kurentoSession.compositeService.getMixMajorStreamId());
+			jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR.name());
+			mixFlowsArr.add(jsonObj);
+		}
+		if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
+			JsonObject mixJsonObj = new JsonObject();
+			mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+					kurentoSession.compositeService.getMixMajorShareStreamId());
+			mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
+			mixFlowsArr.add(mixJsonObj);
+
+			JsonObject shareJsonObj = new JsonObject();
+			shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+					kurentoSession.compositeService.getShareStreamId());
+			shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
+			mixFlowsArr.add(shareJsonObj);
+		}
+		result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, mixFlowsArr);
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 	}

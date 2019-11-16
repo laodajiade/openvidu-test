@@ -21,6 +21,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -29,6 +30,7 @@ import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -43,7 +45,6 @@ public class KurentoSession extends Session {
 	public static final int ASYNC_LATCH_TIMEOUT = 30;
 
 	private MediaPipeline pipeline;
-//	private Composite composite;
 	private CountDownLatch pipelineLatch = new CountDownLatch(1);
 	private Throwable pipelineCreationErrorCause;
 
@@ -52,6 +53,8 @@ public class KurentoSession extends Session {
 	private KurentoParticipantEndpointConfig kurentoEndpointConfig;
 
 	private final ConcurrentHashMap<String, String> filterStates = new ConcurrentHashMap<>();
+
+	public CompositeService compositeService;
 
 	private Object pipelineCreateLock = new Object();
 	private Object pipelineReleaseLock = new Object();
@@ -66,6 +69,7 @@ public class KurentoSession extends Session {
 		this.destroyKurentoClient = destroyKurentoClient;
 		this.kurentoSessionHandler = kurentoSessionHandler;
 		this.kurentoEndpointConfig = kurentoEndpointConfig;
+		this.compositeService = new CompositeService(sessionNotActive, pipeline);
 		log.debug("New SESSION instance with id '{}'", sessionId);
 	}
 
@@ -73,6 +77,12 @@ public class KurentoSession extends Session {
 	public void join(Participant participant) {
 		checkClosed();
 		createPipeline();
+
+		compositeService.createMajorComposite();
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+            compositeService.createMajorShareComposite();
+            compositeService.setExistSharing(true);
+        }
 
 		KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 				this.openviduConfig, this.recordingManager);
@@ -177,15 +187,21 @@ public class KurentoSession extends Session {
 	@Override
 	public boolean close(EndReason reason) {
 		if (!closed) {
-
-//			for (Participant participant : participants.values()) {
+		    boolean needCloaseMajorShareComposite = false;
 			for (Participant participant : getParticipants()) {
-				((KurentoParticipant) participant).releaseAllFilters();
-				((KurentoParticipant) participant).close(reason, true, 0);
+			    KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+			    if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+			        needCloaseMajorShareComposite = true;
+                }
+                kurentoParticipant.releaseAllFilters();
+                kurentoParticipant.close(reason, true, 0);
 			}
 
 			participants.clear();
-
+            compositeService.closeMajorComposite();
+            if (needCloaseMajorShareComposite) {
+				compositeService.closeMajorShareComposite();
+            }
 			closePipeline(null);
 
 			log.debug("Session {} closed", this.sessionId);
@@ -246,7 +262,7 @@ public class KurentoSession extends Session {
 		return this.pipeline;
 	}
 
-	private void createPipeline() {
+    private void createPipeline() {
 		synchronized (pipelineCreateLock) {
 			if (pipeline != null) {
 				return;
@@ -358,6 +374,8 @@ public class KurentoSession extends Session {
 		this.closePipeline(() -> {
 			log.info("Reseting process: media pipeline closed for active session {}", this.sessionId);
 			createPipeline();
+			/*createMajorComposite();
+			createMajorShareComposite();*/
 			try {
 				if (!pipelineLatch.await(20, TimeUnit.SECONDS)) {
 					throw new Exception("MediaPipleine was not created in 20 seconds");

@@ -18,9 +18,11 @@
 package io.openvidu.server.kurento.endpoint;
 
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.kurento.client.MediaPipeline;
+import io.openvidu.server.common.enums.StreamModeEnum;
+import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,22 +42,63 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 	private AtomicBoolean connectedToPublisher = new AtomicBoolean(false);
 
+	private HubPort majorHubPortOut = null;
+	private ListenerSubscription majorHubPortOutSubscription = null;
+
+	private HubPort majorShareHubPortOut = null;
+	private ListenerSubscription majorShareHubPortOutSubscription = null;
+
 	private PublisherEndpoint publisher = null;
 
 	public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
-			OpenviduConfig openviduConfig) {
+							  OpenviduConfig openviduConfig) {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
+
+		majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
+		majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
+
+		majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+		majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
 	}
 
-	public synchronized String subscribe(String sdpOffer, PublisherEndpoint publisher) {
+	public synchronized String subscribe(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
 		registerOnIceCandidateEventListener(publisher.getOwner().getParticipantPublicId());
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
-		publisher.connect(this.getEndpoint());
+		if (Objects.equals(StreamModeEnum.SFU_SHARING, streamMode)) {
+			publisher.connect(this.getEndpoint());
+		} else {
+			publisher.checkInnerConnect();
+			switch (streamMode) {
+				case MIX_MAJOR:
+					internalSinkConnect(majorHubPortOut, this.getEndpoint());
+					break;
+				case MIX_MAJOR_AND_SHARING:
+					internalSinkConnect(majorShareHubPortOut, this.getEndpoint());
+					break;
+			}
+		}
+
 		setConnectedToPublisher(true);
 		setPublisher(publisher);
 		this.createdAt = System.currentTimeMillis();
 		return sdpAnswer;
+	}
+
+	private void internalSinkConnect(final MediaElement source, final MediaElement sink) {
+		source.connect(sink, new Continuation<Void>() {
+			@Override
+			public void onSuccess(Void result) throws Exception {
+				log.debug("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
+						source.getId(), sink.getId());
+			}
+
+			@Override
+			public void onError(Throwable cause) throws Exception {
+				log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
+						source.getId(), sink.getId(), cause);
+			}
+		});
 	}
 
 	public boolean isConnectedToPublisher() {

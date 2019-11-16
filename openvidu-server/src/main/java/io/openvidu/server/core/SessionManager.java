@@ -27,6 +27,7 @@ import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
+import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.Conference;
@@ -107,7 +108,8 @@ public abstract class SessionManager {
 	public abstract void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
 			EndReason reason);
 
-	public abstract void subscribe(Participant participant, String senderName, String sdpOffer, Integer transactionId);
+	public abstract void subscribe(Participant participant, String senderName, StreamModeEnum streamMode,
+								   String sdpOffer, Integer transactionId);
 
 	public abstract void unsubscribe(Participant participant, String senderName, Integer transactionId);
 

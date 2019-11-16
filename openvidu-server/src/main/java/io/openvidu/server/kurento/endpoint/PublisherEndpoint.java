@@ -27,14 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import org.kurento.client.Continuation;
-import org.kurento.client.GenericMediaElement;
-import org.kurento.client.ListenerSubscription;
-import org.kurento.client.MediaElement;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.MediaType;
-import org.kurento.client.PassThrough;
-import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +56,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private PassThrough passThru = null;
 	private ListenerSubscription passThruSubscription = null;
 
+	private HubPort majorHubPort = null;
+	private ListenerSubscription majorHubPortSubscription = null;
+
+	private HubPort majorShareHubPort = null;
+	private ListenerSubscription majorShareHubPortSubscription = null;
+
 	private GenericMediaElement filter;
 	private Map<String, Set<String>> subscribersToFilterEvents = new ConcurrentHashMap<>();
 	private Map<String, ListenerSubscription> filterListeners = new ConcurrentHashMap<>();
@@ -74,21 +73,35 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
 
 	public PublisherEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
-			OpenviduConfig openviduConfig) {
+							 OpenviduConfig openviduConfig) {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
 	}
 
 	@Override
 	protected void internalEndpointInitialization(final CountDownLatch endpointLatch) {
 		super.internalEndpointInitialization(endpointLatch);
-		passThru = new PassThrough.Builder(getPipeline()).build();
-		passThruSubscription = registerElemErrListener(passThru);
+		if (isSharing()) {
+			passThru = new PassThrough.Builder(getPipeline()).build();
+			passThruSubscription = registerElemErrListener(passThru);
+			majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
+			majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+		} else {
+			majorHubPort = new HubPort.Builder(getMajorComposite()).build();
+			majorHubPortSubscription = registerElemErrListener(majorHubPort);
+		}
+
+
 	}
 
 	@Override
 	public synchronized void unregisterErrorListeners() {
 		super.unregisterErrorListeners();
-		unregisterElementErrListener(passThru, passThruSubscription);
+		if (isSharing()) {
+			unregisterElementErrListener(passThru, passThruSubscription);
+			unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
+		} else {
+			unregisterElementErrListener(majorHubPort, majorHubPortSubscription);
+		}
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
 		}
@@ -101,6 +114,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 	public synchronized Collection<MediaElement> getMediaElements() {
 		if (passThru != null) {
 			elements.put(passThru.getId(), passThru);
+		}
+		if (majorHubPort != null) {
+			elements.put(majorHubPort.getId(), majorHubPort);
+		}
+		if (majorShareHubPort != null) {
+			elements.put(majorShareHubPort.getId(), majorShareHubPort);
 		}
 		return elements.values();
 	}
@@ -204,6 +223,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 		return generateOffer();
 	}
 
+	public synchronized void checkInnerConnect() {
+		if (!connected) {
+			innerConnect();
+		}
+	}
+
 	public synchronized void connect(MediaElement sink) {
 		if (!connected) {
 			innerConnect();
@@ -215,15 +240,29 @@ public class PublisherEndpoint extends MediaEndpoint {
 		if (!connected) {
 			innerConnect();
 		}
-		internalSinkConnect(passThru, sink, type);
+        internalSinkConnect(passThru, sink, type);
 	}
 
 	public synchronized void disconnectFrom(MediaElement sink) {
-		internalSinkDisconnect(passThru, sink);
+		if (isSharing()) {
+			internalSinkDisconnect(passThru, sink);
+		} else {
+			internalSinkDisconnect(majorHubPort, sink);
+		}
+		if (getCompositeService().isExistSharing()) {
+			internalSinkDisconnect(majorShareHubPort, sink);
+		}
 	}
 
 	public synchronized void disconnectFrom(MediaElement sink, MediaType type) {
-		internalSinkDisconnect(passThru, sink, type);
+		if (isSharing()) {
+			internalSinkDisconnect(passThru, sink, type);
+		} else {
+			internalSinkDisconnect(majorHubPort, sink, type);
+		}
+		if (getCompositeService().isExistSharing()) {
+			internalSinkDisconnect(majorShareHubPort, sink, type);
+		}
 	}
 
 	/**
@@ -243,7 +282,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	}
 
 	/**
-	 * Same as {@link #apply(MediaElement)}, can specify the media type that will be
+	 * Same as {@link (MediaElement)}, can specify the media type that will be
 	 * streamed through the shaper element.
 	 *
 	 * @param shaper {@link MediaElement} that will be linked to the end of the
@@ -273,7 +312,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 			} else {
 				internalSinkConnect(this.getEndpoint(), shaper, type);
 			}
-			internalSinkConnect(shaper, passThru, type);
+			if (isSharing()) {
+				internalSinkConnect(shaper, passThru, type);
+				internalSinkConnect(shaper, majorShareHubPort, type);
+			} else {
+				internalSinkConnect(shaper, majorHubPort, type);
+			}
 		}
 		elementIds.addFirst(id);
 		elements.put(id, shaper);
@@ -347,7 +391,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		return (JsonElement) ((GenericMediaElement) this.filter).invoke(method, props);
 	}
 
-	public synchronized void mute(TrackType muteType) {
+	/*public synchronized void mute(TrackType muteType) {
 		MediaElement sink = passThru;
 		if (!elements.isEmpty()) {
 			String sinkId = elementIds.peekLast();
@@ -371,9 +415,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 			internalSinkDisconnect(this.getEndpoint(), sink, MediaType.VIDEO);
 			break;
 		}
-	}
+	}*/
 
-	public synchronized void unmute(TrackType muteType) {
+	/*public synchronized void unmute(TrackType muteType) {
 		MediaElement sink = passThru;
 		if (!elements.isEmpty()) {
 			String sinkId = elementIds.peekLast();
@@ -397,7 +441,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 			internalSinkConnect(this.getEndpoint(), sink, MediaType.VIDEO);
 			break;
 		}
-	}
+	}*/
 
 	private String getNext(String uid) {
 		int idx = elementIds.indexOf(uid);
@@ -439,7 +483,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 			current = prev;
 			prevId = getPrevious(prevId);
 		}
-		internalSinkConnect(current, passThru);
+		if (isSharing()) {
+			internalSinkConnect(current, passThru);
+		} else {
+			internalSinkConnect(current, majorHubPort);
+		}
+		if (getCompositeService().isExistSharing()) {
+			internalSinkConnect(current, majorShareHubPort);
+		}
 		connected = true;
 	}
 
