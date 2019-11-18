@@ -101,7 +101,7 @@ public class KurentoSession extends Session {
 			return connectionParticipants;
 		});
 
-		dealParticipantOrder(kurentoParticipant);
+		dealParticipantDefaultOrder(kurentoParticipant);
 
 		filterStates.forEach((filterId, state) -> {
 			log.info("Adding filter {}", filterId);

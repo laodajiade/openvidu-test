@@ -46,40 +46,43 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
             }
 
             boolean layoutModeChanged = Objects.equals(layoutModeEnum, conferenceSession.getLayoutMode());
+            if (!layoutModeChanged) {
+                this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+                return;
+            }
+
             JsonArray layouts = LayoutInitHandler.getLayoutByMode(layoutModeEnum);
             conferenceSession.setLayoutMode(layoutModeEnum);
             conferenceSession.setLayoutCoordinates(layouts);
 
             // json RPC notify KMS layout changed.
-            if (layoutModeChanged) {
-                KurentoSession kurentoSession = (KurentoSession) conferenceSession;
-                KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
-                Request<JsonObject> kmsRequest = new Request<>();
-                JsonObject params = new JsonObject();
-                params.addProperty("object", kurentoSession.getPipeline().getId());
-                params.addProperty("operation", "setLayout");
-                JsonArray layoutInfos = new JsonArray(50);
-                for (JsonElement jsonElement : layouts) {
-                    JsonObject temp = jsonElement.getAsJsonObject();
-                    JsonObject resultPart = temp.deepCopy();
-                    KurentoParticipant kurentoParticipant = (KurentoParticipant) conferenceSession.getParticipantByPublicId(temp.get("connectionId").getAsString());
-                    resultPart.addProperty("object", kurentoParticipant.getPublisher().getWebEndpoint().getId());
-                    resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
-                    resultPart.addProperty("onlineStatus", String.valueOf(cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid()).get("status")));
+            KurentoSession kurentoSession = (KurentoSession) conferenceSession;
+            KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
+            Request<JsonObject> kmsRequest = new Request<>();
+            JsonObject params = new JsonObject();
+            params.addProperty("object", kurentoSession.getPipeline().getId());
+            params.addProperty("operation", "setLayout");
+            JsonArray layoutInfos = new JsonArray(50);
+            for (JsonElement jsonElement : layouts) {
+                JsonObject temp = jsonElement.getAsJsonObject();
+                JsonObject resultPart = temp.deepCopy();
+                KurentoParticipant kurentoParticipant = (KurentoParticipant) conferenceSession.getParticipantByPublicId(temp.get("connectionId").getAsString());
+                resultPart.addProperty("object", kurentoParticipant.getPublisher().getWebEndpoint().getId());
+                resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
+                resultPart.addProperty("onlineStatus", String.valueOf(cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid()).get("status")));
 
-                    layoutInfos.add(resultPart);
-                }
-                params.add("layoutInfo", layoutInfos);
-                kmsRequest.setMethod("invoke");
-                kmsRequest.setParams(params);
-                try {
-                    kurentoClient.sendJsonRpcRequest(kmsRequest);
-                } catch (IOException e) {
-                    log.error("Exception:\n", e);
-                    this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
-                    return;
-                }
+                layoutInfos.add(resultPart);
+            }
+            params.add("layoutInfo", layoutInfos);
+            kmsRequest.setMethod("invoke");
+            kmsRequest.setParams(params);
+            try {
+                kurentoClient.sendJsonRpcRequest(kmsRequest);
+            } catch (IOException e) {
+                log.error("Exception:\n", e);
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
+                return;
             }
 
             // broadcast the changes of layout

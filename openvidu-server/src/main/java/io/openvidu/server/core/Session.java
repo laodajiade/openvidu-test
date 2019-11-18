@@ -362,7 +362,7 @@ public class Session implements SessionInterface {
 		return majorShareMixLinkedArr;
 	}
 
-	protected void dealParticipantOrder(KurentoParticipant kurentoParticipant) {
+	protected void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
 		if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
 			JsonArray newMajorMixLinkedArr = new JsonArray(50);
 			int size = majorShareMixLinkedArr.size();
@@ -401,10 +401,4 @@ public class Session implements SessionInterface {
 		return result;
 	}
 
-    public void replacePartLayout(String target, String replaceMent, boolean shareInclude) {
-        if (shareInclude) {
-
-        }
-
-    }
 }
