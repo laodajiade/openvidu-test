@@ -102,7 +102,8 @@ public class Session implements SessionInterface {
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
 
-		this.layoutMode = LayoutModeEnum.DEFAULT;
+		this.layoutMode = LayoutModeEnum.FOUR;
+		this.setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutMode));
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
