@@ -191,7 +191,7 @@ public class ProtocolElements {
 	public static final String SETCONFERENCELAYOUT_SHAREINCLUDE_PARAM = "shareInclude";
 
 	public static final String CONFERENCELAYOUTCHANGED_NOTIFY = "conferenceLayoutChanged";
-	public static final String CONFERENCELAYOUTCHANGED_NOTIFY_PARAM = "mode";
+	public static final String CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM = "mode";
 	public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM = "partLinkedList";
 	public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLISTSHAREINCLUDE_PARAM = "partLinkedListShareInclude";
 

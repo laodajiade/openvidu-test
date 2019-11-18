@@ -30,10 +30,12 @@ import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.recording.service.RecordingManager;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.Objects;
@@ -45,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Session implements SessionInterface {
 
 	protected OpenviduConfig openviduConfig;
@@ -59,6 +62,7 @@ public class Session implements SessionInterface {
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected LayoutModeEnum layoutMode;
+	protected JsonArray layoutCoordinates;
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
 	protected int delayConfCnt;
@@ -130,6 +134,14 @@ public class Session implements SessionInterface {
 
 	public void setLayoutMode(LayoutModeEnum layoutMode) {
 		this.layoutMode = layoutMode;
+	}
+
+	public JsonArray getLayoutCoordinates() {
+		return layoutCoordinates;
+	}
+
+	public void setLayoutCoordinates(JsonArray layoutCoordinates) {
+		this.layoutCoordinates = layoutCoordinates;
 	}
 
 	public LayoutChangeTypeEnum getLayoutChangeTypeEnum() {
@@ -349,23 +361,43 @@ public class Session implements SessionInterface {
 		return majorShareMixLinkedArr;
 	}
 
-	protected void dealParticipantOrder(String participantPublicId, StreamType streamType) {
-    	majorMixLinkedArr.add(participantPublicId);
-		if (Objects.equals(StreamType.SHARING, streamType)) {
+	protected void dealParticipantOrder(KurentoParticipant kurentoParticipant) {
+		if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
 			JsonArray newMajorMixLinkedArr = new JsonArray(50);
 			int size = majorShareMixLinkedArr.size();
 			for (int i = 0; i < size; i++) {
-				if (i == 2 && Objects.equals(StreamType.SHARING, streamType)) {
-					newMajorMixLinkedArr.add(participantPublicId);
+				if (i == 1) {
+					newMajorMixLinkedArr.add(getPartLayoutInfo(1, StreamType.SHARING.name(),
+							kurentoParticipant.getParticipantPublicId()));
+
+					JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
+					newMajorMixLinkedArr.add(getPartLayoutInfo(2, originObj.get("streamType").getAsString(),
+							originObj.get("connectionId").getAsString()));
 				} else {
-					newMajorMixLinkedArr.add(majorShareMixLinkedArr.get(i));
+					JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
+					int k = (i == 0) ? i : (i + 1);
+					newMajorMixLinkedArr.add(getPartLayoutInfo(k, originObj.get("streamType").getAsString(),
+							originObj.get("connectionId").getAsString()));
 				}
 			}
-
 			majorShareMixLinkedArr = newMajorMixLinkedArr;
 		} else {
-			majorShareMixLinkedArr.add(participantPublicId);
+			majorMixLinkedArr.add(getPartLayoutInfo(majorMixLinkedArr.size(), StreamType.MAJOR.name(),
+					kurentoParticipant.getParticipantPublicId()));
+
+			majorShareMixLinkedArr.add(getPartLayoutInfo(majorShareMixLinkedArr.size(), StreamType.MAJOR.name(),
+					kurentoParticipant.getParticipantPublicId()));
 		}
+
+		log.info("majorMixLinkedArr:{}", majorMixLinkedArr.toString());
+        log.info("majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+	}
+
+	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {
+    	JsonObject result = layoutCoordinates.get(layoutIndex).getAsJsonObject().deepCopy();
+    	result.addProperty("streamType", streamType);
+		result.addProperty("connectionId", publicId);
+		return result;
 	}
 
     public void replacePartLayout(String target, String replaceMent, boolean shareInclude) {

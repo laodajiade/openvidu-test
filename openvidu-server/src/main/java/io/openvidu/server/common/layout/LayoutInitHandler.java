@@ -24,7 +24,7 @@ public class LayoutInitHandler {
     @Value("${conference.layout}")
     private String conferenceLayouts;
 
-    private ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(6);
+    private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(6);
 
     @PostConstruct
     public void init() {
@@ -65,6 +65,10 @@ public class LayoutInitHandler {
         }
 
         log.info("layout init result:{}" ,layoutMap.toString());
+    }
+
+    public static JsonArray getLayoutByMode(LayoutModeEnum layoutModeEnum) {
+        return layoutMap.get(layoutModeEnum);
     }
 
 

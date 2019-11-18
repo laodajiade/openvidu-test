@@ -94,7 +94,8 @@ public class SessionEventsHandler {
 		JsonArray resultArray = new JsonArray();
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
 		for (JsonElement jsonElement : session.getMajorShareMixLinkedArr()) {
-			Participant existingParticipant = session.getParticipantByPublicId(jsonElement.getAsString());
+			JsonObject linkedInfo = jsonElement.getAsJsonObject();
+			Participant existingParticipant = session.getParticipantByPublicId(linkedInfo.get("connectionId").getAsString());
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
 					existingParticipant.getParticipantPublicId());
@@ -110,6 +111,8 @@ public class SessionEventsHandler {
 					existingParticipant.getAppShowName());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,
 					existingParticipant.getAppShowDesc());
+			participantJson.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
+					existingParticipant.getStreamType().name());
 			RpcConnection rpc = rpcNotificationService.getRpcConnection(existingParticipant.getParticipantPrivateId());
 			if (Objects.isNull(rpc)) {
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
@@ -125,7 +128,7 @@ public class SessionEventsHandler {
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
 					existingParticipant.getFullMetadata());
 
-			if (existingParticipant.isStreaming()) {
+			/*if (existingParticipant.isStreaming()) {
 
 				KurentoParticipant kParticipant = (KurentoParticipant) existingParticipant;
 
@@ -160,7 +163,7 @@ public class SessionEventsHandler {
 				JsonArray streamsArray = new JsonArray();
 				streamsArray.add(stream);
 				participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
-			}
+			}*/
 
 			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
 			// openvidu-browser in newly joined participants
@@ -204,6 +207,7 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
+		result.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
 		result.add("value", resultArray);
 
 		JsonArray mixFlowsArr = new JsonArray(3);
@@ -229,6 +233,11 @@ public class SessionEventsHandler {
 			mixFlowsArr.add(shareJsonObj);
 		}
 		result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, mixFlowsArr);
+
+		JsonObject layoutInfoObj = new JsonObject();
+		layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
+		layoutInfoObj.add("linkedCoordinates", session.getMajorShareMixLinkedArr());
+        result.add("layoutInfo", layoutInfoObj);
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 	}
