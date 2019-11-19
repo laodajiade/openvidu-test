@@ -606,7 +606,8 @@ public class KurentoSessionManager extends SessionManager {
 		try {
 			audioActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
 			videoActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
-			typeOfVideo = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
+			typeOfVideo = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
+			if (Objects.isNull(typeOfVideo)) typeOfVideo = "CAMERA";
 			videoDimensions = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);
 			frameRate = RpcAbstractHandler.getIntParam(request, ProtocolElements.PUBLISHVIDEO_FRAMERATE_PARAM);
 		} catch (RuntimeException noParameterFound) {

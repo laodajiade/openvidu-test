@@ -92,7 +92,7 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsString();
     }
 
-    protected static String getStringOptionalParam(Request<JsonObject> request, String key) {
+    public static String getStringOptionalParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             return null;
         }
