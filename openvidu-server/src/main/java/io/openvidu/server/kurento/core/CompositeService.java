@@ -28,9 +28,8 @@ public class CompositeService {
     private String mixMajorShareStreamId;
     private String shareStreamId;
 
-    public CompositeService(Session session, MediaPipeline pipeline) {
+    public CompositeService(Session session) {
         this.session = session;
-        this.pipeline = pipeline;
     }
 
 
@@ -115,5 +114,13 @@ public class CompositeService {
 
     public void setShareStreamId(String shareStreamId) {
         this.shareStreamId = shareStreamId;
+    }
+
+    public MediaPipeline getPipeline() {
+        return pipeline;
+    }
+
+    public void setPipeline(MediaPipeline pipeline) {
+        this.pipeline = pipeline;
     }
 }

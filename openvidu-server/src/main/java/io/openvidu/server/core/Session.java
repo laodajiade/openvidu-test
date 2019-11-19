@@ -65,7 +65,7 @@ public class Session implements SessionInterface {
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected LayoutModeEnum layoutMode;
-	protected JsonArray layoutCoordinates;
+	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.FOUR);
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
 	protected int delayConfCnt;
@@ -106,7 +106,6 @@ public class Session implements SessionInterface {
 		this.recordingManager = recordingManager;
 
 		this.layoutMode = LayoutModeEnum.FOUR;
-		this.setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutMode));
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
@@ -396,7 +395,7 @@ public class Session implements SessionInterface {
 		log.info("dealParticipantDefaultOrder majorMixLinkedArr:{}", majorMixLinkedArr.toString());
         log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 
-        invokeKmsConferenceLayout();
+//        invokeKmsConferenceLayout();
 	}
 
 	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {
