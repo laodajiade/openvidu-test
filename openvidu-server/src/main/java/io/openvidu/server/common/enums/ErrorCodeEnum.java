@@ -32,9 +32,9 @@ public enum ErrorCodeEnum {
     ROOM_CAPACITY_LIMITED(13009, "room capacity limited"),
     USER_ALREADY_ONLINE(13010, "user already online"),
     CONFERENCE_TOO_LONG(13011, "conference too long"),
+    NOT_EXIST_SHARING_FLOW(13012, "not exists sharing flow"),
 
     DEVICE_NOT_FOUND(13100, "device not found");
-
 
 
     private int code;

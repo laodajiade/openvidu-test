@@ -266,7 +266,8 @@ public class KurentoParticipant extends Participant {
 				senderName, this.session.getSessionId());
 		log.trace("PARTICIPANT {}: SdpOffer for {} is {}", this.getParticipantPublicId(), senderName, sdpOffer);
 
-		if (senderName.equals(this.getParticipantPublicId())) {
+		if (!Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) && !Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING,
+				streamMode) && senderName.equals(this.getParticipantPublicId())) {
 			log.warn("PARTICIPANT {}: trying to configure loopback by subscribing", this.getParticipantPublicId());
 			throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE, "Can loopback only when publishing media");
 		}
