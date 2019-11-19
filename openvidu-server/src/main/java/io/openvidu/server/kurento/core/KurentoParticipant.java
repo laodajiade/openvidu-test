@@ -129,12 +129,12 @@ public class KurentoParticipant extends Participant {
 
 		if (Objects.equals(StreamType.MAJOR, getStreamType())) {
 			if (Objects.isNull(this.session.compositeService.getMixMajorStreamId())) {
-				String mixMajorStreamId = RandomStringUtils.random(8, true, false).toUpperCase()
+				String mixMajorStreamId = RandomStringUtils.random(32, true, true)
 						+ "_" + "MAJOR-MIX";
 				this.session.compositeService.setMixMajorStreamId(mixMajorStreamId);
 			}
 		} else {
-			String mixMajorShareStreamId = RandomStringUtils.random(8, true, false).toUpperCase()
+			String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
 					+ "_" + "MAJOR-SHARE-MIX";
 			this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
 			this.session.compositeService.setShareStreamId(publisherStreamId);
