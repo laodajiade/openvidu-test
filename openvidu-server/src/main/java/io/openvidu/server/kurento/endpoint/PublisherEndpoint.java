@@ -596,6 +596,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 		this.mediaOptions = mediaOptions;
 	}
 
+	public HubPort getMajorHubPort() {
+		return majorHubPort;
+	}
+
+	public HubPort getMajorShareHubPort() {
+		return majorShareHubPort;
+	}
+
 	@Override
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();

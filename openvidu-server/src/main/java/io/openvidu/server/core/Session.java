@@ -28,6 +28,7 @@ import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
@@ -442,10 +443,10 @@ public class Session implements SessionInterface {
         KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
         try {
             kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                    majorMixLinkedArr));
+                    majorMixLinkedArr, StreamModeEnum.MIX_MAJOR, kurentoClient.getSessionId()));
             if (kurentoSession.compositeService.isExistSharing()) {
                 kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                        majorShareMixLinkedArr));
+                        majorShareMixLinkedArr, StreamModeEnum.MIX_MAJOR_AND_SHARING, kurentoClient.getSessionId()));
             }
         } catch (IOException e) {
             log.error("Exception:\n", e);
@@ -455,25 +456,31 @@ public class Session implements SessionInterface {
         return 1;
     }
 
-    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr) {
+    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr,
+														   StreamModeEnum streamModeEnum, String sessionId) {
         Request<JsonObject> kmsRequest = new Request<>();
         JsonObject params = new JsonObject();
         params.addProperty("object", pipelineId);
         params.addProperty("operation", "setLayout");
+        params.addProperty("sessionId", sessionId);
         JsonArray layoutInfos = new JsonArray(50);
         for (JsonElement jsonElement : linkedArr) {
             JsonObject temp = jsonElement.getAsJsonObject();
             JsonObject resultPart = temp.deepCopy();
             KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(temp
                     .get("connectionId").getAsString());
-            resultPart.addProperty("object", kurentoParticipant.getPublisher().getWebEndpoint().getId());
+            resultPart.addProperty("object", Objects.equals(StreamModeEnum.MIX_MAJOR, streamModeEnum) ?
+					kurentoParticipant.getPublisher().getMajorHubPort().getId() :
+					kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
             resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
             resultPart.addProperty("onlineStatus",
                     kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
 
             layoutInfos.add(resultPart);
         }
-        params.add("layoutInfo", layoutInfos);
+        JsonObject operationParams = new JsonObject();
+        operationParams.add("layoutInfo", layoutInfos);
+        params.add("operationParams", operationParams);
         kmsRequest.setMethod("invoke");
         kmsRequest.setParams(params);
 
