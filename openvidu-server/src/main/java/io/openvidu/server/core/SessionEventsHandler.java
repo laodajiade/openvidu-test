@@ -303,15 +303,15 @@ public class SessionEventsHandler {
         params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 		for (Participant p : participants) {
-			String publicId = alreayNotifyRPC.putIfAbsent(p.getParticipantPrivateId(), p.getParticipantPublicId());
-
-			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId()) ||
-					!Objects.isNull(publicId)) {
-				continue;
-			} else {
+//			String publicId = alreayNotifyRPC.putIfAbsent(p.getParticipantPrivateId(), p.getParticipantPublicId());
+//
+//			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId()) ||
+//					!Objects.isNull(publicId)) {
+//				continue;
+//			} else {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
-			}
+//			}
 		}
 	}
 
