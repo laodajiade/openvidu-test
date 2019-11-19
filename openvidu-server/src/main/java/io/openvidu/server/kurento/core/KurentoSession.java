@@ -69,7 +69,7 @@ public class KurentoSession extends Session {
 		this.destroyKurentoClient = destroyKurentoClient;
 		this.kurentoSessionHandler = kurentoSessionHandler;
 		this.kurentoEndpointConfig = kurentoEndpointConfig;
-		this.compositeService = new CompositeService(sessionNotActive, pipeline);
+		this.compositeService = new CompositeService(sessionNotActive);
 		log.debug("New SESSION instance with id '{}'", sessionId);
 	}
 
@@ -77,6 +77,7 @@ public class KurentoSession extends Session {
 	public void join(Participant participant) {
 		checkClosed();
 		createPipeline();
+		this.compositeService.setPipeline(this.getPipeline());
 
 		compositeService.createMajorComposite();
 		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {

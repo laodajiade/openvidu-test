@@ -96,6 +96,7 @@ public class SessionEventsHandler {
 		for (JsonElement jsonElement : session.getMajorShareMixLinkedArr()) {
 			JsonObject linkedInfo = jsonElement.getAsJsonObject();
 			Participant existingParticipant = session.getParticipantByPublicId(linkedInfo.get("connectionId").getAsString());
+			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
 					existingParticipant.getParticipantPublicId());

@@ -231,6 +231,9 @@ public class KurentoParticipant extends Participant {
 				loopbackConnectionType);
 		this.streaming = true;
 
+		// kms invoke
+		session.invokeKmsConferenceLayout();
+
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);
 		log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
