@@ -422,13 +422,13 @@ public class Session implements SessionInterface {
             if (i < majorSize) {
                 JsonObject majorJson = majorMixLinkedArr.get(i).getAsJsonObject();
                 newMajorMixLinkedArr.add(getPartLayoutInfo(i, majorJson.get("streamType").getAsString(),
-                        majorJson.get("streamType").getAsString()));
+                        majorJson.get("connectionId").getAsString()));
             }
 
             if (i < majorShareSize) {
                 JsonObject majorShareJson = majorShareMixLinkedArr.get(i).getAsJsonObject();
                 newMajorShareMixLinkedArr.add(getPartLayoutInfo(i, majorShareJson.get("streamType").getAsString(),
-                        majorShareJson.get("streamType").getAsString()));
+                        majorShareJson.get("connectionId").getAsString()));
             }
         }
 
