@@ -53,10 +53,10 @@ public class LayoutInitHandler {
                     x = +widthDiv * j + space;
 
                     JsonObject obj = new JsonObject();
-                    obj.addProperty("left:", x);
-                    obj.addProperty("top:", y);
-                    obj.addProperty("width:", width);
-                    obj.addProperty("height:", height);
+                    obj.addProperty("left", x);
+                    obj.addProperty("top", y);
+                    obj.addProperty("width", width);
+                    obj.addProperty("height", height);
                     layouts.add(obj);
                 }
             }
