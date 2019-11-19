@@ -211,29 +211,7 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
 		result.add("value", resultArray);
 
-		JsonArray mixFlowsArr = new JsonArray(3);
-		KurentoSession kurentoSession = (KurentoSession) session;
-		if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorStreamId())) {
-			JsonObject jsonObj = new JsonObject();
-			jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-					kurentoSession.compositeService.getMixMajorStreamId());
-			jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR.name());
-			mixFlowsArr.add(jsonObj);
-		}
-		if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
-			JsonObject mixJsonObj = new JsonObject();
-			mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-					kurentoSession.compositeService.getMixMajorShareStreamId());
-			mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
-			mixFlowsArr.add(mixJsonObj);
-
-			JsonObject shareJsonObj = new JsonObject();
-			shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-					kurentoSession.compositeService.getShareStreamId());
-			shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
-			mixFlowsArr.add(shareJsonObj);
-		}
-		result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, mixFlowsArr);
+		result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 
 		JsonObject layoutInfoObj = new JsonObject();
 		layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
@@ -303,7 +281,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM, participant.getAppShowName());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM, participant.getAppShowDesc());
-		JsonObject stream = new JsonObject();
+		/*JsonObject stream = new JsonObject();
 
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, streamId);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, participant.getStreamType().name());
@@ -320,8 +298,9 @@ public class SessionEventsHandler {
 
 		JsonArray streamsArray = new JsonArray();
 		streamsArray.add(stream);
-		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);
+		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);*/
 
+        params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<String, String>();
 		for (Participant p : participants) {
 			String publicId = alreayNotifyRPC.putIfAbsent(p.getParticipantPrivateId(), p.getParticipantPublicId());
@@ -335,6 +314,33 @@ public class SessionEventsHandler {
 			}
 		}
 	}
+
+	private JsonArray getMixFlowArr(String sessionId) {
+        Session session = sessionManager.getSession(sessionId);
+        JsonArray mixFlowsArr = new JsonArray(3);
+        KurentoSession kurentoSession = (KurentoSession) session;
+        if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorStreamId())) {
+            JsonObject jsonObj = new JsonObject();
+            jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+                    kurentoSession.compositeService.getMixMajorStreamId());
+            jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR.name());
+            mixFlowsArr.add(jsonObj);
+        }
+        if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
+            JsonObject mixJsonObj = new JsonObject();
+            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+                    kurentoSession.compositeService.getMixMajorShareStreamId());
+            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
+            mixFlowsArr.add(mixJsonObj);
+
+            JsonObject shareJsonObj = new JsonObject();
+            shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+                    kurentoSession.compositeService.getShareStreamId());
+            shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
+            mixFlowsArr.add(shareJsonObj);
+        }
+        return mixFlowsArr;
+    }
 
 	public void onUnpublishMedia(Participant participant, Set<Participant> participants, Participant moderator,
 			Integer transactionId, OpenViduException error, EndReason reason) {
