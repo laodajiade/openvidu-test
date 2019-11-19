@@ -393,8 +393,7 @@ public class KurentoParticipant extends Participant {
 	 */
 	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
-				this.getPipeline(), this.openviduConfig);
-		subscriberEndpoint.setCompositeService(this.session.compositeService);
+				this.getPipeline(), this.session.compositeService, this.openviduConfig);
 
 		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {

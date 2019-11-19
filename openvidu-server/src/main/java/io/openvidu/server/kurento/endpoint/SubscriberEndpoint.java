@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.kurento.core.CompositeService;
 import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,14 +52,16 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	private PublisherEndpoint publisher = null;
 
 	public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
-							  OpenviduConfig openviduConfig) {
+							  CompositeService compositeService, OpenviduConfig openviduConfig) {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
-
+		this.setCompositeService(compositeService);
 		majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
 		majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
 
-		majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
-		majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
+		if (compositeService.isExistSharing()) {
+			majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+			majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
+		}
 	}
 
 	public synchronized String subscribe(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
