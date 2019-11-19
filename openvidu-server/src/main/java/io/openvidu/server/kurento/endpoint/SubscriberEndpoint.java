@@ -65,7 +65,9 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	}
 
 	public synchronized String subscribe(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
-		registerOnIceCandidateEventListener(publisher.getOwner().getParticipantPublicId());
+		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) ?
+				publisher.getOwner().getParticipantPublicId() : (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) ?
+				getCompositeService().getMixMajorStreamId() : getCompositeService().getMixMajorShareStreamId()));
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
 		if (Objects.equals(StreamModeEnum.SFU_SHARING, streamMode)) {
