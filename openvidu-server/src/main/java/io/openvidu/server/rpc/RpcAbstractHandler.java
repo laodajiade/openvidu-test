@@ -127,7 +127,7 @@ public abstract class RpcAbstractHandler {
         }
     }
 
-    protected static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
+    public static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             return null;
         }
