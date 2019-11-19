@@ -401,6 +401,7 @@ public class Session implements SessionInterface {
 
 	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {
     	JsonObject result = layoutCoordinates.get(layoutIndex).getAsJsonObject().deepCopy();
+		log.info("layoutCoordinates.size{}", layoutCoordinates.size(), "layoutIndex{}", layoutIndex);
     	result.addProperty("streamType", streamType);
 		result.addProperty("connectionId", publicId);
 		return result;
@@ -410,6 +411,7 @@ public class Session implements SessionInterface {
         setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutModeEnum));
 
         int size = layoutCoordinates.size();
+
         int majorSize = majorMixLinkedArr.size();
         int majorShareSize = majorShareMixLinkedArr.size();
         JsonArray newMajorMixLinkedArr = new JsonArray(50);
