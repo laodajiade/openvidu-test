@@ -61,10 +61,8 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
             notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, layoutModeEnum.getMode());
             notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
 
-            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p -> {
-                if (!Objects.equals(p.getParticipantPrivateId(), rpcConnection.getParticipantPrivateId()))
-                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
-            });
+            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
+                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult));
 
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         }
