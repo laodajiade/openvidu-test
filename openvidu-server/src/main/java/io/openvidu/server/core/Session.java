@@ -28,7 +28,6 @@ import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
@@ -445,10 +444,10 @@ public class Session implements SessionInterface {
         KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
         try {
             kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                    majorMixLinkedArr, StreamModeEnum.MIX_MAJOR, kurentoClient.getSessionId()));
+                    majorMixLinkedArr, kurentoClient.getSessionId()));
             if (kurentoSession.compositeService.isExistSharing()) {
                 kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                        majorShareMixLinkedArr, StreamModeEnum.MIX_MAJOR_AND_SHARING, kurentoClient.getSessionId()));
+                        majorShareMixLinkedArr, kurentoClient.getSessionId()));
             }
         } catch (IOException e) {
             log.error("Exception:\n", e);
@@ -458,8 +457,7 @@ public class Session implements SessionInterface {
         return 1;
     }
 
-    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr,
-														   StreamModeEnum streamModeEnum, String sessionId) {
+    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId) {
         Request<JsonObject> kmsRequest = new Request<>();
         JsonObject params = new JsonObject();
         params.addProperty("object", pipelineId);
@@ -471,7 +469,7 @@ public class Session implements SessionInterface {
             JsonObject resultPart = temp.deepCopy();
             KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(temp
                     .get("connectionId").getAsString());
-            resultPart.addProperty("object", Objects.equals(StreamModeEnum.MIX_MAJOR, streamModeEnum) ?
+            resultPart.addProperty("object", Objects.equals(StreamType.MAJOR, kurentoParticipant.getStreamType()) ?
 					kurentoParticipant.getPublisher().getMajorHubPort().getId() :
 					kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
             resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
