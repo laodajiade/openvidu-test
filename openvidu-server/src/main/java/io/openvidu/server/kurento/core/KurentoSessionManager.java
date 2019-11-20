@@ -434,7 +434,7 @@ public class KurentoSessionManager extends SessionManager {
 						"User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
 			}
 
-			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer);
+			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
 			if (sdpAnswer == null) {
 				throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 						"Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()

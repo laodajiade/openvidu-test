@@ -27,6 +27,7 @@ import java.util.function.Function;
 
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.Continuation;
 import org.kurento.client.ErrorEvent;
@@ -259,8 +260,11 @@ public class KurentoParticipant extends Participant {
 				this.getParticipantPublicId());
 	}
 
-	public String receiveMediaFrom(Participant sender, StreamModeEnum streamMode, String sdpOffer) {
-		final String senderName = sender.getParticipantPublicId();
+	public String receiveMediaFrom(Participant sender, StreamModeEnum streamMode, String sdpOffer, String externalSenderName) {
+		String senderName = sender.getParticipantPublicId();
+		if (!StringUtils.isEmpty(externalSenderName)) {
+			senderName = externalSenderName;
+		}
 
 		log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getParticipantPublicId(),
 				senderName, this.session.getSessionId());

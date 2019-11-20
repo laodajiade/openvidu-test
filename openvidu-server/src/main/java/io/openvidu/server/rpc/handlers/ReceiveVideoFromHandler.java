@@ -32,7 +32,7 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
         }
 
         String senderName = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SENDER_PARAM);
-        senderName = senderName.substring(0, senderName.indexOf("_"));
+        senderName = senderName.substring(0, senderName.lastIndexOf("_"));
         String sdpOffer = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM);
         StreamModeEnum streamMode = StreamModeEnum.valueOf(getStringParam(request,
                 ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM));
