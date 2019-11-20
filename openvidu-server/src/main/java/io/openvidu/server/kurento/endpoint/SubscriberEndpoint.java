@@ -45,11 +45,11 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 	private AtomicBoolean connectedToPublisher = new AtomicBoolean(false);
 
-	private HubPort majorHubPortOut = null;
-	private ListenerSubscription majorHubPortOutSubscription = null;
+//	private HubPort majorHubPortOut = null;
+//	private ListenerSubscription majorHubPortOutSubscription = null;
 
-	private HubPort majorShareHubPortOut = null;
-	private ListenerSubscription majorShareHubPortOutSubscription = null;
+//	private HubPort majorShareHubPortOut = null;
+//	private ListenerSubscription majorShareHubPortOutSubscription = null;
 
 	private PublisherEndpoint publisher = null;
 
@@ -57,15 +57,15 @@ public class SubscriberEndpoint extends MediaEndpoint {
 							  CompositeService compositeService, OpenviduConfig openviduConfig) {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
 		this.setCompositeService(compositeService);
-		majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
-		log.info("Sub EP create majorHubPortOut.");
-		majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
-
-		if (compositeService.isExistSharing()) {
-			majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
-			log.info("Sub EP create majorShareHubPortOut.");
-			majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
-		}
+//		majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
+//		log.info("Sub EP create majorHubPortOut.");
+//		majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
+//
+//		if (compositeService.isExistSharing()) {
+//			majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+//			log.info("Sub EP create majorShareHubPortOut.");
+//			majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
+//		}
 	}
 
 	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
@@ -80,10 +80,10 @@ public class SubscriberEndpoint extends MediaEndpoint {
 			publisher.checkInnerConnect();
 			switch (streamMode) {
 				case MIX_MAJOR:
-					internalSinkConnect(majorHubPortOut, this.getEndpoint(), MediaType.VIDEO);
+					internalSinkConnect(getCompositeService().getMajorHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
 					break;
 				case MIX_MAJOR_AND_SHARING:
-					internalSinkConnect(majorShareHubPortOut, this.getEndpoint(), MediaType.VIDEO);
+					internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
 					break;
 			}
 		}
