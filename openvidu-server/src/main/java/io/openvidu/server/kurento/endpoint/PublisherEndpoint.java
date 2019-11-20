@@ -84,9 +84,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 			passThru = new PassThrough.Builder(getPipeline()).build();
 			passThruSubscription = registerElemErrListener(passThru);
 			majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
+			log.info("Pub EP create majorShareHubPort.");
 			majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
 		} else {
 			majorHubPort = new HubPort.Builder(getMajorComposite()).build();
+			log.info("Pub EP create majorHubPort.");
 			majorHubPortSubscription = registerElemErrListener(majorHubPort);
 		}
 
@@ -214,7 +216,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		default:
 			throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE, "Sdp type not supported: " + sdpType);
 		}
-		gatherCandidates();
+//		gatherCandidates();
 		this.createdAt = System.currentTimeMillis();
 		return sdpResponse;
 	}

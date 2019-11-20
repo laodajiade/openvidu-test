@@ -56,10 +56,12 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
 		this.setCompositeService(compositeService);
 		majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
+		log.info("Sub EP create majorHubPortOut.");
 		majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
 
 		if (compositeService.isExistSharing()) {
 			majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+			log.info("Sub EP create majorShareHubPortOut.");
 			majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
 		}
 	}

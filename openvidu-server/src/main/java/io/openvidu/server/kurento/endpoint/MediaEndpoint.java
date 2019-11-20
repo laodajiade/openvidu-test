@@ -186,6 +186,7 @@ public abstract class MediaEndpoint {
 		SdpEndpoint old = this.getEndpoint();
 		if (old == null) {
 			internalEndpointInitialization(endpointLatch);
+			log.info("MediaEndpoint createEndpoint when old SdpEndpoint is null");
 		} else {
 			endpointLatch.countDown();
 		}
@@ -457,7 +458,7 @@ public abstract class MediaEndpoint {
 	 * If supported, it instructs the internal endpoint to start gathering
 	 * {@link IceCandidate}s.
 	 */
-	protected void gatherCandidates() throws OpenViduException {
+	public void gatherCandidates() throws OpenViduException {
 		if (!this.isWeb()) {
 			return;
 		}

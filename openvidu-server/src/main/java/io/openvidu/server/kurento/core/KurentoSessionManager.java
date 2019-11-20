@@ -372,6 +372,7 @@ public class KurentoSessionManager extends SessionManager {
 					kParticipant.getPublisher().createdAt(), kSession.getSessionId(), mediaOptions, sdpAnswer,
 					participants, transactionId, null);
 		}
+		kParticipant.getPublisher().gatherCandidates();
 	}
 
 	@Override
