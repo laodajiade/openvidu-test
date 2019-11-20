@@ -38,7 +38,7 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                 return;
             }
 
-            boolean layoutModeChanged = Objects.equals(layoutModeEnum, conferenceSession.getLayoutMode());
+            boolean layoutModeChanged = !Objects.equals(layoutModeEnum, conferenceSession.getLayoutMode());
             if (!layoutModeChanged) {
                 this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                 return;
