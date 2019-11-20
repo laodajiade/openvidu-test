@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 @Getter
 @AllArgsConstructor
 public enum LayoutModeEnum {
-    DEFAULT(0),
+//    DEFAULT(0),
     FOUR(4),
     SIX(6),
     NINE(9),
