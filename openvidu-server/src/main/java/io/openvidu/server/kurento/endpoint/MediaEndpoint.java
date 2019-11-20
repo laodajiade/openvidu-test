@@ -75,9 +75,6 @@ public abstract class MediaEndpoint {
 
 	private CompositeService compositeService;
 
-	private Composite majorComposite = null;
-	private Composite majorShareComposite = null;
-
 	private final List<IceCandidate> receivedCandidateList = new LinkedList<IceCandidate>();
 	private LinkedList<IceCandidate> candidates = new LinkedList<IceCandidate>();
 
