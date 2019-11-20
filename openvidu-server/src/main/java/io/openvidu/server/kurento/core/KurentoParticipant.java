@@ -327,7 +327,7 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
 		try {
-			String sdpAnswer = subscriber.subscribe(sdpOffer, kSender.getPublisher(), streamMode);
+			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, kSender.getPublisher(), streamMode);
 			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
 			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
 					senderName, this.session.getSessionId());
@@ -336,6 +336,7 @@ public class KurentoParticipant extends Participant {
 				endpointConfig.getCdr().recordNewSubscriber(this, this.session.getSessionId(),
 						sender.getPublisherStreamId(), sender.getParticipantPublicId(), subscriber.createdAt());
 			}
+			subscriber.subscribeAudio(this.getPublisher());
 
 			return sdpAnswer;
 		} catch (KurentoServerException e) {
@@ -450,6 +451,7 @@ public class KurentoParticipant extends Participant {
 			for (MediaElement el : publisher.getMediaElements()) {
 				releaseElement(getParticipantPublicId(), el);
 			}
+			publisher.closeAudioComposite();
 			releaseElement(getParticipantPublicId(), publisher.getEndpoint());
 			this.streaming = false;
 			this.session.deregisterPublisher();

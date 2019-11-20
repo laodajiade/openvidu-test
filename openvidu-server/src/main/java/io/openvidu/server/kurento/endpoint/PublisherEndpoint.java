@@ -17,16 +17,12 @@
 
 package io.openvidu.server.kurento.endpoint;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+import io.openvidu.server.core.Participant;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
@@ -62,6 +58,15 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private HubPort majorShareHubPort = null;
 	private ListenerSubscription majorShareHubPortSubscription = null;
 
+	// Audio composite.
+	private Composite audioComposite = null;
+	private final Object audioCompositeCreateLock = new Object();
+	private final Object audioCompositeReleaseLock = new Object();
+
+	private HubPort audioHubPortOut = null;
+	private ListenerSubscription audioHubPortOutSubscription = null;
+	private boolean isConnectedAudioOut = false;
+
 	private GenericMediaElement filter;
 	private Map<String, Set<String>> subscribersToFilterEvents = new ConcurrentHashMap<>();
 	private Map<String, ListenerSubscription> filterListeners = new ConcurrentHashMap<>();
@@ -90,9 +95,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 			majorHubPort = new HubPort.Builder(getMajorComposite()).build();
 			log.info("Pub EP create majorHubPort.");
 			majorHubPortSubscription = registerElemErrListener(majorHubPort);
+
+			// audio composite
+			createAudioComposite();
+			audioHubPortOut = new HubPort.Builder(audioComposite).build();
+			audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
 		}
-
-
 	}
 
 	@Override
@@ -103,9 +111,81 @@ public class PublisherEndpoint extends MediaEndpoint {
 			unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
 		} else {
 			unregisterElementErrListener(majorHubPort, majorHubPortSubscription);
+			unregisterElementErrListener(audioHubPortOut, audioHubPortOutSubscription);
 		}
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
+		}
+	}
+
+	void createAudioComposite() {
+		synchronized (audioCompositeCreateLock) {
+			if (this.getPipeline() == null || audioComposite != null) {
+				log.warn("create audio composite: audioComposite already exists or pipeline is null.");
+				return;
+			}
+			log.info("SESSION {}: Creating audio Composite", this.getOwner().getSessionId());
+			audioComposite = new Composite.Builder(this.getPipeline()).build();
+		}
+	}
+
+	public Composite getAudioComposite() { return this.audioComposite; }
+
+	public HubPort createHubPort(Composite composite) {
+		// Fixme. manager it.
+		HubPort hubPort = new HubPort.Builder(composite).build();
+		elements.put(hubPort.getId(), hubPort);
+		return hubPort;
+	}
+
+	public void connectAudioIn(MediaElement sink) {
+		internalSinkConnect(this.getEndpoint(), sink, MediaType.AUDIO);
+	}
+
+	public void connectAudioOut(MediaElement sink) {
+		if (!isConnectedAudioOut) {
+			internalSinkConnect(audioHubPortOut, sink, MediaType.AUDIO);
+			isConnectedAudioOut = true;
+		} else {
+			log.info("already subscribe audio out.");
+		}
+	}
+
+	public void closeAudioComposite() {
+		synchronized (audioCompositeReleaseLock) {
+			if (Objects.isNull(audioComposite)) {
+				log.warn("audio composite already released.");
+				return;
+			}
+			audioComposite.release();
+		}
+	}
+
+	public void innerConnectAudio() {
+		KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
+		Set<Participant> participants = kParticipant.getSession().getParticipants();
+		// latest participant
+		Composite audioComposite = getAudioComposite();
+		for (Participant p : participants) {
+			KurentoParticipant p1 = (KurentoParticipant) p;
+			if (Objects.equals(p1, kParticipant)) {
+				continue;
+			}
+
+			HubPort hubPortIn = createHubPort(audioComposite);
+			p1.getPublisher().connectAudioIn(hubPortIn);
+		}
+
+		// already exist participant
+		for (Participant p : participants) {
+			KurentoParticipant p1 = (KurentoParticipant) p;
+			if (Objects.equals(p1, kParticipant)) {
+				continue;
+			}
+
+			Composite existAudioComposite = p1.getPublisher().getAudioComposite();
+			HubPort hubPortIn = kParticipant.getPublisher().createHubPort(existAudioComposite);
+			connectAudioIn(hubPortIn);
 		}
 	}
 
@@ -122,6 +202,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 		if (majorShareHubPort != null) {
 			elements.put(majorShareHubPort.getId(), majorShareHubPort);
+		}
+		if (audioHubPortOut != null) {
+			elements.put(audioHubPortOut.getId(), audioHubPortOut);
 		}
 		return elements.values();
 	}
@@ -489,6 +572,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 			internalSinkConnect(current, passThru);
 		} else {
 			internalSinkConnect(current, majorHubPort);
+			innerConnectAudio();
 		}
 		if (getCompositeService().isExistSharing()) {
 			internalSinkConnect(current, majorShareHubPort);

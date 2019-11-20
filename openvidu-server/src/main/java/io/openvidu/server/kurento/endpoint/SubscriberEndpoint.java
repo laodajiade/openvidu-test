@@ -33,6 +33,8 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 
+import javax.print.attribute.standard.Media;
+
 /**
  * Subscriber aspect of the {@link MediaEndpoint}.
  *
@@ -66,7 +68,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		}
 	}
 
-	public synchronized String subscribe(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
+	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
 		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) ?
 				publisher.getOwner().getParticipantPublicId() : (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) ?
 				getCompositeService().getMixMajorStreamId() : getCompositeService().getMixMajorShareStreamId()));
@@ -78,10 +80,10 @@ public class SubscriberEndpoint extends MediaEndpoint {
 			publisher.checkInnerConnect();
 			switch (streamMode) {
 				case MIX_MAJOR:
-					internalSinkConnect(majorHubPortOut, this.getEndpoint());
+					internalSinkConnect(majorHubPortOut, this.getEndpoint(), MediaType.VIDEO);
 					break;
 				case MIX_MAJOR_AND_SHARING:
-					internalSinkConnect(majorShareHubPortOut, this.getEndpoint());
+					internalSinkConnect(majorShareHubPortOut, this.getEndpoint(), MediaType.VIDEO);
 					break;
 			}
 		}
@@ -92,8 +94,13 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		return sdpAnswer;
 	}
 
-	private void internalSinkConnect(final MediaElement source, final MediaElement sink) {
-		source.connect(sink, new Continuation<Void>() {
+	public synchronized String subscribeAudio(PublisherEndpoint publisher) {
+		publisher.connectAudioOut(this.getEndpoint());
+		return "";
+	}
+
+	private void internalSinkConnect(final MediaElement source, final MediaElement sink, MediaType mediaType) {
+		source.connect(sink, mediaType, new Continuation<Void>() {
 			@Override
 			public void onSuccess(Void result) throws Exception {
 				log.debug("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
