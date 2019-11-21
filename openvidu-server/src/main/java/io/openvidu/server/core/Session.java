@@ -451,6 +451,8 @@ public class Session implements SessionInterface {
 		majorMixLinkedArr = newMajorMixLinkedArr;
 		majorShareMixLinkedArr = newMajorShareMixLinkedArr;
 
+		log.info("leaveRoomSetLayout majorMixLinkedArr:{}", majorMixLinkedArr.toString());
+		log.info("leaveRoomSetLayout majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
 	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {

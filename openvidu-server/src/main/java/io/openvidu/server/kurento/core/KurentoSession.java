@@ -245,8 +245,6 @@ public class KurentoSession extends Session {
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
-//		for (Participant other : participants.values()) {
-        // TODO exclude participants of the same RPCConnection
         for (Participant other : getParticipants()) {
 			((KurentoParticipant) other).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
