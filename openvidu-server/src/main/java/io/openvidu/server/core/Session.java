@@ -401,6 +401,58 @@ public class Session implements SessionInterface {
         log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
+	public void  leaveRoomSetLayout(StreamType streamType, Participant participant){
+		int countShareSeat = 0; //The position of the person leaving the meeting in the split screen
+		int countSeat = 0;
+		for (JsonElement element : majorShareMixLinkedArr) {
+			JsonObject jsonObject = element.getAsJsonObject();
+			countShareSeat ++;
+			if (Objects.equals(jsonObject.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
+				break;
+			}
+		}
+		for (JsonElement e : majorMixLinkedArr){
+			JsonObject json = e.getAsJsonObject();
+			countSeat ++;
+			if (Objects.equals(json.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
+				break;
+			}
+		}
+		JsonArray newMajorMixLinkedArr = new JsonArray(50);
+		JsonArray newMajorShareMixLinkedArr = new JsonArray(50);
+		int size = majorMixLinkedArr.size();
+		int Sharesize = majorShareMixLinkedArr.size();
+		for (int j = 0 ; j < Sharesize; j++) {
+			int k = j+1;
+			if (j < countShareSeat){
+				JsonObject jsonObject = majorShareMixLinkedArr.get(j).getAsJsonObject();
+				newMajorShareMixLinkedArr.add(getPartLayoutInfo(j, jsonObject.get("streamType").getAsString(),
+						jsonObject.get("connectionId").getAsString()));
+			}else {
+				JsonObject originObj = majorShareMixLinkedArr.get(k).getAsJsonObject();
+				newMajorShareMixLinkedArr.add(getPartLayoutInfo(j, originObj.get("streamType").getAsString(),
+						originObj.get("connectionId").getAsString()));
+			}
+		}
+		if (Objects.equals(streamType, StreamType.MAJOR)) {
+			for (int a = 0; a < size; a++){
+				int c =a+1;
+				if (a < countSeat){
+					JsonObject jsonObject = majorMixLinkedArr.get(a).getAsJsonObject();
+					newMajorMixLinkedArr.add(getPartLayoutInfo(a,jsonObject.get("streamType").getAsString(),
+							jsonObject.get("connectionId").getAsString()));
+				} else {
+					JsonObject originObj = majorMixLinkedArr.get(c).getAsJsonObject();
+					newMajorMixLinkedArr.add(getPartLayoutInfo(a, originObj.get("streamType").getAsString(), originObj.get("connectionId").getAsString()));
+				}
+			}
+		}
+
+		majorMixLinkedArr = newMajorMixLinkedArr;
+		majorShareMixLinkedArr = newMajorShareMixLinkedArr;
+
+	}
+
 	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {
     	JsonObject result = layoutCoordinates.get(layoutIndex).getAsJsonObject().deepCopy();
 		log.info("layoutCoordinates.size{}", layoutCoordinates.size(), "layoutIndex{}", layoutIndex);

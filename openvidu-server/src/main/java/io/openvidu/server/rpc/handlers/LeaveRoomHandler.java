@@ -8,6 +8,7 @@ import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -57,12 +58,18 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
-            for (Participant participant1 : participants) {
-                this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
+
+            StreamType stream = StreamType.MAJOR;
+            if (Objects.equals(participant.getStreamType(),StreamType.SHARING)) {
+                    stream = StreamType.SHARING;
+            }
+            Session session = sessionManager.getSession(sessionId);
+            session.leaveRoomSetLayout(stream, participant);
+            for (Participant participant2 : participants){
+                this.notificationService.sendNotification(participant2.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
             }
         }
-
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
