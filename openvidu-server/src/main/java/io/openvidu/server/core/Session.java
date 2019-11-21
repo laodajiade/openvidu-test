@@ -368,22 +368,27 @@ public class Session implements SessionInterface {
 		if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
 			JsonArray newMajorMixLinkedArr = new JsonArray(50);
 			int size = majorShareMixLinkedArr.size();
-			for (int i = 0; i < size; i++) {
-				if (i == 1) {
-					newMajorMixLinkedArr.add(getPartLayoutInfo(1, StreamType.SHARING.name(),
-							kurentoParticipant.getParticipantPublicId()));
+			if (size == 1) {
+				majorShareMixLinkedArr.add(getPartLayoutInfo(1, StreamType.SHARING.name(),
+						kurentoParticipant.getParticipantPublicId()));
+			} else {
+				for (int i = 0; i < size; i++) {
+					if (i == 1) {
+						newMajorMixLinkedArr.add(getPartLayoutInfo(1, StreamType.SHARING.name(),
+								kurentoParticipant.getParticipantPublicId()));
 
-					JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
-					newMajorMixLinkedArr.add(getPartLayoutInfo(2, originObj.get("streamType").getAsString(),
-							originObj.get("connectionId").getAsString()));
-				} else {
-					JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
-					int k = (i == 0) ? i : (i + 1);
-					newMajorMixLinkedArr.add(getPartLayoutInfo(k, originObj.get("streamType").getAsString(),
-							originObj.get("connectionId").getAsString()));
+						JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
+						newMajorMixLinkedArr.add(getPartLayoutInfo(2, originObj.get("streamType").getAsString(),
+								originObj.get("connectionId").getAsString()));
+					} else {
+						JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
+						int k = (i == 0) ? i : (i + 1);
+						newMajorMixLinkedArr.add(getPartLayoutInfo(k, originObj.get("streamType").getAsString(),
+								originObj.get("connectionId").getAsString()));
+					}
 				}
+				majorShareMixLinkedArr = newMajorMixLinkedArr;
 			}
-			majorShareMixLinkedArr = newMajorMixLinkedArr;
 		} else {
 			majorMixLinkedArr.add(getPartLayoutInfo(majorMixLinkedArr.size(), StreamType.MAJOR.name(),
 					kurentoParticipant.getParticipantPublicId()));
