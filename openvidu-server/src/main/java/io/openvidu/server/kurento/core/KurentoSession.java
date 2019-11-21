@@ -80,8 +80,8 @@ public class KurentoSession extends Session {
 		this.compositeService.setPipeline(this.getPipeline());
 
 		compositeService.createMajorComposite();
+		compositeService.createMajorShareComposite();
 		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
-            compositeService.createMajorShareComposite();
             compositeService.setExistSharing(true);
         }
 

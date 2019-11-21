@@ -459,11 +459,11 @@ public class Session implements SessionInterface {
         KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
         try {
             kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                    majorMixLinkedArr, kurentoClient.getSessionId()));
-            if (kurentoSession.compositeService.isExistSharing()) {
+                    majorMixLinkedArr, kurentoClient.getSessionId(), true));
+//            if (kurentoSession.compositeService.isExistSharing()) {
                 kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                        majorShareMixLinkedArr, kurentoClient.getSessionId()));
-            }
+                        majorShareMixLinkedArr, kurentoClient.getSessionId(), false));
+//            }
         } catch (IOException e) {
             log.error("Exception:\n", e);
             return 0;
@@ -472,7 +472,7 @@ public class Session implements SessionInterface {
         return 1;
     }
 
-    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId) {
+    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId, boolean majorComposite) {
         Request<JsonObject> kmsRequest = new Request<>();
         JsonObject params = new JsonObject();
         params.addProperty("object", pipelineId);
@@ -484,9 +484,14 @@ public class Session implements SessionInterface {
             JsonObject resultPart = temp.deepCopy();
             KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(temp
                     .get("connectionId").getAsString());
-            resultPart.addProperty("object", Objects.equals(StreamType.MAJOR, kurentoParticipant.getStreamType()) ?
-					kurentoParticipant.getPublisher().getMajorHubPort().getId() :
-					kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
+            if (majorComposite) {
+				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorHubPort().getId());
+			} else {
+				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
+			}
+//            resultPart.addProperty("object", Objects.equals(StreamType.MAJOR, kurentoParticipant.getStreamType()) ?
+//					kurentoParticipant.getPublisher().getMajorHubPort().getId() :
+//					kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
             resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
             resultPart.addProperty("onlineStatus",
                     kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
@@ -498,6 +503,7 @@ public class Session implements SessionInterface {
         params.add("operationParams", operationParams);
         kmsRequest.setMethod("invoke");
         kmsRequest.setParams(params);
+        log.info("send sms setLayout params:{}", params);
 
         return kmsRequest;
     }
