@@ -402,8 +402,8 @@ public class Session implements SessionInterface {
 	}
 
 	public void  leaveRoomSetLayout(StreamType streamType, Participant participant){
-		int countShareSeat = 0; //The position of the person leaving the meeting in the split screen
-		int countSeat = 0;
+		int countShareSeat = -1; //The position of the person leaving the meeting in the split screen
+		int countSeat = -1;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			countShareSeat++;
@@ -418,11 +418,12 @@ public class Session implements SessionInterface {
 				break;
 			}
 		}
+
 		JsonArray newMajorMixLinkedArr = new JsonArray(50);
 		JsonArray newMajorShareMixLinkedArr = new JsonArray(50);
 		int size = majorMixLinkedArr.size();
 		int Sharesize = majorShareMixLinkedArr.size();
-		for (int j = 0 ; j < Sharesize; j++) {
+		for (int j = 0 ; j < Sharesize -1; j++) {
 			int k = j + 1;
 			if (j < countShareSeat) {
 				JsonObject jsonObject = majorShareMixLinkedArr.get(j).getAsJsonObject();
@@ -435,7 +436,7 @@ public class Session implements SessionInterface {
 			}
 		}
 		if (Objects.equals(streamType, StreamType.MAJOR)) {
-			for (int a = 0; a < size; a++) {
+			for (int a = 0; a < size - 1; a++) {
 				int c = a + 1;
 				if (a < countSeat) {
 					JsonObject jsonObject = majorMixLinkedArr.get(a).getAsJsonObject();

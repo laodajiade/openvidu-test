@@ -441,7 +441,7 @@ public abstract class SessionManager {
 
 			FinalUser finalUser = this.sessionidFinalUsers.get(sessionId).get(finalUserId);
 			if (finalUser == null) {
-				// First connection for new final user
+				//First connection for new final user
 				log.info("Participant {} of session {} belongs to a new final user", p.getParticipantPublicId(),
 						sessionId);
 				this.sessionidFinalUsers.get(sessionId).put(finalUserId, new FinalUser(finalUserId, sessionId, p));
