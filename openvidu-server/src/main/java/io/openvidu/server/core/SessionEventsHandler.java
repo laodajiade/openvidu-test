@@ -301,10 +301,22 @@ public class SessionEventsHandler {
 		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);*/
 
         params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
+
+        JsonObject notifyResult = new JsonObject();
+        Session conferenceSession = sessionManager.getSession(sessionId);
+        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
+        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
         for (Participant p : participants) {
-            if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId()) &&
-                    Objects.equals(StreamType.SHARING, p.getStreamType())) continue;
-            rpcNotificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+            if (!Objects.equals(StreamType.SHARING, p.getStreamType())) {
+                if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+                    rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+                            ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+                }
+
+                // broadcast the changes of layout
+                rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+            }
 		}
 	}
 

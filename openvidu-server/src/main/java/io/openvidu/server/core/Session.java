@@ -494,9 +494,6 @@ public class Session implements SessionInterface {
 			} else {
 				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
 			}
-//            resultPart.addProperty("object", Objects.equals(StreamType.MAJOR, kurentoParticipant.getStreamType()) ?
-//					kurentoParticipant.getPublisher().getMajorHubPort().getId() :
-//					kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
             resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
             resultPart.addProperty("onlineStatus",
                     kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
