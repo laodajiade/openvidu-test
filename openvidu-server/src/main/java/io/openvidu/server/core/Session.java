@@ -406,14 +406,14 @@ public class Session implements SessionInterface {
 		int countSeat = 0;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
-			countShareSeat ++;
+			countShareSeat++;
 			if (Objects.equals(jsonObject.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
 				break;
 			}
 		}
-		for (JsonElement e : majorMixLinkedArr){
+		for (JsonElement e : majorMixLinkedArr) {
 			JsonObject json = e.getAsJsonObject();
-			countSeat ++;
+			countSeat++;
 			if (Objects.equals(json.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
 				break;
 			}
@@ -435,9 +435,9 @@ public class Session implements SessionInterface {
 			}
 		}
 		if (Objects.equals(streamType, StreamType.MAJOR)) {
-			for (int a = 0; a < size; a++){
-				int c =a+1;
-				if (a < countSeat){
+			for (int a = 0; a < size; a++) {
+				int c = a+1;
+				if (a < countSeat) {
 					JsonObject jsonObject = majorMixLinkedArr.get(a).getAsJsonObject();
 					newMajorMixLinkedArr.add(getPartLayoutInfo(a,jsonObject.get("streamType").getAsString(),
 							jsonObject.get("connectionId").getAsString()));
