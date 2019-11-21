@@ -116,15 +116,18 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsLong();
     }
 
-    protected void leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {
+    protected String leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {
+        String publicId = null;
         try {
-            sessionManager.evictParticipant(this.sessionManager.getParticipant(participantPrivateId), null, null,
-                    reason);
+            Participant participant = this.sessionManager.getParticipant(participantPrivateId);
+            publicId = participant.getParticipantPublicId();
+            sessionManager.evictParticipant(participant, null, null, reason);
             log.info("Evicted participant with privateId {}", participantPrivateId);
         } catch (OpenViduException e) {
             log.warn("Unable to evict: {}", e.getMessage());
             log.trace("Unable to evict user", e);
         }
+        return publicId;
     }
 
     public static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
@@ -260,7 +263,9 @@ public abstract class RpcAbstractHandler {
                 RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
                 cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
-                leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
+                String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
+                // update partLinkedArr in conference
+                this.sessionManager.getSession(rpcConnection.getSessionId()).evictReconnectOldPart(partPublicId);
 //				accessOut(oldRpcConnection, null);
                 sessionManager.accessOut(oldRpcConnection);
                 return true;

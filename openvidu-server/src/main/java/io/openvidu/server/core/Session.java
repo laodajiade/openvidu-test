@@ -564,4 +564,19 @@ public class Session implements SessionInterface {
         return kmsRequest;
     }
 
+	public void evictReconnectOldPart(String partPublicId) {
+    	for (JsonElement jsonElement : majorMixLinkedArr) {
+    		if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(partPublicId)) {
+				majorMixLinkedArr.remove(jsonElement);
+				break;
+			}
+		}
+
+    	for (JsonElement jsonElement : majorShareMixLinkedArr) {
+			if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(partPublicId)) {
+				majorShareMixLinkedArr.remove(jsonElement);
+				break;
+			}
+		}
+	}
 }
