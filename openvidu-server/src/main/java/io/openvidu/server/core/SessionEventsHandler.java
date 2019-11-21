@@ -308,10 +308,8 @@ public class SessionEventsHandler {
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
         for (Participant p : participants) {
             if (!Objects.equals(StreamType.SHARING, p.getStreamType())) {
-                if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
-                    rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
-                }
+                rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+                        ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 
                 // broadcast the changes of layout
                 rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
