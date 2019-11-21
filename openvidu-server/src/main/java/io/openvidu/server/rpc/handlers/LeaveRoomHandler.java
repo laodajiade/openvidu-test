@@ -63,6 +63,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             Session session = sessionManager.getSession(sessionId);
             session.leaveRoomSetLayout(stream, participant);
 
+            // json RPC notify KMS layout changed.
+            session.invokeKmsConferenceLayout();
+
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
