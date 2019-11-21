@@ -46,41 +46,40 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             }
             return;
         }
+
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
         }
+
+        Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
             participant.setHandStatus(ParticipantHandStatus.endSpeaker);
-
-            Set<Participant> participants = sessionManager.getParticipants(sessionId);
-            StreamType stream = StreamType.MAJOR;
-            if (Objects.equals(participant.getStreamType(),StreamType.SHARING)) {
-                    stream = StreamType.SHARING;
-            }
-
-            Session session = sessionManager.getSession(sessionId);
-            session.leaveRoomSetLayout(stream, participant);
-
-            // json RPC notify KMS layout changed.
-            session.invokeKmsConferenceLayout();
 
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
 
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
-            jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getMajorShareMixLinkedArr());
             for (Participant participant1 : participants) {
                 this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
-
-                notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
             }
         }
+
+        Session session = sessionManager.getSession(sessionId);
+        session.leaveRoomSetLayout(participant.getStreamType(), participant);
+        // json RPC notify KMS layout changed.
+        session.invokeKmsConferenceLayout();
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
+        jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getMajorShareMixLinkedArr());
+        for (Participant participant1 : participants) {
+            notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                    ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
+        }
+
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
