@@ -55,18 +55,18 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             participant.setHandStatus(ParticipantHandStatus.endSpeaker);
 
             Set<Participant> participants = sessionManager.getParticipants(sessionId);
-            JsonObject params = new JsonObject();
-            params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
-            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
-
             StreamType stream = StreamType.MAJOR;
             if (Objects.equals(participant.getStreamType(),StreamType.SHARING)) {
                     stream = StreamType.SHARING;
             }
             Session session = sessionManager.getSession(sessionId);
             session.leaveRoomSetLayout(stream, participant);
-            for (Participant participant2 : participants){
-                this.notificationService.sendNotification(participant2.getParticipantPrivateId(),
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
+            params.add(ProtocolElements.END_ROLL_CALL_PARTLINKEDLIST_PARAM, session.getMajorShareMixLinkedArr());
+            for (Participant participant1 : participants){
+                this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
             }
         }
