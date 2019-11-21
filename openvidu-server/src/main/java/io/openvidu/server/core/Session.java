@@ -394,8 +394,6 @@ public class Session implements SessionInterface {
 
 		log.info("dealParticipantDefaultOrder majorMixLinkedArr:{}", majorMixLinkedArr.toString());
         log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
-
-//        invokeKmsConferenceLayout();
 	}
 
 	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {
@@ -438,6 +436,23 @@ public class Session implements SessionInterface {
         log.info("switchLayoutMode majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
         invokeKmsConferenceLayout();
     }
+
+	public void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
+    	relacePartOrder(majorMixLinkedArr, sourceConnectionId, targetConnectionId);
+		relacePartOrder(majorShareMixLinkedArr, sourceConnectionId, targetConnectionId);
+	}
+
+	private static void relacePartOrder(JsonArray linkedArr, String sourceConnectionId, String targetConnectionId) {
+		for (JsonElement jsonElement : linkedArr) {
+			JsonObject jsonObject = jsonElement.getAsJsonObject();
+			String connectionId = jsonObject.get("connectionId").getAsString();
+			if (connectionId.equals(sourceConnectionId)) {
+				jsonObject.addProperty("connectionId", targetConnectionId);
+			} else if (connectionId.equals(targetConnectionId)) {
+				jsonObject.addProperty("connectionId", sourceConnectionId);
+			}
+		}
+	}
 
     public int invokeKmsConferenceLayout() {
         KurentoSession kurentoSession = (KurentoSession) this;
@@ -486,4 +501,5 @@ public class Session implements SessionInterface {
 
         return kmsRequest;
     }
+
 }

@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -27,26 +28,51 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
-        Set<Participant> participants = sessionManager.getParticipants(sessionId);
-        participants.stream().filter(part ->
-                targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString())
-                        && Objects.equals(part.getStreamType(), StreamType.MAJOR))
-                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
-
         int raiseHandNum = 0;
-        for (Participant p : participants) {
-            if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && p.getHandStatus() == ParticipantHandStatus.up) {
-                ++raiseHandNum;
+        String sourceConnectionId = null;
+        String targetConnectionId = null;
+        Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        for (Participant participant : participants) {
+            if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                if (targetId.equals(participant.getUserId())) {
+                    participant.setHandStatus(ParticipantHandStatus.speaker);
+                    targetConnectionId = participant.getParticipantPublicId();
+                }
+
+                if (sourceId.equals(participant.getUserId())) {
+                    sourceConnectionId = participant.getParticipantPublicId();
+                }
+
+                if (Objects.equals(participant.getHandStatus(), ParticipantHandStatus.up)) {
+                    raiseHandNum++;
+                }
             }
         }
+
+        // change conference layout
+        Session conferenceSession = sessionManager.getSession(sessionId);
+        conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+        // json RPC notify KMS layout changed.
+        conferenceSession.invokeKmsConferenceLayout();
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
         params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetId);
         params.addProperty(ProtocolElements.SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
-        participants.forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params));
+
+        // broadcast the changes of layout
+        JsonObject notifyResult = new JsonObject();
+        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
+        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
+
+        participants.forEach(participant -> {
+            // SetRollCall notify
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
+
+            // broadcast the changes of layout
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+        });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
