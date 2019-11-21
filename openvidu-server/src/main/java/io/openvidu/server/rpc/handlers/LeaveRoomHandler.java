@@ -59,18 +59,23 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             if (Objects.equals(participant.getStreamType(),StreamType.SHARING)) {
                     stream = StreamType.SHARING;
             }
+
             Session session = sessionManager.getSession(sessionId);
             session.leaveRoomSetLayout(stream, participant);
+
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
-            JsonObject jsonObject = new  JsonObject();
-            jsonObject.add(ProtocolElements.END_ROLL_CALL_PARTLINKEDLIST_PARAM, session.getMajorShareMixLinkedArr());
-            for (Participant participant1 : participants){
-                notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
+            jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getMajorShareMixLinkedArr());
+            for (Participant participant1 : participants) {
                 this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
+
+                notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
             }
         }
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
