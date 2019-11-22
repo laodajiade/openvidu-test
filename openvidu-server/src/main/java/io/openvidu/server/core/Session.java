@@ -447,9 +447,10 @@ public class Session implements SessionInterface {
 					newMajorMixLinkedArr.add(getPartLayoutInfo(a, originObj.get("streamType").getAsString(), originObj.get("connectionId").getAsString()));
 				}
 			}
+			majorMixLinkedArr = newMajorMixLinkedArr;
 		}
 
-		majorMixLinkedArr = newMajorMixLinkedArr;
+
 		majorShareMixLinkedArr = newMajorShareMixLinkedArr;
 
 		log.info("leaveRoomSetLayout majorMixLinkedArr:{}", majorMixLinkedArr.toString());
