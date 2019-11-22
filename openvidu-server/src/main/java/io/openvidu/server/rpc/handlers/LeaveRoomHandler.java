@@ -40,7 +40,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
         Participant participant;
         try {
-            participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId());
+            participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(),
+                    StreamType.valueOf(streamType));
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                 Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
