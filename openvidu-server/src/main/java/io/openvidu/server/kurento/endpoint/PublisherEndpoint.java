@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
@@ -172,8 +173,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 				continue;
 			}
 
-			HubPort hubPortIn = createHubPort(audioComposite);
-			p1.getPublisher().connectAudioIn(hubPortIn);
+			if (!Objects.equals(p.getStreamType(), StreamType.SHARING)) {
+				HubPort hubPortIn = createHubPort(audioComposite);
+				p1.getPublisher().connectAudioIn(hubPortIn);
+			}
 		}
 
 		// already exist participant
@@ -182,10 +185,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 			if (Objects.equals(p1, kParticipant)) {
 				continue;
 			}
-
-			Composite existAudioComposite = p1.getPublisher().getAudioComposite();
-			HubPort hubPortIn = kParticipant.getPublisher().createHubPort(existAudioComposite);
-			connectAudioIn(hubPortIn);
+			if (!Objects.equals(p.getStreamType(), StreamType.SHARING)) {
+				Composite existAudioComposite = p1.getPublisher().getAudioComposite();
+				HubPort hubPortIn = kParticipant.getPublisher().createHubPort(existAudioComposite);
+				connectAudioIn(hubPortIn);
+			}
 		}
 	}
 
