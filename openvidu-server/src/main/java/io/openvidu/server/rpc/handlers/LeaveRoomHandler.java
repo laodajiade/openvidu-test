@@ -40,11 +40,12 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
-            if (Objects.isNull(participant)) {
+            if (rpcConnection.isReconnected()) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                 Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
                 participant = sessionManager.getParticipant(sessionId, String.valueOf(userInfo.get("reconnect")));
+            } else {
+                participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
             }
         } catch (OpenViduException e) {
             if (updateReconnectInfo(rpcConnection)) {
