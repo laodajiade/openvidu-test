@@ -105,6 +105,7 @@ public class ProtocolElements {
 	public static final String ONICECANDIDATE_CANDIDATE_PARAM = "candidate";
 	public static final String ONICECANDIDATE_SDPMIDPARAM = "sdpMid";
 	public static final String ONICECANDIDATE_SDPMLINEINDEX_PARAM = "sdpMLineIndex";
+	public static final String ONICECANDIDATE_STREAMMODE_PARAM = "streamMode";
 
 	public static final String CUSTOMREQUEST_METHOD = "customRequest";
 
