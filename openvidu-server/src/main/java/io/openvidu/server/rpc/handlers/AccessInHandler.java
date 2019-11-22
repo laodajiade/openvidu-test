@@ -33,7 +33,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
-        String deviceMac = getStringParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
+        String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         Device device = null;
@@ -42,8 +42,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         Long accessInUserId = null;
         do {
             // verify parameters
-            if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token) ||
-                    (StringUtils.isEmpty(deviceSerialNumber) && StringUtils.isEmpty(deviceMac))) {
+            if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token)) {
                 errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
                 break;
             }
