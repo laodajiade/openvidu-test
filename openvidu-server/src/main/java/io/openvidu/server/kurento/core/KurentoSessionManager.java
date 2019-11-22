@@ -455,7 +455,8 @@ public class KurentoSessionManager extends SessionManager {
 		log.debug("Request [UNSUBSCRIBE] remoteParticipant={} ({})", senderName, participant.getParticipantPublicId());
 
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
-		Session session = ((KurentoParticipant) participant).getSession();
+		// modify by chosongi to fit the server mcu
+		/*Session session = ((KurentoParticipant) participant).getSession();
 		Participant sender = session.getParticipantByPublicId(senderName);
 
 		if (sender == null) {
@@ -465,7 +466,7 @@ public class KurentoSessionManager extends SessionManager {
 					participant.getParticipantPublicId(), senderName, session.getSessionId());
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 					"User " + senderName + " not found in session " + session.getSessionId());
-		}
+		}*/
 
 		kParticipant.cancelReceivingMedia(senderName, EndReason.unsubscribe);
 

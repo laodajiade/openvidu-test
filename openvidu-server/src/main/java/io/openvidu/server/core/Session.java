@@ -458,10 +458,13 @@ public class Session implements SessionInterface {
 
 	private JsonObject getPartLayoutInfo(int layoutIndex, String streamType, String publicId) {
     	JsonObject result = layoutCoordinates.get(layoutIndex).getAsJsonObject().deepCopy();
-		log.info("layoutCoordinates.size{}", layoutCoordinates.size(), "layoutIndex{}", layoutIndex);
     	result.addProperty("streamType", streamType);
 		result.addProperty("connectionId", publicId);
 		return result;
+	}
+
+	private JsonObject getCoordinatesByPartIndex(int layoutIndex) {
+		return layoutCoordinates.get(layoutIndex).getAsJsonObject();
 	}
 
     public void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
@@ -500,6 +503,9 @@ public class Session implements SessionInterface {
 	public void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
     	relacePartOrder(majorMixLinkedArr, sourceConnectionId, targetConnectionId);
 		relacePartOrder(majorShareMixLinkedArr, sourceConnectionId, targetConnectionId);
+
+		log.info("replacePartOrderInConference majorMixLinkedArr:{}", majorMixLinkedArr.toString());
+		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
 	private static void relacePartOrder(JsonArray linkedArr, String sourceConnectionId, String targetConnectionId) {
@@ -566,17 +572,31 @@ public class Session implements SessionInterface {
     }
 
 	public void evictReconnectOldPart(String partPublicId) {
-    	for (JsonElement jsonElement : majorMixLinkedArr) {
-    		if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(partPublicId)) {
-				majorMixLinkedArr.remove(jsonElement);
+		delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
+		delAndChangeCoorInLinkedArr(majorShareMixLinkedArr, partPublicId);
+
+		log.info("evictReconnectOldPart majorMixLinkedArr:{}", majorMixLinkedArr.toString());
+		log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+	}
+
+	private void delAndChangeCoorInLinkedArr(JsonArray jsonArray, String partPublicId) {
+		boolean changed = false;
+		for (JsonElement jsonElement : jsonArray) {
+			if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(partPublicId)) {
+				jsonArray.remove(jsonElement);
+				changed = true;
 				break;
 			}
 		}
 
-    	for (JsonElement jsonElement : majorShareMixLinkedArr) {
-			if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(partPublicId)) {
-				majorShareMixLinkedArr.remove(jsonElement);
-				break;
+		if (changed && jsonArray.size() != 0) {
+			int index = 0;
+			for (JsonElement jsonElement : jsonArray) {
+				JsonObject jsonObject = jsonElement.getAsJsonObject();
+				JsonObject coJson = getCoordinatesByPartIndex(index);
+				// NOTE change the width and height if the mode is not division
+				jsonObject.addProperty("left", coJson.get("left").getAsString());
+				jsonObject.addProperty("top", coJson.get("top").getAsString());
 			}
 		}
 	}
