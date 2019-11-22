@@ -463,10 +463,6 @@ public class Session implements SessionInterface {
 		return result;
 	}
 
-	private JsonObject getCoordinatesByPartIndex(int layoutIndex) {
-		return layoutCoordinates.get(layoutIndex).getAsJsonObject();
-	}
-
     public void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
         setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutModeEnum));
 
@@ -597,7 +593,12 @@ public class Session implements SessionInterface {
 				// NOTE change the width and height if the mode is not division
 				jsonObject.addProperty("left", coJson.get("left").getAsString());
 				jsonObject.addProperty("top", coJson.get("top").getAsString());
+				index++;
 			}
 		}
+	}
+
+	private JsonObject getCoordinatesByPartIndex(int layoutIndex) {
+		return layoutCoordinates.get(layoutIndex).getAsJsonObject();
 	}
 }
