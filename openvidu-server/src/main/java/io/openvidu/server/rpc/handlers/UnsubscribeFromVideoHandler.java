@@ -27,6 +27,7 @@ public class UnsubscribeFromVideoHandler extends RpcAbstractHandler {
         }
 
         String senderName = getStringParam(request, ProtocolElements.UNSUBSCRIBEFROMVIDEO_SENDER_PARAM);
+        senderName = senderName.substring(0, senderName.lastIndexOf("_"));
         sessionManager.unsubscribe(participant, senderName, request.getId());
     }
 }
