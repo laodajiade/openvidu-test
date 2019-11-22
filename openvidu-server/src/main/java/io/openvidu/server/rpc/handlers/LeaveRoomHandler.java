@@ -16,6 +16,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -36,9 +37,15 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
+
         Participant participant;
         try {
             participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
+            if (Objects.isNull(participant)) {
+                log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
+                Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
+                participant = sessionManager.getParticipant(sessionId, String.valueOf(userInfo.get("reconnect")));
+            }
         } catch (OpenViduException e) {
             if (updateReconnectInfo(rpcConnection)) {
                 log.info("close previous participant info.");
@@ -81,8 +88,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             notificationService.sendNotification(participant1.getParticipantPrivateId(),
                     ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
         }
-
-
 
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
