@@ -31,11 +31,12 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
             return;
         }
 
-        String senderName = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SENDER_PARAM);
-        senderName = senderName.substring(0, senderName.lastIndexOf("_"));
-        String sdpOffer = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM);
         StreamModeEnum streamMode = StreamModeEnum.valueOf(getStringParam(request,
                 ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM));
+        String senderName = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SENDER_PARAM);
+        senderName = senderName.substring(0, Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) ?
+                senderName.indexOf("_") : senderName.lastIndexOf("_"));
+        String sdpOffer = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM);
 
         KurentoSession kurentoSession = (KurentoSession) this.sessionManager.getSession(rpcConnection.getSessionId());
         if ((Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) || Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING,
