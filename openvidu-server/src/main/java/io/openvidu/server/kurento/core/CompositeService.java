@@ -106,14 +106,14 @@ public class CompositeService {
 
     public void releaseMajorHubPortOut() {
         unregisterErrorListeners(majorHubPortOut, majorHubPortOutSubscription);
-        if (Objects.isNull(majorHubPortOut)) {
+        if (!Objects.isNull(majorHubPortOut)) {
             releaseElement(majorHubPortOut);
         }
     }
 
     public void releaseMajorShareHubPortOut() {
         unregisterErrorListeners(majorShareHubPortOut, majorShareHubPortOutSubscription);
-        if (Objects.isNull(majorShareHubPortOut)) {
+        if (!Objects.isNull(majorShareHubPortOut)) {
             releaseElement(majorShareHubPortOut);
         }
     }
