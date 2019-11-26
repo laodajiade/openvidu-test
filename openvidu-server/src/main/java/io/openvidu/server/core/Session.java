@@ -365,6 +365,17 @@ public class Session implements SessionInterface {
 	}
 
 	protected void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
+    	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
+			if (layoutMode.ordinal() >= (LayoutModeEnum.values().length - 1)) {
+				// over layout limit
+				return;
+			} else {
+				// switch layout mode automatically
+				switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() + 1]);
+			}
+
+		}
+
 		if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
 			JsonArray newMajorMixLinkedArr = new JsonArray(50);
 			int size = majorShareMixLinkedArr.size();
