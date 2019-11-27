@@ -17,6 +17,8 @@
 
 package io.openvidu.java.client;
 
+import java.util.*;
+
 /**
  * See {@link io.openvidu.java.client.TokenOptions.Builder#role(OpenViduRole)}
  */
@@ -39,7 +41,32 @@ public enum OpenViduRole {
 	 * <code>Session.forceUnpublish()</code> and
 	 * <code>Session.forceDisconnect()</code>)
 	 */
-	MODERATOR;
+	MODERATOR,
+
+	/**
+	 * SUBSCRIBER permissions + can force the unpublishing or
+	 * disconnection over a third-party Stream or Connection (call
+	 * <code>Session.forceUnpublish()</code> and
+	 * <code>Session.forceDisconnect()</code>)
+	 */
+	THOR;
+
+	public static final List<OpenViduRole> NON_PUBLISH_ROLES;
+
+	public static final List<OpenViduRole> MODERATOR_ROLES;
+
+
+	static {
+		NON_PUBLISH_ROLES = new ArrayList<OpenViduRole>(2) {{
+			add(OpenViduRole.SUBSCRIBER);
+			add(OpenViduRole.THOR);
+		}};
+
+		MODERATOR_ROLES = new ArrayList<OpenViduRole>(2) {{
+			add(OpenViduRole.MODERATOR);
+			add(OpenViduRole.THOR);
+		}};
+	}
 
 	public static OpenViduRole parseRole(String role) {
 		for (OpenViduRole openViduRole : OpenViduRole.values()) {
@@ -47,4 +74,5 @@ public enum OpenViduRole {
 		}
 		return null;
 	}
+
 }
