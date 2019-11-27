@@ -44,7 +44,6 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                 return;
             }
 
-            conferenceSession.setLayoutMode(layoutModeEnum);
             conferenceSession.switchLayoutMode(layoutModeEnum);
 
             // json RPC notify KMS layout changed.

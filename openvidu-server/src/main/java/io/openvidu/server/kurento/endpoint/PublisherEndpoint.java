@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import org.kurento.client.*;
@@ -173,7 +174,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 				continue;
 			}
 
-			if (!Objects.equals(p.getStreamType(), StreamType.SHARING)) {
+			if (!Objects.equals(p.getStreamType(), StreamType.SHARING) &&
+					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
 				HubPort hubPortIn = createHubPort(audioComposite);
 				p1.getPublisher().connectAudioIn(hubPortIn);
 			}
@@ -185,7 +187,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 			if (Objects.equals(p1, kParticipant)) {
 				continue;
 			}
-			if (!Objects.equals(p.getStreamType(), StreamType.SHARING)) {
+			if (!Objects.equals(p.getStreamType(), StreamType.SHARING) &&
+					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
 				Composite existAudioComposite = p1.getPublisher().getAudioComposite();
 				HubPort hubPortIn = kParticipant.getPublisher().createHubPort(existAudioComposite);
 				connectAudioIn(hubPortIn);

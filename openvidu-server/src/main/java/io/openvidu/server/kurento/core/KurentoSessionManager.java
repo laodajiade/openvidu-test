@@ -389,8 +389,8 @@ public class KurentoSessionManager extends SessionManager {
 								+ "in session {} but user is not streaming media",
 						moderator != null ? moderator.getParticipantPublicId() : participant.getParticipantPublicId(),
 						participant.getParticipantPublicId(), session.getSessionId());
-				throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
-						"Participant '" + participant.getParticipantPublicId() + "' is not streaming media");
+				/*throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
+						"Participant '" + participant.getParticipantPublicId() + "' is not streaming media");*/
 			}
 			kParticipant.unpublishMedia(reason, 0);
 			session.cancelPublisher(participant, reason);
@@ -416,7 +416,8 @@ public class KurentoSessionManager extends SessionManager {
 			KurentoParticipant kParticipant = (KurentoParticipant) participant;
 			session = ((KurentoParticipant) participant).getSession();
 			Participant senderParticipant = Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) ?
-					session.getParticipantByPublicId(senderName) : session.getParticipants().stream().findAny().orElse(participant);
+					session.getParticipantByPublicId(senderName) : session.getParticipants().stream()
+					.filter(Participant::isStreaming).findAny().orElse(participant);
 
 			if (senderParticipant == null) {
 				log.warn(

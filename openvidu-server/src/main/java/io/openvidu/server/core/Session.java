@@ -476,6 +476,7 @@ public class Session implements SessionInterface {
 	}
 
     public void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
+        setLayoutMode(layoutModeEnum);
         setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutModeEnum));
 
         int size = layoutCoordinates.size();

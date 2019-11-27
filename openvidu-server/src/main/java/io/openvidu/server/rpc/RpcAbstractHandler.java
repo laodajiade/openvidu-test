@@ -223,7 +223,7 @@ public abstract class RpcAbstractHandler {
             return ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED;
         }
 
-        if (checkModerator && sessionManager.getParticipant(sessionId, privateId).getRole() != OpenViduRole.MODERATOR) {
+        if (checkModerator && !OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(sessionId, privateId).getRole())) {
             return ErrorCodeEnum.PERMISSION_LIMITED;
         }
 
@@ -237,7 +237,7 @@ public abstract class RpcAbstractHandler {
 
     protected static boolean isModerator(String role) {
         // TODO. Fixme. user account have moderator power.
-        if (Objects.equals(OpenViduRole.MODERATOR.name(), role)) {
+        if (OpenViduRole.MODERATOR_ROLES.contains(OpenViduRole.valueOf(role))) {
 //		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
             return true;
         }

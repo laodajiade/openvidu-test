@@ -102,7 +102,9 @@ public class KurentoSession extends Session {
 			return connectionParticipants;
 		});
 
-		dealParticipantDefaultOrder(kurentoParticipant);
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+			dealParticipantDefaultOrder(kurentoParticipant);
+		}
 
 		filterStates.forEach((filterId, state) -> {
 			log.info("Adding filter {}", filterId);
@@ -382,7 +384,7 @@ public class KurentoSession extends Session {
 					throw new Exception("MediaPipleine was not created in 20 seconds");
 				}
 				getParticipants().forEach(p -> {
-					if (!OpenViduRole.SUBSCRIBER.equals(p.getRole())) {
+					if (!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
 						((KurentoParticipant) p).resetPublisherEndpoint();
 					}
 				});

@@ -404,7 +404,7 @@ public abstract class SessionManager {
 	public boolean isModeratorInSession(String sessionId, Participant participant) {
 		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
 			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-				return OpenViduRole.MODERATOR.equals(participant.getRole());
+				return OpenViduRole.MODERATOR_ROLES.contains(participant.getRole());
 			} else {
 				return false;
 			}

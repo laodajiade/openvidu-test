@@ -98,7 +98,7 @@ public class KurentoParticipant extends Participant {
 		this.recordingManager = recordingManager;
 		this.session = kurentoSession;
 
-		if (!OpenViduRole.SUBSCRIBER.equals(participant.getRole())) {
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
@@ -109,7 +109,7 @@ public class KurentoParticipant extends Participant {
 
 		for (Participant other : session.getParticipants()) {
 			if (!other.getParticipantPublicId().equals(this.getParticipantPublicId())
-					&& !OpenViduRole.SUBSCRIBER.equals(other.getRole())) {
+					&& !OpenViduRole.NON_PUBLISH_ROLES.contains(other.getRole())) {
 				// Initialize a SubscriberEndpoint for each other user connected with PUBLISHER
 				// or MODERATOR role
 				getNewOrExistingSubscriber(other.getParticipantPublicId());
@@ -336,7 +336,10 @@ public class KurentoParticipant extends Participant {
 				endpointConfig.getCdr().recordNewSubscriber(this, this.session.getSessionId(),
 						sender.getPublisherStreamId(), sender.getParticipantPublicId(), subscriber.createdAt());
 			}
-			subscriber.subscribeAudio(this.getPublisher());
+
+			if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
+				subscriber.subscribeAudio(this.getPublisher());
+			}
 
 			return sdpAnswer;
 		} catch (KurentoServerException e) {
