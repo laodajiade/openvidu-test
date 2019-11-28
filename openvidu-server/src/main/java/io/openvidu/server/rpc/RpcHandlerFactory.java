@@ -164,6 +164,9 @@ public class RpcHandlerFactory {
     @Resource
     private SetConferenceLayoutHandler setConferenceLayoutHandler;
 
+    @Resource
+    private GetAddressListHandler getAddressListHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                  accessInHandler);
@@ -214,6 +217,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETROOMLAYOUT_METHOD,              getRoomLayoutHandler);
         handlersMap.put(ProtocolElements.BROADCASTMAJORLAYOUT_METHOD,       broadcastMajorLayoutHandler);
         handlersMap.put(ProtocolElements.SETCONFERENCELAYOUT_MODE_METHOD,   setConferenceLayoutHandler);
+        handlersMap.put(ProtocolElements.GETADDRESSLIST_METHOD,             getAddressListHandler);
+
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

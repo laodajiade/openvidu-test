@@ -307,8 +307,8 @@ public class ProtocolElements {
 	public static final String GET_USER_DEVICE_DEVICE_SERIAL_NUMBER_PARAM = "deviceSerialNumber";
 	public static final String GET_USER_DEVICE_DEVICE_NAME_PARAM = "deviceName";
 	public static final String GET_USER_DEVICE_STATUS_PARAM = "status";
-	public static final String GET_USER_DEVICE_USER_NAME_PARAM = "username";
-	public static final String GET_USER_DEVICE_USER_ID_PARAM = "userId";
+	public static final String GET_ACCOUNT_PARAM = "account";
+
 
 	public static final String GET_DEVICE_INFO_METHOD = "getDeviceInfo";
 	public static final String GET_DEVICE_ID_PARAM = "deviceId";
@@ -367,10 +367,19 @@ public class ProtocolElements {
 	public static final String USER_BREAK_LINE_METHOD = "userBreakLine";
 	public static final String USER_BREAK_LINE_CONNECTION_ID_PARAM = "connectionId";
 
+	public static final String GETADDRESSLIST_METHOD = "getAddressList";
+	public static final String GETADDRESSLIST_ORGANIZATION_LIST_PARAM = "organizationList";
+	public static final String GETADDRESSLIST_ORG_ID_PARAM  = "orgId";
+	public static final String GETADDRESSLIST_ORG_NAME_PARAM  = "orgName";
+	public static final String GETADDRESSLIST_DEVICE_LIST_PARAM  = "deviceList";
+	public static final String GETADDRESSLIST_SERIAL_NUMBER_PARAM  = "serialNumber";
+	public static final String GETADDRESSLIST_DEVICE_NAME_PARAM  = "deviceName";
+	public static final String GETADDRESSLIST_ACCOUNT_PARAM  = "account";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,
-			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD);
+			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD, GETADDRESSLIST_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
@@ -450,4 +459,6 @@ public class ProtocolElements {
 	public static final String CUSTOM_NOTIFICATION = "custonNotification";
 
 	public static final String RECORDER_PARTICIPANT_PUBLICID = "RECORDER";
+
+
 }

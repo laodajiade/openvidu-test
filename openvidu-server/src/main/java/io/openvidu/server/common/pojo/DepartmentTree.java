@@ -1,5 +1,6 @@
 package io.openvidu.server.common.pojo;
 
+import com.google.gson.JsonArray;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,5 +13,6 @@ public class DepartmentTree implements Serializable  {
     private Long orgId;
     private Long parentId;
     private String organizationName;
+    private JsonArray deviceList;
     private List<DepartmentTree> organizationList;
 }

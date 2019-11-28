@@ -18,13 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class LayoutInitHandler {
 
-    private static final int MAX_WIDTH = 1920;
-    private static final int MAX_HEIGHT = 1080;
+   // private static final int MAX_WIDTH = 1920;
+   // private static final int MAX_HEIGHT = 1080;
 
     @Value("${conference.layout}")
     private String conferenceLayouts;
 
-    private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(6);
+  /*private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(6);
 
     @PostConstruct
     public void init() {
@@ -65,7 +65,39 @@ public class LayoutInitHandler {
         }
 
         log.info("layout init result:{}" ,layoutMap.toString());
+    }*/
+
+  private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(20);
+    @PostConstruct
+    public void init() {
+        JsonArray layoutArray = new Gson().fromJson(conferenceLayouts, JsonArray.class);
+        int mode, x, y,width, height;
+        for (JsonElement element : layoutArray) {
+            JsonObject item = element.getAsJsonObject();
+            mode = item.get("mode").getAsInt();
+            LayoutModeEnum layoutMode = LayoutModeEnum.getLayoutMode(mode);
+            JsonArray layouts = new JsonArray();
+            JsonArray location = item.get("location").getAsJsonArray();
+            for (JsonElement jsonElement : location) {
+                JsonObject json = jsonElement.getAsJsonObject();
+                JsonObject obj = new JsonObject();
+                x = json.get("x").getAsInt();
+                y = json.get("y").getAsInt();
+                width = json.get("width").getAsInt();
+                height = json.get("height").getAsInt();
+
+                obj.addProperty("left", x);
+                obj.addProperty("top", y);
+                obj.addProperty("width", width);
+                obj.addProperty("height", height);
+                layouts.add(obj);
+
+            }
+            layoutMap.put(layoutMode, layouts);
+        }
+        log.info("layout init result:{}" ,layoutMap.toString());
     }
+
 
     public static JsonArray getLayoutByMode(LayoutModeEnum layoutModeEnum) {
         return layoutMap.get(layoutModeEnum);
