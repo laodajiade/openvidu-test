@@ -111,7 +111,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             // RECONNECT AFTER RECONNECT
-            if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.reconnect.name()))
+            /*if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.reconnect.name()))
                     && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
                 if (previousRpc.isReconnected()) {
                     log.info("the account:{} now reconnect after reconnect. previous connect id:{} userId:{} sessionId:{}",
@@ -135,7 +135,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 log.warn("RECONNECT AFTER RECONNECT PREVIOUS RPC IS NULL. maybe server is restart, the account:{} now reconnect after reconnect warning.", uuid);
                 errCode = ErrorCodeEnum.SERVER_INTERNAL_ERROR;
                 break;
-            }
+            }*/
 
             if (!Objects.isNull(previousRpc)) {
                 log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",

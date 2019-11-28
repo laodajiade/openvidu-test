@@ -120,7 +120,7 @@ public abstract class RpcAbstractHandler {
         String publicId = null;
         try {
             Participant participant = this.sessionManager.getParticipant(participantPrivateId);
-            publicId = participant.getParticipantPublicId();
+            publicId = Objects.isNull(participant) ? null : participant.getParticipantPublicId();
             sessionManager.evictParticipant(participant, null, null, reason);
             log.info("Evicted participant with privateId {}", participantPrivateId);
         } catch (OpenViduException e) {

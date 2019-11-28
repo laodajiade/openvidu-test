@@ -103,9 +103,9 @@ public class KurentoSession extends Session {
 			return connectionParticipants;
 		});
 
-		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+		/*if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
 			dealParticipantDefaultOrder(kurentoParticipant);
-		}
+		}*/
 
 		filterStates.forEach((filterId, state) -> {
 			log.info("Adding filter {}", filterId);

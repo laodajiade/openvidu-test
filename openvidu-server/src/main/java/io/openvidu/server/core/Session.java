@@ -38,6 +38,7 @@ import io.openvidu.server.recording.service.RecordingManager;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Date;
@@ -364,7 +365,7 @@ public class Session implements SessionInterface {
 		return majorShareMixLinkedArr;
 	}
 
-	protected void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
+	public void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
     	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
 			if (layoutMode.ordinal() >= (LayoutModeEnum.values().length - 1)) {
 				// over layout limit
@@ -560,8 +561,10 @@ public class Session implements SessionInterface {
             KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(temp
                     .get("connectionId").getAsString());
             if (majorComposite) {
+				if (kurentoParticipant.getPublisher().getMajorHubPort() == null) continue;
 				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorHubPort().getId());
 			} else {
+				if (kurentoParticipant.getPublisher().getMajorShareHubPort() == null) continue;
 				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
 			}
 			resultPart.addProperty("hasVideo", true);
@@ -582,6 +585,7 @@ public class Session implements SessionInterface {
     }
 
 	public void evictReconnectOldPart(String partPublicId) {
+    	if (StringUtils.isEmpty(partPublicId)) return;
 		delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
 		delAndChangeCoorInLinkedArr(majorShareMixLinkedArr, partPublicId);
 

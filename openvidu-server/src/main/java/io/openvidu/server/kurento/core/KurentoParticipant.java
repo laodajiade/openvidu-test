@@ -232,6 +232,10 @@ public class KurentoParticipant extends Participant {
 				loopbackConnectionType);
 		this.streaming = true;
 
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
+			this.session.dealParticipantDefaultOrder(this);
+		}
+
 		// kms invoke
 		session.invokeKmsConferenceLayout();
 
