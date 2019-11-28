@@ -91,17 +91,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 		log.info("Pub EP create majorShareHubPort.");
 		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
 		if (isSharing()) {
-			passThru = new PassThrough.Builder(getPipeline()).build();
-			passThruSubscription = registerElemErrListener(passThru);
-		} else {
+            passThru = new PassThrough.Builder(getPipeline()).build();
+            passThruSubscription = registerElemErrListener(passThru);
+        } else {
 			majorHubPort = new HubPort.Builder(getMajorComposite()).build();
 			log.info("Pub EP create majorHubPort.");
 			majorHubPortSubscription = registerElemErrListener(majorHubPort);
-
-			// audio composite
-			createAudioComposite();
-			audioHubPortOut = new HubPort.Builder(audioComposite).build();
-			audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
 		}
 	}
 
@@ -117,6 +112,15 @@ public class PublisherEndpoint extends MediaEndpoint {
 		unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
+		}
+	}
+
+	public void createAudioMixer() {
+		if (!isSharing()) {
+			// audio composite
+			createAudioComposite();
+			audioHubPortOut = new HubPort.Builder(audioComposite).build();
+			audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
 		}
 	}
 
@@ -190,7 +194,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 			if (!Objects.equals(p.getStreamType(), StreamType.SHARING) &&
 					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
 				Composite existAudioComposite = p1.getPublisher().getAudioComposite();
-				HubPort hubPortIn = kParticipant.getPublisher().createHubPort(existAudioComposite);
+				HubPort hubPortIn = p1.getPublisher().createHubPort(existAudioComposite);
 				connectAudioIn(hubPortIn);
 			}
 		}
