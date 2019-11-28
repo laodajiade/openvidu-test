@@ -42,7 +42,8 @@ import java.util.concurrent.TimeUnit;
 public class KurentoSession extends Session {
 
 	private final static Logger log = LoggerFactory.getLogger(Session.class);
-	public static final int ASYNC_LATCH_TIMEOUT = 30;
+//	public static final int ASYNC_LATCH_TIMEOUT = 30;
+	public static final int ASYNC_LATCH_TIMEOUT = 60;
 
 	private MediaPipeline pipeline;
 	private CountDownLatch pipelineLatch = new CountDownLatch(1);

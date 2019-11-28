@@ -412,7 +412,7 @@ public class Session implements SessionInterface {
         log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
-	public void  leaveRoomSetLayout(StreamType streamType, Participant participant){
+	public void  leaveRoomSetLayout(StreamType streamType, Participant participant) {
 		int countShareSeat = -1; //The position of the person leaving the meeting in the split screen
 		int countSeat = -1;
 		for (JsonElement element : majorShareMixLinkedArr) {
@@ -564,9 +564,10 @@ public class Session implements SessionInterface {
 			} else {
 				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
 			}
-            resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
-            resultPart.addProperty("onlineStatus",
-                    kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
+			resultPart.addProperty("hasVideo", true);
+			resultPart.addProperty("onlineStatus", "online");
+            /*resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
+            resultPart.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");*/
 
             layoutInfos.add(resultPart);
         }
