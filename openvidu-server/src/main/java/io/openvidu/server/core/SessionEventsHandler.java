@@ -129,15 +129,15 @@ public class SessionEventsHandler {
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
 					existingParticipant.getFullMetadata());
 
-			/*if (existingParticipant.isStreaming()) {
+			if (existingParticipant.isStreaming()) {
 
 				KurentoParticipant kParticipant = (KurentoParticipant) existingParticipant;
 
 				JsonObject stream = new JsonObject();
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMID_PARAM,
 						existingParticipant.getPublisherStreamId());
-				stream.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
-						existingParticipant.getStreamType().name());
+				/*stream.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
+						existingParticipant.getStreamType().name());*/
 				stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 						kParticipant.getPublisher().createdAt());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,
@@ -164,7 +164,7 @@ public class SessionEventsHandler {
 				JsonArray streamsArray = new JsonArray();
 				streamsArray.add(stream);
 				participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
-			}*/
+			}
 
 			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
 			// openvidu-browser in newly joined participants
