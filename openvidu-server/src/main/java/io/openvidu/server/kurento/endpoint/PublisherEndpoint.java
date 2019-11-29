@@ -578,11 +578,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 			prevId = getPrevious(prevId);
 		}
 
+		internalSinkConnect(current, passThru);
 		internalSinkConnect(current, majorShareHubPort);
-		if (isSharing()) {
-			internalSinkConnect(current, passThru);
-		} else {
-			internalSinkConnect(current, majorHubPort);
+		if (!isSharing()) {
 			innerConnectAudio();
 		}
 

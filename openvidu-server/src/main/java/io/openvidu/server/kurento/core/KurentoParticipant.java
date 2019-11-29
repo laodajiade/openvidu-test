@@ -129,16 +129,17 @@ public class KurentoParticipant extends Participant {
 				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
 				+ RandomStringUtils.random(5, true, false).toUpperCase();
 
-		if (Objects.equals(StreamType.MAJOR, getStreamType())) {
-			if (Objects.isNull(this.session.compositeService.getMixMajorStreamId())) {
-				String mixMajorStreamId = RandomStringUtils.random(32, true, true)
-						+ "_" + "MAJOR-MIX";
-				this.session.compositeService.setMixMajorStreamId(mixMajorStreamId);
-			}
-		} else {
-			String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
-					+ "_" + "MAJOR-SHARE-MIX";
-			this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+//		if (Objects.equals(StreamType.MAJOR, getStreamType())) {
+//			if (Objects.isNull(this.session.compositeService.getMixMajorStreamId())) {
+//				String mixMajorStreamId = RandomStringUtils.random(32, true, true)
+//						+ "_" + "MAJOR-MIX";
+//				this.session.compositeService.setMixMajorStreamId(mixMajorStreamId);
+//			}
+//		} else {
+		String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
+				+ "_" + "MAJOR-SHARE-MIX";
+		this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+		if (Objects.equals(StreamType.SHARING, getStreamType())) {
 			this.session.compositeService.setShareStreamId(publisherStreamId);
 		}
 		this.publisher.setEndpointName(publisherStreamId);
@@ -233,10 +234,10 @@ public class KurentoParticipant extends Participant {
 				loopbackConnectionType);
 		this.streaming = true;
 
+		// deal part default order in the conference
 		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
 			this.session.dealParticipantDefaultOrder(this);
 		}
-
 		// kms invoke
 		session.invokeKmsConferenceLayout();
 
