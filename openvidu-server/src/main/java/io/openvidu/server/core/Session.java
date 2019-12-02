@@ -371,10 +371,6 @@ public class Session implements SessionInterface {
 		return false;
 	}
 
-//	public JsonArray getMajorMixLinkedArr() {
-//		return majorMixLinkedArr;
-//	}
-
 	public JsonArray getMajorShareMixLinkedArr() {
 		return majorShareMixLinkedArr;
 	}
@@ -425,7 +421,6 @@ public class Session implements SessionInterface {
 
 	public void  leaveRoomSetLayout(StreamType streamType, Participant participant){
 		int countShareSeat = -1; //The position of the person leaving the meeting in the split screen
-		//int countSeat = -1;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			countShareSeat++;
@@ -433,17 +428,7 @@ public class Session implements SessionInterface {
 				break;
 			}
 		}
-//		for (JsonElement e : majorMixLinkedArr) {
-//			JsonObject json = e.getAsJsonObject();
-//			countSeat++;
-//			if (Objects.equals(json.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
-//				break;
-//			}
-//		}
-
-//		JsonArray newMajorMixLinkedArr = new JsonArray(50);
 		JsonArray newMajorShareMixLinkedArr = new JsonArray(50);
-//   	int size = majorMixLinkedArr.size();
 		int Sharesize = majorShareMixLinkedArr.size();
 		for (int j = 0 ; j < Sharesize -1; j++) {
 			int k = j + 1;
@@ -457,25 +442,9 @@ public class Session implements SessionInterface {
 						originObj.get("connectionId").getAsString()));
 			}
 		}
-		/*if (Objects.equals(streamType, StreamType.MAJOR)) {
-			for (int a = 0; a < size - 1; a++) {
-				int c = a + 1;
-				if (a < countSeat) {
-					JsonObject jsonObject = majorMixLinkedArr.get(a).getAsJsonObject();
-					newMajorMixLinkedArr.add(getPartLayoutInfo(a,jsonObject.get("streamType").getAsString(),
-							jsonObject.get("connectionId").getAsString()));
-				} else {
-					JsonObject originObj = majorMixLinkedArr.get(c).getAsJsonObject();
-					newMajorMixLinkedArr.add(getPartLayoutInfo(a, originObj.get("streamType").getAsString(), originObj.get("connectionId").getAsString()));
-				}
-			}
-			majorMixLinkedArr = newMajorMixLinkedArr;
-		}*/
-
 
 		majorShareMixLinkedArr = newMajorShareMixLinkedArr;
 
-		//log.info("leaveRoomSetLayout majorMixLinkedArr:{}", majorMixLinkedArr.toString());
 		log.info("leaveRoomSetLayout majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
@@ -492,19 +461,9 @@ public class Session implements SessionInterface {
 
         int size = layoutCoordinates.size();
 
-       // int majorSize = majorMixLinkedArr.size();
         int majorShareSize = majorShareMixLinkedArr.size();
-        JsonArray newMajorMixLinkedArr = new JsonArray(50);
         JsonArray newMajorShareMixLinkedArr = new JsonArray(50);
         for (int i = 0; i < size; i++) {
-            /*if (i >= majorSize && i >= majorShareSize) break;
-
-            if (i < majorSize) {
-                JsonObject majorJson = majorMixLinkedArr.get(i).getAsJsonObject();
-                newMajorMixLinkedArr.add(getPartLayoutInfo(i, majorJson.get("streamType").getAsString(),
-                        majorJson.get("connectionId").getAsString()));
-            }
-			*/
             if (i < majorShareSize) {
                 JsonObject majorShareJson = majorShareMixLinkedArr.get(i).getAsJsonObject();
                 newMajorShareMixLinkedArr.add(getPartLayoutInfo(i, majorShareJson.get("streamType").getAsString(),
@@ -512,19 +471,13 @@ public class Session implements SessionInterface {
             }
         }
 
-        //majorMixLinkedArr = newMajorMixLinkedArr;
         majorShareMixLinkedArr = newMajorShareMixLinkedArr;
-
-       // log.info("switchLayoutMode majorMixLinkedArr:{}", majorMixLinkedArr.toString());
         log.info("switchLayoutMode majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
         invokeKmsConferenceLayout();
     }
 
 	public void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
-    	//relacePartOrder(majorMixLinkedArr, sourceConnectionId, targetConnectionId);
 		relacePartOrder(majorShareMixLinkedArr, sourceConnectionId, targetConnectionId);
-
-		//log.info("replacePartOrderInConference majorMixLinkedArr:{}", majorMixLinkedArr.toString());
 		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
@@ -544,12 +497,8 @@ public class Session implements SessionInterface {
         KurentoSession kurentoSession = (KurentoSession) this;
         KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
         try {
-            /*kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                    majorMixLinkedArr, kurentoClient.getSessionId(), true));*/
-//            if (kurentoSession.compositeService.isExistSharing()) {
-               kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                        majorShareMixLinkedArr, kurentoClient.getSessionId()));
-//            }
+        	kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
+					majorShareMixLinkedArr, kurentoClient.getSessionId()));
         } catch (IOException e) {
             log.error("Exception:\n", e);
             return 0;
@@ -588,12 +537,8 @@ public class Session implements SessionInterface {
     }
 
 	public void evictReconnectOldPart(String partPublicId) {
-		//delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
     	if (StringUtils.isEmpty(partPublicId)) return;
-		//delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
 		delAndChangeCoorInLinkedArr(majorShareMixLinkedArr, partPublicId);
-
-		//log.info("evictReconnectOldPart majorMixLinkedArr:{}", majorMixLinkedArr.toString());
 		log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 

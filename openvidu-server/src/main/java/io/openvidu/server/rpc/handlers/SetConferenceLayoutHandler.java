@@ -63,23 +63,11 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                 }
             }
 
-            // json RPC notify KMS layout changed.
-            /* int result = conferenceSession.invokeKmsConferenceLayout();
-             if (result != 1) {
-             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-             null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
-             return;
-             }*/
-
              // broadcast the changes of layout
             JsonObject notifyResult = new JsonObject();
-
             notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
-
             notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
-
             notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, automatically);
-
             sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
                     notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult));
         }
