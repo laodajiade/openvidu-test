@@ -340,25 +340,20 @@ public class SessionEventsHandler {
         Session session = sessionManager.getSession(sessionId);
         JsonArray mixFlowsArr = new JsonArray(3);
         KurentoSession kurentoSession = (KurentoSession) session;
-        if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorStreamId())) {
-            JsonObject jsonObj = new JsonObject();
-            jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-                    kurentoSession.compositeService.getMixMajorStreamId());
-            jsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR.name());
-            mixFlowsArr.add(jsonObj);
-        }
-        if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
+        if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorShareStreamId())) {
             JsonObject mixJsonObj = new JsonObject();
             mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
                     kurentoSession.compositeService.getMixMajorShareStreamId());
             mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
             mixFlowsArr.add(mixJsonObj);
 
-            JsonObject shareJsonObj = new JsonObject();
-            shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-                    kurentoSession.compositeService.getShareStreamId());
-            shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
-            mixFlowsArr.add(shareJsonObj);
+            if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
+                JsonObject shareJsonObj = new JsonObject();
+                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+                        kurentoSession.compositeService.getShareStreamId());
+                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
+                mixFlowsArr.add(shareJsonObj);
+            }
         }
         return mixFlowsArr;
     }

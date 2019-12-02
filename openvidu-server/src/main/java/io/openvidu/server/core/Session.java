@@ -401,7 +401,7 @@ public class Session implements SessionInterface {
     	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
-	private void rearrangement(JsonArray newMajorMixLinkedArr){
+	private void rearrangement(JsonArray newMajorMixLinkedArr) {
 		int size = majorShareMixLinkedArr.size();
 		for (int i = 0; i < size; i++) {
 			int k = i + 1;
