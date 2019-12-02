@@ -439,6 +439,7 @@ public class ProtocolElements {
 	public static final String PARTICIPANTPUBLISHED_CREATEDAT_PARAM = "createdAt";
 	public static final String PARTICIPANTPUBLISHED_HASAUDIO_PARAM = "hasAudio";
 	public static final String PARTICIPANTPUBLISHED_HASVIDEO_PARAM = "hasVideo";
+	public static final String PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM = "mixIncluded";
 	public static final String PARTICIPANTPUBLISHED_AUDIOACTIVE_PARAM = "audioActive";
 	public static final String PARTICIPANTPUBLISHED_VIDEOACTIVE_PARAM = "videoActive";
 	public static final String PARTICIPANTPUBLISHED_TYPEOFVIDEO_PARAM = "typeOfVideo";

@@ -277,6 +277,17 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
+        Session session = sessionManager.getSession(sessionId);
+		JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
+        int index = 0;
+		for (JsonElement jsonElement : majorShareMixLinkedArr) {
+            if (Objects.equals(jsonElement.getAsJsonObject().get("connectionId").getAsString(),
+                    participant.getParticipantPublicId())) {
+                break;
+            }
+            index++;
+        }
+
 		JsonObject result = new JsonObject();
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM, sdpAnswer);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
@@ -294,6 +305,7 @@ public class SessionEventsHandler {
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, createdAt);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM, index < session.getLayoutMode().getMode());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_AUDIOACTIVE_PARAM, mediaOptions.audioActive);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_VIDEOACTIVE_PARAM, mediaOptions.videoActive);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_TYPEOFVIDEO_PARAM, mediaOptions.typeOfVideo);
