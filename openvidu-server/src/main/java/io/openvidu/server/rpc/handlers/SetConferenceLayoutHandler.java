@@ -66,6 +66,8 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
 
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
 
+        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, automatically);
+
         sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
                 notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult));
 
