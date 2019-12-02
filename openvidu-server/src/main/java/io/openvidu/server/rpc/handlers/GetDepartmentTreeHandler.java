@@ -33,7 +33,6 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
 
-        JsonObject jsonObject = new  JsonObject();
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
         log.info("deptId:{}", userInfo.get("deptId"));
         Long orgId = Long.valueOf(String.valueOf(userInfo.get("deptId")));
@@ -44,7 +43,6 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
         log.info("corpId:{}，deptname{}", corpId,rootDept.getDeptName());
         Corporation corporation = corporationMapper.selectByPrimaryKey(corpId);
         log.info("corpNmae:{}", corporation.getCorpName());
-        jsonObject.addProperty(ProtocolElements.GET_DEPARTMENT_TREE_CORP_NAME_PAPM, corporation.getCorpName());
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(corpId);
         log.info("d{}", deptList.get(1).getOrganizationName());
         DepartmentTree rootDeptTree = DepartmentTree.builder().orgId(rootDept.getId()).parentId(rootDept.getParentId())
@@ -56,11 +54,8 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
                 .getTree().get(0)).getAsJsonObject()
                 : gson.toJsonTree(rootDeptTree).getAsJsonObject();
 
-        JsonArray jsonArray = new JsonArray();
-        jsonArray.add(object);
-        jsonObject.add(ProtocolElements.GET_DEPARTMENT_TREE_ORGANIZATION_LIST_PAPM, jsonArray);
 
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
 
     }
 }
