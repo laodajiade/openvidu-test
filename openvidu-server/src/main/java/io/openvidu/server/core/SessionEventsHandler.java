@@ -204,6 +204,7 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
