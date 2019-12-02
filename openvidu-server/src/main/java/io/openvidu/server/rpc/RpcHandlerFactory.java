@@ -167,6 +167,19 @@ public class RpcHandlerFactory {
     @Resource
     private GetAddressListHandler getAddressListHandler;
 
+    @Resource
+    private StartPtzControlHandler startPtzControlHandler;
+
+    @Resource
+    private  StopPtzControlHandler stopPtzControlHandler;
+
+    @Resource
+    private  SwapPartWindowHandler swapPartWindowHandler;
+
+    @Resource
+    private  GetChildDeviceListHandler getChildDeviceListHandler;
+
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                  accessInHandler);
@@ -218,6 +231,10 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.BROADCASTMAJORLAYOUT_METHOD,       broadcastMajorLayoutHandler);
         handlersMap.put(ProtocolElements.SETCONFERENCELAYOUT_MODE_METHOD,   setConferenceLayoutHandler);
         handlersMap.put(ProtocolElements.GETADDRESSLIST_METHOD,             getAddressListHandler);
+        handlersMap.put(ProtocolElements.START_PTZ_CONTROL_METHOD,          startPtzControlHandler);
+        handlersMap.put(ProtocolElements.STOP_PTZ_CONTROL_METHOD,           stopPtzControlHandler);
+        handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,           swapPartWindowHandler);
+        handlersMap.put(ProtocolElements.GET_CHILD_DEVICE_LIST_METHOD,      getChildDeviceListHandler);
 
     }
 

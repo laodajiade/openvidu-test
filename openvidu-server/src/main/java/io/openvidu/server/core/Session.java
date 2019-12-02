@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
@@ -66,7 +67,7 @@ public class Session implements SessionInterface {
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected LayoutModeEnum layoutMode;
-	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.FOUR);
+	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.ONE);
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
 	protected int delayConfCnt;
@@ -80,7 +81,7 @@ public class Session implements SessionInterface {
 
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
 
-	protected JsonArray majorMixLinkedArr = new JsonArray(50);
+//	protected JsonArray majorMixLinkedArr = new JsonArray(50);
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
 
 	public Session(Session previousSession) {
@@ -106,7 +107,7 @@ public class Session implements SessionInterface {
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
 
-		this.layoutMode = LayoutModeEnum.FOUR;
+		this.layoutMode = LayoutModeEnum.ONE;
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
@@ -357,15 +358,15 @@ public class Session implements SessionInterface {
 		return false;
 	}
 
-	public JsonArray getMajorMixLinkedArr() {
-		return majorMixLinkedArr;
-	}
+//	public JsonArray getMajorMixLinkedArr() {
+//		return majorMixLinkedArr;
+//	}
 
 	public JsonArray getMajorShareMixLinkedArr() {
 		return majorShareMixLinkedArr;
 	}
 
-	protected void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
+	public void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
     	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
 			if (layoutMode.ordinal() >= (LayoutModeEnum.values().length - 1)) {
 				// over layout limit
@@ -376,46 +377,40 @@ public class Session implements SessionInterface {
 			}
 
 		}
-
-		if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
-			JsonArray newMajorMixLinkedArr = new JsonArray(50);
-			int size = majorShareMixLinkedArr.size();
-			if (size == 1) {
-				majorShareMixLinkedArr.add(getPartLayoutInfo(1, StreamType.SHARING.name(),
-						kurentoParticipant.getParticipantPublicId()));
-			} else {
-				for (int i = 0; i < size; i++) {
-					if (i == 1) {
-						newMajorMixLinkedArr.add(getPartLayoutInfo(1, StreamType.SHARING.name(),
-								kurentoParticipant.getParticipantPublicId()));
-
-						JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
-						newMajorMixLinkedArr.add(getPartLayoutInfo(2, originObj.get("streamType").getAsString(),
-								originObj.get("connectionId").getAsString()));
-					} else {
-						JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
-						int k = (i == 0) ? i : (i + 1);
-						newMajorMixLinkedArr.add(getPartLayoutInfo(k, originObj.get("streamType").getAsString(),
-								originObj.get("connectionId").getAsString()));
-					}
-				}
-				majorShareMixLinkedArr = newMajorMixLinkedArr;
-			}
-		} else {
-			majorMixLinkedArr.add(getPartLayoutInfo(majorMixLinkedArr.size(), StreamType.MAJOR.name(),
+		JsonArray newMajorMixLinkedArr = new JsonArray(50);
+    	if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
+			newMajorMixLinkedArr.add(getPartLayoutInfo(0, StreamType.MAJOR.name(),
 					kurentoParticipant.getParticipantPublicId()));
+			rearrangement(newMajorMixLinkedArr);//后面的重新排序
+    	}
+    	if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+    		newMajorMixLinkedArr.add(getPartLayoutInfo(0, StreamType.SHARING.name(),
+                    kurentoParticipant.getParticipantPublicId()));
+			rearrangement(newMajorMixLinkedArr);//后面的重新排序
 
-			majorShareMixLinkedArr.add(getPartLayoutInfo(majorShareMixLinkedArr.size(), StreamType.MAJOR.name(),
+        }else {
+    	    majorShareMixLinkedArr.add(getPartLayoutInfo(majorShareMixLinkedArr.size(), StreamType.MAJOR.name(),
 					kurentoParticipant.getParticipantPublicId()));
 		}
+    	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+	}
 
-		log.info("dealParticipantDefaultOrder majorMixLinkedArr:{}", majorMixLinkedArr.toString());
-        log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+	private void rearrangement(JsonArray newMajorMixLinkedArr){
+		int size = majorShareMixLinkedArr.size();
+		for (int i = 0; i < size; i++) {
+			int k = i + 1;
+			JsonObject originObj = majorShareMixLinkedArr.get(i).getAsJsonObject();
+			newMajorMixLinkedArr.add(getPartLayoutInfo(k, originObj.get("streamType").getAsString(),
+					originObj.get("connectionId").getAsString()));
+
+		}
+		majorShareMixLinkedArr = newMajorMixLinkedArr;
+
 	}
 
 	public void  leaveRoomSetLayout(StreamType streamType, Participant participant){
 		int countShareSeat = -1; //The position of the person leaving the meeting in the split screen
-		int countSeat = -1;
+		//int countSeat = -1;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			countShareSeat++;
@@ -423,17 +418,17 @@ public class Session implements SessionInterface {
 				break;
 			}
 		}
-		for (JsonElement e : majorMixLinkedArr) {
-			JsonObject json = e.getAsJsonObject();
-			countSeat++;
-			if (Objects.equals(json.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
-				break;
-			}
-		}
+//		for (JsonElement e : majorMixLinkedArr) {
+//			JsonObject json = e.getAsJsonObject();
+//			countSeat++;
+//			if (Objects.equals(json.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
+//				break;
+//			}
+//		}
 
-		JsonArray newMajorMixLinkedArr = new JsonArray(50);
+//		JsonArray newMajorMixLinkedArr = new JsonArray(50);
 		JsonArray newMajorShareMixLinkedArr = new JsonArray(50);
-		int size = majorMixLinkedArr.size();
+//   	int size = majorMixLinkedArr.size();
 		int Sharesize = majorShareMixLinkedArr.size();
 		for (int j = 0 ; j < Sharesize -1; j++) {
 			int k = j + 1;
@@ -584,7 +579,7 @@ public class Session implements SessionInterface {
 	public void evictReconnectOldPart(String partPublicId) {
 		//delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
     	if (StringUtils.isEmpty(partPublicId)) return;
-		delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
+		//delAndChangeCoorInLinkedArr(majorMixLinkedArr, partPublicId);
 		delAndChangeCoorInLinkedArr(majorShareMixLinkedArr, partPublicId);
 
 		//log.info("evictReconnectOldPart majorMixLinkedArr:{}", majorMixLinkedArr.toString());

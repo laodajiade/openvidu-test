@@ -20,4 +20,8 @@ public interface DeviceDeptMapper {
     int updateByPrimaryKey(DeviceDept record);
 
     List<DeviceDept> selectBySearchCondition(DeviceDeptSearch search);
+
+    List<DeviceDept> selectByCorpId(Long corp);
+
+    Long selectCorpByOrgId(Long orgId);
 }

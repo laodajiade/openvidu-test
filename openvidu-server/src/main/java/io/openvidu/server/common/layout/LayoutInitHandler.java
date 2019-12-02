@@ -67,35 +67,37 @@ public class LayoutInitHandler {
         log.info("layout init result:{}" ,layoutMap.toString());
     }*/
 
-  private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(20);
+    private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(20);
     @PostConstruct
     public void init() {
         JsonArray layoutArray = new Gson().fromJson(conferenceLayouts, JsonArray.class);
-        int mode, x, y,width, height;
+        int mode, x, y, width, height;
         for (JsonElement element : layoutArray) {
             JsonObject item = element.getAsJsonObject();
             mode = item.get("mode").getAsInt();
             LayoutModeEnum layoutMode = LayoutModeEnum.getLayoutMode(mode);
             JsonArray layouts = new JsonArray();
-            JsonArray location = item.get("location").getAsJsonArray();
-            for (JsonElement jsonElement : location) {
-                JsonObject json = jsonElement.getAsJsonObject();
-                JsonObject obj = new JsonObject();
-                x = json.get("x").getAsInt();
-                y = json.get("y").getAsInt();
-                width = json.get("width").getAsInt();
-                height = json.get("height").getAsInt();
+            if (item != null) {
+                JsonArray location = item.get("location").getAsJsonArray();
+                for (JsonElement jsonElement : location) {
+                    JsonObject json = jsonElement.getAsJsonObject();
+                    JsonObject obj = new JsonObject();
+                    x = json.get("x").getAsInt();
+                    y = json.get("y").getAsInt();
+                    width = json.get("width").getAsInt();
+                    height = json.get("height").getAsInt();
 
-                obj.addProperty("left", x);
-                obj.addProperty("top", y);
-                obj.addProperty("width", width);
-                obj.addProperty("height", height);
-                layouts.add(obj);
+                    obj.addProperty("left", x);
+                    obj.addProperty("top", y);
+                    obj.addProperty("width", width);
+                    obj.addProperty("height", height);
+                    layouts.add(obj);
 
+                }
+                layoutMap.put(layoutMode, layouts);
             }
-            layoutMap.put(layoutMode, layouts);
+            log.info("layout init result:{}", layoutMap.toString());
         }
-        log.info("layout init result:{}" ,layoutMap.toString());
     }
 
 

@@ -26,13 +26,24 @@
     from sd_device_dept d left join sd_device v on d.serial_number = v.serial_number
     where
     <if test="serialNumber != null" >
-      serial_number = #{serialNumber,jdbcType=VARCHAR}
+      d.serial_number = #{serialNumber,jdbcType=VARCHAR}
     </if>
     <if test="deptId != null" >
       dept_id = #{deptId,jdbcType=BIGINT}
     </if>
   </select>
-
+  <select id="selectByCorpId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select
+    d.id, d.serial_number, d.dept_id, d.corp_id, d.project, d.create_time, d.update_time, v.device_name
+    from sd_device_dept d left join sd_device v on d.serial_number = v.serial_number
+    where
+      corp_id = #{corpId,jdbcType=BIGINT}
+  </select>
+  <select id="selectCorpByOrgId" resultType="java.lang.Long" parameterType="java.lang.Long" >
+    select corp_id
+    from sd_device_dept
+    where dept_id = #{orgId,jdbcType=BIGINT}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_device_dept
     where id = #{id,jdbcType=BIGINT}

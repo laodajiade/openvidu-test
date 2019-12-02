@@ -1,10 +1,8 @@
 package io.openvidu.server.rpc;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
@@ -16,6 +14,7 @@ import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -80,6 +79,10 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected DeviceDeptMapper deviceDeptMapper;
+
+    @Resource
+    protected CorporationMapper corporationMapper;
+
 
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);
@@ -213,6 +216,22 @@ public abstract class RpcAbstractHandler {
         }
         return false;
     }
+     protected JsonArray deviceList(List<DeviceDept> devices){
+         JsonArray DeviceList = new JsonArray();
+         devices.forEach(device->{
+             JsonObject jsonDevice = new JsonObject();
+             jsonDevice.addProperty(ProtocolElements.GET_CHILD_DEVICE_LIST_SERIAL_NUMBER_PAPM, device.getSerialNumber());
+             jsonDevice.addProperty(ProtocolElements.GET_CHILD_DEVICE_LIST_DEVICE_NAME_PAPM, device.getDeviceName());
+             for (RpcConnection rpc : notificationService.getRpcConnections()) {
+                 if (device.getSerialNumber().equals(rpc.getSerialNumber())) {
+                     jsonDevice.addProperty(ProtocolElements.GET_CHILD_DEVICE_LIST_ACCOUNT_PAPM, rpc.getUserUuid());
+                     break;
+                 }
+             }
+             DeviceList.add(jsonDevice);
+         });
+         return  DeviceList;
+     }
 
     protected ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
