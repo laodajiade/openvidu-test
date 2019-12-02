@@ -66,6 +66,7 @@ public class Session implements SessionInterface {
 	// TODO. Maybe we should relate conference in here.
 	protected Conference conference;
 	protected SessionPreset preset;
+	protected boolean automatically = true;
 	protected LayoutModeEnum layoutMode;
 	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.ONE);
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
@@ -117,7 +118,15 @@ public class Session implements SessionInterface {
 		return this.sessionId;
 	}
 
-	public SessionProperties getSessionProperties() {
+    public boolean isAutomatically() {
+        return automatically;
+    }
+
+    public void setAutomatically(boolean automatically) {
+        this.automatically = automatically;
+    }
+
+    public SessionProperties getSessionProperties() {
 		return this.sessionProperties;
 	}
 
