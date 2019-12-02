@@ -56,6 +56,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMID_PARAM = "id";
 	public static final String JOINROOM_PEERSTREAMHASAUDIO_PARAM = "hasAudio";
 	public static final String JOINROOM_PEERSTREAMHASVIDEO_PARAM = "hasVideo";
+	public static final String JOINROOM_PEERSTREAMMIXINCLUDED_PARAM = "mixIncluded";
 	public static final String JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM = "audioActive";
 	public static final String JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM = "videoActive";
 	public static final String JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM = "typeOfVideo";

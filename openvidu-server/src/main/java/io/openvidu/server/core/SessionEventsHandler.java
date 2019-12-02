@@ -90,9 +90,11 @@ public class SessionEventsHandler {
 			return;
 		}
 		Session session = sessionManager.getSession(sessionId);
+		int layoutMode = session.getLayoutMode().getMode();
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
+		int index = 0;
 		for (JsonElement jsonElement : session.getMajorShareMixLinkedArr()) {
 			JsonObject linkedInfo = jsonElement.getAsJsonObject();
 			Participant existingParticipant = session.getParticipantByPublicId(linkedInfo.get("connectionId").getAsString());
@@ -144,6 +146,8 @@ public class SessionEventsHandler {
 						kParticipant.getPublisherMediaOptions().hasAudio);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
 						kParticipant.getPublisherMediaOptions().hasVideo);
+				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
+						index < layoutMode);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM,
 						kParticipant.getPublisherMediaOptions().videoActive);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM,
@@ -165,6 +169,7 @@ public class SessionEventsHandler {
 				streamsArray.add(stream);
 				participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
 			}
+			index++;
 
 			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
 			// openvidu-browser in newly joined participants
