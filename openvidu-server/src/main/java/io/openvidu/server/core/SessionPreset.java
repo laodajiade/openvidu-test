@@ -66,7 +66,7 @@ public class SessionPreset {
         this.sharePowerInRoom = SessionPresetEnum.off;
         this.roomSubject = "sudiRoom";
         this.roomCapacity = 16;
-        this.roomDuration = 0.2f;
+        this.roomDuration = -1f;
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
         this.allowPartOperMic = SessionPresetEnum.off;
         this.allowPartOperShare = SessionPresetEnum.off;
@@ -86,7 +86,7 @@ public class SessionPreset {
         this.sharePowerInRoom = SessionPresetEnum.off;
         this.roomSubject = "sudiRoom";
         this.roomCapacity = 16;
-        this.roomDuration = 0.2f;
+        this.roomDuration = -1f;
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
         this.allowPartOperMic = SessionPresetEnum.off;
         this.allowPartOperShare = SessionPresetEnum.off;

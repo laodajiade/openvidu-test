@@ -13,6 +13,5 @@ public class DepartmentTree implements Serializable  {
     private Long orgId;
     private Long parentId;
     private String organizationName;
-    private JsonArray deviceList;
     private List<DepartmentTree> organizationList;
 }

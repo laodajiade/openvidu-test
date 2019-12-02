@@ -20,20 +20,20 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class GetAddressListHandler extends RpcAbstractHandler {
+public class GetSubDevOrUserHandler extends RpcAbstractHandler {
 
     @Resource
     private DepartmentMapper departmentMapper;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Long orgId = getLongParam(request, ProtocolElements.GETADDRESSLIST_ORG_ID);
+        Long orgId = getLongParam(request, ProtocolElements.GET_SUB_DEVORUSER_ORG_ID);
         DeviceDeptSearch search = new DeviceDeptSearch();
         search.setDeptId(orgId);
         List<DeviceDept> devices = deviceDeptMapper.selectBySearchCondition(search);
         JsonObject jsonObject = new  JsonObject();
-        JsonArray deviceList=deviceList(devices);
-        jsonObject.add(ProtocolElements.GET_CHILD_DEVICE_LIST_DEVICE_LIST_PAPM, deviceList);
+        JsonArray deviceList = deviceList(devices);
+        jsonObject.add(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_LIST_PARAM, deviceList);
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }

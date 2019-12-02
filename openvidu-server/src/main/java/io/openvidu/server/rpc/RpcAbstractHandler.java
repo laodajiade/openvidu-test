@@ -220,11 +220,11 @@ public abstract class RpcAbstractHandler {
          JsonArray DeviceList = new JsonArray();
          devices.forEach(device->{
              JsonObject jsonDevice = new JsonObject();
-             jsonDevice.addProperty(ProtocolElements.GET_CHILD_DEVICE_LIST_SERIAL_NUMBER_PAPM, device.getSerialNumber());
-             jsonDevice.addProperty(ProtocolElements.GET_CHILD_DEVICE_LIST_DEVICE_NAME_PAPM, device.getDeviceName());
+             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
+             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
              for (RpcConnection rpc : notificationService.getRpcConnections()) {
                  if (device.getSerialNumber().equals(rpc.getSerialNumber())) {
-                     jsonDevice.addProperty(ProtocolElements.GET_CHILD_DEVICE_LIST_ACCOUNT_PAPM, rpc.getUserUuid());
+                     jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, rpc.getUserUuid());
                      break;
                  }
              }

@@ -369,11 +369,12 @@ public class ProtocolElements {
 	public static final String USER_BREAK_LINE_METHOD = "userBreakLine";
 	public static final String USER_BREAK_LINE_CONNECTION_ID_PARAM = "connectionId";
 
-	public static final String GETADDRESSLIST_METHOD = "getAddressList";
-	public static final String GETADDRESSLIST_ORG_ID = "orgId";
-	public static final String GETADDRESSLIST_SERIAL_NUMBER_PARAM  = "serialNumber";
-	public static final String GETADDRESSLIST_DEVICE_NAME_PARAM  = "deviceName";
-	public static final String GETADDRESSLIST_ACCOUNT_PARAM  = "account";
+	public static final String GET_SUB_DEVORUSER_METHOD = "getSubDevOrUser";
+	public static final String GET_SUB_DEVORUSER_ORG_ID = "orgId";
+	public static final String GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM  = "serialNumber";
+	public static final String GET_SUB_DEVORUSER_DEVICE_NAME_PARAM  = "deviceName";
+	public static final String GET_SUB_DEVORUSER_ACCOUNT_PARAM  = "account";
+	public static final String GET_SUB_DEVORUSER_DEVICE_LIST_PARAM  = "deviceList";
 
 	public static  final  String START_PTZ_CONTROL_METHOD = "startPtzControl";
 	public static  final  String START_PTZ_CONTROL_SERIAL_NUMBER_PARM = "serialNumber";
@@ -387,21 +388,17 @@ public class ProtocolElements {
 	public static  final  String SWAP_PART_WINDOW_SOURCE_CONNECTION_ID_PAPM = "sourceConnectionId";
 	public static  final  String SWAP_PART_WINDOW_TARGET_CONNECTION_ID_PAPM = "targetConnectionId";
 
-	public static  final  String GET_CHILD_DEVICE_LIST_METHOD = "getChildDeviceList";
-	public static  final  String GET_CHILD_DEVICE_LIST_CORP_NAME_PAPM = "corpName";
-	public static  final  String GET_CHILD_DEVICE_LIST_ORG_ID_PAPM = "orgId";
-	public static  final  String GET_CHILD_DEVICE_LIST_ORGANIZATION_NAME_PAPM = "organizationName";
-	public static  final  String GET_CHILD_DEVICE_LIST_SERIAL_NUMBER_PAPM = "serialNumber";
-	public static  final  String GET_CHILD_DEVICE_LIST_DEVICE_NAME_PAPM = "deviceName";
-	public static  final  String GET_CHILD_DEVICE_LIST_ACCOUNT_PAPM = "account";
-	public static  final  String GET_CHILD_DEVICE_LIST_DEPT_LIST_PAPM = "deptList";
-	public static  final  String GET_CHILD_DEVICE_LIST_DEVICE_LIST_PAPM = "deviceList";
-
+	public static  final  String GET_DEPARTMENT_TREE_METHOD = "getDepartmentTree";
+	public static  final  String GET_DEPARTMENT_TREE_CORP_NAME_PAPM = "corpName";
+	public static  final  String GET_DEPARTMENT_TREE_ORG_ID_PAPM = "orgId";
+	public static  final  String GET_DEPARTMENT_TREE_ORGANIZATION_NAME_PAPM = "organizationName";
+	public static  final  String GET_DEPARTMENT_TREE_ORGANIZATION_LIST_PAPM = "organizationList";
+	public static  final  String GET_DEPARTMENT_TREE_PARENT_ID_PAPM = "parentId";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,
-			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD, GETADDRESSLIST_METHOD,GET_CHILD_DEVICE_LIST_METHOD);
+			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD, GET_SUB_DEVORUSER_METHOD,GET_DEPARTMENT_TREE_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 

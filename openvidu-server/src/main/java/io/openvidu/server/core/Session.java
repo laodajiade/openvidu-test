@@ -185,9 +185,13 @@ public class Session implements SessionInterface {
 		return getConference().getStartTime().getTime();
 	}
 
-	public long getConfEndTime() {							// unit is ms
-		int confDuration = Float.valueOf(getPresetInfo().getRoomDuration() * 60 * 60 * 1000).intValue() + getConfDelayTime() * 1000;
-		return getConfStartTime() + confDuration;
+	public long getConfEndTime() {// unit is ms
+		if (getPresetInfo().getRoomDuration() == -1) {
+			return 0;
+		}
+        int confDuration = Float.valueOf(getPresetInfo().getRoomDuration() * 60 * 60 * 1000).intValue() + getConfDelayTime() * 1000;
+        return getConfStartTime() + confDuration;
+
 	}
 
 	public long getConfRemainTime() {						// unit is second

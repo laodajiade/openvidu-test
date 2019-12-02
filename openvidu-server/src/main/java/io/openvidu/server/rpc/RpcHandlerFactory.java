@@ -165,7 +165,7 @@ public class RpcHandlerFactory {
     private SetConferenceLayoutHandler setConferenceLayoutHandler;
 
     @Resource
-    private GetAddressListHandler getAddressListHandler;
+    private GetSubDevOrUserHandler getSubDevOrUserHandler;
 
     @Resource
     private StartPtzControlHandler startPtzControlHandler;
@@ -177,7 +177,7 @@ public class RpcHandlerFactory {
     private  SwapPartWindowHandler swapPartWindowHandler;
 
     @Resource
-    private  GetChildDeviceListHandler getChildDeviceListHandler;
+    private GetDepartmentTreeHandler getDepartmentTreeHandler;
 
 
     @PostConstruct
@@ -230,11 +230,11 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETROOMLAYOUT_METHOD,              getRoomLayoutHandler);
         handlersMap.put(ProtocolElements.BROADCASTMAJORLAYOUT_METHOD,       broadcastMajorLayoutHandler);
         handlersMap.put(ProtocolElements.SETCONFERENCELAYOUT_MODE_METHOD,   setConferenceLayoutHandler);
-        handlersMap.put(ProtocolElements.GETADDRESSLIST_METHOD,             getAddressListHandler);
+        handlersMap.put(ProtocolElements.GET_SUB_DEVORUSER_METHOD,          getSubDevOrUserHandler);
         handlersMap.put(ProtocolElements.START_PTZ_CONTROL_METHOD,          startPtzControlHandler);
         handlersMap.put(ProtocolElements.STOP_PTZ_CONTROL_METHOD,           stopPtzControlHandler);
         handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,           swapPartWindowHandler);
-        handlersMap.put(ProtocolElements.GET_CHILD_DEVICE_LIST_METHOD,      getChildDeviceListHandler);
+        handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD,        getDepartmentTreeHandler);
 
     }
 
