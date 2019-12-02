@@ -44,27 +44,12 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 	private AtomicBoolean connectedToPublisher = new AtomicBoolean(false);
 
-//	private HubPort majorHubPortOut = null;
-//	private ListenerSubscription majorHubPortOutSubscription = null;
-
-//	private HubPort majorShareHubPortOut = null;
-//	private ListenerSubscription majorShareHubPortOutSubscription = null;
-
 	private PublisherEndpoint publisher = null;
 
 	public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
 							  CompositeService compositeService, OpenviduConfig openviduConfig) {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
 		this.setCompositeService(compositeService);
-//		majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
-//		log.info("Sub EP create majorHubPortOut.");
-//		majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
-//
-//		if (compositeService.isExistSharing()) {
-//			majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
-//			log.info("Sub EP create majorShareHubPortOut.");
-//			majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
-//		}
 	}
 
 	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {

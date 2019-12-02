@@ -106,7 +106,6 @@ public abstract class MediaEndpoint {
 
 		this.openviduConfig = openviduConfig;
 
-//		KurentoTokenOptions kurentoTokenOptions = this.owner.getToken().getKurentoTokenOptions();
 		KurentoTokenOptions kurentoTokenOptions = null;
 		if (kurentoTokenOptions != null) {
 			this.maxRecvKbps = kurentoTokenOptions.getVideoMaxRecvBandwidth() != null
@@ -214,10 +213,6 @@ public abstract class MediaEndpoint {
 	public void setMediaPipeline(MediaPipeline pipeline) {
 		this.pipeline = pipeline;
 	}
-
-	/*public Composite getMajorComposite() {
-		return this.compositeService.getMajorComposite();
-	}*/
 
 	public Composite getMajorShareComposite() {
 		return this.compositeService.getMajorShareComposite();

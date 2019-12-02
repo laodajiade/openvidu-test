@@ -79,8 +79,6 @@ public class KurentoSession extends Session {
 		checkClosed();
 		createPipeline();
 		this.compositeService.setPipeline(this.getPipeline());
-
-//		compositeService.createMajorComposite();
 		compositeService.createMajorShareComposite();
 		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             compositeService.setExistSharing(true);
@@ -88,7 +86,6 @@ public class KurentoSession extends Session {
 
 		KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 				this.openviduConfig, this.recordingManager);
-//		participants.put(participant.getParticipantPrivateId(), kurentoParticipant);
 		participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
 			Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
 			if (newPart != null)
@@ -102,10 +99,6 @@ public class KurentoSession extends Session {
 			connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
 			return connectionParticipants;
 		});
-
-		/*if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
-			dealParticipantDefaultOrder(kurentoParticipant);
-		}*/
 
 		filterStates.forEach((filterId, state) -> {
 			log.info("Adding filter {}", filterId);
@@ -121,10 +114,6 @@ public class KurentoSession extends Session {
 
 	public void newPublisher(Participant participant) {
 		registerPublisher();
-
-		// pre-load endpoints to recv video from the new publisher
-//        for (Participant p : participants.values()) {
-        // TODO exclude participants of the same RPCConnection
 		for (Participant p : getParticipants()) {
 			if (participant.equals(p)) {
 				continue;
@@ -137,9 +126,6 @@ public class KurentoSession extends Session {
 	}
 
 	public void cancelPublisher(Participant participant, EndReason reason) {
-		// Cancel all subscribers for this publisher
-//		for (Participant subscriber : participants.values()) {
-        // TODO exclude participants of the same RPCConnection
 		for (Participant subscriber : getParticipants()) {
 			if (participant.equals(subscriber)) {
 				continue;
@@ -371,8 +357,7 @@ public class KurentoSession extends Session {
 		this.closePipeline(() -> {
 			log.info("Reseting process: media pipeline closed for active session {}", this.sessionId);
 			createPipeline();
-			/*createMajorComposite();
-			createMajorShareComposite();*/
+			/*createMajorShareComposite();*/
 			try {
 				if (!pipelineLatch.await(20, TimeUnit.SECONDS)) {
 					throw new Exception("MediaPipleine was not created in 20 seconds");

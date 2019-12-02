@@ -54,9 +54,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private PassThrough passThru = null;
 	private ListenerSubscription passThruSubscription = null;
 
-	/*private HubPort majorHubPort = null;
-	private ListenerSubscription majorHubPortSubscription = null;*/
-
 	private HubPort majorShareHubPort = null;
 	private ListenerSubscription majorShareHubPortSubscription = null;
 
@@ -94,14 +91,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 		majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
 		log.info("Pub EP create majorShareHubPort.");
 		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
-		/*if (isSharing()) {
-            passThru = new PassThrough.Builder(getPipeline()).build();
-            passThruSubscription = registerElemErrListener(passThru);
-        } else {
-			majorHubPort = new HubPort.Builder(getMajorComposite()).build();
-			log.info("Pub EP create majorHubPort.");
-			majorHubPortSubscription = registerElemErrListener(majorHubPort);
-		}*/
 	}
 
 	@Override
@@ -112,13 +101,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 		if (!isSharing()) {
 			unregisterElementErrListener(audioHubPortOut, audioHubPortOutSubscription);
 		}
-		/*if (isSharing()) {
-			unregisterElementErrListener(passThru, passThruSubscription);
-		} else {
-			unregisterElementErrListener(majorHubPort, majorHubPortSubscription);
-			unregisterElementErrListener(audioHubPortOut, audioHubPortOutSubscription);
-		}
-		unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);*/
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
 		}
@@ -217,9 +199,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 		if (passThru != null) {
 			elements.put(passThru.getId(), passThru);
 		}
-		/*if (majorHubPort != null) {
-			elements.put(majorHubPort.getId(), majorHubPort);
-		}*/
 		if (majorShareHubPort != null) {
 			elements.put(majorShareHubPort.getId(), majorShareHubPort);
 		}
@@ -349,21 +328,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 	}
 
 	public synchronized void disconnectFrom(MediaElement sink) {
-		/*if (isSharing()) {
-			internalSinkDisconnect(passThru, sink);
-		} else {
-			internalSinkDisconnect(majorHubPort, sink);
-		}*/
 		internalSinkDisconnect(passThru, sink);
 		internalSinkDisconnect(majorShareHubPort, sink);
 	}
 
 	public synchronized void disconnectFrom(MediaElement sink, MediaType type) {
-		/*if (isSharing()) {
-			internalSinkDisconnect(passThru, sink, type);
-		} else {
-			internalSinkDisconnect(majorHubPort, sink, type);
-		}*/
 		internalSinkDisconnect(passThru, sink, type);
 		internalSinkDisconnect(majorShareHubPort, sink, type);
 	}
@@ -417,11 +386,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 			}
 			internalSinkConnect(shaper, passThru, type);
 			internalSinkConnect(shaper, majorShareHubPort, type);
-			/*if (isSharing()) {
-				internalSinkConnect(shaper, passThru, type);
-			} else {
-				internalSinkConnect(shaper, majorHubPort, type);
-			}*/
 		}
 		elementIds.addFirst(id);
 		elements.put(id, shaper);

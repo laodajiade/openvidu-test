@@ -129,13 +129,6 @@ public class KurentoParticipant extends Participant {
 				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
 				+ RandomStringUtils.random(5, true, false).toUpperCase();
 
-//		if (Objects.equals(StreamType.MAJOR, getStreamType())) {
-//			if (Objects.isNull(this.session.compositeService.getMixMajorStreamId())) {
-//				String mixMajorStreamId = RandomStringUtils.random(32, true, true)
-//						+ "_" + "MAJOR-MIX";
-//				this.session.compositeService.setMixMajorStreamId(mixMajorStreamId);
-//			}
-//		} else {
 		String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
 				+ "_" + "MAJOR-SHARE-MIX";
 		this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
@@ -151,29 +144,6 @@ public class KurentoParticipant extends Participant {
 		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
 
 	}
-
-	/*public void createPublishingEndpoint(MediaOptions mediaOptions, StreamType streamType) {
-
-		publisher.createEndpoint(publisherLatch);
-		if (getPublisher().getEndpoint() == null) {
-			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
-		}
-		publisher.setMediaOptions(mediaOptions);
-
-		String publisherStreamId = this.getParticipantPublicId() + "_"
-				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
-				+ RandomStringUtils.random(5, true, false).toUpperCase();
-
-		this.publisher.setEndpointName(publisherStreamId);
-		this.publisher.getEndpoint().setName(publisherStreamId);
-		this.publisher.setStreamId(publisherStreamId);
-
-		endpointConfig.addEndpointListeners(this.publisher, "publisher");
-
-		// Remove streamId from publisher's map
-		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
-
-	}*/
 
 	public synchronized Filter getFilterElement(String id) {
 		return filters.get(id);

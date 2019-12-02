@@ -161,19 +161,13 @@ public class KurentoSessionManager extends SessionManager {
 		session.leaveRoom(participant, reason);
 
 		// Update control data structures
-
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-//			log.info("before remove size:{}", sessionidParticipantpublicidParticipant.get(sessionId).size());
 			Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
 					.remove(participant.getParticipantPublicId());
-//			log.info("after remove size:{}", sessionidParticipantpublicidParticipant.get(sessionId).size());
 			if (this.coturnCredentialsService.isCoturnAvailable()) {
 //				this.coturnCredentialsService.deleteUser(p.getToken().getTurnCredentials().getUsername());
 			}
 
-			/*if (sessionidTokenTokenobj.get(sessionId) != null) {
-				sessionidTokenTokenobj.get(sessionId).remove(p.getToken().getToken());
-			}*/
 			boolean stillParticipant = false;
 			for (Session s : sessions.values()) {
 				if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {

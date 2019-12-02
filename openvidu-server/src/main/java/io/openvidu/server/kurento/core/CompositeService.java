@@ -12,16 +12,9 @@ public class CompositeService {
     private Session session;
     private MediaPipeline pipeline;
 
-//    private Composite majorComposite;
-//    private final Object majorCompositeCreateLock = new Object();
-//    private final Object majorCompositeReleaseLock = new Object();
-
     private Composite majorShareComposite;
     private final Object majorShareCompositeCreateLock = new Object();
     private final Object majorShareCompositeReleaseLock = new Object();
-
-//    private HubPort majorHubPortOut;
-//    private ListenerSubscription majorHubPortOutSubscription = null;
 
     private HubPort majorShareHubPortOut = null;
     private ListenerSubscription majorShareHubPortOutSubscription = null;
@@ -29,37 +22,12 @@ public class CompositeService {
 
     private boolean existSharing;
 
-//    private String mixMajorStreamId;
     private String mixMajorShareStreamId;
     private String shareStreamId;
 
     public CompositeService(Session session) {
         this.session = session;
     }
-
-
-    /*void createMajorComposite() {
-        synchronized (majorCompositeCreateLock) {
-            if (pipeline == null || majorComposite != null) {
-                log.warn("create major composite: majorComposite already exists or pipeline is null.");
-                return;
-            }
-            log.info("SESSION {}: Creating Major Composite", session.getSessionId());
-            majorComposite = new Composite.Builder(this.pipeline).build();
-            createMajorHubPortOut();
-        }
-    }
-
-    void closeMajorComposite() {
-        releaseMajorHubPortOut();
-        synchronized (majorCompositeReleaseLock) {
-            if (Objects.isNull(majorComposite)) {
-                log.warn("majorComposite already released.");
-                return;
-            }
-            majorComposite.release();
-        }
-    }*/
 
     void createMajorShareComposite() {
         synchronized (majorShareCompositeCreateLock) {
@@ -84,16 +52,6 @@ public class CompositeService {
         }
     }
 
-    /*public void createMajorHubPortOut() {
-        majorHubPortOut = new HubPort.Builder(getMajorComposite()).build();
-        majorHubPortOutSubscription = registerElemErrListener(majorHubPortOut);
-        log.info("Sub EP create majorHubPortOut.");
-    }*/
-
-//    public HubPort getMajorHubPortOut() {
-//        return this.majorHubPortOut;
-//    }
-
     public void createMajorShareHubPortOut() {
         majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
         majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
@@ -103,13 +61,6 @@ public class CompositeService {
     public HubPort getMajorShareHubPortOut() {
         return this.majorShareHubPortOut;
     }
-
-    /*public void releaseMajorHubPortOut() {
-        unregisterErrorListeners(majorHubPortOut, majorHubPortOutSubscription);
-        if (!Objects.isNull(majorHubPortOut)) {
-            releaseElement(majorHubPortOut);
-        }
-    }*/
 
     public void releaseMajorShareHubPortOut() {
         unregisterErrorListeners(majorShareHubPortOut, majorShareHubPortOutSubscription);
@@ -162,11 +113,6 @@ public class CompositeService {
         element.removeErrorListener(subscription);
     }
 
-
-//    public Composite getMajorComposite() {
-//        return majorComposite;
-//    }
-
     public Composite getMajorShareComposite() {
         return majorShareComposite;
     }
@@ -178,14 +124,6 @@ public class CompositeService {
     public void setExistSharing(boolean existSharing) {
         this.existSharing = existSharing;
     }
-
-//    public synchronized String getMixMajorStreamId() {
-//        return mixMajorStreamId;
-//    }
-
-//    public synchronized void setMixMajorStreamId(String mixMajorStreamId) {
-//        this.mixMajorStreamId = mixMajorStreamId;
-//    }
 
     public void setMixMajorShareStreamId(String mixMajorShareStreamId) {
         this.mixMajorShareStreamId = mixMajorShareStreamId;
