@@ -539,7 +539,7 @@ public class Session implements SessionInterface {
                     majorMixLinkedArr, kurentoClient.getSessionId(), true));*/
 //            if (kurentoSession.compositeService.isExistSharing()) {
                kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-                        majorShareMixLinkedArr, kurentoClient.getSessionId(), false));
+                        majorShareMixLinkedArr, kurentoClient.getSessionId()));
 //            }
         } catch (IOException e) {
             log.error("Exception:\n", e);
@@ -549,7 +549,7 @@ public class Session implements SessionInterface {
         return 1;
     }
 
-    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId, boolean majorComposite) {
+    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId) {
         Request<JsonObject> kmsRequest = new Request<>();
         JsonObject params = new JsonObject();
         params.addProperty("object", pipelineId);
@@ -561,11 +561,7 @@ public class Session implements SessionInterface {
             JsonObject resultPart = temp.deepCopy();
             KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(temp
                     .get("connectionId").getAsString());
-            if (majorComposite) {
-				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorHubPort().getId());
-			} else {
-				resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
-			}
+			resultPart.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
             resultPart.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
             resultPart.addProperty("onlineStatus",
                     kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");

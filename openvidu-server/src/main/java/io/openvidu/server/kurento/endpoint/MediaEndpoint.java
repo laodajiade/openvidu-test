@@ -215,9 +215,9 @@ public abstract class MediaEndpoint {
 		this.pipeline = pipeline;
 	}
 
-	public Composite getMajorComposite() {
+	/*public Composite getMajorComposite() {
 		return this.compositeService.getMajorComposite();
-	}
+	}*/
 
 	public Composite getMajorShareComposite() {
 		return this.compositeService.getMajorShareComposite();

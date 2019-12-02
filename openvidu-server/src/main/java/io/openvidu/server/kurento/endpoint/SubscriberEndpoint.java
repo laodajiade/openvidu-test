@@ -17,23 +17,22 @@
 
 package io.openvidu.server.kurento.endpoint;
 
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.CompositeService;
-import org.kurento.client.*;
+import io.openvidu.server.kurento.core.KurentoParticipant;
+import org.kurento.client.Continuation;
+import org.kurento.client.MediaElement;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-
-import javax.print.attribute.standard.Media;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Subscriber aspect of the {@link MediaEndpoint}.
@@ -69,23 +68,15 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	}
 
 	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
-		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.SFU_SHARING, streamMode) ?
-				publisher.getOwner().getParticipantPublicId() : (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) ?
-				getCompositeService().getMixMajorStreamId() : getCompositeService().getMixMajorShareStreamId()));
+		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
+				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getParticipantPublicId());
+
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
-		if (Objects.equals(StreamModeEnum.SFU_SHARING, streamMode)) {
-			publisher.connect(this.getEndpoint());
+		if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
 		} else {
-			publisher.checkInnerConnect();
-			switch (streamMode) {
-				case MIX_MAJOR:
-					internalSinkConnect(getCompositeService().getMajorHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
-					break;
-				case MIX_MAJOR_AND_SHARING:
-					internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
-					break;
-			}
+			publisher.connect(this.getEndpoint());
 		}
 
 		setConnectedToPublisher(true);

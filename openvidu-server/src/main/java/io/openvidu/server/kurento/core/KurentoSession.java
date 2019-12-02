@@ -80,7 +80,7 @@ public class KurentoSession extends Session {
 		createPipeline();
 		this.compositeService.setPipeline(this.getPipeline());
 
-		compositeService.createMajorComposite();
+//		compositeService.createMajorComposite();
 		compositeService.createMajorShareComposite();
 		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             compositeService.setExistSharing(true);
@@ -193,21 +193,14 @@ public class KurentoSession extends Session {
 	@Override
 	public boolean close(EndReason reason) {
 		if (!closed) {
-		    boolean needCloaseMajorShareComposite = false;
 			for (Participant participant : getParticipants()) {
 			    KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
-			    if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
-			        needCloaseMajorShareComposite = true;
-                }
                 kurentoParticipant.releaseAllFilters();
                 kurentoParticipant.close(reason, true, 0);
 			}
 
 			participants.clear();
-            compositeService.closeMajorComposite();
-            if (needCloaseMajorShareComposite) {
-				compositeService.closeMajorShareComposite();
-            }
+            compositeService.closeMajorShareComposite();
 			closePipeline(null);
 
 			log.debug("Session {} closed", this.sessionId);
