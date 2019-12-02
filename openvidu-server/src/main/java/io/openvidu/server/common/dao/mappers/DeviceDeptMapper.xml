@@ -40,9 +40,9 @@
       corp_id = #{corpId,jdbcType=BIGINT}
   </select>
   <select id="selectCorpByOrgId" resultType="java.lang.Long" parameterType="java.lang.Long" >
-    select distinct corp_id
+    select  corp_id
     from sd_device_dept
-    where dept_id = #{orgId,jdbcType=BIGINT}
+    where dept_id = #{orgId,jdbcType=BIGINT} LIMIT 1
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_device_dept
