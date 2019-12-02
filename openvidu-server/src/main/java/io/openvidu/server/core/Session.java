@@ -381,18 +381,20 @@ public class Session implements SessionInterface {
 			}
 
 		}
-		JsonArray newMajorMixLinkedArr = new JsonArray(50);
+		JsonArray newMajorMixLinkedArr;
     	if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
+			newMajorMixLinkedArr = new JsonArray(50);
 			newMajorMixLinkedArr.add(getPartLayoutInfo(0, StreamType.MAJOR.name(),
 					kurentoParticipant.getParticipantPublicId()));
+
 			rearrangement(newMajorMixLinkedArr);//后面的重新排序
-    	}
-    	if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+    	} else if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+			newMajorMixLinkedArr = new JsonArray(50);
     		newMajorMixLinkedArr.add(getPartLayoutInfo(0, StreamType.SHARING.name(),
                     kurentoParticipant.getParticipantPublicId()));
-			rearrangement(newMajorMixLinkedArr);//后面的重新排序
 
-        }else {
+    		rearrangement(newMajorMixLinkedArr);//后面的重新排序
+        } else {
     	    majorShareMixLinkedArr.add(getPartLayoutInfo(majorShareMixLinkedArr.size(), StreamType.MAJOR.name(),
 					kurentoParticipant.getParticipantPublicId()));
 		}
@@ -408,8 +410,8 @@ public class Session implements SessionInterface {
 					originObj.get("connectionId").getAsString()));
 
 		}
-		majorShareMixLinkedArr = newMajorMixLinkedArr;
 
+		majorShareMixLinkedArr = newMajorMixLinkedArr;
 	}
 
 	public void  leaveRoomSetLayout(StreamType streamType, Participant participant){
