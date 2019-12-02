@@ -37,13 +37,16 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
         log.info("deptId:{}", userInfo.get("deptId"));
         Long orgId = Long.valueOf(String.valueOf(userInfo.get("deptId")));
+        log.info("orgId:{}", orgId);
         Department rootDept = departmentMapper.selectByPrimaryKey(orgId);
+
         Long corpId = deviceDeptMapper.selectCorpByOrgId(orgId);
+        log.info("corpId:{}，deptname{}", corpId,rootDept.getDeptName());
         Corporation corporation = corporationMapper.selectByPrimaryKey(corpId);
+        log.info("corpNmae:{}", corporation.getCorpName());
         jsonObject.addProperty(ProtocolElements.GET_DEPARTMENT_TREE_CORP_NAME_PAPM, corporation.getCorpName());
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(corpId);
-
-
+        log.info("d{}", deptList.get(1).getOrganizationName());
         DepartmentTree rootDeptTree = DepartmentTree.builder().orgId(rootDept.getId()).parentId(rootDept.getParentId())
 
                 .organizationName(rootDept.getDeptName()).build();

@@ -40,7 +40,7 @@
       corp_id = #{corpId,jdbcType=BIGINT}
   </select>
   <select id="selectCorpByOrgId" resultType="java.lang.Long" parameterType="java.lang.Long" >
-    select corp_id
+    select distinct corp_id
     from sd_device_dept
     where dept_id = #{orgId,jdbcType=BIGINT}
   </select>
