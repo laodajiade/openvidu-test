@@ -26,10 +26,10 @@
       from sd_conference
       where
       <if test="roomId != null" >
-          room_id = #{roomId,jdbcType=VARCHAR}
+          room_id = #{roomId,jdbcType=VARCHAR} and
       </if>
       <if test="status != null">
-          and status = #{status,jdbcType=TINYINT}
+          status = #{status,jdbcType=TINYINT}
       </if>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
