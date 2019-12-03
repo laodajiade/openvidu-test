@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -18,7 +19,15 @@ public class StopPtzControlHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String  connectionId = getStringParam(request, ProtocolElements.STOP_PTZ_CONTROL_CONNECTIONID_PARM);
-            String serialNumber = lookingDevice(rpcConnection,connectionId);
+        // verify current user role
+        if (!OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(rpcConnection.getSessionId(),
+                rpcConnection.getParticipantPrivateId()).getRole())) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+        RpcConnection rpc = lookingDevice(rpcConnection,connectionId);
+        String serialNumber = rpc.getSerialNumber();
         if (Objects.isNull(serialNumber)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
@@ -28,11 +37,9 @@ public class StopPtzControlHandler extends RpcAbstractHandler {
         JsonObject notifyResult = new JsonObject();
         notifyResult.addProperty(ProtocolElements.STOP_PTZ_CONTROL_SERIAL_NUMBER_PARM, serialNumber);
 
-        sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->{
-            if(p.getUserId().equals(rpcConnection.getUserId())) {
-                notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.START_PTZ_CONTROL_METHOD, notifyResult);
-            }
-        });
+
+                notificationService.sendNotification(rpc.getParticipantPrivateId(), ProtocolElements.START_PTZ_CONTROL_METHOD, notifyResult);
+
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
