@@ -376,6 +376,8 @@ public class ProtocolElements {
 	public static final String GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM  = "serialNumber";
 	public static final String GET_SUB_DEVORUSER_DEVICE_NAME_PARAM  = "deviceName";
 	public static final String GET_SUB_DEVORUSER_ACCOUNT_PARAM  = "account";
+    public static final String GET_SUB_DEVORUSER_DEVICESTATUS_PARAM  = "deviceStatus";
+
 	public static final String GET_SUB_DEVORUSER_DEVICE_LIST_PARAM  = "deviceList";
 
 	public static  final  String START_PTZ_CONTROL_METHOD = "startPtzControl";

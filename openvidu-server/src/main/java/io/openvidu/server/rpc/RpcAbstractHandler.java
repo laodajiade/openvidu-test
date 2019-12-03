@@ -6,6 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
@@ -26,10 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author geedow
@@ -225,7 +223,23 @@ public abstract class RpcAbstractHandler {
              for (RpcConnection rpc : notificationService.getRpcConnections()) {
                  if (device.getSerialNumber().equals(rpc.getSerialNumber())) {
                      jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, rpc.getUserUuid());
-                     break;
+                     ConferenceSearch search = new ConferenceSearch();
+                     // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
+                     search.setStatus(1);
+                     List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
+                     conferences.forEach(conference -> {
+                         Set<Participant> participants = this.sessionManager.getParticipants(conference.getRoomId());
+                         participants.forEach(participant -> {
+                             if (Objects.equals(participant.getParticipantPrivateId(), rpc.getParticipantPrivateId()) && !Objects.isNull(rpc.getSerialNumber())) {
+                                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.meeting.toString());
+                             } else {
+                                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.online.toString());
+                             }
+                         });
+                     });
+
+                 } else {
+                     jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
                  }
              }
              DeviceList.add(jsonDevice);
