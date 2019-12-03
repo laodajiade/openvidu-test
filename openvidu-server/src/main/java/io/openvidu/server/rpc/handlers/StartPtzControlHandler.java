@@ -27,13 +27,10 @@ public class StartPtzControlHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
                return;
           }
-
-
-
-        JsonObject notifyResult = new JsonObject();
-        notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_SERIAL_NUMBER_PARM, serialNumber);
-        notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_OPERATE_CODE_PARM, operateCode);
-        notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_MAX_DURATION_PARM, maxDuration);
+          JsonObject notifyResult = new JsonObject();
+          notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_SERIAL_NUMBER_PARM, serialNumber);
+          notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_OPERATE_CODE_PARM, operateCode);
+          notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_MAX_DURATION_PARM, maxDuration);
 
 
 
