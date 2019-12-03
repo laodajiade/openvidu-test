@@ -100,6 +100,7 @@ public class ProtocolElements {
 
 	public static final String UNSUBSCRIBEFROMVIDEO_METHOD = "unsubscribeFromVideo";
 	public static final String UNSUBSCRIBEFROMVIDEO_SENDER_PARAM = "sender";
+	public static final String UNSUBSCRIBEFROMVIDEO_STREAMMODE_PARAM = "streamMode";
 
 	public static final String ONICECANDIDATE_METHOD = "onIceCandidate";
 	public static final String ONICECANDIDATE_EPNAME_PARAM = "endpointName";
