@@ -39,7 +39,7 @@ public class StartPtzControlHandler extends RpcAbstractHandler {
           notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_SERIAL_NUMBER_PARM, serialNumber);
           notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_OPERATE_CODE_PARM, operateCode);
           notifyResult.addProperty(ProtocolElements.START_PTZ_CONTROL_MAX_DURATION_PARM, maxDuration);
-          notificationService.sendNotification(rpc.getParticipantPrivateId(), ProtocolElements.START_PTZ_CONTROL_METHOD, notifyResult);
+          notificationService.sendNotification(rpc.getParticipantPrivateId(), ProtocolElements.START_PTZ_CONTROL_STARTPTZCONTROLNOTIFY_PARM, notifyResult);
           this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

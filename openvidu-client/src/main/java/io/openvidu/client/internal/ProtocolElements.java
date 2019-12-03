@@ -385,10 +385,12 @@ public class ProtocolElements {
 	public static  final  String START_PTZ_CONTROL_OPERATE_CODE_PARM = "operateCode";
 	public static  final  String START_PTZ_CONTROL_MAX_DURATION_PARM = "maxDuration";
 	public static  final  String START_PTZ_CONTROL_CONNECTIONID_PARM = "connectionId";
+	public static  final  String START_PTZ_CONTROL_STARTPTZCONTROLNOTIFY_PARM = "startPtzControlNotify";
 
 	public static  final  String STOP_PTZ_CONTROL_METHOD = "stopPtzControl";
 	public static  final  String STOP_PTZ_CONTROL_SERIAL_NUMBER_PARM = "serialNumber";
 	public static  final  String STOP_PTZ_CONTROL_CONNECTIONID_PARM = "connectionId";
+	public static  final  String STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_PARM = "stopPtzControlNotify";
 
 	public static  final  String SWAP_PART_WINDOW_METHOD = "swapPartWindow";
 	public static  final  String SWAP_PART_WINDOW_SOURCE_CONNECTION_ID_PAPM = "sourceConnectionId";
