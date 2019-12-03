@@ -369,4 +369,21 @@ public abstract class RpcAbstractHandler {
         return participant.getParticipantPrivateId()
                 .equals(this.sessionManager.getParticipantPrivateIdFromStreamId(sessionId, streamId));
     }
+
+    protected  String lookingDevice(RpcConnection rpcConnection, String connectionId){
+        io.openvidu.server.core.Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
+        Participant participant = null;
+        String serialNumber = null;
+
+        for (Participant p : session.getParticipants()) {
+            if (Objects.equals(connectionId, p.getParticipantPublicId()))
+                participant = p;
+        }
+        if (Objects.isNull(participant))
+            return serialNumber;
+        if (Objects.equals(participant.getParticipantPrivateId(), rpcConnection.getParticipantPrivateId())) {
+            return serialNumber= rpcConnection.getSerialNumber();
+        }
+        return serialNumber;
+    }
 }
