@@ -32,7 +32,7 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
             return;
         }
         StreamModeEnum streamMode = null;
-        String streamModeStr = getStringParam(request, ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM);
+        String streamModeStr = getStringOptionalParam(request, ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM);
         if (!StringUtils.isEmpty(streamModeStr))
             streamMode = StreamModeEnum.valueOf(getStringParam(request, ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM));
 
