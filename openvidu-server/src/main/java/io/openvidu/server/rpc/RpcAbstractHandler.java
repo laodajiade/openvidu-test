@@ -223,7 +223,8 @@ public abstract class RpcAbstractHandler {
              for (RpcConnection rpc : notificationService.getRpcConnections()) {
                  if (device.getSerialNumber().equals(rpc.getSerialNumber())) {
                      jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, rpc.getUserUuid());
-                     ConferenceSearch search = new ConferenceSearch();
+                     jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
+                     /*ConferenceSearch search = new ConferenceSearch();
                      // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
                      search.setStatus(1);
                      List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
@@ -236,12 +237,13 @@ public abstract class RpcAbstractHandler {
                                  jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.online.toString());
                              }
                          });
-                     });
-
+                     });*/
                  } else {
                      jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
                  }
              }
+
+
              DeviceList.add(jsonDevice);
          });
          return  DeviceList;

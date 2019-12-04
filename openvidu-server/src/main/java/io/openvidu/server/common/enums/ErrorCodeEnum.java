@@ -33,9 +33,8 @@ public enum ErrorCodeEnum {
     USER_ALREADY_ONLINE(13010, "user already online"),
     CONFERENCE_TOO_LONG(13011, "conference too long"),
     NOT_EXIST_SHARING_FLOW(13012, "not exists sharing flow"),
-
-    DEVICE_NOT_FOUND(13100, "device not found");
-
+    DEVICE_NOT_FOUND(13100, "device not found"),
+    DEVICE_BUSY(13101,"device busy");
 
     private int code;
     private String message;

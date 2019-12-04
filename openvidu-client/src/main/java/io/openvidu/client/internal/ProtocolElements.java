@@ -152,6 +152,7 @@ public class ProtocolElements {
     public static final String ACCESS_IN_FORCE_LOGIN_PARAM = "forceLogin";
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
+	public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
 
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";
@@ -315,8 +316,9 @@ public class ProtocolElements {
 
 
 	public static final String GET_DEVICE_INFO_METHOD = "getDeviceInfo";
-	public static final String GET_DEVICE_ID_PARAM = "deviceId";
+	public static final String GET_DEVICE_STATUS_PARAM = "status";
 	public static final String GET_DEVICE_NANE_PARAM = "deviceName";
+	public static final String GET_DEVICE_DEVCURVERSION_PARAM = "devCurVersion";
 
 	public static final String UPDATE_DEVICE_INFO_METHOD = "updateDeviceInfo";
 	public static final String UPDATE_DEVICE_ID_PARAM = "deviceId";
@@ -385,12 +387,14 @@ public class ProtocolElements {
 	public static  final  String START_PTZ_CONTROL_OPERATE_CODE_PARM = "operateCode";
 	public static  final  String START_PTZ_CONTROL_MAX_DURATION_PARM = "maxDuration";
 	public static  final  String START_PTZ_CONTROL_CONNECTIONID_PARM = "connectionId";
-	public static  final  String START_PTZ_CONTROL_STARTPTZCONTROLNOTIFY_PARM = "startPtzControlNotify";
+
+	public static  final  String START_PTZ_CONTROL_STARTPTZCONTROLNOTIFY_METHOD = "startPtzControlNotify";
 
 	public static  final  String STOP_PTZ_CONTROL_METHOD = "stopPtzControl";
 	public static  final  String STOP_PTZ_CONTROL_SERIAL_NUMBER_PARM = "serialNumber";
 	public static  final  String STOP_PTZ_CONTROL_CONNECTIONID_PARM = "connectionId";
-	public static  final  String STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_PARM = "stopPtzControlNotify";
+
+	public static  final  String STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_METHOD = "stopPtzControlNotify";
 
 	public static  final  String SWAP_PART_WINDOW_METHOD = "swapPartWindow";
 	public static  final  String SWAP_PART_WINDOW_SOURCE_CONNECTION_ID_PAPM = "sourceConnectionId";
@@ -403,10 +407,18 @@ public class ProtocolElements {
 	public static  final  String GET_DEPARTMENT_TREE_ORGANIZATION_LIST_PAPM = "organizationList";
 	public static  final  String GET_DEPARTMENT_TREE_PARENT_ID_PAPM = "parentId";
 
+	public static  final  String COMMAND_UOGRADE_METHOD = "commandUpgrade";
+	public static  final  String COMMAND_UOGRADE_SERIALNUMBER_PAPM = "serialNumber";
+	public static  final  String COMMAND_UOGRADE_VERSION_PAPM = "version";
+	public static  final  String COMMAND_UOGRADE_DOWNLOADURL_PAPM = "downloadUrl";
+
+	public static  final  String UPGRADE_NOTIFY_METHOD = "upgradeNotify";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,
-			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD, GET_SUB_DEVORUSER_METHOD,GET_DEPARTMENT_TREE_METHOD);
+			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD, GET_SUB_DEVORUSER_METHOD,GET_DEPARTMENT_TREE_METHOD,
+			COMMAND_UOGRADE_METHOD);
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 

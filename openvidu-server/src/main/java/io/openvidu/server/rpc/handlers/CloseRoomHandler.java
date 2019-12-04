@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -58,5 +59,11 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                 notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
         this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
+        notificationService.getRpcConnections().forEach(rpc ->{
+            if (!Objects.isNull(rpc.getSerialNumber())){
+                cacheManage.setDeviceStatus(rpc.getSerialNumber(), DeviceStatus.online.name());
+            }
+        });
+
     }
 }

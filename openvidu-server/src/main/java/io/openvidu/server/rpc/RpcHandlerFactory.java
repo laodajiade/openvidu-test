@@ -179,6 +179,8 @@ public class RpcHandlerFactory {
     @Resource
     private GetDepartmentTreeHandler getDepartmentTreeHandler;
 
+    @Resource CommandUpgradeHandler commandUpgradeHandler;
+
 
     @PostConstruct
     public void init() {
@@ -235,7 +237,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.STOP_PTZ_CONTROL_METHOD,           stopPtzControlHandler);
         handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,           swapPartWindowHandler);
         handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD,        getDepartmentTreeHandler);
-
+        handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,            commandUpgradeHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

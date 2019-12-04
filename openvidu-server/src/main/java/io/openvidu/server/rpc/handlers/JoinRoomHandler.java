@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantJoinType;
 import io.openvidu.server.common.enums.StreamType;
@@ -184,6 +185,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
             if (isModerator(role)) {
                 sessionManager.cleanCacheCollections(sessionId);
             }
+        }
+        if (!Objects.isNull(rpcConnection.getSerialNumber())){
+            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
         }
     }
 }

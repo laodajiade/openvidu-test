@@ -31,7 +31,7 @@
     select
     <include refid="Base_Column_List" />
     from sd_device
-    where serial_number = #{serialNumber,jdbcType=BIGINT}
+    where serial_number = #{serialNumber, jdbcType=BIGINT}
   </select>
 
   <select id="selectDevSerialNumsByDeptIds" parameterType="java.util.List" resultType="java.lang.String">
@@ -204,6 +204,48 @@
       </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateBySerialNumberSelective" parameterType="io.openvidu.server.common.pojo.Device" >
+    update sd_device
+    <set >
+      <if test="deviceId != null" >
+        device_id = #{deviceId,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceName != null" >
+        device_name = #{deviceName,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceMac != null" >
+        device_mac = #{deviceMac,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceType != null" >
+        device_type = #{deviceType,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceModel != null" >
+        device_model = #{deviceModel,jdbcType=VARCHAR},
+      </if>
+      <if test="ability != null" >
+        ability = #{ability,jdbcType=VARCHAR},
+      </if>
+      <if test="version != null" >
+        version = #{version,jdbcType=VARCHAR},
+      </if>
+      <if test="manufacturer != null" >
+        manufacturer = #{manufacturer,jdbcType=VARCHAR},
+      </if>
+      <if test="accessType != null" >
+        access_type = #{accessType,jdbcType=TINYINT},
+      </if>
+      <if test="project != null" >
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where serial_number = #{serialNumber,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.Device" >
     update sd_device

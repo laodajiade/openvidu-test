@@ -3,12 +3,14 @@ package io.openvidu.server.common.cache;
 import io.openvidu.server.common.contants.CacheKeyConstants;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author geedow
@@ -21,6 +23,9 @@ public class CacheManageImpl implements CacheManage {
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
 
+    @Value("${app-token-expire-time}")
+    private long tokenExpiredDuration;
+
     @Override
     public Map getUserInfoByUUID(String uuid) {
         return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid);
@@ -30,6 +35,11 @@ public class CacheManageImpl implements CacheManage {
     public String getUserAuthorization(String userId) {
         return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userId)
                 .get("privilege").toString();
+    }
+
+    @Override
+    public String getDeviceStatus(String serialNumber) {
+        return tokenStringTemplate.opsForValue().get(CacheKeyConstants.DEV_PREFIX_KEY + serialNumber);
     }
 
     @Override
@@ -52,6 +62,11 @@ public class CacheManageImpl implements CacheManage {
     public void updateDeviceName(String userUuid, String deviceName) {
         if (StringUtils.isEmpty(userUuid)) return;
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
+    }
+    public void setDeviceStatus(String SerialNumber, String Version) {
+        String key = CacheKeyConstants.DEV_PREFIX_KEY + SerialNumber;
+        tokenStringTemplate.opsForValue().append(key,Version);
+        tokenStringTemplate.expire(key, tokenExpiredDuration, TimeUnit.SECONDS);
     }
 
 }

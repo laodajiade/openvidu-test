@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
@@ -89,7 +90,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             notificationService.sendNotification(participant1.getParticipantPrivateId(),
                     ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
         }
-
+        if (!Objects.isNull(rpcConnection.getSerialNumber())) {
+            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
+        }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
     }

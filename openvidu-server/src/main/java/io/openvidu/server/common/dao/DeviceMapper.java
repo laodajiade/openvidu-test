@@ -17,6 +17,8 @@ public interface DeviceMapper {
 
     int updateByPrimaryKeySelective(Device record);
 
+    int updateBySerialNumberSelective(Device record);
+
     int updateByPrimaryKey(Device record);
 
     Device selectBySearchCondition(DeviceSearch search);

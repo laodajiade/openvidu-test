@@ -2,10 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
 import io.openvidu.server.core.EndReason;
@@ -13,10 +10,12 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.crypto.engines.AESLightEngine;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,6 +33,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
         String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
+        String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         Device device = null;
@@ -62,6 +63,10 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (!StringUtils.isEmpty(deviceSerialNumber)) {
                 DeviceSearch search = new DeviceSearch();
                 search.setSerialNumber(deviceSerialNumber);
+                if (Objects.isNull(deviceVersion)){
+                    errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
+                    break;
+                }
                 if (Objects.isNull(device = deviceMapper.selectBySearchCondition(search))) {
                     errCode = ErrorCodeEnum.DEVICE_NOT_FOUND;
                     break;
@@ -71,6 +76,11 @@ public class AccessInHandler extends RpcAbstractHandler {
                         break;
                     }
                 }
+                Device dev = new Device();
+                dev.setSerialNumber(deviceSerialNumber);
+                dev.setVersion(deviceVersion);
+                deviceMapper.updateBySerialNumberSelective(dev);
+                cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
             }
 

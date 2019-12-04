@@ -36,11 +36,7 @@ public class StopPtzControlHandler extends RpcAbstractHandler {
 
         JsonObject notifyResult = new JsonObject();
         notifyResult.addProperty(ProtocolElements.STOP_PTZ_CONTROL_SERIAL_NUMBER_PARM, serialNumber);
-
-
-                notificationService.sendNotification(rpc.getParticipantPrivateId(), ProtocolElements.STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_PARM, notifyResult);
-
-
+        notificationService.sendNotification(rpc.getParticipantPrivateId(), ProtocolElements.STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_METHOD, notifyResult);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

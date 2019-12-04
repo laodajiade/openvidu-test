@@ -27,6 +27,7 @@ public class GetDeviceInfoHandler extends RpcAbstractHandler {
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.GET_DEVICE_NANE_PARAM, device.getDeviceName());
+
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
     }
 }
