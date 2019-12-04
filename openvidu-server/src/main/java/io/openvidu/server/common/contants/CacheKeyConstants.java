@@ -12,7 +12,7 @@ public class CacheKeyConstants {
     public static final String APP_TOKEN_PREFIX_KEY = "token:";
 
     /** 用户设备状态缓存key前缀 */
-    public static final String DEV_PREFIX_KEY = "dev:";
+    public static final String DEV_PREFIX_KEY = "device:";
 
     /** 会议信息key前缀 conference:{sessionId}*/
     public static final String CONFERENCES_KEY = "conference:%s";

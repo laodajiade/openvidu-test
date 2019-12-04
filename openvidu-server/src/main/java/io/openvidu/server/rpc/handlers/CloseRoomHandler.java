@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author geedow
@@ -59,8 +60,9 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                 notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
         this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
+        Set<Participant> participants = sessionManager.getParticipants(rpcConnection.getSessionId());
         notificationService.getRpcConnections().forEach(rpc ->{
-            if (!Objects.isNull(rpc.getSerialNumber())){
+            if (participants.contains(rpc.getParticipantPrivateId()) && !Objects.isNull(rpc.getSerialNumber())) {
                 cacheManage.setDeviceStatus(rpc.getSerialNumber(), DeviceStatus.online.name());
             }
         });

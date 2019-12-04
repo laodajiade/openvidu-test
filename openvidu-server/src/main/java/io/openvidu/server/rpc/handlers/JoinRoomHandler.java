@@ -186,7 +186,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.cleanCacheCollections(sessionId);
             }
         }
-        if (!Objects.isNull(rpcConnection.getSerialNumber())){
+        if (!Objects.isNull(rpcConnection.getSerialNumber())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
         }
     }

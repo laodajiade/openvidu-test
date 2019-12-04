@@ -214,16 +214,21 @@ public abstract class RpcAbstractHandler {
         }
         return false;
     }
-     protected JsonArray deviceList(List<DeviceDept> devices){
+     protected JsonArray deviceList(List<DeviceDept> devices) {
          JsonArray DeviceList = new JsonArray();
-         devices.forEach(device->{
+         Map<String, String> onlineDeviceList = new HashMap<>();
+         for (RpcConnection rpc : notificationService.getRpcConnections()) {
+              if (!Objects.isNull(rpc.getSerialNumber())){
+                  onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
+              }
+         }
+         for (DeviceDept device : devices) {
              JsonObject jsonDevice = new JsonObject();
              jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
              jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
-             for (RpcConnection rpc : notificationService.getRpcConnections()) {
-                 if (device.getSerialNumber().equals(rpc.getSerialNumber())) {
-                     jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, rpc.getUserUuid());
-                     jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
+             if (onlineDeviceList.containsKey(device.getSerialNumber())) {
+                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, onlineDeviceList.get(device.getSerialNumber()));
+                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
                      /*ConferenceSearch search = new ConferenceSearch();
                      // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
                      search.setStatus(1);
@@ -239,17 +244,14 @@ public abstract class RpcAbstractHandler {
                          });
                      });*/
                  } else {
-                     jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
-                 }
+                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
              }
-
-
              DeviceList.add(jsonDevice);
-         });
+         }
          return  DeviceList;
-     }
 
-    protected ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
+     }
+     protected ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
             return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
         }

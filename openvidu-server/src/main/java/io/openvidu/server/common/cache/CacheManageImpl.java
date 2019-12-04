@@ -23,8 +23,6 @@ public class CacheManageImpl implements CacheManage {
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
 
-    @Value("${app-token-expire-time}")
-    private long tokenExpiredDuration;
 
     @Override
     public Map getUserInfoByUUID(String uuid) {
@@ -63,10 +61,9 @@ public class CacheManageImpl implements CacheManage {
         if (StringUtils.isEmpty(userUuid)) return;
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
     }
-    public void setDeviceStatus(String SerialNumber, String Version) {
-        String key = CacheKeyConstants.DEV_PREFIX_KEY + SerialNumber;
-        tokenStringTemplate.opsForValue().append(key,Version);
-        tokenStringTemplate.expire(key, tokenExpiredDuration, TimeUnit.SECONDS);
+    public void setDeviceStatus(String serialNumber, String version) {
+        String key = CacheKeyConstants.DEV_PREFIX_KEY + serialNumber;
+        tokenStringTemplate.opsForValue().set(key, version);
     }
 
 }

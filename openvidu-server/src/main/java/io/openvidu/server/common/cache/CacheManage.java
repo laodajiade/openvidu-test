@@ -20,7 +20,7 @@ public interface CacheManage {
 
     void updateDeviceName(String userUuid, String deviceName);
 
-    void setDeviceStatus(String Key, String Version);
+    void setDeviceStatus(String key, String version);
 
     String getDeviceStatus(String serialNumber);
 }

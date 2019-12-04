@@ -31,7 +31,7 @@
     select
     <include refid="Base_Column_List" />
     from sd_device
-    where serial_number = #{serialNumber, jdbcType=BIGINT}
+    where serial_number = #{serialNumber, jdbcType=VARCHAR}
   </select>
 
   <select id="selectDevSerialNumsByDeptIds" parameterType="java.util.List" resultType="java.lang.String">
