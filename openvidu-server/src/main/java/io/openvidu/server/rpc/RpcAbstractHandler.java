@@ -228,7 +228,7 @@ public abstract class RpcAbstractHandler {
              jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
              if (onlineDeviceList.containsKey(device.getSerialNumber())) {
                  jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, onlineDeviceList.get(device.getSerialNumber()));
-                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
+                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
                      /*ConferenceSearch search = new ConferenceSearch();
                      // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
                      search.setStatus(1);

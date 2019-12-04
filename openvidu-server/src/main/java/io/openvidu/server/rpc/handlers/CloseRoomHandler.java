@@ -61,7 +61,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
         Set<Participant> participants = sessionManager.getParticipants(rpcConnection.getSessionId());
-        notificationService.getRpcConnections().forEach(rpc ->{
+        notificationService.getRpcConnections().forEach(rpc -> {
             if (participants.contains(rpc.getParticipantPrivateId()) && !Objects.isNull(rpc.getSerialNumber())) {
                 cacheManage.setDeviceStatus(rpc.getSerialNumber(), DeviceStatus.online.name());
             }
