@@ -76,12 +76,14 @@ public class AccessInHandler extends RpcAbstractHandler {
                         break;
                     }
                 }
-                Device dev = new Device();
-                dev.setSerialNumber(deviceSerialNumber);
-                dev.setVersion(deviceVersion);
-                deviceMapper.updateBySerialNumberSelective(dev);
+                if (deviceVersion.equals(device.getVersion())) {
+                    Device dev = new Device();
+                    dev.setSerialNumber(deviceSerialNumber);
+                    dev.setVersion(deviceVersion);
+                    deviceMapper.updateBySerialNumberSelective(dev);
+                    rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
+                }
                 cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
-                rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
             }
 
             previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
