@@ -27,7 +27,6 @@ import java.util.function.Function;
 
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.Continuation;
 import org.kurento.client.ErrorEvent;
@@ -57,6 +56,7 @@ import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.recording.service.RecordingManager;
+import org.springframework.util.StringUtils;
 
 public class KurentoParticipant extends Participant {
 
@@ -128,13 +128,16 @@ public class KurentoParticipant extends Participant {
 		String publisherStreamId = this.getParticipantPublicId() + "_"
 				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
 				+ RandomStringUtils.random(5, true, false).toUpperCase();
-
-		String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
-				+ "_" + "MAJOR-SHARE-MIX";
-		this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
 		if (Objects.equals(StreamType.SHARING, getStreamType())) {
 			this.session.compositeService.setShareStreamId(publisherStreamId);
 		}
+
+		if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
+			String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
+					+ "_" + "MAJOR-SHARE-MIX";
+			this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+		}
+
 		this.publisher.setEndpointName(publisherStreamId);
 		this.publisher.getEndpoint().setName(publisherStreamId);
 		this.publisher.setStreamId(publisherStreamId);
