@@ -217,9 +217,11 @@ public abstract class RpcAbstractHandler {
      protected JsonArray deviceList(List<DeviceDept> devices) {
          JsonArray DeviceList = new JsonArray();
          Map<String, String> onlineDeviceList = new HashMap<>();
+         Map<String, Long> onlineUserIdList = new HashMap<>();
          for (RpcConnection rpc : notificationService.getRpcConnections()) {
               if (!Objects.isNull(rpc.getSerialNumber())){
                   onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
+                  onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
               }
          }
          for (DeviceDept device : devices) {
@@ -228,6 +230,7 @@ public abstract class RpcAbstractHandler {
              jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
              if (onlineDeviceList.containsKey(device.getSerialNumber())) {
                  jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, onlineDeviceList.get(device.getSerialNumber()));
+                 jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, onlineUserIdList.get(device.getSerialNumber()));
                  jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
                      /*ConferenceSearch search = new ConferenceSearch();
                      // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
