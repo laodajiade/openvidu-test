@@ -60,12 +60,13 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                 notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
         this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
+
         Set<Participant> participants = sessionManager.getParticipants(rpcConnection.getSessionId());
-        notificationService.getRpcConnections().forEach(rpc -> {
-            if (participants.contains(rpc.getParticipantPrivateId()) && !Objects.isNull(rpc.getSerialNumber())) {
-                cacheManage.setDeviceStatus(rpc.getSerialNumber(), DeviceStatus.online.name());
+        participants.forEach(part -> {
+            RpcConnection rpcConnect = notificationService.getRpcConnection(part.getParticipantPrivateId());
+            if (!Objects.isNull(rpcConnect.getSerialNumber())) {
+                cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
             }
         });
-
     }
 }
