@@ -76,7 +76,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                         break;
                     }
                 }
-                if (deviceVersion.equals(device.getVersion())) {
+                if (!deviceVersion.equals(device.getVersion())) {
                     Device dev = new Device();
                     dev.setSerialNumber(deviceSerialNumber);
                     dev.setVersion(deviceVersion);
