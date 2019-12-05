@@ -56,6 +56,7 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
             } else {
                 if (!conferenceSession.isAutomatically()) {
                     int size = conferenceSession.getMajorShareMixLinkedArr().size();
+                    conferenceSession.setAutomatically(true);
                     conferenceSession.switchLayoutMode(size >= LayoutModeEnum.THIRTEEN.getMode() ?
                             LayoutModeEnum.THIRTEEN : LayoutModeEnum.getLayoutMode(size));
                     String moderatorPublicId = Objects.equals(OpenViduRole.MODERATOR, moderator.getRole()) ?

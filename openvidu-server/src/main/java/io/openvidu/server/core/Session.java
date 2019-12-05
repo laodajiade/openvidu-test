@@ -454,6 +454,7 @@ public class Session implements SessionInterface {
 	}
 
     public void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
+        log.info("session switch layout mode:{} -> {}", layoutMode.getMode(), layoutModeEnum.getMode());
         setLayoutMode(layoutModeEnum);
         setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutModeEnum));
     }
@@ -503,6 +504,8 @@ public class Session implements SessionInterface {
 				JsonObject temp = jsonElement.getAsJsonObject().deepCopy();
 				KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(linkedArr
 						.get(index).getAsJsonObject().get("connectionId").getAsString());
+				temp.addProperty("connectionId", "connectionId");
+				temp.addProperty("streamType", "streamType");
 				temp.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
 				temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
 				temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
@@ -536,14 +539,16 @@ public class Session implements SessionInterface {
 
 	public JsonArray getCurrentPartInMcuLayout() {
     	JsonArray layoutInfos = new JsonArray(50);
+    	if (majorShareMixLinkedArr.size() == 0) return layoutInfos;
+
 		int index = 0;
 		int size = majorShareMixLinkedArr.size();
 		for (JsonElement jsonElement : layoutCoordinates) {
 			JsonObject result = jsonElement.getAsJsonObject().deepCopy();
 			if (index < size) {
 				JsonObject layout = majorShareMixLinkedArr.get(index).getAsJsonObject();
-				result.addProperty("connectionId", layout.get("connectionId").getAsInt());
-				result.addProperty("streamType", layout.get("streamType").getAsInt());
+				result.addProperty("connectionId", layout.get("connectionId").getAsString());
+				result.addProperty("streamType", layout.get("streamType").getAsString());
 
 				index++;
 			}
