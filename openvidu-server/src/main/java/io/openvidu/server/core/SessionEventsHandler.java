@@ -217,6 +217,7 @@ public class SessionEventsHandler {
 		result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 
 		JsonObject layoutInfoObj = new JsonObject();
+		layoutInfoObj.addProperty("automatically", session.isAutomatically());
 		layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
 		layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
         result.add("layoutInfo", layoutInfoObj);
