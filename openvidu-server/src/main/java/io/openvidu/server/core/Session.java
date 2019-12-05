@@ -409,7 +409,7 @@ public class Session implements SessionInterface {
 	}
 
 	public void reorder(String moderatorPublicId) {
-    	JsonArray result = null;
+    	JsonArray result = new JsonArray(50);
     	JsonArray partExcludeShareAndModerator = new JsonArray(50);
     	JsonObject moderatorObj = null, shareObj = null;
     	for (JsonElement jsonElement : majorShareMixLinkedArr) {
@@ -424,14 +424,11 @@ public class Session implements SessionInterface {
 		}
 
     	if (!Objects.isNull(moderatorObj)) {
-			result = reorderIfPriorityJoined(StreamType.valueOf(moderatorObj.get("streamType").getAsString()),
-					moderatorObj.get("connectionId").getAsString());
+    		result.add(moderatorObj);
 		}
 		if (!Objects.isNull(shareObj)) {
-			result = reorderIfPriorityJoined(StreamType.valueOf(shareObj.get("streamType").getAsString()),
-					shareObj.get("connectionId").getAsString());
+			result.add(shareObj);
 		}
-		if (Objects.isNull(result)) result = new JsonArray(50);
 		result.addAll(partExcludeShareAndModerator);
 		majorShareMixLinkedArr = result;
 	}
