@@ -129,7 +129,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 	public Composite getAudioComposite() { return this.audioComposite; }
 
 	public HubPort createHubPort(Composite composite) {
-		// Fixme. manager it.
 		HubPort hubPort = new HubPort.Builder(composite).build();
 		elements.put(hubPort.getId(), hubPort);
 		return hubPort;

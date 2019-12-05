@@ -189,7 +189,7 @@ public abstract class SessionManager {
 			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
 		}
 		Set<Participant> participants = session.getParticipants();
-		participants.removeIf(p -> p.isClosed());
+		participants.removeIf(Participant::isClosed);
 		return participants;
 	}
 
@@ -502,8 +502,11 @@ public abstract class SessionManager {
 	@PreDestroy
 	public void close() {
 		log.info("Closing all sessions and update user online status");
-		notificationService.getRpcConnections().forEach(rpcConnection ->
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline));
+		notificationService.getRpcConnections().forEach(rpcConnection -> {
+			if (!Objects.isNull(rpcConnection.getUserUuid()))
+				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+		});
+
 		for (String sessionId : sessions.keySet()) {
 			try {
 				closeSession(sessionId, EndReason.openviduServerStopped);

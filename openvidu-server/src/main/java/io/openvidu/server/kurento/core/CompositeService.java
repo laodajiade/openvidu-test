@@ -49,6 +49,7 @@ public class CompositeService {
                 return;
             }
             majorShareComposite.release();
+            log.warn("Release MajorShareComposite");
         }
     }
 
@@ -63,6 +64,7 @@ public class CompositeService {
     }
 
     public void releaseMajorShareHubPortOut() {
+        log.info("Release MajorShareHubPortOut");
         unregisterErrorListeners(majorShareHubPortOut, majorShareHubPortOutSubscription);
         if (!Objects.isNull(majorShareHubPortOut)) {
             releaseElement(majorShareHubPortOut);
