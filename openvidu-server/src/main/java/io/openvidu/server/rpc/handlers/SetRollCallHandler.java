@@ -65,6 +65,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         JsonObject notifyResult = new JsonObject();
         notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
+        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
 
         participants.forEach(participant -> {
             // SetRollCall notify
