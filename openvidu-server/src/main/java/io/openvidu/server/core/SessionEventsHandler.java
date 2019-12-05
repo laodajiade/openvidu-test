@@ -218,7 +218,7 @@ public class SessionEventsHandler {
 
 		JsonObject layoutInfoObj = new JsonObject();
 		layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
-		layoutInfoObj.add("linkedCoordinates", session.getMajorShareMixLinkedArr());
+		layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
         result.add("layoutInfo", layoutInfoObj);
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
@@ -320,7 +320,7 @@ public class SessionEventsHandler {
         JsonObject notifyResult = new JsonObject();
         Session conferenceSession = sessionManager.getSession(sessionId);
         notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
-        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getMajorShareMixLinkedArr());
+        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
         for (Participant p : participants) {
             if (!Objects.equals(StreamType.SHARING, p.getStreamType())) {
                 rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
@@ -335,7 +335,7 @@ public class SessionEventsHandler {
 
 	private JsonArray getMixFlowArr(String sessionId) {
         Session session = sessionManager.getSession(sessionId);
-        JsonArray mixFlowsArr = new JsonArray(3);
+        JsonArray mixFlowsArr = new JsonArray(2);
         KurentoSession kurentoSession = (KurentoSession) session;
         if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixMajorShareStreamId())) {
             JsonObject mixJsonObj = new JsonObject();
