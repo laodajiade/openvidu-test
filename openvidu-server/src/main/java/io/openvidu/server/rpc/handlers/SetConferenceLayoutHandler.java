@@ -43,20 +43,20 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
         io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(rpcConnection.getSessionId());
         if (!Objects.isNull(conferenceSession)) {
             if (!automatically) {
+                conferenceSession.setAutomatically(false);
                 boolean layoutModeChanged = !Objects.equals(layoutModeEnum, conferenceSession.getLayoutMode());
                 if (!layoutModeChanged) {
                     log.info("session:{} layout not changed.", conferenceSession.getSessionId());
                     this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                     return;
                 }
-                conferenceSession.setAutomatically(false);
 
                 conferenceSession.switchLayoutMode(layoutModeEnum);
                 conferenceSession.invokeKmsConferenceLayout();
             } else {
                 if (!conferenceSession.isAutomatically()) {
-                    int size = conferenceSession.getMajorShareMixLinkedArr().size();
                     conferenceSession.setAutomatically(true);
+                    int size = conferenceSession.getMajorShareMixLinkedArr().size();
                     conferenceSession.switchLayoutMode(size >= LayoutModeEnum.THIRTEEN.getMode() ?
                             LayoutModeEnum.THIRTEEN : LayoutModeEnum.getLayoutMode(size));
                     String moderatorPublicId = Objects.equals(OpenViduRole.MODERATOR, moderator.getRole()) ?
