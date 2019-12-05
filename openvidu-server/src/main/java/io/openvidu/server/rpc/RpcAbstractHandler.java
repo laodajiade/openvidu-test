@@ -298,7 +298,8 @@ public abstract class RpcAbstractHandler {
                 Participant sharingPart = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
                         oldPrivateId, StreamType.SHARING);
                 if (!Objects.isNull(sharingPart)) {
-                    this.sessionManager.getSession(rpcConnection.getSessionId()).evictReconnectOldPart(partPublicId);
+                    this.sessionManager.getSession(rpcConnection.getSessionId())
+                            .evictReconnectOldPart(sharingPart.getParticipantPublicId());
                 }
 //				accessOut(oldRpcConnection, null);
                 sessionManager.accessOut(oldRpcConnection);
