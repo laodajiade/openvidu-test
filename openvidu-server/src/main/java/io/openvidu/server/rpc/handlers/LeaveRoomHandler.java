@@ -85,6 +85,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
+        jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, session.isAutomatically());
         jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getCurrentPartInMcuLayout());
         for (Participant participant1 : participants) {
             notificationService.sendNotification(participant1.getParticipantPrivateId(),
