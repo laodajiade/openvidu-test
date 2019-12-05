@@ -295,6 +295,11 @@ public abstract class RpcAbstractHandler {
                 String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
                 // update partLinkedArr in conference
                 this.sessionManager.getSession(rpcConnection.getSessionId()).evictReconnectOldPart(partPublicId);
+                Participant sharingPart = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
+                        oldPrivateId, StreamType.SHARING);
+                if (!Objects.isNull(sharingPart)) {
+                    this.sessionManager.getSession(rpcConnection.getSessionId()).evictReconnectOldPart(partPublicId);
+                }
 //				accessOut(oldRpcConnection, null);
                 sessionManager.accessOut(oldRpcConnection);
                 return true;
