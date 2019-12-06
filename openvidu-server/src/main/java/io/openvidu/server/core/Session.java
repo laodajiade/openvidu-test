@@ -433,7 +433,7 @@ public class Session implements SessionInterface {
 		majorShareMixLinkedArr = result;
 	}
 
-	public void  leaveRoomSetLayout(Participant participant) {
+	public void leaveRoomSetLayout(Participant participant) {
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			if (Objects.equals(jsonObject.get("connectionId").getAsString(), participant.getParticipantPublicId())) {

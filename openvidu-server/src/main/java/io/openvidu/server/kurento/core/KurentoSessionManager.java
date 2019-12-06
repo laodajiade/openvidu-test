@@ -642,6 +642,9 @@ public class KurentoSessionManager extends SessionManager {
 			Participant participant = this.getParticipant(participantPrivateId);
 			if (participant != null) {
 				this.unpublishVideo(participant, moderator, transactionId, reason);
+				// change conference layout and notify kms
+				session.leaveRoomSetLayout(participant);
+				session.invokeKmsConferenceLayout();
 				return true;
 			} else {
 				return false;
