@@ -171,15 +171,19 @@ public class RpcHandlerFactory {
     private StartPtzControlHandler startPtzControlHandler;
 
     @Resource
-    private  StopPtzControlHandler stopPtzControlHandler;
+    private StopPtzControlHandler stopPtzControlHandler;
 
     @Resource
-    private  SwapPartWindowHandler swapPartWindowHandler;
+    private SwapPartWindowHandler swapPartWindowHandler;
 
     @Resource
     private GetDepartmentTreeHandler getDepartmentTreeHandler;
 
-    @Resource CommandUpgradeHandler commandUpgradeHandler;
+    @Resource
+    private CommandUpgradeHandler commandUpgradeHandler;
+
+    @Resource
+    private AdjustResolutionHandler adjustResolutionHandler;
 
 
     @PostConstruct
@@ -238,6 +242,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,           swapPartWindowHandler);
         handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD,        getDepartmentTreeHandler);
         handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,            commandUpgradeHandler);
+        handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,            adjustResolutionHandler);
+
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
