@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -28,7 +29,7 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
             return;
         }
 
-        if (sessionManager.isModeratorInSession(rpcConnection.getSessionId(), participant)) {
+        if (OpenViduRole.MODERATOR_ROLES.contains(participant.getRole())) {
             String streamId = getStringParam(request, ProtocolElements.FORCEUNPUBLISH_STREAMID_PARAM);
             if (sessionManager.unpublishStream(sessionManager.getSession(rpcConnection.getSessionId()), streamId,
                     participant, request.getId(), EndReason.forceUnpublishByUser)) {
@@ -36,9 +37,9 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.USER_NOT_STREAMING_ERROR_CODE);
             }
         } else {
-            log.error("Error: participant {} is not a moderator", participant.getParticipantPublicId());
-            throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,
-                    "Unable to force unpublish. The user does not have a valid token");
+            log.error("Error: participant {} is neither a moderator nor a thor.", participant.getParticipantPublicId());
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
         }
     }
 }

@@ -44,6 +44,7 @@ public enum OpenViduRole {
 	MODERATOR,
 
 	/**
+	 * For Web Conference Controller
 	 * SUBSCRIBER permissions + can force the unpublishing or
 	 * disconnection over a third-party Stream or Connection (call
 	 * <code>Session.forceUnpublish()</code> and
