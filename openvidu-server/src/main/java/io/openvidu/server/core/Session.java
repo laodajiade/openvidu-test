@@ -423,11 +423,11 @@ public class Session implements SessionInterface {
 			}
 		}
 
-    	if (!Objects.isNull(moderatorObj)) {
-    		result.add(moderatorObj);
-		}
 		if (!Objects.isNull(shareObj)) {
 			result.add(shareObj);
+		}
+    	if (!Objects.isNull(moderatorObj)) {
+    		result.add(moderatorObj);
 		}
 		result.addAll(partExcludeShareAndModerator);
 		majorShareMixLinkedArr = result;
