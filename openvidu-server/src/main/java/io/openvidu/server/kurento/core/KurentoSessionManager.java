@@ -180,12 +180,8 @@ public class KurentoSessionManager extends SessionManager {
 			}
 		}
 
-		// record share status.
-		if (StreamType.SHARING.equals(participant.getStreamType())) {
-			participant.setShareStatus(ParticipantShareStatus.off);
-			Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
-			majorPart.setShareStatus(ParticipantShareStatus.off);
-		}
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
+			changeStatusInConference(session, participant);
 
 		// Close Session if no more participants
 		Set<Participant> remainingParticipants = null;
@@ -240,6 +236,20 @@ public class KurentoSessionManager extends SessionManager {
 		}
 
 		return sessionClosedByLastParticipant;
+	}
+
+	private void changeStatusInConference(KurentoSession session, Participant participant) {
+		// change composite and sharing publisher share status
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		if (!Objects.isNull(kParticipant.getPublisher()))
+			kParticipant.getPublisher().setSharing(false);
+		session.compositeService.setExistSharing(false);
+		session.compositeService.setShareStreamId(null);
+		// record share status.
+		participant.setShareStatus(ParticipantShareStatus.off);
+		Participant majorPart = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.MAJOR);
+		if (!Objects.isNull(majorPart))
+			majorPart.setShareStatus(ParticipantShareStatus.off);
 	}
 
 	@Override
@@ -637,7 +647,9 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public boolean unpublishStream(Session session, String streamId, Participant moderator, Integer transactionId,
 			EndReason reason) {
-		String participantPrivateId = ((KurentoSession) session).getParticipantPrivateIdFromStreamId(streamId);
+		boolean result = false;
+		KurentoSession kSession = (KurentoSession) session;
+		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
 		if (participantPrivateId != null) {
 			Participant participant = this.getParticipant(participantPrivateId);
 			if (participant != null) {
@@ -645,13 +657,13 @@ public class KurentoSessionManager extends SessionManager {
 				// change conference layout and notify kms
 				session.leaveRoomSetLayout(participant);
 				session.invokeKmsConferenceLayout();
-				return true;
-			} else {
-				return false;
+				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
+					changeStatusInConference(kSession, participant);
+
+				result = true;
 			}
-		} else {
-			return false;
 		}
+		return result;
 	}
 
 	@Override
