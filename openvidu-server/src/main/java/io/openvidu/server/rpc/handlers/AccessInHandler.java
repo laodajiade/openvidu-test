@@ -89,8 +89,9 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
-                    log.info("find same login user:{}, previous connection id:{}, ", uuid, s.getParticipantPrivateId());
+//                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
+                if (!Objects.equals(rpcConnection, s) && Objects.equals(String.valueOf(s.getUserId()), String.valueOf(userInfo.get("userId")))) {
+                    log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
                     log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
                     return true;
                 } else {
