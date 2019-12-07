@@ -259,9 +259,6 @@ public class AccessInHandler extends RpcAbstractHandler {
 
                             notificationService.sendNotification(participant.getParticipantPrivateId(),
                                     ProtocolElements.USER_BREAK_LINE_METHOD, params);
-                            if (!Objects.isNull(rpcConnection.getSerialNumber())) {
-                                cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
-                            }
                             if (endRollNotify) {
                                 notificationService.sendNotification(participant.getParticipantPrivateId(),
                                         ProtocolElements.END_ROLL_CALL_METHOD, endRollNotifyObj);
