@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -32,6 +33,14 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceConnectionId = null;
         String targetConnectionId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        Participant partSpeaker = participants.stream().filter(participant ->
+                Objects.equals(StreamType.MAJOR, participant.getStreamType()) &&
+                Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())).findAny().orElse(null);
+        if (!Objects.isNull(partSpeaker)) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SPEAKER_ALREADY_EXIST);
+            return;
+        }
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (targetId.equals(participant.getUserId())) {
