@@ -37,6 +37,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
+        JsonObject object = new JsonObject();
         Device device = null;
         RpcConnection previousRpc = null;
         boolean reconnect = false;
@@ -84,6 +85,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
                 cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
+                object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
 
             previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
@@ -201,7 +203,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         // update user online status in cache
         cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
         cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
-        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
 
         if (reconnect) {
             String conferenceId = previousRpc.getSessionId();
@@ -257,7 +259,9 @@ public class AccessInHandler extends RpcAbstractHandler {
 
                             notificationService.sendNotification(participant.getParticipantPrivateId(),
                                     ProtocolElements.USER_BREAK_LINE_METHOD, params);
-
+                            if (!Objects.isNull(rpcConnection.getSerialNumber())) {
+                                cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
+                            }
                             if (endRollNotify) {
                                 notificationService.sendNotification(participant.getParticipantPrivateId(),
                                         ProtocolElements.END_ROLL_CALL_METHOD, endRollNotifyObj);
