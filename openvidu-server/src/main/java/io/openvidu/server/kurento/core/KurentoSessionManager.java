@@ -181,7 +181,7 @@ public class KurentoSessionManager extends SessionManager {
 		}
 
 		if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
-			changeStatusInConference(session, participant);
+			changeSharingStatusInConference(session, participant);
 
 		// Close Session if no more participants
 		Set<Participant> remainingParticipants = null;
@@ -238,7 +238,8 @@ public class KurentoSessionManager extends SessionManager {
 		return sessionClosedByLastParticipant;
 	}
 
-	private void changeStatusInConference(KurentoSession session, Participant participant) {
+    @Override
+    public void changeSharingStatusInConference(KurentoSession session, Participant participant) {
 		// change composite and sharing publisher share status
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
 		if (!Objects.isNull(kParticipant.getPublisher()))
@@ -658,7 +659,7 @@ public class KurentoSessionManager extends SessionManager {
 				session.leaveRoomSetLayout(participant);
 				session.invokeKmsConferenceLayout();
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
-					changeStatusInConference(kSession, participant);
+					changeSharingStatusInConference(kSession, participant);
 
 				result = true;
 			}

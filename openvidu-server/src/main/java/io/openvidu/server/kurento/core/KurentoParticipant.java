@@ -211,8 +211,6 @@ public class KurentoParticipant extends Participant {
 		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
 			this.session.dealParticipantDefaultOrder(this);
 		}
-		// kms invoke
-		session.invokeKmsConferenceLayout();
 
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);
 		log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),

@@ -19,7 +19,9 @@ import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -293,15 +295,17 @@ public abstract class RpcAbstractHandler {
                 cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
                 String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
-                // update partLinkedArr in conference
-                this.sessionManager.getSession(rpcConnection.getSessionId()).evictReconnectOldPart(partPublicId);
+                // update partLinkedArr and sharing status in conference
+                Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
+                session.evictReconnectOldPart(partPublicId);
                 Participant sharingPart = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
                         oldPrivateId, StreamType.SHARING);
                 if (!Objects.isNull(sharingPart)) {
-                    this.sessionManager.getSession(rpcConnection.getSessionId())
-                            .evictReconnectOldPart(sharingPart.getParticipantPublicId());
+                    session.evictReconnectOldPart(sharingPart.getParticipantPublicId());
+                    KurentoSession kurentoSession = (KurentoSession) session;
+                    kurentoSession.compositeService.setShareStreamId(null);
+                    kurentoSession.compositeService.setExistSharing(false);
                 }
-//				accessOut(oldRpcConnection, null);
                 sessionManager.accessOut(oldRpcConnection);
                 return true;
             }

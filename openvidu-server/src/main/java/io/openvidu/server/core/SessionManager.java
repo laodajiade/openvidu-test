@@ -34,6 +34,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
@@ -100,6 +101,8 @@ public abstract class SessionManager {
 
 	public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
 			boolean closeWebSocket);
+
+	public abstract void changeSharingStatusInConference(KurentoSession session, Participant participant);
 
 	public abstract void accessOut(RpcConnection rpcConnection);
 
@@ -221,12 +224,11 @@ public abstract class SessionManager {
 		if (session == null) {
 			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
 		}
-		Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
+		return session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
 		/*if (participant == null) {
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
 		}*/
-		return participant;
 	}
 
 	/**

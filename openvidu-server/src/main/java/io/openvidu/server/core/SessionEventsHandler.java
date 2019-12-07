@@ -92,9 +92,7 @@ public class SessionEventsHandler {
 		JsonArray resultArray = new JsonArray();
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
 		int index = 0;
-		for (JsonElement jsonElement : session.getMajorShareMixLinkedArr()) {
-			JsonObject linkedInfo = jsonElement.getAsJsonObject();
-			Participant existingParticipant = session.getParticipantByPublicId(linkedInfo.get("connectionId").getAsString());
+		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,

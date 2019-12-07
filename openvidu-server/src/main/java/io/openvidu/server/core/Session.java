@@ -375,7 +375,7 @@ public class Session implements SessionInterface {
 		return majorShareMixLinkedArr;
 	}
 
-	public void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
+	public synchronized void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
     	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
     		if (automatically && layoutMode.ordinal() < (LayoutModeEnum.values().length - 1)) {
 				// switch layout mode automatically
@@ -392,6 +392,7 @@ public class Session implements SessionInterface {
 		}
 
     	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+    	this.invokeKmsConferenceLayout();
 	}
 
 	private static JsonObject getPartOrderInfo(String streamType, String publicId) {
@@ -450,7 +451,7 @@ public class Session implements SessionInterface {
 		log.info("leaveRoomSetLayout majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
-    public void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
+    public synchronized void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
         log.info("session switch layout mode:{} -> {}", layoutMode.getMode(), layoutModeEnum.getMode());
         setLayoutMode(layoutModeEnum);
         setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutModeEnum));

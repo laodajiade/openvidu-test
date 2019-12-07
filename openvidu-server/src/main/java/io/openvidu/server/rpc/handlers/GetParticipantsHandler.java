@@ -2,9 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ParticipantShareStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.*;
@@ -20,7 +18,7 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/11/5 16:34
  */
 @Slf4j
@@ -56,22 +54,19 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 UserDeptSearch udSearch = new UserDeptSearch();
                 udSearch.setUserId(user.getId());
                 UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
-                Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-
-                String shareStatus;
-                try{
-                    sessionManager.getParticipant(sessionId, part.getParticipantPrivateId(), StreamType.SHARING);
-                    shareStatus = ParticipantShareStatus.on.name();
-                } catch (OpenViduException e) {
-                    shareStatus = ParticipantShareStatus.off.name();
+                if (Objects.isNull(userDeptCom)) {
+                    log.warn("GetParticipant userDept is null and privateId:{}, userId:{}",
+                            part.getParticipantPrivateId(), user.getId());
+                    return;
                 }
+                Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
                 JsonObject userObj = new JsonObject();
                 userObj.addProperty("userId", user.getId());
                 userObj.addProperty("account", user.getUsername());
                 userObj.addProperty("userOrgName", userDep.getDeptName());
                 userObj.addProperty("role", part.getRole().name());
-                userObj.addProperty("shareStatus", shareStatus);
+                userObj.addProperty("shareStatus", part.getShareStatus().name());
                 userObj.addProperty("handStatus", part.getHandStatus().name());
                 // 获取发布者时存在同步阻塞的状态
                 userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
