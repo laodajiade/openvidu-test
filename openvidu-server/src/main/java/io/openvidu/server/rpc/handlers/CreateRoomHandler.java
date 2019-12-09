@@ -25,6 +25,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
         String password = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_PASSWORD_PARAM);
+        String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
         if (StringUtils.isEmpty(sessionId)) {
             sessionId = generalRoomId();
         }
@@ -42,6 +43,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             // save conference info
             Conference conference = new Conference();
             conference.setRoomId(sessionId);
+            conference.setConferenceSubject(roomSubject);
+            conference.setUserId(rpcConnection.getUserId());
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
             conference.setStatus(1);
             conference.setStartTime(new Date());
@@ -50,7 +53,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             int insertResult = conferenceMapper.insert(conference);
 
             // setPresetInfo.
-            String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
             String micStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MIC_STATUS_PARAM);
             String videoStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_VIDEO_STATUS_PARAM);
             String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
