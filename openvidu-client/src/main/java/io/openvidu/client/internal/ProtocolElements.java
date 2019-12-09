@@ -458,6 +458,7 @@ public class ProtocolElements {
 
 	public static final String PARTICIPANTPUBLISHED_METHOD = "participantPublished";
 	public static final String PARTICIPANTPUBLISHED_USER_PARAM = "id";
+	public static final String PARTICIPANTPUBLISHED_METADATA_PARAM = "metadata";
 	public static final String PARTICIPANTPUBLISHED_STREAMS_PARAM = "streams";
 	public static final String PARTICIPANTPUBLISHED_STREAMID_PARAM = "id";
 	public static final String PARTICIPANTPUBLISHED_STREAMTYPE_PARAM = "streamType";

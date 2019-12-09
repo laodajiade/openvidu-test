@@ -292,6 +292,7 @@ public class SessionEventsHandler {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, participant.getParticipantPublicId());
+		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_METADATA_PARAM, participant.getClientMetadata());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM, participant.getAppShowName());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM, participant.getAppShowDesc());
 		JsonObject stream = new JsonObject();
