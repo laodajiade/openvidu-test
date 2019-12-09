@@ -276,6 +276,7 @@ public abstract class RpcAbstractHandler {
     }
 
     protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
+        RpcConnection oldRpcConnection = null;
         try {
             Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
             if (Objects.isNull(userInfo)) {
@@ -291,7 +292,7 @@ public abstract class RpcAbstractHandler {
                     return false;
                 }
 
-                RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
+                oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
                 cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
                 String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
@@ -311,6 +312,7 @@ public abstract class RpcAbstractHandler {
             }
         } catch (Exception e) {
             log.warn("exception:{}", e);
+            sessionManager.accessOut(oldRpcConnection);
             return false;
         }
 

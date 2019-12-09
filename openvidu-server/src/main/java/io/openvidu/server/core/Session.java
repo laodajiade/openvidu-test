@@ -457,13 +457,8 @@ public class Session implements SessionInterface {
         setLayoutCoordinates(LayoutInitHandler.getLayoutByMode(layoutModeEnum));
     }
 
-	public void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
-		relacePartOrder(majorShareMixLinkedArr, sourceConnectionId, targetConnectionId);
-		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
-	}
-
-	private static void relacePartOrder(JsonArray linkedArr, String sourceConnectionId, String targetConnectionId) {
-		for (JsonElement jsonElement : linkedArr) {
+	public synchronized void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
+		for (JsonElement jsonElement : majorShareMixLinkedArr) {
 			JsonObject jsonObject = jsonElement.getAsJsonObject();
 			String connectionId = jsonObject.get("connectionId").getAsString();
 			if (connectionId.equals(sourceConnectionId)) {
@@ -472,6 +467,7 @@ public class Session implements SessionInterface {
 				jsonObject.addProperty("connectionId", sourceConnectionId);
 			}
 		}
+		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
     public int invokeKmsConferenceLayout() {
