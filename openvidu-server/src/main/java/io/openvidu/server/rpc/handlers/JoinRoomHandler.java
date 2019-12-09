@@ -83,15 +83,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
-                // check preset and set share power in room info. for example: sharePower.
-//		if (Objects.equals(streamType, StreamType.SHARING.name())) {
-//			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
-//			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
-//				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-//						null, ErrorCodeEnum.PERMISSION_LIMITED);
-//				return ;
-//			}
-//		}
                 // remove previous participant if reconnect
                 updateReconnectInfo(rpcConnection);
                 GeoLocation location = null;
