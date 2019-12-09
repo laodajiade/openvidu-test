@@ -27,6 +27,7 @@ CREATE TABLE `sd_conference` (
   `room_id` varchar(128) NOT NULL COMMENT '会议室名称',
   `conference_subject` varchar(256) DEFAULT NULL COMMENT '主题',
   `conference_desc` varchar(1024) DEFAULT NULL COMMENT '会议描述',
+  `user_id` bigint(11) unsigned NOT NULL COMMENT '会议创建者ID',
   `start_time` datetime DEFAULT NULL COMMENT '开始时间',
   `end_time` datetime DEFAULT NULL COMMENT '结束时间',
   `room_capacity` int(6) unsigned NOT NULL DEFAULT '50' COMMENT '容量',
