@@ -150,6 +150,7 @@ public class ProtocolElements {
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";
     public static final String ACCESS_IN_FORCE_LOGIN_PARAM = "forceLogin";
+    public static final String ACCESS_IN_ACCESSTYPE_PARAM = "accessType";
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
 	public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
