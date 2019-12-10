@@ -436,7 +436,7 @@ public class Session implements SessionInterface {
 		majorShareMixLinkedArr = result;
 	}
 
-	public void leaveRoomSetLayout(Participant participant, String moderatePublicId) {
+	public synchronized void leaveRoomSetLayout(Participant participant, String moderatePublicId) {
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			if (Objects.equals(jsonObject.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
@@ -451,8 +451,8 @@ public class Session implements SessionInterface {
 			switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
 		}
 
-		boolean isSpeaker = Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus());
-		if (isSpeaker) {
+		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()) ||
+                Objects.equals(StreamType.SHARING, participant.getStreamType())) {
 			reorder(moderatePublicId);
 		}
 
@@ -478,7 +478,7 @@ public class Session implements SessionInterface {
 		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
-    public int invokeKmsConferenceLayout() {
+    public synchronized int invokeKmsConferenceLayout() {
         KurentoSession kurentoSession = (KurentoSession) this;
         KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
         try {
@@ -526,7 +526,7 @@ public class Session implements SessionInterface {
         return kmsRequest;
     }
 
-	public void evictReconnectOldPart(String partPublicId) {
+	public synchronized void evictReconnectOldPart(String partPublicId) {
     	if (StringUtils.isEmpty(partPublicId)) return;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
