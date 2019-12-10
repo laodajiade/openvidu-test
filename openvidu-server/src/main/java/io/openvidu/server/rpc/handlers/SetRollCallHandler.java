@@ -33,14 +33,6 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceConnectionId = null;
         String targetConnectionId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
-        Participant partSpeaker = participants.stream().filter(participant ->
-                Objects.equals(StreamType.MAJOR, participant.getStreamType()) &&
-                Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())).findAny().orElse(null);
-        if (!Objects.isNull(partSpeaker)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.SPEAKER_ALREADY_EXIST);
-            return;
-        }
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (targetId.equals(participant.getUserId())) {
