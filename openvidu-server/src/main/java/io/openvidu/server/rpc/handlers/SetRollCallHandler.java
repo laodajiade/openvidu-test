@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
@@ -29,26 +30,55 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
+        Participant moderatorPart = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(),
+                StreamType.MAJOR);
+        boolean permitted = OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
+        if (!permitted) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
         int raiseHandNum = 0;
-        String sourceConnectionId = null;
-        String targetConnectionId = null;
+        String sourceConnectionId;
+        String targetConnectionId;
+        Participant existSpeakerPart = null;
+        Participant targetPart = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                if (targetId.equals(participant.getUserId())) {
-                    participant.setHandStatus(ParticipantHandStatus.speaker);
-                    targetConnectionId = participant.getParticipantPublicId();
+                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+                    existSpeakerPart = participant;
                 }
-
-                if (sourceId.equals(participant.getUserId())) {
-                    sourceConnectionId = participant.getParticipantPublicId();
+                if (participant.getUserId().equals(targetId)) {
+                    targetPart = participant;
                 }
-
                 if (Objects.equals(participant.getHandStatus(), ParticipantHandStatus.up)) {
                     raiseHandNum++;
                 }
             }
         }
+
+        assert targetPart != null;
+        targetPart.setHandStatus(ParticipantHandStatus.speaker);
+        targetConnectionId = targetPart.getParticipantPublicId();
+        if (Objects.isNull(existSpeakerPart)) {
+            // switch layout with moderator
+            sourceConnectionId = moderatorPart.getParticipantPublicId();
+        } else {
+            // switch layout with current speaker participant
+            sourceConnectionId = existSpeakerPart.getParticipantPublicId();
+            // change current speaker part status and send notify
+            existSpeakerPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUserId());
+            params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+            sendEndRollCallNotify(participants, params);
+        }
+
+
 
         // change conference layout
         Session conferenceSession = sessionManager.getSession(sessionId);
@@ -78,4 +108,10 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
+
+    private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params) {
+        participants.forEach(participant -> this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                ProtocolElements.END_ROLL_CALL_METHOD, params));
+    }
+
 }

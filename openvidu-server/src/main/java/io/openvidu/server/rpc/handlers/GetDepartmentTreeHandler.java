@@ -1,8 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.DepartmentMapper;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.Department;
@@ -14,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
 
 import javax.annotation.Resource;
 import java.util.Collections;
