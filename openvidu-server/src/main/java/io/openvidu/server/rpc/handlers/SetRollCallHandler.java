@@ -30,9 +30,10 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
-        Participant moderatorPart = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(),
-                StreamType.MAJOR);
-        boolean permitted = OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
+        Set<Participant> participants = sessionManager.getParticipants(sessionId);
+        Participant moderatorPart = participants.stream().filter(participant -> Objects.equals(sourceId,
+                participant.getUserId())).findAny().orElse(null);
+        boolean permitted = !Objects.isNull(moderatorPart) && OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
         if (!permitted) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
@@ -44,7 +45,6 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String targetConnectionId;
         Participant existSpeakerPart = null;
         Participant targetPart = null;
-        Set<Participant> participants = sessionManager.getParticipants(sessionId);
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
@@ -77,8 +77,6 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
             sendEndRollCallNotify(participants, params);
         }
-
-
 
         // change conference layout
         Session conferenceSession = sessionManager.getSession(sessionId);
