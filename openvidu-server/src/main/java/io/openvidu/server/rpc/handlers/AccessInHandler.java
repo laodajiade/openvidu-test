@@ -103,6 +103,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
                 }
+                rpcConnection.setUserUuid(uuid);
                 break;
             }
 
