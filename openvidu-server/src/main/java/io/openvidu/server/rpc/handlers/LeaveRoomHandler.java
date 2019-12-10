@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
@@ -62,25 +63,28 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             return;
         }
 
+        String moderatePublicId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-            participant.setHandStatus(ParticipantHandStatus.endSpeaker);
-
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
 
             for (Participant participant1 : participants) {
+                if (participant1.getRole().equals(OpenViduRole.MODERATOR))
+                    moderatePublicId = participant1.getParticipantPublicId();
                 this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
             }
         }
 
         Session session = sessionManager.getSession(sessionId);
-        session.leaveRoomSetLayout(participant);
+        session.leaveRoomSetLayout(participant, moderatePublicId);
         // json RPC notify KMS layout changed.
         session.invokeKmsConferenceLayout();
 
+        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+            participant.setHandStatus(ParticipantHandStatus.endSpeaker);
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         JsonObject jsonObject = new JsonObject();

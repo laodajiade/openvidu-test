@@ -651,12 +651,14 @@ public class KurentoSessionManager extends SessionManager {
 		boolean result = false;
 		KurentoSession kSession = (KurentoSession) session;
 		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
+		String moderatePublicId = session.getParticipants().stream().filter(participant ->
+                Objects.equals(OpenViduRole.MODERATOR, participant.getRole())).findAny().get().getParticipantPublicId();
 		if (participantPrivateId != null) {
 			Participant participant = this.getParticipant(participantPrivateId);
 			if (participant != null) {
 				this.unpublishVideo(participant, moderator, transactionId, reason);
 				// change conference layout and notify kms
-				session.leaveRoomSetLayout(participant);
+				session.leaveRoomSetLayout(participant, moderatePublicId);
 				session.invokeKmsConferenceLayout();
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
 					changeSharingStatusInConference(kSession, participant);
