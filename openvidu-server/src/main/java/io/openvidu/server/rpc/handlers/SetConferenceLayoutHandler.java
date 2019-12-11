@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -12,8 +13,10 @@ import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -60,11 +63,19 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                     conferenceSession.switchLayoutMode(size >= LayoutModeEnum.THIRTEEN.getMode() ?
                             LayoutModeEnum.THIRTEEN : LayoutModeEnum.getLayoutMode(size));
                 }
-                String moderatorPublicId = Objects.equals(OpenViduRole.MODERATOR, moderator.getRole()) ?
-                        moderator.getParticipantPublicId() : Objects.requireNonNull(conferenceSession.getParticipants().stream()
-                        .filter(participant -> Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
-                                Objects.equals(StreamType.MAJOR, participant.getStreamType())).findAny().orElse(null)).getParticipantPublicId();
-                conferenceSession.reorder(moderatorPublicId);
+                String moderatorPublicId = null, speakerId = null;
+                Set<Participant> participants = conferenceSession.getParticipants();
+                for (Participant participant : participants) {
+                    if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+                        speakerId = participant.getParticipantPublicId();
+                        break;
+                    }
+                    if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
+                            Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                        moderatorPublicId = participant.getParticipantPublicId();
+                    }
+                }
+                conferenceSession.reorder(!StringUtils.isEmpty(speakerId) ? speakerId : moderatorPublicId);
                 conferenceSession.invokeKmsConferenceLayout();
             }
 

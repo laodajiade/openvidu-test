@@ -64,6 +64,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
 
         String moderatePublicId = null;
+        String speakerId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
             JsonObject params = new JsonObject();
@@ -73,13 +74,15 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             for (Participant participant1 : participants) {
                 if (participant1.getRole().equals(OpenViduRole.MODERATOR))
                     moderatePublicId = participant1.getParticipantPublicId();
+                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+                    speakerId = participant1.getParticipantPublicId();
                 this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
             }
         }
 
         Session session = sessionManager.getSession(sessionId);
-        session.leaveRoomSetLayout(participant, moderatePublicId);
+        session.leaveRoomSetLayout(participant, !StringUtils.isEmpty(speakerId) ? speakerId : moderatePublicId);
         // json RPC notify KMS layout changed.
         session.invokeKmsConferenceLayout();
 
@@ -88,8 +91,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
         jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, session.isAutomatically());
+        jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
         jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getCurrentPartInMcuLayout());
         for (Participant participant1 : participants) {
             notificationService.sendNotification(participant1.getParticipantPrivateId(),

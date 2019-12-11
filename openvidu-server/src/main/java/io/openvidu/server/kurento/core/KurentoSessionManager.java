@@ -45,6 +45,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -658,14 +659,26 @@ public class KurentoSessionManager extends SessionManager {
 		boolean result = false;
 		KurentoSession kSession = (KurentoSession) session;
 		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
-		String moderatePublicId = session.getParticipants().stream().filter(participant ->
-                Objects.equals(OpenViduRole.MODERATOR, participant.getRole())).findAny().get().getParticipantPublicId();
+		String moderatorPublicId = null, speakerId = null;
+		Set<Participant> participants = session.getParticipants();
+		for (Participant participant : participants) {
+			if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
+					Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				moderatorPublicId = participant.getParticipantPublicId();
+			}
+			if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+				speakerId = participant.getParticipantPublicId();
+				break;
+			}
+		}
+		/*String moderatePublicId = session.getParticipants().stream().filter(participant ->
+                Objects.equals(OpenViduRole.MODERATOR, participant.getRole())).findAny().get().getParticipantPublicId();*/
 		if (participantPrivateId != null) {
 			Participant participant = this.getParticipant(participantPrivateId);
 			if (participant != null) {
 				this.unpublishVideo(participant, moderator, transactionId, reason);
 				// change conference layout and notify kms
-				session.leaveRoomSetLayout(participant, moderatePublicId);
+				session.leaveRoomSetLayout(participant, StringUtils.isEmpty(speakerId) ? moderatorPublicId : speakerId);
 				session.invokeKmsConferenceLayout();
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
 					changeSharingStatusInConference(kSession, participant);
