@@ -2,7 +2,6 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantJoinType;
@@ -119,18 +118,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
-                // change participant role if web THOR invite the same user
-                Long userId = rpcConnection.getUserId();
-                if (!Objects.equals(OpenViduRole.THOR, OpenViduRole.valueOf(role))) {
-                    Participant thorPart = this.sessionManager.getParticipants(sessionId).stream().filter(part -> Objects.equals(OpenViduRole.THOR,
-                            part.getRole()) && part.getUserId().equals(String.valueOf(userId))).findAny().orElse(null);
-                    if (!Objects.isNull(thorPart)) {
-                        role = OpenViduRole.MODERATOR.name();
-                        log.info("change participant role cause web THOR invite the same user:{}, and dev serial number:{}",
-                                rpcConnection.getUserUuid(), rpcConnection.getSerialNumber());
-                    }
-                }
-
                 Participant participant;
                 if (generateRecorderParticipant) {
                     participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
@@ -140,6 +127,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())));
                 }
 
+                Long userId = rpcConnection.getUserId();
                 String serialNumber = rpcConnection.getSerialNumber();
                 participant.setPreset(preset);
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
