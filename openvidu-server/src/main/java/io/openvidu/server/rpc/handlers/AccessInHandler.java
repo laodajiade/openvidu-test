@@ -10,12 +10,10 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.crypto.engines.AESLightEngine;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,7 +32,9 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
         String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+        String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
 
+        boolean webLogin = !StringUtils.isEmpty(accessType) && accessType.equals("web");
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         JsonObject object = new JsonObject();
@@ -89,8 +89,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-//                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
-                if (!Objects.equals(rpcConnection, s) && Objects.equals(String.valueOf(s.getUserId()), String.valueOf(userInfo.get("userId")))) {
+                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
                     log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
                     log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
                     return true;
@@ -99,6 +98,14 @@ public class AccessInHandler extends RpcAbstractHandler {
                     return false;
                 }
             }).findFirst().orElse(null);
+
+            if (webLogin) {
+                if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
+                    errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
+                }
+                rpcConnection.setUserUuid(uuid);
+                break;
+            }
 
             // SINGLE LOGIN
             if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
@@ -202,8 +209,10 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
         }
         // update user online status in cache
-        cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
-        cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
+        if (!webLogin) {
+            cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
+            cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
+        }
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
 
         if (reconnect) {

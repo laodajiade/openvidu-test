@@ -29,6 +29,7 @@ import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
@@ -409,13 +410,14 @@ public class Session implements SessionInterface {
 		return newMajorMixLinkedArr;
 	}
 
-	public void reorder(String moderatorPublicId) {
+	public synchronized void reorder(String moderatorPublicId) {
     	JsonArray result = new JsonArray(50);
     	JsonArray partExcludeShareAndModerator = new JsonArray(50);
     	JsonObject moderatorObj = null, shareObj = null;
     	for (JsonElement jsonElement : majorShareMixLinkedArr) {
 			JsonObject temp = jsonElement.getAsJsonObject();
-			if (Objects.equals(moderatorPublicId, temp.get("connectionId").getAsString())) {
+			if (!StringUtils.isEmpty(moderatorPublicId) &&
+                    Objects.equals(moderatorPublicId, temp.get("connectionId").getAsString())) {
 				moderatorObj = temp;
 			} else if (Objects.equals(StreamType.SHARING.name(), temp.get("streamType").getAsString())) {
 				shareObj = temp;
@@ -434,7 +436,7 @@ public class Session implements SessionInterface {
 		majorShareMixLinkedArr = result;
 	}
 
-	public void leaveRoomSetLayout(Participant participant) {
+	public synchronized void leaveRoomSetLayout(Participant participant, String moderatePublicId) {
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			if (Objects.equals(jsonObject.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
@@ -442,10 +444,16 @@ public class Session implements SessionInterface {
 				break;
 			}
 		}
+
 		// switch layout mode automatically
-		if (automatically && !Objects.equals(LayoutModeEnum.ONE, layoutMode) &&
-				majorShareMixLinkedArr.size() < layoutMode.getMode()) {
+		if (automatically && !Objects.equals(LayoutModeEnum.ONE, layoutMode) && majorShareMixLinkedArr.size() <
+				layoutMode.getMode()) {
 			switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
+		}
+
+		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()) ||
+                Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+			reorder(moderatePublicId);
 		}
 
 		log.info("leaveRoomSetLayout majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
@@ -470,7 +478,7 @@ public class Session implements SessionInterface {
 		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
-    public int invokeKmsConferenceLayout() {
+    public synchronized int invokeKmsConferenceLayout() {
         KurentoSession kurentoSession = (KurentoSession) this;
         KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
         try {
@@ -518,7 +526,7 @@ public class Session implements SessionInterface {
         return kmsRequest;
     }
 
-	public void evictReconnectOldPart(String partPublicId) {
+	public synchronized void evictReconnectOldPart(String partPublicId) {
     	if (StringUtils.isEmpty(partPublicId)) return;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();

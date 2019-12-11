@@ -34,6 +34,7 @@ public enum ErrorCodeEnum {
     CONFERENCE_TOO_LONG(13011, "conference too long"),
     NOT_EXIST_SHARING_FLOW(13012, "not exists sharing flow"),
     SPEAKER_ALREADY_EXIST(13013, "speaker already exist"),
+    TERMINAL_MUST_LOGIN_FIRST(13014, "terminal must login first"),
     DEVICE_NOT_FOUND(13100, "device not found"),
     DEVICE_BUSY(13101,"device busy");
 
