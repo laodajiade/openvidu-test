@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.*;
@@ -42,7 +43,12 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             }
         }
 
-        sessionManager.getParticipants(sessionId).forEach(s -> userIds.add(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()));
+        sessionManager.getParticipants(sessionId).forEach(s -> {
+            if(!Objects.equals(s.getRole(), OpenViduRole.THOR)){
+                userIds.add(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong());
+            }
+        });
+
         if (!CollectionUtils.isEmpty(userIds)) {
             List<User> userList = userMapper.selectByPrimaryKeys(userIds);
             userList.forEach(user -> {

@@ -321,6 +321,8 @@ public class ProtocolElements {
 	public static final String GET_DEVICE_NANE_PARAM = "deviceName";
 	public static final String GET_DEVICE_DEVCURVERSION_PARAM = "devCurVersion";
 	public static final String GET_DEVICE_VERSION_PARAM = "version";
+	public static final String GET_DEVICE_DESC_PARAM = "desc";
+
 	public static final String GET_DEVICE_VERUPGRADEAVAILABLE_PARAM = "verUpgradeAvailable";
 
 	public static final String UPDATE_DEVICE_INFO_METHOD = "updateDeviceInfo";
