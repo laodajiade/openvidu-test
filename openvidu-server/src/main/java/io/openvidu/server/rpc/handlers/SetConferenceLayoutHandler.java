@@ -59,13 +59,13 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                     int size = conferenceSession.getMajorShareMixLinkedArr().size();
                     conferenceSession.switchLayoutMode(size >= LayoutModeEnum.THIRTEEN.getMode() ?
                             LayoutModeEnum.THIRTEEN : LayoutModeEnum.getLayoutMode(size));
-                    String moderatorPublicId = Objects.equals(OpenViduRole.MODERATOR, moderator.getRole()) ?
-                            moderator.getParticipantPublicId() : Objects.requireNonNull(conferenceSession.getParticipants().stream()
-                            .filter(participant -> Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
-                                    Objects.equals(StreamType.MAJOR, participant.getStreamType())).findAny().orElse(null)).getParticipantPublicId();
-                    conferenceSession.reorder(moderatorPublicId);
-                    conferenceSession.invokeKmsConferenceLayout();
                 }
+                String moderatorPublicId = Objects.equals(OpenViduRole.MODERATOR, moderator.getRole()) ?
+                        moderator.getParticipantPublicId() : Objects.requireNonNull(conferenceSession.getParticipants().stream()
+                        .filter(participant -> Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
+                                Objects.equals(StreamType.MAJOR, participant.getStreamType())).findAny().orElse(null)).getParticipantPublicId();
+                conferenceSession.reorder(moderatorPublicId);
+                conferenceSession.invokeKmsConferenceLayout();
             }
 
              // broadcast the changes of layout
