@@ -25,6 +25,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import io.openvidu.server.core.RoomCountdownService;
+import io.openvidu.server.kurento.kms.*;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -55,10 +56,6 @@ import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
 import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
 import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
 import io.openvidu.server.kurento.core.KurentoSessionManager;
-import io.openvidu.server.kurento.kms.DummyLoadManager;
-import io.openvidu.server.kurento.kms.FixedOneKmsManager;
-import io.openvidu.server.kurento.kms.KmsManager;
-import io.openvidu.server.kurento.kms.LoadManager;
 import io.openvidu.server.recording.DummyRecordingDownloader;
 import io.openvidu.server.recording.RecordingDownloader;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -106,7 +103,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public LoadManager loadManager() {
-		return new DummyLoadManager();
+		return new MaxWebRtcLoadManager(10000);
 	}
 
 	@Bean
