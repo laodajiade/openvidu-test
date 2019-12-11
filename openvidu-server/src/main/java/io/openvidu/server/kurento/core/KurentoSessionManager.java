@@ -429,8 +429,7 @@ public class KurentoSessionManager extends SessionManager {
 			KurentoParticipant kParticipant = (KurentoParticipant) participant;
 			session = ((KurentoParticipant) participant).getSession();
 			Participant senderParticipant = !Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-					session.getParticipantByPublicId(senderName) : session.getParticipants().stream()
-					.filter(Participant::isStreaming).findAny().orElse(participant);
+					session.getParticipantByPublicId(senderName) : participant;
 
 			if (senderParticipant == null) {
 				log.warn(
