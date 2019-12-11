@@ -8,10 +8,12 @@ import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 
+@Service
 public class GetUnfinishedMeetingsHandler extends RpcAbstractHandler {
 
     @Override
