@@ -26,6 +26,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import org.kurento.client.*;
+import org.kurento.client.Properties;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +123,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 				return;
 			}
 			log.info("SESSION {}: Creating audio Composite", this.getOwner().getSessionId());
-			audioComposite = new Composite.Builder(this.getPipeline()).build();
+			audioComposite = new Composite.Builder(this.getPipeline())
+					.withProperties(new Properties().add("type", "audio")).build();
 		}
 	}
 
