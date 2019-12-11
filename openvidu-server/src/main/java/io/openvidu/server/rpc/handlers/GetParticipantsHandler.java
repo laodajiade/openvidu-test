@@ -44,7 +44,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         }
 
         sessionManager.getParticipants(sessionId).forEach(s -> {
-            if(!Objects.equals(s.getRole(), OpenViduRole.THOR)){
+            if (!Objects.equals(s.getRole(), OpenViduRole.THOR)) {
                 userIds.add(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong());
             }
         });
@@ -75,8 +75,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 userObj.addProperty("shareStatus", part.getShareStatus().name());
                 userObj.addProperty("handStatus", part.getHandStatus().name());
                 // 获取发布者时存在同步阻塞的状态
-                userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
-                userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
+                userObj.addProperty("audioActive", !part.isStreaming() || part.getPublisherMediaOptions().isAudioActive());
+                userObj.addProperty("videoActive", !part.isStreaming() || part.getPublisherMediaOptions().isVideoActive());
 
                 // get device info if have device.
                 String serialNumber = onlineUserList.get(user.getId());
