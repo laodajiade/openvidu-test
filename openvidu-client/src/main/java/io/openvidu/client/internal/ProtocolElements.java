@@ -320,6 +320,8 @@ public class ProtocolElements {
 	public static final String GET_DEVICE_STATUS_PARAM = "status";
 	public static final String GET_DEVICE_NANE_PARAM = "deviceName";
 	public static final String GET_DEVICE_DEVCURVERSION_PARAM = "devCurVersion";
+	public static final String GET_DEVICE_VERSION_PARAM = "version";
+	public static final String GET_DEVICE_VERUPGRADEAVAILABLE_PARAM = "verUpgradeAvailable";
 
 	public static final String UPDATE_DEVICE_INFO_METHOD = "updateDeviceInfo";
 	public static final String UPDATE_DEVICE_ID_PARAM = "deviceId";
@@ -409,17 +411,25 @@ public class ProtocolElements {
 	public static  final  String GET_DEPARTMENT_TREE_ORGANIZATION_LIST_PAPM = "organizationList";
 	public static  final  String GET_DEPARTMENT_TREE_PARENT_ID_PAPM = "parentId";
 
-	public static  final  String COMMAND_UOGRADE_METHOD = "commandUpgrade";
-	public static  final  String COMMAND_UOGRADE_SERIALNUMBER_PAPM = "serialNumber";
-	public static  final  String COMMAND_UOGRADE_VERSION_PAPM = "version";
-	public static  final  String COMMAND_UOGRADE_DOWNLOADURL_PAPM = "downloadUrl";
+	public static  final  String COMMAND_UOGRADE_METHOD  = "commandUpgrade";
+	public static  final  String COMMAND_UOGRADE_SERIALNUMBER_PAPM  = "serialNumber";
+	public static  final  String COMMAND_UOGRADE_VERSION_PAPM  = "version";
+	public static  final  String COMMAND_UOGRADE_DOWNLOADURL_PAPM  = "downloadUrl";
 
 	public static  final  String UPGRADE_NOTIFY_METHOD = "upgradeNotify";
 
 	public static  final  String ADJUST_RESOLUTION_METHOD = "adjustResolution";
-	public static  final  String ADJUST_RESOLUTION_CONNECTIONID_PAPM = "connectionId";
-	public static  final  String ADJUST_RESOLUTION_SERIALNUMBER_PAPM = "serialNumber";
-	public static  final  String ADJUST_RESOLUTION_RESOLUTION_PAPM = "resolution";
+	public static  final  String ADJUST_RESOLUTION_CONNECTIONID_PAPM  = "connectionId";
+	public static  final  String ADJUST_RESOLUTION_SERIALNUMBER_PAPM  = "serialNumber";
+	public static  final  String ADJUST_RESOLUTION_RESOLUTION_PAPM  = "resolution";
+
+	public static  final  String GET_UNFINISHED_MEETINGS_METHOD = "getUnfinishedMeetings";
+	public static  final  String GET_UNFINISHED_MEETINGS_ISADMIN_PAPM  = "isAdmin";
+	public static  final  String GET_UNFINISHED_MEETINGS_ROOMID_PAPM  = "roomId";
+	public static  final  String GET_UNFINISHED_MEETINGS_SUBJECT_PAPM  = "subject";
+	public static  final  String GET_UNFINISHED_MEETINGS_PASSWORD_PAPM  = "password";
+	public static  final  String GET_UNFINISHED_MEETINGS_ACCOUNT_PAPM  = "account";
+	public static  final  String GET_UNFINISHED_MEETINGS_ROOMCREAEAT_PAPM = "roomCreateAt";
 
 	public static  final  String  ADJUST_RESOLUTION_NOTIFY_METHOD = "adjustResolutionNotify";
 

@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.pojo.Device;
@@ -27,7 +28,11 @@ public class GetDeviceInfoHandler extends RpcAbstractHandler {
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.GET_DEVICE_NANE_PARAM, device.getDeviceName());
+        params.addProperty(ProtocolElements.GET_DEVICE_DEVCURVERSION_PARAM,device.getVersion());
+        params.addProperty(ProtocolElements.GET_DEVICE_STATUS_PARAM, cacheManage.getDeviceStatus(device.getDeviceName()));
+        JsonArray jsonArray = new JsonArray();
 
+        params.add(ProtocolElements.GET_DEVICE_VERUPGRADEAVAILABLE_PARAM,jsonArray);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
     }
 }

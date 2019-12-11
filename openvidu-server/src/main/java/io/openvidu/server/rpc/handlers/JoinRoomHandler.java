@@ -182,6 +182,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     sessionManager.cleanCacheCollections(sessionId);
                     cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), false, EndReason.forceCloseSessionByUser);
                 }
+            } else {
+                if (!Objects.isNull(rpcConnection.getSerialNumber()) ) {
+                    cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
+                }
             }
         } catch (Exception e) {
             log.error("Unknown error e:{}", e);
@@ -189,8 +193,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.cleanCacheCollections(sessionId);
             }
         }
-        if (!Objects.isNull(rpcConnection.getSerialNumber())) {
-            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
-        }
     }
+
 }

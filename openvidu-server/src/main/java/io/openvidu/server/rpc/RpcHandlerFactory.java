@@ -185,7 +185,8 @@ public class RpcHandlerFactory {
     @Resource
     private AdjustResolutionHandler adjustResolutionHandler;
 
-
+    @Resource
+    private GetUnfinishedMeetingsHandler getUnfinishedMeetingsHandler;
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                  accessInHandler);
@@ -242,7 +243,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,           swapPartWindowHandler);
         handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD,        getDepartmentTreeHandler);
         handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,            commandUpgradeHandler);
-        handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,            adjustResolutionHandler);
+        handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,          adjustResolutionHandler);
+        handlersMap.put(ProtocolElements.GET_UNFINISHED_MEETINGS_METHOD,    getUnfinishedMeetingsHandler);
 
     }
 
