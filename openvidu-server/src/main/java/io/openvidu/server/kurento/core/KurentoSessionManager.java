@@ -678,7 +678,7 @@ public class KurentoSessionManager extends SessionManager {
 			if (participant != null) {
 				this.unpublishVideo(participant, moderator, transactionId, reason);
 				// change conference layout and notify kms
-				session.leaveRoomSetLayout(participant, StringUtils.isEmpty(speakerId) ? moderatorPublicId : speakerId);
+				session.leaveRoomSetLayout(participant, Objects.equals(speakerId, participant.getParticipantPublicId()) ? moderatorPublicId : speakerId);
 				session.invokeKmsConferenceLayout();
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
 					changeSharingStatusInConference(kSession, participant);

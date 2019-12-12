@@ -74,7 +74,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             for (Participant participant1 : participants) {
                 if (participant1.getRole().equals(OpenViduRole.MODERATOR))
                     moderatePublicId = participant1.getParticipantPublicId();
-                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+                if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
                     speakerId = participant1.getParticipantPublicId();
                 this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.END_ROLL_CALL_METHOD, params);
@@ -82,7 +82,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
 
         Session session = sessionManager.getSession(sessionId);
-        session.leaveRoomSetLayout(participant, !StringUtils.isEmpty(speakerId) ? speakerId : moderatePublicId);
+        session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
         // json RPC notify KMS layout changed.
         session.invokeKmsConferenceLayout();
 
