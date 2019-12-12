@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.dao.DepartmentMapper;
+import io.openvidu.server.common.dao.DeviceDeptMapper;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.DepartmentTree;
+import io.openvidu.server.common.pojo.DeviceDept;
+import io.openvidu.server.common.pojo.DeviceDeptSearch;
 import io.openvidu.server.utils.TreeToolUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -30,6 +33,9 @@ public class DepartmentManageImpl implements DepartmentManage {
 
     @Resource
     private DepartmentMapper departmentMapper;
+
+    @Resource
+    private DeviceDeptMapper deviceDeptMapper;
 
     @Override
     public JsonObject genDeptTreeJsonObj(@NotNull Long orgId) {
@@ -78,6 +84,14 @@ public class DepartmentManageImpl implements DepartmentManage {
         subDeptIds.add(deptId);
 
         return subDeptIds;
+    }
+
+    @Override
+    public DeviceDept getDeviceDeptBySerialNum(String devSerialNum) {
+        DeviceDeptSearch deviceDeptSearch = new DeviceDeptSearch();
+        deviceDeptSearch.setSerialNumber(devSerialNum);
+        List<DeviceDept> deviceDepts = deviceDeptMapper.selectBySearchCondition(deviceDeptSearch);
+        return !CollectionUtils.isEmpty(deviceDepts) ? deviceDepts.get(0) : null;
     }
 
 }

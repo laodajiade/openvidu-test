@@ -2,6 +2,7 @@ package io.openvidu.server.common.manage;
 
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.pojo.Department;
+import io.openvidu.server.common.pojo.DeviceDept;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -16,4 +17,6 @@ public interface DepartmentManage {
     List<Department> getSubFirstLevelDepts(Long deptId);
 
     List<Long> getSubDeptIds(Long deptId);
+
+    DeviceDept getDeviceDeptBySerialNum(String devSerialNum);
 }
