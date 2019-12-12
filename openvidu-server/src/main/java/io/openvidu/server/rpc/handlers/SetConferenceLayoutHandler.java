@@ -28,11 +28,11 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
         LayoutModeEnum layoutModeEnum = null;
         if (mode != null) {
             layoutModeEnum = LayoutModeEnum.getLayoutMode(mode);
-        }
-        if (Objects.isNull(layoutModeEnum)) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-            return;
+            if (Objects.isNull(layoutModeEnum)) {
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+                return;
+            }
         }
         Participant moderator = sessionManager.getParticipant(rpcConnection.getSessionId(),
                 rpcConnection.getParticipantPrivateId(), StreamType.MAJOR);
