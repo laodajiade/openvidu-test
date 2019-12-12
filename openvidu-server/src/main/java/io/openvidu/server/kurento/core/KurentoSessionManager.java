@@ -440,7 +440,7 @@ public class KurentoSessionManager extends SessionManager {
 				throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 						"User '" + senderName + " not found in session '" + session.getSessionId() + "'");
 			}
-			if (!senderParticipant.isStreaming()) {
+			if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
 				log.warn(
 						"PARTICIPANT {}: Requesting to recv media from user {} "
 								+ "in session {} but user is not streaming media",
