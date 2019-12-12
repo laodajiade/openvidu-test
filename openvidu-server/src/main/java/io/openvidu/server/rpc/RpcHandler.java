@@ -29,6 +29,7 @@ import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.kurento.core.KurentoParticipant;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -145,6 +146,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 		if ("Close for not receive ping from client".equals(status)) {
 			message = "Evicting participant with private id {} because of a network disconnection";
+		} else if ("Connection reset by peer".equals(status)) {
+			message = "Evicting participant with private id {} because of connection reset by peer";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
 			try {
 				p = sessionManager.getParticipant(rpcSession.getSessionId());
@@ -167,8 +170,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
-					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+					// release audio composite
+					KurentoParticipant kp = (KurentoParticipant) participant;
+					if (!Objects.isNull(kp.getPublisher()))
+						kp.getPublisher().closeAudioComposite();
 
+					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
 					// send end roll notify if the offline connection's hand status is speaker
 					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
 					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
