@@ -32,7 +32,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         Participant moderatorPart = participants.stream().filter(participant -> Objects.equals(sourceId,
-                participant.getUserId())).findAny().orElse(null);
+                participant.getUserId()) && Objects.equals(StreamType.MAJOR, participant.getStreamType())).findAny().orElse(null);
         boolean permitted = !Objects.isNull(moderatorPart) && OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
         if (!permitted) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

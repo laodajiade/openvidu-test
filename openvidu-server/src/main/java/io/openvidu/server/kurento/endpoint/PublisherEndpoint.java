@@ -122,9 +122,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 				log.warn("create audio composite: audioComposite already exists or pipeline is null.");
 				return;
 			}
-			log.info("SESSION {}: Creating audio Composite", this.getOwner().getSessionId());
 			audioComposite = new Composite.Builder(this.getPipeline())
 					.withProperties(new Properties().add("type", "audio")).build();
+			log.info("SESSION {}: Creating audio Composite and object id:{}", this.getOwner().getSessionId(), audioComposite.getId());
 		}
 	}
 
@@ -155,6 +155,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 				log.warn("audio composite already released.");
 				return;
 			}
+			log.info("Release Audio Composite and object id:{}", audioComposite.getId());
 			audioComposite.release();
 		}
 	}
