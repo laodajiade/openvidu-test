@@ -429,8 +429,21 @@ public class KurentoSessionManager extends SessionManager {
 
 			KurentoParticipant kParticipant = (KurentoParticipant) participant;
 			session = ((KurentoParticipant) participant).getSession();
-			Participant senderParticipant = !Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-					session.getParticipantByPublicId(senderName) : participant;
+			/*Participant senderParticipant = !Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
+					session.getParticipantByPublicId(senderName) : participant;*/
+			Participant senderParticipant;
+			if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+				senderParticipant = session.getParticipantByPublicId(senderName);
+            } else {
+				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+					senderParticipant = participant;
+				} else {
+					senderParticipant = session.getParticipants().stream().filter(part ->
+							part.getUserId().equals(participant.getUserId()) &&
+									!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+									Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);
+				}
+			}
 
 			if (senderParticipant == null) {
 				log.warn(
