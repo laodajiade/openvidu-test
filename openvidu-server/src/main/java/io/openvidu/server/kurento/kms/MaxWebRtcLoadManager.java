@@ -22,29 +22,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MaxWebRtcLoadManager implements LoadManager {
     private int maxWebRtcPerKms;
+
     public MaxWebRtcLoadManager(int maxWebRtcPerKms) {
-      this.maxWebRtcPerKms = maxWebRtcPerKms;
+        this.maxWebRtcPerKms = maxWebRtcPerKms;
     }
 
     @Override
     public int calculateLoad(Kms kms) {
-        return countWebRtcEndpoints(kms);
-        /*int numWebRtcs = countWebRtcEndpoints(kms);
-        if (numWebRtcs > maxWebRtcPerKms) {
-            return 1;
-        } else {
-            return numWebRtcs / maxWebRtcPerKms;
-        }*/
-  }
-
-    private synchronized int countWebRtcEndpoints(Kms kms) {
-        try {
-            int size = kms.getKurentoClient().getServerManager().getPipelines().size();
-            log.info("kms:{}, pipeline size:{}", kms.getId(), size);
-            return size;
-        } catch (Throwable e) {
-            log.warn("Error counting KurentoClient pipelines", e);
-            return 0;
-        }
+        int size = kms.getKurentoClient().getServerManager().getPipelines().size();
+        log.info("kms:{}, pipeline size:{}", kms.getId(), size);
+        return size;
     }
+
 }
