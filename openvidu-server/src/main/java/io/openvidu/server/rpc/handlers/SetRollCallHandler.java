@@ -2,8 +2,6 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -33,12 +31,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         Participant moderatorPart = participants.stream().filter(participant -> Objects.equals(sourceId,
                 participant.getUserId()) && Objects.equals(StreamType.MAJOR, participant.getStreamType())).findAny().orElse(null);
-        boolean permitted = !Objects.isNull(moderatorPart) && OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
+        /*boolean permitted = !Objects.isNull(moderatorPart) && OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
         if (!permitted) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
-        }
+        }*/
 
         int raiseHandNum = 0;
         String sourceConnectionId;
