@@ -2,11 +2,13 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +36,11 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
         String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
 
-        boolean webLogin = !StringUtils.isEmpty(accessType) && accessType.equals("web");
+        boolean webLogin = false;
+        if (!StringUtils.isEmpty(accessType)) {
+            rpcConnection.setAccessType(accessType);
+            webLogin = accessType.equals("web");
+        }
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         JsonObject object = new JsonObject();
@@ -88,8 +94,14 @@ public class AccessInHandler extends RpcAbstractHandler {
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
 
+            if (webLogin) {
+                rpcConnection.setUserUuid(uuid);
+                break;
+            }
+
             previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)) {
+                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid) &&
+                        Objects.equals("terminal", s.getAccessType())) {
                     log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
                     log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
                     return true;
@@ -99,13 +111,13 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
             }).findFirst().orElse(null);
 
-            if (webLogin) {
+            /*if (webLogin) {
                 if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
                 }
                 rpcConnection.setUserUuid(uuid);
                 break;
-            }
+            }*/
 
             // SINGLE LOGIN
             if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
@@ -200,11 +212,36 @@ public class AccessInHandler extends RpcAbstractHandler {
                     notificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
                     return;
                 } else {
-                    // send remote login notify to current terminal
                     assert previousRpc != null;
-                    notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                    try {
+                        // send remote login notify to current terminal
+                        notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                    } catch (Exception e) {
+                        log.error("Exception when send remoteLoginNotify.", e);
+                    }
+
+                    if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
+                        // leave room
+                        Session session = this.sessionManager.getSession(previousRpc.getSessionId());
+                        Participant prePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
+                        if (!Objects.isNull(prePart)) {
+                            if (Objects.equals(OpenViduRole.MODERATOR, prePart.getRole())) {    // close room
+                                this.sessionManager.dealSessionClose(previousRpc.getSessionId(), EndReason.closeSessionByModerator);
+                            } else {    // leave room
+                                if (Objects.equals(ParticipantShareStatus.on, prePart.getShareStatus())) {
+                                    Participant preSharePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
+                                    if (!Objects.isNull(preSharePart)) {
+                                        this.sessionManager.dealParticipantLeaveRoom(preSharePart, false, null);
+                                    }
+                                }
+                                this.sessionManager.dealParticipantLeaveRoom(prePart, true, null);
+                            }
+                        }
+                    }
+                    // send remote login notify to current terminal
+                    /*notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
                     leaveRoomAfterConnClosed(previousRpc.getParticipantPrivateId(), EndReason.sessionClosedByServer);
-                    notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+                    notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());*/
                 }
             }
         }

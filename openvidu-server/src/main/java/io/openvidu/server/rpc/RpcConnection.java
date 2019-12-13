@@ -46,6 +46,7 @@ public class RpcConnection {
 	private String serialNumber;
 	private String macAddr;
 	private boolean isReconnected;
+	private String accessType;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -99,6 +100,14 @@ public class RpcConnection {
 
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
+	}
+
+	public String getAccessType() {
+		return accessType;
+	}
+
+	public void setAccessType(String accessType) {
+		this.accessType = accessType;
 	}
 
 	public Transaction getTransaction(Integer transactionId) {

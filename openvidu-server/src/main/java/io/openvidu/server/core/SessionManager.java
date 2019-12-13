@@ -27,9 +27,7 @@ import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.enums.StreamModeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
@@ -684,4 +682,59 @@ public abstract class SessionManager {
 		}
 	}
 
+	public void dealSessionClose(String sessionId, EndReason endReason) {
+		this.getSession(sessionId).getParticipants().forEach(p -> {
+			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
+			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
+			if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
+				cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
+			}});
+		this.unpublishAllStream(sessionId, endReason);
+		this.closeSession(sessionId, endReason);
+	}
+
+	public void dealParticipantLeaveRoom(Participant participant, boolean closeWebSocket, Integer requestId) {
+		RpcConnection rpcConnection = notificationService.getRpcConnection(participant.getParticipantPrivateId());
+		String sessionId = participant.getSessionId();
+		String moderatePublicId = null;
+		String speakerId = null;
+		Set<Participant> participants = getParticipants(sessionId);
+		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, participant.getUserId());
+
+			for (Participant participant1 : participants) {
+				if (participant1.getRole().equals(OpenViduRole.MODERATOR))
+					moderatePublicId = participant1.getParticipantPublicId();
+				if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
+					speakerId = participant1.getParticipantPublicId();
+				this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
+						ProtocolElements.END_ROLL_CALL_METHOD, params);
+			}
+		}
+
+		Session session = getSession(sessionId);
+		session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
+		// json RPC notify KMS layout changed.
+		session.invokeKmsConferenceLayout();
+
+		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+			participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+		leaveRoom(participant, requestId, EndReason.disconnect, closeWebSocket);
+
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, session.isAutomatically());
+		jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
+		jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getCurrentPartInMcuLayout());
+		for (Participant participant1 : participants) {
+			notificationService.sendNotification(participant1.getParticipantPrivateId(),
+					ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
+		}
+		if (!Objects.isNull(rpcConnection.getSerialNumber())) {
+			cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
+		}
+		log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
+				rpcConnection.getSessionId());
+	}
 }

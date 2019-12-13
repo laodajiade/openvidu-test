@@ -17,29 +17,28 @@
 
 package io.openvidu.server.kurento.endpoint;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
-import org.kurento.client.*;
+import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.Properties;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.MediaOptions;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-import io.openvidu.server.utils.JsonUtils;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Publisher aspect of the {@link MediaEndpoint}.
@@ -73,6 +72,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	private Map<String, MediaElement> elements = new HashMap<String, MediaElement>();
 	private LinkedList<String> elementIds = new LinkedList<String>();
+	private ConcurrentHashMap<String, String> connectToOthersHubportIns = new ConcurrentHashMap<>(50);
+	private ConcurrentHashMap<String, String> othersConToSelfHubportIns = new ConcurrentHashMap<>(50);
+
 	private boolean connected = false;
 
 	private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
@@ -155,8 +157,21 @@ public class PublisherEndpoint extends MediaEndpoint {
 				log.warn("audio composite already released.");
 				return;
 			}
-			log.info("Release Audio Composite and object id:{}", audioComposite.getId());
+
+			// release others connect to self hub port in
+			KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
+			KurentoSession kurentoSession= kParticipant.getSession();
+			othersConToSelfHubportIns.forEach((publicId, portId) -> {
+				KurentoParticipant kPart = (KurentoParticipant) kurentoSession.getParticipantByPublicId(publicId);
+				kPart.releaseElement(publicId, kPart.getPublisher().getMediaElementById(portId));
+				log.info("Release other part:'{}' connect self Composite and object id:{}", publicId, portId);
+			});
+
+			audioHubPortOut.release();
+			log.info("Release Audio Composite HubPort Out and object id:{}", audioComposite.getId());
+
 			audioComposite.release();
+			log.info("Release Audio Composite and object id:{}", audioComposite.getId());
 		}
 	}
 
@@ -175,6 +190,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
 				HubPort hubPortIn = createHubPort(audioComposite);
 				p1.getPublisher().connectAudioIn(hubPortIn);
+				connectToOthersHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
 			}
 		}
 
@@ -189,6 +205,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 				Composite existAudioComposite = p1.getPublisher().getAudioComposite();
 				HubPort hubPortIn = p1.getPublisher().createHubPort(existAudioComposite);
 				connectAudioIn(hubPortIn);
+				othersConToSelfHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
 			}
 		}
 	}
@@ -694,6 +711,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 	public String filterCollectionsToString() {
 		return "{filter: " + ((this.filter != null) ? this.filter.getName() : "null") + ", listener: "
 				+ this.filterListeners.toString() + ", subscribers: " + this.subscribersToFilterEvents.toString() + "}";
+	}
+
+	private MediaElement getMediaElementById(String id) {
+		return elements.get(id);
 	}
 
 }

@@ -678,9 +678,11 @@ public class SessionEventsHandler {
 
 	public void closeRpcSession(String participantPrivateId) {
 		// update user online status in cache
-		cacheManage.updateUserOnlineStatus(rpcNotificationService.getRpcConnection(participantPrivateId).getUserUuid(),
-				UserOnlineStatusEnum.offline);
-		this.rpcNotificationService.closeRpcSession(participantPrivateId);
+		RpcConnection rpcConnection;
+		if (!Objects.isNull(rpcConnection = rpcNotificationService.getRpcConnection(participantPrivateId))) {
+			cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+			this.rpcNotificationService.closeRpcSession(participantPrivateId);
+		}
 	}
 
 	public void setRecordingStarted(String sessionId, Recording recording) {

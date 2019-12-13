@@ -136,9 +136,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
 		Participant p = null;
+		RpcConnection rpcConnection;
 
 		// update user online status in cache
-		if (notificationService.getRpcConnection(rpcSessionId) != null) {
+		if ((rpcConnection = notificationService.getRpcConnection(rpcSessionId)) != null) {
+			if (rpcConnection.getAccessType().equals("web")) {
+				sessionManager.accessOut(rpcConnection);
+				return;
+			}
 			cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
 					UserOnlineStatusEnum.offline);
 		} else {

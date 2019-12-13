@@ -434,6 +434,7 @@ public class KurentoParticipant extends Participant {
 
 			for (MediaElement el : publisher.getMediaElements()) {
 				releaseElement(getParticipantPublicId(), el);
+				log.info("Release publisher self mediaElement and object id:{}", el.getId());
 			}
 			publisher.closeAudioComposite();
 			releaseElement(getParticipantPublicId(), publisher.getEndpoint());
@@ -469,7 +470,7 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
-	private void releaseElement(final String senderName, final MediaElement element) {
+	public void releaseElement(final String senderName, final MediaElement element) {
 		final String eid = element.getId();
 		try {
 			element.release(new Continuation<Void>() {
