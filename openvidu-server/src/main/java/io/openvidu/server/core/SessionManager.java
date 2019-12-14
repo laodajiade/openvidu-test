@@ -732,10 +732,10 @@ public abstract class SessionManager {
 			notificationService.sendNotification(participant1.getParticipantPrivateId(),
 					ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
 		}
-		if (!Objects.isNull(rpcConnection.getSerialNumber())) {
+		if (!Objects.isNull(rpcConnection) && !Objects.isNull(rpcConnection.getSerialNumber())) {
 			cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
+			log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
+					rpcConnection.getSessionId());
 		}
-		log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
-				rpcConnection.getSessionId());
 	}
 }
