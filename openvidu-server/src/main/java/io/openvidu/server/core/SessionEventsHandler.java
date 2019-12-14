@@ -680,7 +680,8 @@ public class SessionEventsHandler {
 		// update user online status in cache
 		RpcConnection rpcConnection;
 		if (!Objects.isNull(rpcConnection = rpcNotificationService.getRpcConnection(participantPrivateId))) {
-			cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()))
+				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
 			this.rpcNotificationService.closeRpcSession(participantPrivateId);
 		}
 	}
