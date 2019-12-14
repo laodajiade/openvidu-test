@@ -63,8 +63,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             return;
         }
 
-        this.sessionManager.dealParticipantLeaveRoom(participant, false, request.getId());
-        /*String moderatePublicId = null;
+//        this.sessionManager.dealParticipantLeaveRoom(participant, false, request.getId());
+        String moderatePublicId = null;
         String speakerId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
@@ -103,6 +103,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
-                rpcConnection.getSessionId());*/
+                rpcConnection.getSessionId());
     }
 }

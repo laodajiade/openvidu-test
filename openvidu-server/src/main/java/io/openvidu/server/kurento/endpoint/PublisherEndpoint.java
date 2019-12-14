@@ -162,9 +162,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 			KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
 			KurentoSession kurentoSession= kParticipant.getSession();
 			othersConToSelfHubportIns.forEach((publicId, portId) -> {
-				KurentoParticipant kPart = (KurentoParticipant) kurentoSession.getParticipantByPublicId(publicId);
-				kPart.releaseElement(publicId, kPart.getPublisher().getMediaElementById(portId));
-				log.info("Release other part:'{}' connect self Composite and object id:{}", publicId, portId);
+				Participant participant = kurentoSession.getParticipantByPublicId(publicId);
+				if (!Objects.isNull(participant)) {
+					KurentoParticipant kPart = (KurentoParticipant) participant;
+					if (!Objects.isNull(kPart.getPublisher())) {
+						kPart.releaseElement(publicId, kPart.getPublisher().getMediaElementById(portId));
+						log.info("Release other part:'{}' connect self Composite and object id:{}", publicId, portId);
+					}
+				}
 			});
 
 			audioHubPortOut.release();
@@ -188,9 +193,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 			if (!Objects.equals(p.getStreamType(), StreamType.SHARING) &&
 					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
-				HubPort hubPortIn = createHubPort(audioComposite);
-				p1.getPublisher().connectAudioIn(hubPortIn);
-				connectToOthersHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
+				if (!Objects.isNull(p1.getPublisher())) {
+					HubPort hubPortIn = createHubPort(audioComposite);
+					p1.getPublisher().connectAudioIn(hubPortIn);
+					connectToOthersHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
+				}
 			}
 		}
 
@@ -202,10 +209,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 			}
 			if (!Objects.equals(p.getStreamType(), StreamType.SHARING) &&
 					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
-				Composite existAudioComposite = p1.getPublisher().getAudioComposite();
-				HubPort hubPortIn = p1.getPublisher().createHubPort(existAudioComposite);
-				connectAudioIn(hubPortIn);
-				othersConToSelfHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
+				if (!Objects.isNull(p1.getPublisher())) {
+					Composite existAudioComposite = p1.getPublisher().getAudioComposite();
+					HubPort hubPortIn = p1.getPublisher().createHubPort(existAudioComposite);
+					connectAudioIn(hubPortIn);
+					othersConToSelfHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
+				}
 			}
 		}
 	}

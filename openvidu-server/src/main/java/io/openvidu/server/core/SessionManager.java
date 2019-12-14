@@ -621,7 +621,8 @@ public abstract class SessionManager {
 	}
 
 	public boolean isNewSessionIdValid(String sessionId) {
-		if (sessionidConferenceInfo.containsKey(sessionId)) return false;
+		// TODO
+//		if (sessionidConferenceInfo.containsKey(sessionId)) return false;
 		sessionidConferenceInfo.put(sessionId, new ConcurrentHashMap<>());
 		return true;
 	}

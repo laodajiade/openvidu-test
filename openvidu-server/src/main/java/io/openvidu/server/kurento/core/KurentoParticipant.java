@@ -471,6 +471,7 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public void releaseElement(final String senderName, final MediaElement element) {
+		if (Objects.isNull(element)) return;
 		final String eid = element.getId();
 		try {
 			element.release(new Continuation<Void>() {

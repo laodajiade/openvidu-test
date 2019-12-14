@@ -26,10 +26,14 @@ import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.kurento.endpoint.KmsEvent;
 import io.openvidu.server.kurento.endpoint.KmsMediaEvent;
 import io.openvidu.server.kurento.endpoint.MediaEndpoint;
+import org.springframework.beans.factory.annotation.Value;
 
 public class KurentoParticipantEndpointConfig {
 
 	protected static final Logger log = LoggerFactory.getLogger(KurentoParticipantEndpointConfig.class);
+
+	@Value("${leave.room.delay}")
+	public long leaveDelay;
 
 	@Autowired
 	protected InfoHandler infoHandler;
