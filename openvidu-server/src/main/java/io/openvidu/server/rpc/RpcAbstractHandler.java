@@ -222,9 +222,18 @@ public abstract class RpcAbstractHandler {
         Map<String, String> onlineDeviceList = new HashMap<>();
         Map<String, Long> onlineUserIdList = new HashMap<>();
         for (RpcConnection rpc : notificationService.getRpcConnections()) {
-            if (!Objects.isNull(rpc.getSerialNumber())) {
-                onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
-                onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
+            if (!StringUtils.isEmpty(rpc.getUserUuid())) {
+                Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
+                if (Objects.isNull(userInfo) || userInfo.isEmpty()) continue;
+                if (Objects.equals(UserOnlineStatusEnum.online.name(), String.valueOf(userInfo.get("status"))) &&
+                        !Objects.isNull(rpc.getSerialNumber())) {
+                    onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
+                    onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
+                }
+                /*if (!Objects.isNull(rpc.getSerialNumber())) {
+                    onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
+                    onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
+                }*/
             }
         }
         for (DeviceDept device : devices) {

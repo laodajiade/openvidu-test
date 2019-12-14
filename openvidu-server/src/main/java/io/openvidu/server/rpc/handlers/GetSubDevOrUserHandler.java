@@ -4,7 +4,6 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.dao.DepartmentMapper;
 import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.common.pojo.DeviceDeptSearch;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -13,17 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
-
-import javax.annotation.Resource;
 import java.util.List;
 
 
 @Slf4j
 @Service
 public class GetSubDevOrUserHandler extends RpcAbstractHandler {
-
-    @Resource
-    private DepartmentMapper departmentMapper;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
