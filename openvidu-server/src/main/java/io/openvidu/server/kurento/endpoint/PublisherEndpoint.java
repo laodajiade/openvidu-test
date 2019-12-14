@@ -211,9 +211,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 					!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
 				if (!Objects.isNull(p1.getPublisher())) {
 					Composite existAudioComposite = p1.getPublisher().getAudioComposite();
-					HubPort hubPortIn = p1.getPublisher().createHubPort(existAudioComposite);
-					connectAudioIn(hubPortIn);
-					othersConToSelfHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
+					if (!Objects.isNull(existAudioComposite)) {
+						HubPort hubPortIn = p1.getPublisher().createHubPort(existAudioComposite);
+						connectAudioIn(hubPortIn);
+						othersConToSelfHubportIns.put(p1.getParticipantPublicId(), hubPortIn.getId());
+					}
 				}
 			}
 		}
