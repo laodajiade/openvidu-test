@@ -438,10 +438,18 @@ public class KurentoSessionManager extends SessionManager {
 				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
 					senderParticipant = participant;
 				} else {
-					senderParticipant = session.getParticipants().stream().filter(part ->
-							part.getUserId().equals(participant.getUserId()) &&
-									!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
-									Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);
+					log.info("========participantUserId:{}, participantRole:{}, participantStreamType:{}", participant.getUserId(), participant.getRole(), participant.getStreamType());
+					senderParticipant = session.getParticipants().stream().filter(part -> {
+						log.info("########partUserId:{}, partRole:{}, partStreamType:{}", part.getUserId(), part.getRole(), part.getStreamType());
+						if (part.getUserId().equals(participant.getUserId()) &&
+								!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+								Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+							return true;
+						} else {
+							return false;
+						}
+
+					}).findAny().orElse(null);
 				}
 			}
 
