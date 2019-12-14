@@ -715,27 +715,29 @@ public abstract class SessionManager {
 			}
 		}
 
-		Session session = getSession(sessionId);
-		session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
-		// json RPC notify KMS layout changed.
-		session.invokeKmsConferenceLayout();
+        if (!Objects.isNull(rpcConnection) && !Objects.isNull(rpcConnection.getSerialNumber())) {
+            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
+            log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
+                    rpcConnection.getSessionId());
+        }
 
 		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
 			participant.setHandStatus(ParticipantHandStatus.endSpeaker);
 		leaveRoom(participant, requestId, EndReason.disconnect, closeWebSocket);
+
+        Session session = getSession(sessionId);
+        session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
+        // json RPC notify KMS layout changed.
+        session.invokeKmsConferenceLayout();
 
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, session.isAutomatically());
 		jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
 		jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getCurrentPartInMcuLayout());
 		for (Participant participant1 : participants) {
-			notificationService.sendNotification(participant1.getParticipantPrivateId(),
-					ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
-		}
-		if (!Objects.isNull(rpcConnection) && !Objects.isNull(rpcConnection.getSerialNumber())) {
-			cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
-			log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
-					rpcConnection.getSessionId());
+		    if (!Objects.equals(participant, participant1))
+			    notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
 		}
 	}
 }

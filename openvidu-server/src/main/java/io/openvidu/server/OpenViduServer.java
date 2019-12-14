@@ -121,7 +121,6 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public RpcHandler rpcHandler() {
-		log.info("come rpcHandler?");
 		RpcHandler handler = new RpcHandler();
 		roomCountdownService.setHandler(handler);
 		return handler;
