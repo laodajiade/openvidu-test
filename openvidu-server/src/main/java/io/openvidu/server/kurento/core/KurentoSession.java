@@ -163,7 +163,7 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
-		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
+//		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
 			synchronized (joinOrLeaveLock) {
 				try {
 					leave(p, reason);
@@ -174,9 +174,9 @@ public class KurentoSession extends Session {
 					e.printStackTrace();
 				}
 			}
-		} else {
-			leave(p, reason);
-		}
+//		} else {
+//			leave(p, reason);
+//		}
 	}
 
 	private void leave(Participant p, EndReason reason) {
