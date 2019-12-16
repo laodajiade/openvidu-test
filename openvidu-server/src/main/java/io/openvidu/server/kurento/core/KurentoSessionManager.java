@@ -128,6 +128,7 @@ public class KurentoSessionManager extends SessionManager {
 					part.getRole()) && part.getUserId().equals(participant.getUserId())).findAny().orElse(null);
 			if (!Objects.isNull(thorPart) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
 				participant.setRole(OpenViduRole.MODERATOR);
+				participant.setClientMetadata(participant.getClientMetadata().replace(OpenViduRole.PUBLISHER.name(), OpenViduRole.MODERATOR.name()));
 				log.info("change participant role cause web THOR invite the same userId:{}", participant.getUserId());
 			}
 
