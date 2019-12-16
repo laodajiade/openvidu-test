@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -37,7 +38,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
                     targetConnectionId = participant.getParticipantPublicId();
                 }
 
-                if (sourceId.equals(participant.getUserId())) {
+                if (sourceId.equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
                     sourceConnectionId = participant.getParticipantPublicId();
                 }
 
