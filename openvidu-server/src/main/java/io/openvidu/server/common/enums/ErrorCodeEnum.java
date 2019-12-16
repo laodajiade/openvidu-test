@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCodeEnum {
-    SUCCESS(0, "success"),
+    /*SUCCESS(0, "success"),
     REQUEST_PARAMS_ERROR(10006, "request param error"),
 
     SERVER_UNKNOWN_ERROR(11000, "server unknown error"),
@@ -20,6 +20,36 @@ public enum ErrorCodeEnum {
 
     TOKEN_INVALID(12003, "token invalid"),
     TOKEN_ERROR(12004, "token error"),
+
+    CONFERENCE_ALREADY_EXIST(13000, "conference already exist"),
+    CONFERENCE_NOT_EXIST(13001, "conference not exist"),
+    CONFERENCE_IS_LOCKED(13002, "conference is locked"),
+    PERMISSION_LIMITED(13004, "permission limited"),
+    SHARING_ALREADY_EXIST(13005, "screen sharing already exist"),
+    CONFERENCE_PASSWORD_ERROR(13006, "conference password error"),
+    CONFERENCE_ALREADY_CLOSED(13007, "conference already closed"),
+    USER_NOT_STREAMING_ERROR_CODE(13008, "user not streaming"),
+    ROOM_CAPACITY_LIMITED(13009, "room capacity limited"),
+    USER_ALREADY_ONLINE(13010, "user already online"),
+    CONFERENCE_TOO_LONG(13011, "conference too long"),
+    NOT_EXIST_SHARING_FLOW(13012, "not exists sharing flow"),
+    SPEAKER_ALREADY_EXIST(13013, "speaker already exist"),
+    TERMINAL_MUST_LOGIN_FIRST(13014, "terminal must login first"),
+    TERMINAL_IS_NOT_MODERATOR(13015, "terminal is not moderator"),
+    DEVICE_NOT_FOUND(13100, "device not found"),
+    DEVICE_BUSY(13101,"device busy");*/
+
+    SUCCESS(0, "成功"),
+    REQUEST_PARAMS_ERROR(10006, "请求参数错误"),
+
+    SERVER_UNKNOWN_ERROR(11000, "未知错误"),
+    SERVER_INTERNAL_ERROR(11001, "服务内部错误"),
+    PERFORMANCE_EXCEED(11002, "服务不给力，请稍后再试"),
+    INVALID_METHOD_CALL(11003, "非法调用"),
+    UNRECOGNIZED_API(11005, "非法API调用"),
+
+    TOKEN_INVALID(12003, "token已失效"),
+    TOKEN_ERROR(12004, "token错误"),
 
     CONFERENCE_ALREADY_EXIST(13000, "conference already exist"),
     CONFERENCE_NOT_EXIST(13001, "conference not exist"),
