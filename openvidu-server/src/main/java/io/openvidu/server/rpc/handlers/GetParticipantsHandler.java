@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.*;
@@ -34,6 +35,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         Map<Long, String> onlineUserList = new HashMap<>();
         for (RpcConnection c : notificationService.getRpcConnections()) {
+            if (Objects.equals(AccessTypeEnum.web, c.getAccessType())) continue;
             Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
             if (Objects.isNull(userInfo)) continue;
             String status = String.valueOf(userInfo.get("status"));
@@ -45,7 +47,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         sessionManager.getParticipants(sessionId).forEach(s -> {
             if (!Objects.equals(s.getRole(), OpenViduRole.THOR)) {
-                userIds.add(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong());
+                userIds.add(Long.valueOf(s.getUserId()));
             }
         });
 
