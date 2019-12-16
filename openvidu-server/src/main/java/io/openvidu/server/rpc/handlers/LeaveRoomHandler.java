@@ -99,7 +99,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             notificationService.sendNotification(participant1.getParticipantPrivateId(),
                     ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
         }
-        if (!Objects.isNull(rpcConnection.getSerialNumber())) {
+        if (!Objects.isNull(rpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
