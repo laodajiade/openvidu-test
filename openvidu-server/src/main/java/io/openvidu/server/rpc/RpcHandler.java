@@ -22,6 +22,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
@@ -140,7 +141,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		// update user online status in cache
 		if ((rpcConnection = notificationService.getRpcConnection(rpcSessionId)) != null) {
-			if (rpcConnection.getAccessType().equals("web")) {
+			if (Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
 				sessionManager.accessOut(rpcConnection);
 				return;
 			}

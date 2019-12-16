@@ -266,8 +266,8 @@ public class KurentoSessionManager extends SessionManager {
 	public void accessOut(RpcConnection rpcConnection) {
 		// update user online status in cache
 //		cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
-		cacheManage.updateDeviceName(rpcConnection.getUserUuid(), "");
-
+		if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()))
+			cacheManage.updateDeviceName(rpcConnection.getUserUuid(), "");
 		sessionEventsHandler.closeRpcSession(rpcConnection.getParticipantPrivateId());
 	}
 
@@ -438,10 +438,18 @@ public class KurentoSessionManager extends SessionManager {
 				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
 					senderParticipant = participant;
 				} else {
-					senderParticipant = session.getParticipants().stream().filter(part ->
-							part.getUserId().equals(participant.getUserId()) &&
-									!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
-									Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);
+					log.info("========participantUserId:{}, participantRole:{}, participantStreamType:{}", participant.getUserId(), participant.getRole(), participant.getStreamType());
+					senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part -> {
+						log.info("########partUserId:{}, partRole:{}, partStreamType:{}", part.getUserId(), part.getRole(), part.getStreamType());
+						if (part.getUserId().equals(participant.getUserId()) &&
+								!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+								Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+							return true;
+						} else {
+							return false;
+						}
+
+					}).findFirst().orElse(null);
 				}
 			}
 

@@ -38,8 +38,8 @@ public class AccessInHandler extends RpcAbstractHandler {
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
-            rpcConnection.setAccessType(accessType);
-            webLogin = accessType.equals("web");
+            rpcConnection.setAccessType(AccessTypeEnum.valueOf(accessType));
+            webLogin = Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web);
         }
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
@@ -94,14 +94,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
 
-            if (webLogin) {
-                rpcConnection.setUserUuid(uuid);
-                break;
-            }
-
             previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
                 if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid) &&
-                        Objects.equals("terminal", s.getAccessType())) {
+                        Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
                     log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
                     log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
                     return true;
@@ -111,13 +106,13 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
             }).findFirst().orElse(null);
 
-            /*if (webLogin) {
+            if (webLogin) {
                 if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
                 }
                 rpcConnection.setUserUuid(uuid);
                 break;
-            }*/
+            }
 
             // SINGLE LOGIN
             if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class RpcConnection {
 	private String serialNumber;
 	private String macAddr;
 	private boolean isReconnected;
-	private String accessType;
+	private AccessTypeEnum accessType;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -102,11 +103,11 @@ public class RpcConnection {
 		this.sessionId = sessionId;
 	}
 
-	public String getAccessType() {
+	public AccessTypeEnum getAccessType() {
 		return accessType;
 	}
 
-	public void setAccessType(String accessType) {
+	public void setAccessType(AccessTypeEnum accessType) {
 		this.accessType = accessType;
 	}
 
