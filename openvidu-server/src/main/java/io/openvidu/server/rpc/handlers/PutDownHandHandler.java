@@ -33,8 +33,12 @@ public class PutDownHandHandler extends RpcAbstractHandler {
                 request.getParams().get(ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM).getAsString() : null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!StringUtils.isEmpty(targetId)) {
-            sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), StreamType.MAJOR)
-                    .setHandStatus(ParticipantHandStatus.down);
+            Participant raisePart = sessionManager.getParticipants(sessionId).stream().filter(participant -> Objects.equals(targetId,
+                    participant.getUserId()) && Objects.equals(StreamType.MAJOR, participant.getStreamType()))
+                    .findFirst().orElse(null);
+            if (!Objects.isNull(raisePart)) {
+                raisePart.setHandStatus(ParticipantHandStatus.down);
+            } else return;
         } else {
             participants.forEach(part -> part.setHandStatus(ParticipantHandStatus.down));
         }
