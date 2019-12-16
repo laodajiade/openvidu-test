@@ -35,6 +35,7 @@ public enum ErrorCodeEnum {
     NOT_EXIST_SHARING_FLOW(13012, "not exists sharing flow"),
     SPEAKER_ALREADY_EXIST(13013, "speaker already exist"),
     TERMINAL_MUST_LOGIN_FIRST(13014, "terminal must login first"),
+    TERMINAL_IS_NOT_MODERATOR(13015, "terminal is not moderator"),
     DEVICE_NOT_FOUND(13100, "device not found"),
     DEVICE_BUSY(13101,"device busy");
 
