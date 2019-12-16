@@ -7,6 +7,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,18 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.USER_NOT_STREAMING_ERROR_CODE);
             }
+
+            // broadcast the changes of layout
+            Session conferenceSession = sessionManager.getSession(rpcConnection.getSessionId());
+            JsonObject notifyResult = new JsonObject();
+            notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
+            notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
+            notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
+
+            conferenceSession.getParticipants().forEach(part -> {
+                // broadcast the changes of layout
+                this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+            });
         } else {
             log.error("Error: participant {} is neither a moderator nor a thor.", participant.getParticipantPublicId());
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
