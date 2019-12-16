@@ -109,8 +109,8 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (webLogin) {
                 if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
-                } else if (sessionManager.getSession(previousRpc.getSessionId()) != null &&
-                        !sessionManager.getSession(previousRpc.getSessionId())
+                } else if (!StringUtils.isEmpty(previousRpc.getSessionId()) &&
+                        sessionManager.getSession(previousRpc.getSessionId()) != null && !sessionManager.getSession(previousRpc.getSessionId())
                             .getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR)
                             .getRole().equals(OpenViduRole.MODERATOR)) {
                     errCode = ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
