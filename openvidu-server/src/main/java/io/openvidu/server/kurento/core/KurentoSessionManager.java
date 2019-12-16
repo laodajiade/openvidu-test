@@ -125,8 +125,9 @@ public class KurentoSessionManager extends SessionManager {
 
 			// change participant role if web THOR invite the same user
 			Participant thorPart = getParticipants(sessionId).stream().filter(part -> Objects.equals(OpenViduRole.THOR,
-					part.getRole()) && part.getUserId().equals(participant.getUserId())).findAny().orElse(null);
-			if (!Objects.isNull(thorPart) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+					part.getRole())).findAny().orElse(null);
+			if (!Objects.isNull(thorPart) && !Objects.equals(OpenViduRole.THOR, participant.getRole()) &&
+                    !Objects.equals(StreamType.SHARING, participant.getStreamType()) && thorPart.getUserId().equals(participant.getUserId())) {
 				participant.setRole(OpenViduRole.MODERATOR);
 				participant.setClientMetadata(participant.getClientMetadata().replace(OpenViduRole.PUBLISHER.name(), OpenViduRole.MODERATOR.name()));
 				log.info("change participant role cause web THOR invite the same userId:{}", participant.getUserId());
