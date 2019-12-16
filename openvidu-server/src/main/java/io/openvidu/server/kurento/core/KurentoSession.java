@@ -163,27 +163,35 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
-		synchronized (joinOrLeaveLock) {
-			try {
-				Thread.sleep(kurentoEndpointConfig.leaveDelay);
-				log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
-						p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
+			synchronized (joinOrLeaveLock) {
+				try {
+					leave(p, reason);
+					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
+							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
+					Thread.sleep(kurentoEndpointConfig.leaveDelay);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
-			checkClosed();
-			KurentoParticipant participant = (KurentoParticipant)p;
-			if (participant == null) {
-				throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE, "Participant with private id "
-						+ p.getParticipantPrivateId() + "public id " + p.getParticipantPublicId() + " not found in session '" + sessionId + "'");
-			}
-			participant.releaseAllFilters();
-
-			log.info("PARTICIPANT {}: Leaving session {}", participant.getParticipantPublicId(), this.sessionId);
-
-			this.removeParticipant(participant, reason);
-			participant.close(reason, true, 0);
+		} else {
+			leave(p, reason);
 		}
+	}
+
+	private void leave(Participant p, EndReason reason) {
+		checkClosed();
+		KurentoParticipant participant = (KurentoParticipant)p;
+		if (participant == null) {
+			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE, "Participant with private id "
+					+ p.getParticipantPrivateId() + "public id " + p.getParticipantPublicId() + " not found in session '" + sessionId + "'");
+		}
+		participant.releaseAllFilters();
+
+		log.info("PARTICIPANT {}: Leaving session {}", participant.getParticipantPublicId(), this.sessionId);
+
+		this.removeParticipant(participant, reason);
+		participant.close(reason, true, 0);
 	}
 
 	@Override

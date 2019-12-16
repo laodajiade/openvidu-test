@@ -439,7 +439,7 @@ public class KurentoSessionManager extends SessionManager {
 					senderParticipant = participant;
 				} else {
 					log.info("========participantUserId:{}, participantRole:{}, participantStreamType:{}", participant.getUserId(), participant.getRole(), participant.getStreamType());
-					senderParticipant = session.getParticipants().stream().filter(part -> {
+					senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part -> {
 						log.info("########partUserId:{}, partRole:{}, partStreamType:{}", part.getUserId(), part.getRole(), part.getStreamType());
 						if (part.getUserId().equals(participant.getUserId()) &&
 								!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
@@ -449,7 +449,7 @@ public class KurentoSessionManager extends SessionManager {
 							return false;
 						}
 
-					}).findAny().orElse(null);
+					}).findFirst().orElse(null);
 				}
 			}
 
