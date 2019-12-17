@@ -222,7 +222,8 @@ public class Session implements SessionInterface {
 	public Set<Participant> getMajorPartEachConnect() {
 		checkClosed();
 		return this.participants.values().stream().map(v ->
-				v.get(StreamType.MAJOR.name())).collect(Collectors.toSet());
+				v.get(StreamType.MAJOR.name())).filter(participant -> !Objects.equals(OpenViduRole.THOR,
+				participant.getRole())).collect(Collectors.toSet());
 	}
 
     /*public Participant getParticipantByPrivateId(String participantPrivateId) {
