@@ -107,13 +107,20 @@ public class AccessInHandler extends RpcAbstractHandler {
             }).findFirst().orElse(null);
 
             if (webLogin) {
+                Session session;
                 if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
-                } else if (!StringUtils.isEmpty(previousRpc.getSessionId()) &&
-                        sessionManager.getSession(previousRpc.getSessionId()) != null && !sessionManager.getSession(previousRpc.getSessionId())
-                            .getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR)
-                            .getRole().equals(OpenViduRole.MODERATOR)) {
-                    errCode = ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
+                } else if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null) {
+                    if (!sessionManager.getSession(previousRpc.getSessionId()).getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(),
+                            StreamType.MAJOR).getRole().equals(OpenViduRole.MODERATOR)) {
+                        errCode = ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
+                    } else {
+                        Participant thorPart = session.getParticipants().stream().filter(participant ->
+                                Objects.equals(OpenViduRole.THOR, participant.getRole())).findAny().orElse(null);
+                        if (!Objects.isNull(thorPart)) {
+                            errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                        }
+                    }
                 }
                 rpcConnection.setUserUuid(uuid);
                 break;

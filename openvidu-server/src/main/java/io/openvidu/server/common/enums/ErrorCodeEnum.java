@@ -66,6 +66,7 @@ public enum ErrorCodeEnum {
     SPEAKER_ALREADY_EXIST(13013, "会议中已存在发言者"),
     TERMINAL_MUST_LOGIN_FIRST(13014, "硬终端须先登录"),
     TERMINAL_IS_NOT_MODERATOR(13015, "硬终端不是主持人"),
+    WEB_MODERATOR_ALREADY_EXIST(13016, "会议中已存在web会控"),
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
 
