@@ -70,7 +70,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (!StringUtils.isEmpty(deviceSerialNumber)) {
                 DeviceSearch search = new DeviceSearch();
                 search.setSerialNumber(deviceSerialNumber);
-                if (Objects.isNull(deviceVersion)){
+                if (Objects.isNull(deviceVersion)) {
                     errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
                     break;
                 }
@@ -223,18 +223,20 @@ public class AccessInHandler extends RpcAbstractHandler {
                     if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
                         // leave room
                         Session session = this.sessionManager.getSession(previousRpc.getSessionId());
-                        Participant prePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
-                        if (!Objects.isNull(prePart)) {
-                            if (Objects.equals(OpenViduRole.MODERATOR, prePart.getRole())) {    // close room
-                                this.sessionManager.dealSessionClose(previousRpc.getSessionId(), EndReason.closeSessionByModerator);
-                            } else {    // leave room
-                                if (Objects.equals(ParticipantShareStatus.on, prePart.getShareStatus())) {
-                                    Participant preSharePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
-                                    if (!Objects.isNull(preSharePart)) {
-                                        this.sessionManager.dealParticipantLeaveRoom(preSharePart, false, null);
+                        if (!Objects.isNull(session)) {
+                            Participant prePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
+                            if (!Objects.isNull(prePart)) {
+                                if (Objects.equals(OpenViduRole.MODERATOR, prePart.getRole())) {    // close room
+                                    this.sessionManager.dealSessionClose(previousRpc.getSessionId(), EndReason.closeSessionByModerator);
+                                } else {    // leave room
+                                    if (Objects.equals(ParticipantShareStatus.on, prePart.getShareStatus())) {
+                                        Participant preSharePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
+                                        if (!Objects.isNull(preSharePart)) {
+                                            this.sessionManager.dealParticipantLeaveRoom(preSharePart, false, null);
+                                        }
                                     }
+                                    this.sessionManager.dealParticipantLeaveRoom(prePart, true, null);
                                 }
-                                this.sessionManager.dealParticipantLeaveRoom(prePart, true, null);
                             }
                         }
                     }
