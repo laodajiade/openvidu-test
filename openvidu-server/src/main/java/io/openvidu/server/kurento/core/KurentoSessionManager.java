@@ -430,18 +430,16 @@ public class KurentoSessionManager extends SessionManager {
 				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
 					senderParticipant = participant;
 				} else {
-					log.info("========participantUserId:{}, participantRole:{}, participantStreamType:{}", participant.getUserId(), participant.getRole(), participant.getStreamType());
-					senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part -> {
-						log.info("########partUserId:{}, partRole:{}, partStreamType:{}", part.getUserId(), part.getRole(), part.getStreamType());
-						if (part.getUserId().equals(participant.getUserId()) &&
-								!Objects.equals(OpenViduRole.THOR, part.getRole()) &&
-								Objects.equals(StreamType.MAJOR, part.getStreamType())) {
-							return true;
-						} else {
-							return false;
-						}
-
-					}).findFirst().orElse(null);
+					senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
+							part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+							Objects.equals(StreamType.MAJOR, part.getStreamType())).findFirst().orElse(null);
+					if (senderParticipant == null) {
+						log.info("Not found the same account login terminal cause the delay of inviting parts.");
+						Thread.sleep(4000);
+						senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
+								part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+										Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);
+					}
 				}
 			}
 
@@ -471,6 +469,9 @@ public class KurentoSessionManager extends SessionManager {
 		} catch (OpenViduException e) {
 			log.error("PARTICIPANT {}: Error subscribing to {}", participant.getParticipantPublicId(), senderName, e);
 			sessionEventsHandler.onSubscribe(participant, session, null, transactionId, e);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			log.error("Exception:", e);
 		}
 		if (sdpAnswer != null) {
 			sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, transactionId, null);
