@@ -690,7 +690,7 @@ public abstract class SessionManager {
 			if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
 				cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
 			}});
-		this.unpublishAllStream(sessionId, endReason);
+//		this.unpublishAllStream(sessionId, endReason);
 		this.closeSession(sessionId, endReason);
 	}
 
