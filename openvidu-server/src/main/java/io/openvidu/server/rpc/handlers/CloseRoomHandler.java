@@ -62,7 +62,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
             if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
                 cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
             }});
-        this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
+//        this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
 //        this.sessionManager.dealSessionClose(sessionId, EndReason.closeSessionByModerator);
     }
