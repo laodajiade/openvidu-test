@@ -55,8 +55,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             List<User> userList = userMapper.selectByPrimaryKeys(userIds);
             userList.forEach(user -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
-                        .compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()) == 0 &&
-                        Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().get();
+                        .compareTo(Long.valueOf(s.getUserId())) == 0 && Objects.equals(StreamType.MAJOR, s.getStreamType()) &&
+                        !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().get();
 
                 // User and dept info.
                 UserDeptSearch udSearch = new UserDeptSearch();
