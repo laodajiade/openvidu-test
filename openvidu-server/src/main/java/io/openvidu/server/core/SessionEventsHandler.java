@@ -93,7 +93,8 @@ public class SessionEventsHandler {
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
 		int index = 0;
 		for (Participant existingParticipant : existingParticipants) {
-			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
+			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId()) ||
+					Objects.equals(OpenViduRole.THOR, existingParticipant.getRole())) continue;
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
 					existingParticipant.getParticipantPublicId());
