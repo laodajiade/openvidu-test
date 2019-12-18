@@ -108,9 +108,12 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             if (webLogin) {
                 Session session;
+                rpcConnection.setUserUuid(uuid);
                 if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
-                } else if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null) {
+                    break;
+                }
+                if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null) {
                     if (!sessionManager.getSession(previousRpc.getSessionId()).getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(),
                             StreamType.MAJOR).getRole().equals(OpenViduRole.MODERATOR)) {
                         errCode = ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
@@ -128,9 +131,22 @@ public class AccessInHandler extends RpcAbstractHandler {
                             }
                         }
                     }
+                    break;
+                } else {
+                    RpcConnection currLoginThorConnect = notificationService.getRpcConnections().stream().filter(rpcConn ->
+                            Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType()) &&
+                                    Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
+                    if (!Objects.isNull(currLoginThorConnect)) {
+                        if (!forceLogin) {
+                            errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                        } else {
+                            notificationService.sendNotification(currLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                            leaveRoomAfterConnClosed(currLoginThorConnect.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+                            notificationService.closeRpcSession(currLoginThorConnect.getParticipantPrivateId());
+                        }
+                    }
+                    break;
                 }
-                rpcConnection.setUserUuid(uuid);
-                break;
             }
 
             // SINGLE LOGIN
@@ -213,7 +229,9 @@ public class AccessInHandler extends RpcAbstractHandler {
             log.warn("AccessIn Warning. privateId:{}, errCode:{}", rpcConnection.getParticipantPrivateId(), errCode.name());
             if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
-                sessionManager.accessOut(rpcConnection);
+                if (!Objects.equals(errCode, ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST)) {
+                    sessionManager.accessOut(rpcConnection);
+                }
                 return;
             } else {
                 if (!forceLogin) {
