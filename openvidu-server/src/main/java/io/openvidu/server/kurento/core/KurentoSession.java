@@ -59,7 +59,6 @@ public class KurentoSession extends Session {
 
 	private Object pipelineCreateLock = new Object();
 	private Object pipelineReleaseLock = new Object();
-	private final Object joinOrLeaveLock = new Object();
 	private boolean destroyKurentoClient;
 
 	public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
