@@ -122,9 +122,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                                 errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
                             } else {
                                 // send remote login notify to current terminal
-                                notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
-                                leaveRoomAfterConnClosed(previousRpc.getParticipantPrivateId(), EndReason.sessionClosedByServer);
-                                notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+                                notificationService.sendNotification(thorPart.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                                leaveRoomAfterConnClosed(thorPart.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+                                notificationService.closeRpcSession(thorPart.getParticipantPrivateId());
                             }
                         }
                     }
