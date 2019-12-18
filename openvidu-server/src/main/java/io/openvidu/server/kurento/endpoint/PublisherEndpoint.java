@@ -154,12 +154,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 //			log.info("already subscribe audio out.");
 //		}
 
-		if (!isConnectedAudioOut) {
+//		if (!isConnectedAudioOut) {
 			internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
-			isConnectedAudioOut = true;
-		} else {
-			log.info("already subscribe audio out.");
-		}
+//			isConnectedAudioOut = true;
+//		} else {
+//			log.info("already subscribe audio out.");
+//		}
 	}
 
 	public void closeAudioComposite() {
