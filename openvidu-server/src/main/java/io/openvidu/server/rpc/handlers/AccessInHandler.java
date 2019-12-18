@@ -118,7 +118,14 @@ public class AccessInHandler extends RpcAbstractHandler {
                         Participant thorPart = session.getParticipants().stream().filter(participant ->
                                 Objects.equals(OpenViduRole.THOR, participant.getRole())).findAny().orElse(null);
                         if (!Objects.isNull(thorPart)) {
-                            errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                            if (!forceLogin) {
+                                errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                            } else {
+                                // send remote login notify to current terminal
+                                notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                                leaveRoomAfterConnClosed(previousRpc.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+                                notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+                            }
                         }
                     }
                 }
@@ -247,10 +254,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                             }
                         }
                     }
-                    // send remote login notify to current terminal
-                    /*notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
-                    leaveRoomAfterConnClosed(previousRpc.getParticipantPrivateId(), EndReason.sessionClosedByServer);
-                    notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());*/
                 }
             }
         }
