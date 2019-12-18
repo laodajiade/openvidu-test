@@ -94,6 +94,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 		majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
 		log.info("Pub EP create majorShareHubPort.");
 		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+
+//		audioHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+//		log.info("Pub EP create audioHubPortOut.");
+//		audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
 	}
 
 	@Override
@@ -110,12 +114,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 	}
 
 	public void createAudioMixer() {
-		if (!isSharing()) {
-			// audio composite
-			createAudioComposite();
-			audioHubPortOut = new HubPort.Builder(audioComposite).build();
-			audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
-		}
+//		if (!isSharing()) {
+//			// audio composite
+//			createAudioComposite();
+//			audioHubPortOut = new HubPort.Builder(audioComposite).build();
+//			audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
+//		}
 	}
 
 	void createAudioComposite() {
@@ -139,12 +143,19 @@ public class PublisherEndpoint extends MediaEndpoint {
 	}
 
 	public void connectAudioIn(MediaElement sink) {
-		internalSinkConnect(this.getEndpoint(), sink, MediaType.AUDIO);
+//		internalSinkConnect(this.getEndpoint(), sink, MediaType.AUDIO);
 	}
 
 	public void connectAudioOut(MediaElement sink) {
+//		if (!isConnectedAudioOut) {
+//			internalSinkConnect(audioHubPortOut, sink, MediaType.AUDIO);
+//			isConnectedAudioOut = true;
+//		} else {
+//			log.info("already subscribe audio out.");
+//		}
+
 		if (!isConnectedAudioOut) {
-			internalSinkConnect(audioHubPortOut, sink, MediaType.AUDIO);
+			internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
 			isConnectedAudioOut = true;
 		} else {
 			log.info("already subscribe audio out.");
@@ -585,7 +596,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		internalSinkConnect(current, passThru);
 		internalSinkConnect(current, majorShareHubPort);
 		if (!isSharing()) {
-			innerConnectAudio();
+//			innerConnectAudio();
 		}
 
 		connected = true;
