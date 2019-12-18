@@ -77,42 +77,40 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void join(Participant participant) {
-//		synchronized (joinOrLeaveLock) {
-			checkClosed();
-			createPipeline();
-			this.compositeService.setPipeline(this.getPipeline());
-			compositeService.createMajorShareComposite();
-			if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
-				compositeService.setExistSharing(true);
-			}
+		checkClosed();
+		createPipeline();
+		this.compositeService.setPipeline(this.getPipeline());
+		compositeService.createMajorShareComposite();
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+			compositeService.setExistSharing(true);
+		}
 
-			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
-					this.openviduConfig, this.recordingManager);
-			participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
-				Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
-				if (newPart != null)
-					log.info("RPCConnection:{} already exists the stream type:{}, now add the stream type:{} into the map.",
-							participant.getParticipantPrivateId(), participant.getStreamType().name(),
-							kurentoParticipant.getStreamType().name());
-				return parts;
-			});
-			participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
-				ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
-				connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
-				return connectionParticipants;
-			});
+		KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
+				this.openviduConfig, this.recordingManager);
+		participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
+			Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
+			if (newPart != null)
+				log.info("RPCConnection:{} already exists the stream type:{}, now add the stream type:{} into the map.",
+						participant.getParticipantPrivateId(), participant.getStreamType().name(),
+						kurentoParticipant.getStreamType().name());
+			return parts;
+		});
+		participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
+			ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
+			connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
+			return connectionParticipants;
+		});
 
-			filterStates.forEach((filterId, state) -> {
-				log.info("Adding filter {}", filterId);
-				kurentoSessionHandler.updateFilter(sessionId, participant, filterId, state);
-			});
+		filterStates.forEach((filterId, state) -> {
+			log.info("Adding filter {}", filterId);
+			kurentoSessionHandler.updateFilter(sessionId, participant, filterId, state);
+		});
 
-			log.info("SESSION {}: Added participant {}", sessionId, participant);
+		log.info("SESSION {}: Added participant {}", sessionId, participant);
 
-			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-				kurentoEndpointConfig.getCdr().recordParticipantJoined(participant, sessionId);
-			}
-//		}
+		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+			kurentoEndpointConfig.getCdr().recordParticipantJoined(participant, sessionId);
+		}
 	}
 
 	public void newPublisher(Participant participant) {
@@ -144,7 +142,6 @@ public class KurentoSession extends Session {
 	@Override
 	public void leave(String participantPrivateId, EndReason reason) throws OpenViduException {
 		checkClosed();
-
 		for (Participant p : participants.get(participantPrivateId).values()) {
 			KurentoParticipant participant = (KurentoParticipant)p;
 
@@ -163,23 +160,6 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
-//		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
-			synchronized (joinOrLeaveLock) {
-//				try {
-					leave(p, reason);
-//					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
-//							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
-//					Thread.sleep(kurentoEndpointConfig.leaveDelay);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-			}
-//		} else {
-//			leave(p, reason);
-//		}
-	}
-
-	private void leave(Participant p, EndReason reason) {
 		checkClosed();
 		KurentoParticipant participant = (KurentoParticipant)p;
 		if (participant == null) {
