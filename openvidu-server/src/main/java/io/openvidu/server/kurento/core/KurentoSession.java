@@ -77,7 +77,7 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void join(Participant participant) {
-		synchronized (joinOrLeaveLock) {
+//		synchronized (joinOrLeaveLock) {
 			checkClosed();
 			createPipeline();
 			this.compositeService.setPipeline(this.getPipeline());
@@ -112,7 +112,7 @@ public class KurentoSession extends Session {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 				kurentoEndpointConfig.getCdr().recordParticipantJoined(participant, sessionId);
 			}
-		}
+//		}
 	}
 
 	public void newPublisher(Participant participant) {
@@ -165,14 +165,14 @@ public class KurentoSession extends Session {
 	public void leaveRoom(Participant p, EndReason reason) {
 //		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
 			synchronized (joinOrLeaveLock) {
-				try {
+//				try {
 					leave(p, reason);
-					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
-							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
-					Thread.sleep(kurentoEndpointConfig.leaveDelay);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+//					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
+//							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
+//					Thread.sleep(kurentoEndpointConfig.leaveDelay);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
 			}
 //		} else {
 //			leave(p, reason);
