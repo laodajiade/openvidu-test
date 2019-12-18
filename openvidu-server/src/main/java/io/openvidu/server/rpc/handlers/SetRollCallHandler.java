@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -62,9 +63,16 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         assert targetPart != null;
         targetPart.setHandStatus(ParticipantHandStatus.speaker);
         targetConnectionId = targetPart.getParticipantPublicId();
+        Session conferenceSession = sessionManager.getSession(sessionId);
         if (Objects.isNull(existSpeakerPart)) {
             // switch layout with moderator
+            assert moderatorPart != null;
             sourceConnectionId = moderatorPart.getParticipantPublicId();
+            if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
+                JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+                sourceConnectionId = !firstOrderPart.get("connectionId").getAsString().equals(sourceConnectionId) ?
+                        firstOrderPart.get("connectionId").getAsString() : sourceConnectionId;
+            }
         } else {
             // switch layout with current speaker participant
             sourceConnectionId = existSpeakerPart.getParticipantPublicId();
@@ -79,7 +87,6 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         }
 
         // change conference layout
-        Session conferenceSession = sessionManager.getSession(sessionId);
         conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
         // json RPC notify KMS layout changed.
         conferenceSession.invokeKmsConferenceLayout();
