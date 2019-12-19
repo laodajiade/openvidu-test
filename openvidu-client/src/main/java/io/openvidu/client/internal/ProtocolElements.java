@@ -342,6 +342,13 @@ public class ProtocolElements {
 	public static final String SET_SHARE_POWER_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
 
+	public static final String STOP_PUBLISH_SHARING = "stopPublishSharing";
+	public static final String STOP_PUBLISH_SHARING_ROOMID_PARAM = "roomId";
+	public static final String STOP_PUBLISH_SHARING_SOURCEID_PARAM = "sourceId";
+	public static final String STOP_PUBLISH_SHARING_TARGETID_PARAM = "targetId";
+
+	public static final String STOP_PUBLISH_SHARING_NOTIFY = "stopPublishSharingNotify";
+
 	public static final String TRANSFER_MODERATOR_METHOD = "transferModerator";
 	public static final String TRANSFER_MODERATOR_ID_PARAM = "roomId";
 	public static final String TRANSFER_MODERATOR_SOURCE_ID_PARAM = "sourceId";
