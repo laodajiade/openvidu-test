@@ -187,6 +187,10 @@ public class RpcHandlerFactory {
 
     @Resource
     private GetUnfinishedMeetingsHandler getUnfinishedMeetingsHandler;
+
+    @Resource
+    private StopPublishSharingHandler stopPublishSharingHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                  accessInHandler);
@@ -245,6 +249,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,            commandUpgradeHandler);
         handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,          adjustResolutionHandler);
         handlersMap.put(ProtocolElements.GET_UNFINISHED_MEETINGS_METHOD,    getUnfinishedMeetingsHandler);
+        handlersMap.put(ProtocolElements.STOP_PUBLISH_SHARING,    stopPublishSharingHandler);
 
     }
 
