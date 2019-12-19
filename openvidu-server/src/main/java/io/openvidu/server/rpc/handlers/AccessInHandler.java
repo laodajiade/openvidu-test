@@ -113,7 +113,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
                     break;
                 }
-                if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null) {
+
+                if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null &&
+                        !Objects.isNull(sessionManager.getSession(previousRpc.getSessionId()).getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR))) {
                     if (!sessionManager.getSession(previousRpc.getSessionId()).getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(),
                             StreamType.MAJOR).getRole().equals(OpenViduRole.MODERATOR)) {
                         errCode = ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
