@@ -135,9 +135,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                     }
                     break;
                 } else {
-                    RpcConnection currLoginThorConnect = notificationService.getRpcConnections().stream().filter(rpcConn ->
-                            Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType()) &&
-                                    Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
+                    RpcConnection currLoginThorConnect = notificationService.getRpcConnections().stream()
+                        .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection) && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
+                            && Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
                     if (!Objects.isNull(currLoginThorConnect)) {
                         if (!forceLogin) {
                             errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
