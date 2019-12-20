@@ -469,17 +469,36 @@ public class Session implements SessionInterface {
     }
 
 	public synchronized void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
-		for (JsonElement jsonElement : majorShareMixLinkedArr) {
-			JsonObject jsonObject = jsonElement.getAsJsonObject();
-			String connectionId = jsonObject.get("connectionId").getAsString();
+        boolean existSharing = false;
+        for (JsonElement jsonElement : majorShareMixLinkedArr) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String connectionId = jsonObject.get("connectionId").getAsString();
+            if (connectionId.equals(sourceConnectionId) || connectionId.equals(targetConnectionId)) {
+                if (jsonObject.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+                    existSharing = true;
+                }
+            }
+        }
+
+        for (JsonElement jsonElement : majorShareMixLinkedArr) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String connectionId = jsonObject.get("connectionId").getAsString();
+            String streamType = jsonObject.get("streamType").getAsString();
 			if (connectionId.equals(sourceConnectionId)) {
-				jsonObject.addProperty("connectionId", targetConnectionId);
+				changeStreamTypeIfNecessary(jsonObject, targetConnectionId, existSharing, streamType);
 			} else if (connectionId.equals(targetConnectionId)) {
-				jsonObject.addProperty("connectionId", sourceConnectionId);
+                changeStreamTypeIfNecessary(jsonObject, sourceConnectionId, existSharing, streamType);
 			}
 		}
 		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
+
+	private static void changeStreamTypeIfNecessary(JsonObject jsonObject, String connectionId, boolean existSharing, String streamType) {
+        jsonObject.addProperty("connectionId", connectionId);
+        if (existSharing) {
+            jsonObject.addProperty("streamType", streamType.equals(StreamType.SHARING.name()) ? StreamType.MAJOR.name() : StreamType.SHARING.name());
+        }
+    }
 
     public synchronized int invokeKmsConferenceLayout() {
         KurentoSession kurentoSession = (KurentoSession) this;
