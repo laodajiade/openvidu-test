@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -257,7 +258,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		sessionManager.getParticipants(sessionId).forEach(p -> {
 			RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
 			if (rpc != null) {
-				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
+				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())
+						|| Objects.equals(OpenViduRole.THOR, p.getRole())) {
 					notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
 				}
 			}
