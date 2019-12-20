@@ -71,7 +71,13 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	}
 
 	public synchronized String subscribeAudio(PublisherEndpoint publisher) {
-		publisher.connectAudioOut(this.getEndpoint());
+		if (Objects.isNull(publisher)) {
+			log.info("web subscribe all audio mix output. but it is not input.");
+			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.AUDIO);
+		} else {
+			publisher.connectAudioOut(this.getEndpoint());
+		}
+
 		return "";
 	}
 

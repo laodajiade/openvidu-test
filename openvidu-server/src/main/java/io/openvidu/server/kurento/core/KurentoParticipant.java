@@ -314,9 +314,12 @@ public class KurentoParticipant extends Participant {
 						sender.getPublisherStreamId(), sender.getParticipantPublicId(), subscriber.createdAt());
 			}
 
-			if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
-					Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
-				subscriber.subscribeAudio(this.getPublisher());
+			if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+				if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
+					subscriber.subscribeAudio(this.getPublisher());
+				} else {
+					subscriber.subscribeAudio(null);
+				}
 			}
 
 			return sdpAnswer;
