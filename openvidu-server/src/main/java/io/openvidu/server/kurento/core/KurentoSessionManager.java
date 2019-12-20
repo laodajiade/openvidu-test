@@ -436,6 +436,7 @@ public class KurentoSessionManager extends SessionManager {
 					if (senderParticipant == null) {
 						log.info("Not found the same account login terminal cause the delay of inviting parts.");
 						Thread.sleep(4000);
+						if (Objects.isNull(getSession(participant.getSessionId()))) return;
 						senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
 								part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
 										Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);

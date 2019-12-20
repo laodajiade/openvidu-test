@@ -187,7 +187,8 @@ public abstract class SessionManager {
 	public Set<Participant> getParticipants(String sessionId) throws OpenViduException {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
-			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+			log.error("Session:{} not found.", sessionId);
+			return null;
 		}
 		Set<Participant> participants = session.getParticipants();
 		participants.removeIf(Participant::isClosed);

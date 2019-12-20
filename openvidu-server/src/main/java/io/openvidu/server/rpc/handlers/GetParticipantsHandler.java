@@ -45,6 +45,10 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             }
         }
 
+        if (Objects.isNull(sessionManager.getParticipants(sessionId))) {
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+            return;
+        }
         sessionManager.getParticipants(sessionId).forEach(s -> {
             if (!Objects.equals(s.getRole(), OpenViduRole.THOR)) {
                 userIds.add(Long.valueOf(s.getUserId()));
