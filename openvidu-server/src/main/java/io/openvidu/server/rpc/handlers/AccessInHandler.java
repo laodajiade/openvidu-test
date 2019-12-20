@@ -249,6 +249,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                     assert previousRpc != null;
                     try {
                         // send remote login notify to current terminal
+                        previousRpc.setUserUuid(null);
                         notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
                     } catch (Exception e) {
                         log.error("Exception when send remoteLoginNotify.", e);
