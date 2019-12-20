@@ -56,7 +56,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             userList.forEach(user -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
                         .compareTo(Long.valueOf(s.getUserId())) == 0 && Objects.equals(StreamType.MAJOR, s.getStreamType()) &&
-                        !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().get();
+                        !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().orElse(null);
+                if (Objects.isNull(part)) return;
 
                 // User and dept info.
                 UserDeptSearch udSearch = new UserDeptSearch();

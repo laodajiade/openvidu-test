@@ -70,8 +70,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             sourceConnectionId = moderatorPart.getParticipantPublicId();
             if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
                 JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
-                sourceConnectionId = !firstOrderPart.get("connectionId").getAsString().equals(sourceConnectionId) ?
-                        firstOrderPart.get("connectionId").getAsString() : sourceConnectionId;
+                if (!firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+                    sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+                } else {
+                    sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+                }
+
             }
         } else {
             // switch layout with current speaker participant
