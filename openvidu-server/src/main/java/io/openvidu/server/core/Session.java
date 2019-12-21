@@ -387,13 +387,21 @@ public class Session implements SessionInterface {
 			}
 		}
 
-    	if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
-			majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
-    	} else if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+		Participant speakerPart = getParticipants().stream().filter(participant -> Objects.equals(ParticipantHandStatus.speaker,
+				participant.getHandStatus()) && Objects.equals(StreamType.MAJOR, participant.getStreamType())).findFirst().orElse(null);
+		if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
+			if (Objects.isNull(speakerPart)) {
+				majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
+			} else {
+				majorShareMixLinkedArr.add(getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId()));
+			}
+		} else if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
 			majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.SHARING, kurentoParticipant.getParticipantPublicId());
-        } else {
-    	    majorShareMixLinkedArr.add(getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId()));
+		} else {
+			majorShareMixLinkedArr.add(getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId()));
 		}
+
+
 
     	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
     	this.invokeKmsConferenceLayout();
