@@ -612,7 +612,7 @@ public abstract class SessionManager {
 			return;
 		}
 
-		conferences.forEach(conference -> endConferenceInfo(conference));
+		conferences.forEach(this::endConferenceInfo);
 	}
 
 	public void endConferenceInfo(Conference conference) {
