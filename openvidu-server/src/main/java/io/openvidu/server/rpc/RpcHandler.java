@@ -23,10 +23,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -148,6 +145,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			}
 			cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
 					UserOnlineStatusEnum.offline);
+			if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(rpcConnection.getSerialNumber())) {
+				cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
+			}
 		} else {
 			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
 		}

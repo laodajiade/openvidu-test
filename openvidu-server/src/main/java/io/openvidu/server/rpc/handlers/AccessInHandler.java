@@ -109,9 +109,16 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (webLogin) {
                 Session session;
                 rpcConnection.setUserUuid(uuid);
-                if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
+                if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber()) ) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
                     break;
+                } else {
+                    String deviceStatus = cacheManage.getDeviceStatus(previousRpc.getSerialNumber());
+                    if (!Objects.equals(DeviceStatus.online.name(), deviceStatus) && !Objects.equals(DeviceStatus.meeting.name(), deviceStatus)) {
+                        log.error("Device:{} is offline or upgrading.", previousRpc.getSerialNumber());
+                        errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
+                        break;
+                    }
                 }
 
                 if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null &&
