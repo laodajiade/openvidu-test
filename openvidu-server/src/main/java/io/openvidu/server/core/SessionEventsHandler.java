@@ -706,4 +706,7 @@ public class SessionEventsHandler {
 		}).collect(Collectors.toSet());
 	}
 
+	public void sendSuccessResp(String participantPrivateId, Integer transactionId) {
+		rpcNotificationService.sendResponse(participantPrivateId, transactionId, new JsonObject());
+	}
 }
