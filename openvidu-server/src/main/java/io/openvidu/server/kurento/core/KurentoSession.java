@@ -21,6 +21,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -80,10 +81,12 @@ public class KurentoSession extends Session {
 		synchronized (joinOrLeaveLock) {
 			checkClosed();
 			createPipeline();
-			this.compositeService.setPipeline(this.getPipeline());
-			compositeService.createMajorShareComposite();
-			if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
-				compositeService.setExistSharing(true);
+			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
+				this.compositeService.setPipeline(this.getPipeline());
+				compositeService.createMajorShareComposite();
+				if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+					compositeService.setExistSharing(true);
+				}
 			}
 
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
