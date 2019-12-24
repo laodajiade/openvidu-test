@@ -106,7 +106,9 @@ public class KurentoParticipant extends Participant {
 
 			this.publisher.setSharing(Objects.equals(StreamType.SHARING, participant.getStreamType()));
 			this.publisher.setCompositeService(this.session.compositeService);
-            this.publisher.createAudioMixer();
+            if (Objects.equals(kurentoSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+				this.publisher.createAudioMixer();
+			}
 		}
 
 		for (Participant other : session.getParticipants()) {
