@@ -21,16 +21,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.utils.JsonUtils;
-import org.kurento.client.Properties;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
@@ -107,27 +104,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 	}
 
-	public void createAudioMixer() {
-//		if (!isSharing()) {
-//			// audio composite
-//			createAudioComposite();
-//			audioHubPortOut = new HubPort.Builder(audioComposite).build();
-//			audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
-//		}
-	}
-
-	void createAudioComposite() {
-		synchronized (audioCompositeCreateLock) {
-			if (this.getPipeline() == null || audioComposite != null) {
-				log.warn("create audio composite: audioComposite already exists or pipeline is null.");
-				return;
-			}
-			audioComposite = new Composite.Builder(this.getPipeline())
-					.withProperties(new Properties().add("type", "audio")).build();
-			log.info("SESSION {}: Creating audio Composite and object id:{}", this.getOwner().getSessionId(), audioComposite.getId());
-		}
-	}
-
 	public Composite getAudioComposite() { return this.audioComposite; }
 
 	public HubPort createHubPort(Composite composite) {
@@ -141,19 +117,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	}
 
 	public void connectAudioOut(MediaElement sink) {
-//		if (!isConnectedAudioOut) {
-//			internalSinkConnect(audioHubPortOut, sink, MediaType.AUDIO);
-//			isConnectedAudioOut = true;
-//		} else {
-//			log.info("already subscribe audio out.");
-//		}
-
-//		if (!isConnectedAudioOut) {
         internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
-//			isConnectedAudioOut = true;
-//		} else {
-//			log.info("already subscribe audio out.");
-//		}
 	}
 
 	public void closeAudioComposite() {
@@ -185,7 +149,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 	}
 
-	public void innerConnectAudio() {
+	/*public void innerConnectAudio() {
 		KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
 		Set<Participant> participants = kParticipant.getSession().getParticipants();
 		// latest participant
@@ -224,7 +188,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 				}
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * @return all media elements created for this publisher, except for the main
