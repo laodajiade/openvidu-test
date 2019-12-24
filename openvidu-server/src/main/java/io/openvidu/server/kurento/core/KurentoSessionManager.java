@@ -246,8 +246,10 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
 		if (!Objects.isNull(kParticipant.getPublisher()))
 			kParticipant.getPublisher().setSharing(false);
-		session.compositeService.setExistSharing(false);
-		session.compositeService.setShareStreamId(null);
+		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            session.compositeService.setExistSharing(false);
+            session.compositeService.setShareStreamId(null);
+        }
 		// record share status.
 		participant.setShareStatus(ParticipantShareStatus.off);
 		Participant majorPart = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.MAJOR);
@@ -695,9 +697,12 @@ public class KurentoSessionManager extends SessionManager {
 			Participant participant = this.getParticipant(participantPrivateId, StreamType.SHARING);
 			if (participant != null) {
 				this.unpublishVideo(participant, moderator, transactionId, reason);
-				// change conference layout and notify kms
-				session.leaveRoomSetLayout(participant, Objects.equals(speakerId, participant.getParticipantPublicId()) ? moderatorPublicId : speakerId);
-				session.invokeKmsConferenceLayout();
+				if (Objects.equals(kSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+                    // change conference layout and notify kms
+                    session.leaveRoomSetLayout(participant, Objects.equals(speakerId, participant.getParticipantPublicId())
+                            ? moderatorPublicId : speakerId);
+                    session.invokeKmsConferenceLayout();
+                }
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
 					changeSharingStatusInConference(kSession, participant);
 

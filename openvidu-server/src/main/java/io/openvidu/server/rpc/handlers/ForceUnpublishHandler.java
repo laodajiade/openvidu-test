@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -13,6 +14,8 @@ import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * @author geedow
@@ -40,11 +43,13 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
 
             // broadcast the changes of layout
             Session conferenceSession = sessionManager.getSession(rpcConnection.getSessionId());
-            conferenceSession.getParticipants().forEach(part -> {
-                // broadcast the changes of layout
-                this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
-                        conferenceSession.getLayoutNotifyInfo());
-            });
+            if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+                conferenceSession.getParticipants().forEach(part -> {
+                    // broadcast the changes of layout
+                    this.notificationService.sendNotification(part.getParticipantPrivateId(),
+                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+                });
+            }
         } else {
             log.error("Error: participant {} is neither a moderator nor a thor.", participant.getParticipantPublicId());
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
