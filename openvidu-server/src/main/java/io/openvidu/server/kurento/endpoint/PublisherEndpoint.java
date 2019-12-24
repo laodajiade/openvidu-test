@@ -85,20 +85,16 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	@Override
 	protected void internalEndpointInitialization(final CountDownLatch endpointLatch) {
-		super.internalEndpointInitialization(endpointLatch);
-		passThru = new PassThrough.Builder(getPipeline()).build();
-		log.info("Pub EP create passThrough.");
-		passThruSubscription = registerElemErrListener(passThru);
+        super.internalEndpointInitialization(endpointLatch);
+        passThru = new PassThrough.Builder(getPipeline()).build();
+        log.info("Pub EP create passThrough.");
+        passThruSubscription = registerElemErrListener(passThru);
 
-		if (((KurentoParticipant) this.getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-			majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
-			log.info("Pub EP create majorShareHubPort.");
-			majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
-		}
-
-//		audioHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
-//		log.info("Pub EP create audioHubPortOut.");
-//		audioHubPortOutSubscription = registerElemErrListener(audioHubPortOut);
+        if (((KurentoParticipant) this.getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
+            majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
+            log.info("Pub EP create majorShareHubPort.");
+            majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+        }
 	}
 
 	@Override
@@ -106,9 +102,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 		super.unregisterErrorListeners();
 		unregisterElementErrListener(passThru, passThruSubscription);
 		unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
-		/*if (!isSharing()) {
-			unregisterElementErrListener(audioHubPortOut, audioHubPortOutSubscription);
-		}*/
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
 		}
