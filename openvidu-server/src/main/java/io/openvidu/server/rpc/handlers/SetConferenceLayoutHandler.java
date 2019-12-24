@@ -3,10 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -23,6 +20,14 @@ import java.util.Set;
 public class SetConferenceLayoutHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(rpcConnection.getSessionId());
+        if (!Objects.isNull(conferenceSession)) {
+            if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.SFU)) {
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.INVALID_METHOD_CALL);
+                return;
+            }
+        }
         boolean automatically = getBooleanParam(request, ProtocolElements.SETCONFERENCELAYOUT_AUTOMATICAlly_PARAM);
         Integer mode = getIntOptionalParam(request, ProtocolElements.SETCONFERENCELAYOUT_MODE_PARAM);
         LayoutModeEnum layoutModeEnum = null;
@@ -43,7 +48,6 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
             return;
         }
 
-        io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(rpcConnection.getSessionId());
         if (!Objects.isNull(conferenceSession)) {
             if (!automatically) {
                 conferenceSession.setAutomatically(false);
