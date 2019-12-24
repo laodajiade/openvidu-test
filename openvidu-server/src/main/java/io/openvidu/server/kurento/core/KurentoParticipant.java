@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -208,7 +209,8 @@ public class KurentoParticipant extends Participant {
 		this.streaming = true;
 
 		// deal part default order in the conference
-		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
+		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU) &&
+				!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
 			this.session.dealParticipantDefaultOrder(this);
 		}
 

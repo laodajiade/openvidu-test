@@ -330,8 +330,10 @@ public class SessionEventsHandler {
                         ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 
                 // broadcast the changes of layout
-                rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+                if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+                    rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+                }
             }
 		}
 	}
