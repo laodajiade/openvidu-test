@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.MediaOptions;
@@ -91,9 +92,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 		log.info("Pub EP create passThrough.");
 		passThruSubscription = registerElemErrListener(passThru);
 
-		majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
-		log.info("Pub EP create majorShareHubPort.");
-		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+		if (((KurentoParticipant) this.getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
+			majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
+			log.info("Pub EP create majorShareHubPort.");
+			majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+		}
 
 //		audioHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
 //		log.info("Pub EP create audioHubPortOut.");
@@ -105,9 +108,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 		super.unregisterErrorListeners();
 		unregisterElementErrListener(passThru, passThruSubscription);
 		unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
-		if (!isSharing()) {
+		/*if (!isSharing()) {
 			unregisterElementErrListener(audioHubPortOut, audioHubPortOutSubscription);
-		}
+		}*/
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
 		}
@@ -328,16 +331,16 @@ public class PublisherEndpoint extends MediaEndpoint {
 		} else {
 			innerConnect();
 		}
-		String sdpResponse = null;
+		String sdpResponse;
 		switch (sdpType) {
-		case ANSWER:
-			sdpResponse = processAnswer(sdpString);
-			break;
-		case OFFER:
-			sdpResponse = processOffer(sdpString);
-			break;
-		default:
-			throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE, "Sdp type not supported: " + sdpType);
+			case ANSWER:
+				sdpResponse = processAnswer(sdpString);
+				break;
+			case OFFER:
+				sdpResponse = processOffer(sdpString);
+				break;
+			default:
+				throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE, "Sdp type not supported: " + sdpType);
 		}
 //		gatherCandidates();
 		this.createdAt = System.currentTimeMillis();
@@ -594,9 +597,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 
 		internalSinkConnect(current, passThru);
-		internalSinkConnect(current, majorShareHubPort);
-		if (!isSharing()) {
-//			innerConnectAudio();
+		if (((KurentoParticipant) getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
+			internalSinkConnect(current, majorShareHubPort);
 		}
 
 		connected = true;

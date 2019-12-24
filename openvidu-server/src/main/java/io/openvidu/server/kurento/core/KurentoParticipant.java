@@ -129,15 +129,17 @@ public class KurentoParticipant extends Participant {
 		String publisherStreamId = this.getParticipantPublicId() + "_"
 				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
 				+ RandomStringUtils.random(5, true, false).toUpperCase();
-		if (Objects.equals(StreamType.SHARING, getStreamType())) {
-			this.session.compositeService.setShareStreamId(publisherStreamId);
-		}
+		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+		    if (Objects.equals(StreamType.SHARING, getStreamType())) {
+                this.session.compositeService.setShareStreamId(publisherStreamId);
+            }
 
-		if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
-			String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
-					+ "_" + "MAJOR-SHARE-MIX";
-			this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
-		}
+            if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
+                String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
+                        + "_" + "MAJOR-SHARE-MIX";
+                this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+            }
+        }
 
 		this.publisher.setEndpointName(publisherStreamId);
 		this.publisher.getEndpoint().setName(publisherStreamId);
