@@ -204,6 +204,7 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getPreset().getVideoStatusInRoom().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CONFERENCE_MODE_PARAM, session.getConferenceMode().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
@@ -213,13 +214,15 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
 		result.add("value", resultArray);
 
-		result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
+		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 
-		JsonObject layoutInfoObj = new JsonObject();
-		layoutInfoObj.addProperty("automatically", session.isAutomatically());
-		layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
-		layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
-        result.add("layoutInfo", layoutInfoObj);
+            JsonObject layoutInfoObj = new JsonObject();
+            layoutInfoObj.addProperty("automatically", session.isAutomatically());
+            layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
+            layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
+            result.add("layoutInfo", layoutInfoObj);
+        }
 
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 	}
