@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.core.SessionPreset;
@@ -26,6 +27,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         String sessionId = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
         String password = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_PASSWORD_PARAM);
         String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
+        ConferenceModeEnum conferenceMode = ConferenceModeEnum.valueOf(getStringParam(request,
+                ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         if (StringUtils.isEmpty(sessionId)) {
             sessionId = generalRoomId();
         }
@@ -44,6 +47,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             Conference conference = new Conference();
             conference.setRoomId(sessionId);
             conference.setConferenceSubject(roomSubject);
+            conference.setConferenceMode(conferenceMode.getMode());
             conference.setUserId(rpcConnection.getUserId());
             conference.setPassword(StringUtils.isEmpty(password) ? null : password);
             conference.setStatus(1);

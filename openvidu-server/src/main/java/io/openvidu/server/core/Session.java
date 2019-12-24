@@ -27,10 +27,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.Recording;
 import io.openvidu.java.client.RecordingLayout;
 import io.openvidu.java.client.SessionProperties;
-import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
-import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
@@ -67,6 +64,7 @@ public class Session implements SessionInterface {
 	// TODO. Maybe we should relate conference in here.
 	protected Conference conference;
 	protected SessionPreset preset;
+	protected ConferenceModeEnum conferenceMode;
 	protected boolean automatically = true;
 	protected LayoutModeEnum layoutMode;
 	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.ONE);
@@ -142,6 +140,14 @@ public class Session implements SessionInterface {
 	public void setPresetInfo(SessionPreset preset) { this.preset = preset; }
 
 	public SessionPreset getPresetInfo() { return this.preset; }
+
+	public ConferenceModeEnum getConferenceMode() {
+		return conferenceMode;
+	}
+
+	public void setConferenceMode(ConferenceModeEnum conferenceMode) {
+		this.conferenceMode = conferenceMode;
+	}
 
 	public LayoutModeEnum getLayoutMode() {
 		return layoutMode;

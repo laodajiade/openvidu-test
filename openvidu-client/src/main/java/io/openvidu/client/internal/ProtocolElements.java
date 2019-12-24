@@ -217,6 +217,7 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_USE_ID_PARAM = "useIdInRoom";
     public static final String CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
     public static final String CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
+	public static final String CREATE_ROOM_CONFERENCE_MODE_PARAM = "conferenceMode";
 
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";

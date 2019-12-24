@@ -95,6 +95,7 @@ public class KurentoSessionManager extends SessionManager {
 				log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
 				kSession = createSession(sessionNotActive, lessLoadedKms);
 				kSession.setConference(conference);
+				kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
 				kSession.setPresetInfo(getPresetInfo(sessionId));
 			}
 
