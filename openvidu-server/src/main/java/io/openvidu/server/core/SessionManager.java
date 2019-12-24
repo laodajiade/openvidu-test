@@ -727,14 +727,16 @@ public abstract class SessionManager {
 		leaveRoom(participant, requestId, EndReason.disconnect, closeWebSocket);
 
         Session session = getSession(sessionId);
-        session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
-        // json RPC notify KMS layout changed.
-        session.invokeKmsConferenceLayout();
+        if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
+            session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
+            // json RPC notify KMS layout changed.
+            session.invokeKmsConferenceLayout();
 
-		for (Participant participant1 : participants) {
-		    if (!Objects.equals(participant, participant1))
-			    notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
-		}
+            for (Participant participant1 : participants) {
+                if (!Objects.equals(participant, participant1))
+                    notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
+            }
+        }
 	}
 }
