@@ -64,15 +64,13 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private final Object audioCompositeReleaseLock = new Object();
 
 	private HubPort audioHubPortOut = null;
-	private ListenerSubscription audioHubPortOutSubscription = null;
-	private boolean isConnectedAudioOut = false;
 
-	private GenericMediaElement filter;
+    private GenericMediaElement filter;
 	private Map<String, Set<String>> subscribersToFilterEvents = new ConcurrentHashMap<>();
 	private Map<String, ListenerSubscription> filterListeners = new ConcurrentHashMap<>();
 
-	private Map<String, MediaElement> elements = new HashMap<String, MediaElement>();
-	private LinkedList<String> elementIds = new LinkedList<String>();
+	private Map<String, MediaElement> elements = new HashMap<>();
+	private LinkedList<String> elementIds = new LinkedList<>();
 	private ConcurrentHashMap<String, String> connectToOthersHubportIns = new ConcurrentHashMap<>(50);
 	private ConcurrentHashMap<String, String> othersConToSelfHubportIns = new ConcurrentHashMap<>(50);
 
@@ -158,7 +156,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 //		}
 
 //		if (!isConnectedAudioOut) {
-			internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
+        internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
 //			isConnectedAudioOut = true;
 //		} else {
 //			log.info("already subscribe audio out.");
