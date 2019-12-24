@@ -75,7 +75,7 @@ public class KurentoParticipant extends Participant {
 	private CountDownLatch publisherLatch = new CountDownLatch(1);
 
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<String, SubscriberEndpoint>();
+	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
 
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
