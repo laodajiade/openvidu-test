@@ -14,6 +14,8 @@ public class Conference {
 
     private String conferenceDesc;
 
+    private Integer conferenceMode;
+
     private Long userId;
 
     private Date startTime;
