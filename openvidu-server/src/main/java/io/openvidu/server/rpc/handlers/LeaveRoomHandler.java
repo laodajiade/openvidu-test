@@ -4,10 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.DeviceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -87,18 +84,24 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
 
         Session session = sessionManager.getSession(sessionId);
-        session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
-        // json RPC notify KMS layout changed.
-        session.invokeKmsConferenceLayout();
+        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ?
+                    speakerId : moderatePublicId);
+            // json RPC notify KMS layout changed.
+            session.invokeKmsConferenceLayout();
+        }
 
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
             participant.setHandStatus(ParticipantHandStatus.endSpeaker);
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
-        for (Participant participant1 : participants) {
-            notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                    ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
+        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            for (Participant participant1 : participants) {
+                notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
+            }
         }
+
         if (!Objects.isNull(rpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }
