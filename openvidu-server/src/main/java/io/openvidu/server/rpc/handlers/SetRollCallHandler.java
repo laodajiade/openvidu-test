@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -90,10 +91,13 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             sendEndRollCallNotify(participants, params);
         }
 
-        // change conference layout
-        conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
-        // json RPC notify KMS layout changed.
-        conferenceSession.invokeKmsConferenceLayout();
+        boolean isMcu;
+        if (isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            // change conference layout
+            conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+            // json RPC notify KMS layout changed.
+            conferenceSession.invokeKmsConferenceLayout();
+        }
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, sessionId);
@@ -105,10 +109,11 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         participants.forEach(participant -> {
             // SetRollCall notify
             this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
-
-            // broadcast the changes of layout
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
-                    conferenceSession.getLayoutNotifyInfo());
+            if (isMcu) {
+                // broadcast the changes of layout
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+            }
         });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
