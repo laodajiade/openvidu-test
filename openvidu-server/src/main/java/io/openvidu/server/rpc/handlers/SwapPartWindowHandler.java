@@ -39,13 +39,10 @@ public class SwapPartWindowHandler extends RpcAbstractHandler {
         conferenceSession.invokeKmsConferenceLayout();
 
         // broadcast the changes of layout
-        JsonObject notifyResult = new JsonObject();
-        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
-        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
-        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
         conferenceSession.getParticipants().forEach(participant -> {
             // broadcast the changes of layout
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
+                    conferenceSession.getLayoutNotifyInfo());
         });
 
 

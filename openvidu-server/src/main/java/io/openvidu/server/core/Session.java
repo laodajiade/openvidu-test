@@ -606,4 +606,11 @@ public class Session implements SessionInterface {
 		return layoutInfos;
 	}
 
+    public JsonObject getLayoutNotifyInfo() {
+        JsonObject notifyResult = new JsonObject();
+        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, this.isAutomatically());
+        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, this.getLayoutMode().getMode());
+        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
+        return notifyResult;
+    }
 }

@@ -40,14 +40,10 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
 
             // broadcast the changes of layout
             Session conferenceSession = sessionManager.getSession(rpcConnection.getSessionId());
-            JsonObject notifyResult = new JsonObject();
-            notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
-            notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
-            notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
-
             conferenceSession.getParticipants().forEach(part -> {
                 // broadcast the changes of layout
-                this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+                this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
+                        conferenceSession.getLayoutNotifyInfo());
             });
         } else {
             log.error("Error: participant {} is neither a moderator nor a thor.", participant.getParticipantPublicId());

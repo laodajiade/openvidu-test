@@ -731,14 +731,10 @@ public abstract class SessionManager {
         // json RPC notify KMS layout changed.
         session.invokeKmsConferenceLayout();
 
-		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, session.isAutomatically());
-		jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
-		jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getCurrentPartInMcuLayout());
 		for (Participant participant1 : participants) {
 		    if (!Objects.equals(participant, participant1))
 			    notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
 		}
 	}
 }

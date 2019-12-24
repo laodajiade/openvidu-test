@@ -324,10 +324,6 @@ public class SessionEventsHandler {
             params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
         }
 
-        JsonObject notifyResult = new JsonObject();
-        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
-        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
-        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
         for (Participant p : participants) {
             if (!Objects.equals(StreamType.SHARING, p.getStreamType())) {
                 rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
@@ -335,7 +331,7 @@ public class SessionEventsHandler {
 
                 // broadcast the changes of layout
                 rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
             }
 		}
 	}

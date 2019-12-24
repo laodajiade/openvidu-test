@@ -95,13 +95,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             participant.setHandStatus(ParticipantHandStatus.endSpeaker);
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, session.isAutomatically());
-        jsonObject.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, session.getLayoutMode().getMode());
-        jsonObject.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, session.getCurrentPartInMcuLayout());
         for (Participant participant1 : participants) {
             notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                    ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, jsonObject);
+                    ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
         }
         if (!Objects.isNull(rpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
