@@ -189,7 +189,7 @@ public class RpcHandlerFactory {
     private GetUnfinishedMeetingsHandler getUnfinishedMeetingsHandler;
 
     @Resource
-    private StopPublishSharingHandler stopPublishSharingHandler;
+    private SharingControlHandler sharingControlHandler;
 
     @Resource
     private DistributeShareCastPlayStrategyHandler distributeShareCastPlayStrategyHandler;
@@ -255,7 +255,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,                        commandUpgradeHandler);
         handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,                      adjustResolutionHandler);
         handlersMap.put(ProtocolElements.GET_UNFINISHED_MEETINGS_METHOD,                getUnfinishedMeetingsHandler);
-        handlersMap.put(ProtocolElements.STOP_PUBLISH_SHARING,                          stopPublishSharingHandler);
+        handlersMap.put(ProtocolElements.SHARING_CONTROL_METHOD,                        sharingControlHandler);
         handlersMap.put(ProtocolElements.DISTRIBUTESHARECASTPLAYSTRATEGY_METHOD,        distributeShareCastPlayStrategyHandler);
         handlersMap.put(ProtocolElements.UPLOADSHARECASTPLAYSTRATEGY_METHOD,            uploadShareCastPlayStrategyHandler);
 
