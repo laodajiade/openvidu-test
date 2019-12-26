@@ -147,7 +147,9 @@ public class SessionEventsHandler {
 				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, Objects.isNull(userInfo) ?
 						UserOnlineStatusEnum.offline.name() : String.valueOf(userInfo.get("status")));
-			}
+                participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
+                participantJson.addProperty(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
+            }
 
 
 			// Metadata associated to each existing participant
