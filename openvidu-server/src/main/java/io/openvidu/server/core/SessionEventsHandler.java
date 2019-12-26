@@ -93,8 +93,35 @@ public class SessionEventsHandler {
 		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
 		int index = 0;
 		for (Participant existingParticipant : existingParticipants) {
-			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId()) ||
-					Objects.equals(OpenViduRole.THOR, existingParticipant.getRole())) continue;
+			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
+
+			// If RECORDER participant has joined do NOT send 'participantJoined'
+			// notification to existing participants. 'recordingStarted' will be sent to all
+			// existing participants when recorder first subscribe to a stream
+			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+				JsonObject notifParams = new JsonObject();
+
+				// Metadata associated to new participant
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM,
+						rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId()).isReconnected());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
+
+				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
+					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
+					if (Objects.isNull(publicId)) {
+						rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
+								ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					}
+				}
+
+				if (Objects.equals(OpenViduRole.THOR, existingParticipant.getRole())) {
+					continue;
+				}
+			}
+
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
 					existingParticipant.getParticipantPublicId());
@@ -171,29 +198,6 @@ public class SessionEventsHandler {
 			// openvidu-browser in newly joined participants
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(existingParticipant.getParticipantPublicId())) {
 				resultArray.add(participantJson);
-			}
-
-			// If RECORDER participant has joined do NOT send 'participantJoined'
-			// notification to existing participants. 'recordingStarted' will be sent to all
-			// existing participants when recorder first subscribe to a stream
-			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-				JsonObject notifParams = new JsonObject();
-
-				// Metadata associated to new participant
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM,
-						rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId()).isReconnected());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
-
-				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
-					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
-					if (Objects.isNull(publicId)) {
-						rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-								ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
-					}
-				}
 			}
 		}
 
