@@ -536,5 +536,9 @@ public class ProtocolElements {
 
 	public static final String RECORDER_PARTICIPANT_PUBLICID = "RECORDER";
 
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_METHOD = "distributeShareCastPlayStrategy";
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_CONNECTIONID_PARAM = "connectionId";
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_STRATEGY_PARAM = "shareCastPlayStrategy";
 
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_NOTIFY = "distributeShareCastPlayStrategyNotify";
 }
