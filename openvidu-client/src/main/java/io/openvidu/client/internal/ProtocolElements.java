@@ -154,6 +154,8 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
 	public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
+	public static final String ACCESS_IN_ABILITY_PARAM = "ability";
+	public static final String ACCESS_IN_TERMINALCONFIG_PARAM = "terminalConfig";
 
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";

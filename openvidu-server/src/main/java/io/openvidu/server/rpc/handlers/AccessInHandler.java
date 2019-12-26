@@ -35,6 +35,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
         String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
+        String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
+        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
@@ -83,7 +85,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                         break;
                     }
                 }
-                if (!deviceVersion.equals(device.getVersion())) {
+                if (!Objects.equals(deviceVersion, device.getVersion())) {
                     Device dev = new Device();
                     dev.setSerialNumber(deviceSerialNumber);
                     dev.setVersion(deviceVersion);
