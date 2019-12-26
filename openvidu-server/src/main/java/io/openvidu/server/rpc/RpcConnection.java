@@ -48,6 +48,7 @@ public class RpcConnection {
 	private String macAddr;
 	private boolean isReconnected;
 	private AccessTypeEnum accessType;
+	private String terminalConfig;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -109,6 +110,14 @@ public class RpcConnection {
 
 	public void setAccessType(AccessTypeEnum accessType) {
 		this.accessType = accessType;
+	}
+
+	public String getTerminalConfig() {
+		return terminalConfig;
+	}
+
+	public void setTerminalConfig(String terminalConfig) {
+		this.terminalConfig = terminalConfig;
 	}
 
 	public Transaction getTransaction(Integer transactionId) {
