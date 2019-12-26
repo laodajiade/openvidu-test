@@ -346,13 +346,13 @@ public class ProtocolElements {
 	public static final String SET_SHARE_POWER_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
 
-	public static final String SHARING_CONTROL_METHOD = "stopPublishSharing";
+	public static final String SHARING_CONTROL_METHOD = "sharingControl";
 	public static final String SHARING_CONTROL_ROOMID_PARAM = "roomId";
 	public static final String SHARING_CONTROL_SOURCEID_PARAM = "sourceId";
 	public static final String SHARING_CONTROL_TARGETID_PARAM = "targetId";
 	public static final String SHARING_CONTROL_OPERATION_PARAM = "operation";
 
-	public static final String SHARING_CONTROL_NOTIFY = "stopPublishSharingNotify";
+	public static final String SHARING_CONTROL_NOTIFY = "sharingControlNotify";
 
 	public static final String TRANSFER_MODERATOR_METHOD = "transferModerator";
 	public static final String TRANSFER_MODERATOR_ID_PARAM = "roomId";
