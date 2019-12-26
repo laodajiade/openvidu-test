@@ -466,6 +466,8 @@ public class ProtocolElements {
 	public static final String PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM = "roomCreateAt";
     public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
     public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
+    public static final String PARTICIPANTJOINED_ABILITY_PARAM = "ability";
+    public static final String PARTICIPANTJOINED_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
 	public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";

@@ -102,12 +102,14 @@ public class SessionEventsHandler {
 				JsonObject notifParams = new JsonObject();
 
 				// Metadata associated to new participant
+                RpcConnection rpcConnection = rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM,
-						rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId()).isReconnected());
+				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
+                notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
+                notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
 
 				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
 					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
