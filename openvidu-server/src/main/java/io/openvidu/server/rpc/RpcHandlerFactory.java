@@ -194,6 +194,9 @@ public class RpcHandlerFactory {
     @Resource
     private DistributeShareCastPlayStrategyHandler distributeShareCastPlayStrategyHandler;
 
+    @Resource
+    private UploadShareCastPlayStrategyHandler uploadShareCastPlayStrategyHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
@@ -254,6 +257,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_UNFINISHED_MEETINGS_METHOD,                getUnfinishedMeetingsHandler);
         handlersMap.put(ProtocolElements.STOP_PUBLISH_SHARING,                          stopPublishSharingHandler);
         handlersMap.put(ProtocolElements.DISTRIBUTESHARECASTPLAYSTRATEGY_METHOD,        distributeShareCastPlayStrategyHandler);
+        handlersMap.put(ProtocolElements.UPLOADSHARECASTPLAYSTRATEGY_METHOD,            uploadShareCastPlayStrategyHandler);
 
     }
 
