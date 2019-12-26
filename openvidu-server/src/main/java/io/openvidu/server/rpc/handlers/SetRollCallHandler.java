@@ -107,6 +107,9 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 
         // broadcast the changes of layout
         participants.forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                return;
+            }
             // SetRollCall notify
             this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
             if (isMcu) {
