@@ -34,6 +34,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
         String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+        String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
         String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
@@ -85,11 +86,13 @@ public class AccessInHandler extends RpcAbstractHandler {
                         break;
                     }
                 }
-                if (!Objects.equals(deviceVersion, device.getVersion()) || !Objects.equals(ability, device.getAbility())) {
+                if (!Objects.equals(deviceVersion, device.getVersion()) || !Objects.equals(ability, device.getAbility())
+                        || !Objects.equals(deviceModel, device.getDeviceModel())) {
                     Device dev = new Device();
                     dev.setSerialNumber(deviceSerialNumber);
                     dev.setVersion(deviceVersion);
                     dev.setAbility(ability);
+                    dev.setDeviceModel(deviceModel);
                     deviceMapper.updateBySerialNumberSelective(dev);
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
