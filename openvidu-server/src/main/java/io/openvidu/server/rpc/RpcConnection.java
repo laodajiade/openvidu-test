@@ -48,6 +48,7 @@ public class RpcConnection {
 	private String macAddr;
 	private boolean isReconnected;
 	private AccessTypeEnum accessType;
+	private Long createTime;
 	private String ability;
 	private String terminalConfig;
 
@@ -55,6 +56,7 @@ public class RpcConnection {
 		this.session = session;
 		this.transactions = new ConcurrentHashMap<>();
 		this.participantPrivateId = session.getSessionId();
+		this.createTime = System.currentTimeMillis();
 	}
 
 	public Session getSession() {
@@ -146,5 +148,13 @@ public class RpcConnection {
 
 	public Collection<Transaction> getTransactions() {
 		return transactions.values();
+	}
+
+	public Long getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Long createTime) {
+		this.createTime = createTime;
 	}
 }
