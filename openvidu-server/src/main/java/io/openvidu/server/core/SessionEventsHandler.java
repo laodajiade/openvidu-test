@@ -109,7 +109,8 @@ public class SessionEventsHandler {
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
                 notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
-                notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
+                if (!Objects.isNull(rpcConnection.getTerminalConfig()))
+                	notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
 
 				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
 					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
@@ -150,7 +151,8 @@ public class SessionEventsHandler {
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, Objects.isNull(userInfo) ?
 						UserOnlineStatusEnum.offline.name() : String.valueOf(userInfo.get("status")));
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
-                participantJson.addProperty(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
+				if (!Objects.isNull(rpc.getTerminalConfig()))
+                	participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
             }
 
 

@@ -99,7 +99,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
                 rpcConnection.setAbility(ability);
-                rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.toString() : null);
+                rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
                 cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
