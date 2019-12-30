@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -37,7 +38,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
-        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+//        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
@@ -97,7 +99,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
                 rpcConnection.setAbility(ability);
-                rpcConnection.setTerminalConfig(terminalConfig);
+                rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.toString() : null);
                 cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
