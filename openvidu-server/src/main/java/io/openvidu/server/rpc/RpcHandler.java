@@ -212,7 +212,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
 		// update user online status in cache
 		if (rpcSession != null) {
-			if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null)
+			if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null &&
+					Objects.equals(AccessTypeEnum.terminal, notificationService.getRpcConnection(rpcSession.getSessionId()).getAccessType()))
 				cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
 						UserOnlineStatusEnum.offline);
 			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
