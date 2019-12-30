@@ -41,14 +41,16 @@ public class DepartmentManageImpl implements DepartmentManage {
     public JsonObject genDeptTreeJsonObj(@NotNull Long orgId) {
         Department rootDept = departmentMapper.selectByPrimaryKey(orgId);
         if (Objects.isNull(rootDept)) return null;
-
-        List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
         DepartmentTree rootDeptTree = DepartmentTree.builder().orgId(rootDept.getId())
                 .organizationName(rootDept.getDeptName()).build();
 
-        return !CollectionUtils.isEmpty(deptList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
-                deptList.stream().filter(s -> !Objects.isNull(s.getOrgId()) && s.getOrgId().compareTo(orgId) != 0).collect(Collectors.toList()))
-                .getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
+        List<DepartmentTree> deptBeforeFilterList = departmentMapper.selectByCorpId(rootDept.getCorpId());
+        List<DepartmentTree> deptAfterFilterList = !CollectionUtils.isEmpty(deptBeforeFilterList) ?
+                deptBeforeFilterList.stream().filter(s -> !Objects.isNull(s.getOrgId()) && s.getOrgId().compareTo(orgId) != 0)
+                        .collect(Collectors.toList()) : null;
+
+        return !CollectionUtils.isEmpty(deptAfterFilterList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
+                deptAfterFilterList).getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
     }
 
     @Override
