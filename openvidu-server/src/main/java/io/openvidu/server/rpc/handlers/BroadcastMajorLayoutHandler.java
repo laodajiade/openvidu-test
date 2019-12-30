@@ -24,9 +24,9 @@ import java.util.Objects;
 public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                null, ErrorCodeEnum.UNRECOGNIZED_API);
-        /*LayoutModeEnum layoutModeEnum = LayoutModeEnum.getLayoutMode(getIntParam(request,
+        /*this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                null, ErrorCodeEnum.UNRECOGNIZED_API);*/
+        LayoutModeEnum layoutModeEnum = LayoutModeEnum.getLayoutMode(getIntParam(request,
                 ProtocolElements.BROADCASTMAJORLAYOUT_MODE_PARAM));
         if (Objects.isNull(layoutModeEnum)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -65,6 +65,6 @@ public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
                     notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult));
 
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-        }*/
+        }
     }
 }
