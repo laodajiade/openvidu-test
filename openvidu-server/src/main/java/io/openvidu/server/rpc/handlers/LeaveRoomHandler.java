@@ -15,7 +15,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
