@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantSpeakerStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -41,9 +42,11 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
         }
 
         if (!StringUtils.isEmpty(targetId)) {
-            KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(targetId)
+            /*KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(targetId)
                     .compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
-                            .getAsLong()) == 0).findFirst().get();
+                            .getAsLong()) == 0).findFirst().get();*/
+            KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                    .filter(s -> Objects.equals(targetId, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().get();
             part.setSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
         }
 

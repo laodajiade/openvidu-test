@@ -45,9 +45,11 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         JsonArray tsArray = new JsonArray();
         if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
             targetIds.forEach(t -> {
-                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(t)
+                /*KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(t)
                         .compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
-                                .getAsLong()) == 0).findFirst().get();
+                                .getAsLong()) == 0).findFirst().get();*/
+                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                        .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().get();
                 if (part.isStreaming())
                     part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
 
