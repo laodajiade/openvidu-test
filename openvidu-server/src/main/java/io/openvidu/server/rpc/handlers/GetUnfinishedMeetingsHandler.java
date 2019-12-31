@@ -28,6 +28,10 @@ public class GetUnfinishedMeetingsHandler extends RpcAbstractHandler {
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonArray);
         }
         for (Conference conference1 : conferenceList) {
+            if (Objects.isNull(sessionManager.getSession(conference1.getRoomId())) ||
+                    sessionManager.getSession(conference1.getRoomId()).isClosed()) {
+                continue;
+            }
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty(ProtocolElements.GET_UNFINISHED_MEETINGS_ROOMID_PAPM, conference1.getRoomId());
             jsonObject.addProperty(ProtocolElements.GET_UNFINISHED_MEETINGS_SUBJECT_PAPM, conference1.getConferenceSubject());
