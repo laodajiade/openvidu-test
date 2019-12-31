@@ -43,12 +43,31 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     StreamType.valueOf(streamType));
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
-                Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
+                /*Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
                 participant = sessionManager.getParticipant(sessionId, String.valueOf(userInfo.get("reconnect")));
                 if (Objects.isNull(participant)) {
                     notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                     return;
+                }*/
+                updateReconnectInfo(rpcConnection);
+                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+                // json RPC notify KMS layout changed.
+                Session conferenceSession = sessionManager.getSession(sessionId);
+                if (!Objects.isNull(conferenceSession)) {
+                    conferenceSession.invokeKmsConferenceLayout();
+                    // broadcast the changes of layout
+                    JsonObject notifyResult = new JsonObject();
+                    notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
+                    notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
+                    notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
+
+                    conferenceSession.getParticipants().forEach(part -> {
+                        // broadcast the changes of layout
+                        this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
+                    });
                 }
+                return;
+
             }
         } catch (OpenViduException e) {
             if (updateReconnectInfo(rpcConnection)) {
