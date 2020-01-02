@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -34,7 +35,11 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
         String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+        String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
+        String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
+//        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
@@ -83,13 +88,18 @@ public class AccessInHandler extends RpcAbstractHandler {
                         break;
                     }
                 }
-                if (!deviceVersion.equals(device.getVersion())) {
+                if (!Objects.equals(deviceVersion, device.getVersion()) || !Objects.equals(ability, device.getAbility())
+                        || !Objects.equals(deviceModel, device.getDeviceModel())) {
                     Device dev = new Device();
                     dev.setSerialNumber(deviceSerialNumber);
                     dev.setVersion(deviceVersion);
+                    dev.setAbility(ability);
+                    dev.setDeviceModel(deviceModel);
                     deviceMapper.updateBySerialNumberSelective(dev);
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
+                rpcConnection.setAbility(ability);
+                rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
                 cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }

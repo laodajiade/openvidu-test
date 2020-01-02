@@ -27,6 +27,7 @@ CREATE TABLE `sd_conference` (
   `room_id` varchar(128) NOT NULL COMMENT '会议室名称',
   `conference_subject` varchar(256) DEFAULT NULL COMMENT '主题',
   `conference_desc` varchar(1024) DEFAULT NULL COMMENT '会议描述',
+  `conference_mode` tinyint(2) unsigned DEFAULT '1' COMMENT '会议模式（0：SFU，1：MCU）',
   `user_id` bigint(11) unsigned NOT NULL COMMENT '会议创建者ID',
   `start_time` datetime DEFAULT NULL COMMENT '开始时间',
   `end_time` datetime DEFAULT NULL COMMENT '结束时间',
@@ -68,7 +69,7 @@ CREATE TABLE `sd_corporation` (
 
 LOCK TABLES `sd_corporation` WRITE;
 /*!40000 ALTER TABLE `sd_corporation` DISABLE KEYS */;
-INSERT INTO `sd_corporation` VALUES (1,'杭州速递科技有限公司','Base',1,'2019-10-18 16:45:06','2019-10-22 10:47:00');
+INSERT INTO `sd_corporation` VALUES (1,'杭州速递科技有限公司','Base',1,now(),now());
 /*!40000 ALTER TABLE `sd_corporation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,7 +100,7 @@ CREATE TABLE `sd_department` (
 
 LOCK TABLES `sd_department` WRITE;
 /*!40000 ALTER TABLE `sd_department` DISABLE KEYS */;
-INSERT INTO `sd_department` VALUES (1,'杭州速递',null,1,'Base','2019-10-19 15:16:27','2019-10-23 11:36:35');
+INSERT INTO `sd_department` VALUES (1,'杭州速递',null,1,'Base',now(),now());
 /*!40000 ALTER TABLE `sd_department` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -228,7 +229,7 @@ CREATE TABLE `sd_user` (
 
 LOCK TABLES `sd_user` WRITE;
 /*!40000 ALTER TABLE `sd_user` DISABLE KEYS */;
-INSERT INTO `sd_user` VALUES (1,'administrator','超级管理员',NULL,NULL,'e10adc3949ba59abbe56e057f20f883e',NULL,'Base','2019-10-22 10:46:38','2019-10-22 10:46:38');
+INSERT INTO `sd_user` VALUES (1,'administrator','超级管理员',NULL,NULL,'e10adc3949ba59abbe56e057f20f883e',NULL,'Base',now(),now());
 /*!40000 ALTER TABLE `sd_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -259,7 +260,7 @@ CREATE TABLE `sd_user_dept` (
 
 LOCK TABLES `sd_user_dept` WRITE;
 /*!40000 ALTER TABLE `sd_user_dept` DISABLE KEYS */;
-INSERT INTO `sd_user_dept` VALUES (1,1,1,'Base','2019-10-22 10:50:10','2019-10-22 10:50:10');
+INSERT INTO `sd_user_dept` VALUES (1,1,1,'Base',now(),now());
 /*!40000 ALTER TABLE `sd_user_dept` ENABLE KEYS */;
 UNLOCK TABLES;
 

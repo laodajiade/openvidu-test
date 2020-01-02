@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantSharePowerStatus;
+import io.openvidu.server.common.enums.ParticipantShareStatus;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -17,12 +17,14 @@ import java.util.Set;
 
 @Slf4j
 @Service
-public class StopPublishSharingHandler extends RpcAbstractHandler {
+public class SharingControlHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String sessionId = getStringParam(request, ProtocolElements.STOP_SHARE_ROOM_ID_PARAM);
-        String sourceId = getStringParam(request, ProtocolElements.STOP_PUBLISH_SHARING_SOURCEID_PARAM);
-        String targetId = getStringParam(request, ProtocolElements.STOP_PUBLISH_SHARING_TARGETID_PARAM);
+        String sessionId = getStringParam(request, ProtocolElements.SHARING_CONTROL_ROOMID_PARAM);
+        String targetId = getStringParam(request, ProtocolElements.SHARING_CONTROL_TARGETID_PARAM);
+        String operation = getStringParam(request, ProtocolElements.SHARING_CONTROL_OPERATION_PARAM);
+        getStringParam(request, ProtocolElements.SHARING_CONTROL_SOURCEID_PARAM);
+        ParticipantShareStatus shareStatus = ParticipantShareStatus.valueOf(operation);
 
         if (!OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(sessionId,
                 rpcConnection.getParticipantPrivateId()).getRole())) {
@@ -31,15 +33,14 @@ public class StopPublishSharingHandler extends RpcAbstractHandler {
             return;
         }
 
-        JsonObject reqParams = request.getParams();
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
                 if (targetId.equals(p.getUserId())) {
-                    p.setSharePowerStatus(ParticipantSharePowerStatus.off);
+                    p.setShareStatus(shareStatus);
                 }
                 this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                        ProtocolElements.STOP_PUBLISH_SHARING_NOTIFY, reqParams);
+                        ProtocolElements.SHARING_CONTROL_NOTIFY, request.getParams());
             });
         }
 

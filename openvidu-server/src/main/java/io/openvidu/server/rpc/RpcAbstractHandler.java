@@ -174,6 +174,13 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key);
     }
 
+    public static JsonElement getOptionalParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null) {
+            return null;
+        }
+        return request.getParams().get(key);
+    }
+
     protected String generalRoomId() {
         String sessionId = "";
         int tryCnt = 10;

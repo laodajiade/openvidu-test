@@ -189,67 +189,75 @@ public class RpcHandlerFactory {
     private GetUnfinishedMeetingsHandler getUnfinishedMeetingsHandler;
 
     @Resource
-    private StopPublishSharingHandler stopPublishSharingHandler;
+    private SharingControlHandler sharingControlHandler;
+
+    @Resource
+    private DistributeShareCastPlayStrategyHandler distributeShareCastPlayStrategyHandler;
+
+    @Resource
+    private UploadShareCastPlayStrategyHandler uploadShareCastPlayStrategyHandler;
 
     @PostConstruct
     public void init() {
-        handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                  accessInHandler);
-        handlersMap.put(ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_METHOD,    confirmApplyForLoginHandler);
-        handlersMap.put(ProtocolElements.ACCESS_OUT_METHOD,                 accessOutHandler);
-        handlersMap.put(ProtocolElements.CREATE_ROOM_METHOD,                createRoomHandler);
-        handlersMap.put(ProtocolElements.SHARE_SCREEN_METHOD,               shareScreenHandler);
-        handlersMap.put(ProtocolElements.STOP_SHARE_SCREEN_METHOD,          stopShareScreenHandler);
-        handlersMap.put(ProtocolElements.GET_PARTICIPANTS_METHOD,           getParticipantsHandler);
-        handlersMap.put(ProtocolElements.SET_AUDIO_STATUS_METHOD,           setAudioStatusHandler);
-        handlersMap.put(ProtocolElements.SET_VIDEO_STATUS_METHOD,           setVideoStatusHandler);
-        handlersMap.put(ProtocolElements.RAISE_HAND_METHOD,                 raiseHandHandler);
-        handlersMap.put(ProtocolElements.PUT_DOWN_HAND_METHOD,              putDownHandHandler);
-        handlersMap.put(ProtocolElements.SET_ROLL_CALL_METHOD,              setRollCallHandler);
-        handlersMap.put(ProtocolElements.END_ROLL_CALL_METHOD,              endRollCallHandler);
-        handlersMap.put(ProtocolElements.REPLACE_ROLL_CALL_METHOD,          replaceRollCallHandler);
-        handlersMap.put(ProtocolElements.LOCK_SESSION_METHOD,               lockSessionHandler);
-        handlersMap.put(ProtocolElements.UNLOCK_SESSION_METHOD,             unlockSessionHandler);
-        handlersMap.put(ProtocolElements.JOINROOM_METHOD,                   joinRoomHandler);
-        handlersMap.put(ProtocolElements.LEAVEROOM_METHOD,                  leaveRoomHandler);
-        handlersMap.put(ProtocolElements.PUBLISHVIDEO_METHOD,               publishVideoHandler);
-        handlersMap.put(ProtocolElements.RECEIVEVIDEO_METHOD,               receiveVideoFromHandler);
-        handlersMap.put(ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD,       unsubscribeFromVideoHandler);
-        handlersMap.put(ProtocolElements.ONICECANDIDATE_METHOD,             onIceCandidateHandler);
-        handlersMap.put(ProtocolElements.SENDMESSAGE_ROOM_METHOD,           sendMessageHandler);
-        handlersMap.put(ProtocolElements.UNPUBLISHVIDEO_METHOD,             unpublishVideoHandler);
-        handlersMap.put(ProtocolElements.STREAMPROPERTYCHANGED_METHOD,      streamPropertyChangedHandler);
-        handlersMap.put(ProtocolElements.FORCEDISCONNECT_METHOD,            forceDisconnectHandler);
-        handlersMap.put(ProtocolElements.FORCEUNPUBLISH_METHOD,             forceUnpublishHandler);
-        handlersMap.put(ProtocolElements.APPLYFILTER_METHOD,                applyFilterHandler);
-        handlersMap.put(ProtocolElements.REMOVEFILTER_METHOD,               removeFilterHandler);
-        handlersMap.put(ProtocolElements.EXECFILTERMETHOD_METHOD,           execFilterMethodHandler);
-        handlersMap.put(ProtocolElements.ADDFILTEREVENTLISTENER_METHOD,     addFilterEventListenerHandler);
-        handlersMap.put(ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD,  removeFilterEventListenerHandler);
-        handlersMap.put(ProtocolElements.CLOSE_ROOM_METHOD,                 closeRoomHandler);
-        handlersMap.put(ProtocolElements.INVITE_PARTICIPANT_METHOD,         inviteParticipantHandler);
-        handlersMap.put(ProtocolElements.REFUSE_INVITE_METHOD,              refuseInviteHandler);
-        handlersMap.put(ProtocolElements.GET_PRESET_INFO_METHOD,            getPresetInfoHandler);
-        handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD,   setAudioSpeakerStatusHandler);
-        handlersMap.put(ProtocolElements.SET_SHARE_POWER_METHOD,            setSharePowerHandler);
-        handlersMap.put(ProtocolElements.TRANSFER_MODERATOR_METHOD,         transferModeratorHandler);
-        handlersMap.put(ProtocolElements.GET_ORG_METHOD,                    getOrgListHandler);
-        handlersMap.put(ProtocolElements.GET_USER_DEVICE_METHOD,            getUserDeviceListHandler);
-        handlersMap.put(ProtocolElements.GET_DEVICE_INFO_METHOD,            getDeviceInfoHandler);
-        handlersMap.put(ProtocolElements.UPDATE_DEVICE_INFO_METHOD,         updateDeviceInfoHandler);
-        handlersMap.put(ProtocolElements.ROOM_DELAY_METHOD,                 roomDelayHandler);
-        handlersMap.put(ProtocolElements.GET_NOT_FINISHED_ROOM_METHOD,      getNotFinishedRoomHandler);
-        handlersMap.put(ProtocolElements.GETROOMLAYOUT_METHOD,              getRoomLayoutHandler);
-        handlersMap.put(ProtocolElements.BROADCASTMAJORLAYOUT_METHOD,       broadcastMajorLayoutHandler);
-        handlersMap.put(ProtocolElements.SETCONFERENCELAYOUT_MODE_METHOD,   setConferenceLayoutHandler);
-        handlersMap.put(ProtocolElements.GET_SUB_DEVORUSER_METHOD,          getSubDevOrUserHandler);
-        handlersMap.put(ProtocolElements.START_PTZ_CONTROL_METHOD,          startPtzControlHandler);
-        handlersMap.put(ProtocolElements.STOP_PTZ_CONTROL_METHOD,           stopPtzControlHandler);
-        handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,           swapPartWindowHandler);
-        handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD,        getDepartmentTreeHandler);
-        handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,            commandUpgradeHandler);
-        handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,          adjustResolutionHandler);
-        handlersMap.put(ProtocolElements.GET_UNFINISHED_MEETINGS_METHOD,    getUnfinishedMeetingsHandler);
-        handlersMap.put(ProtocolElements.STOP_PUBLISH_SHARING,              stopPublishSharingHandler);
+        handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
+        handlersMap.put(ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_METHOD,                confirmApplyForLoginHandler);
+        handlersMap.put(ProtocolElements.ACCESS_OUT_METHOD,                             accessOutHandler);
+        handlersMap.put(ProtocolElements.CREATE_ROOM_METHOD,                            createRoomHandler);
+        handlersMap.put(ProtocolElements.SHARE_SCREEN_METHOD,                           shareScreenHandler);
+        handlersMap.put(ProtocolElements.STOP_SHARE_SCREEN_METHOD,                      stopShareScreenHandler);
+        handlersMap.put(ProtocolElements.GET_PARTICIPANTS_METHOD,                       getParticipantsHandler);
+        handlersMap.put(ProtocolElements.SET_AUDIO_STATUS_METHOD,                       setAudioStatusHandler);
+        handlersMap.put(ProtocolElements.SET_VIDEO_STATUS_METHOD,                       setVideoStatusHandler);
+        handlersMap.put(ProtocolElements.RAISE_HAND_METHOD,                             raiseHandHandler);
+        handlersMap.put(ProtocolElements.PUT_DOWN_HAND_METHOD,                          putDownHandHandler);
+        handlersMap.put(ProtocolElements.SET_ROLL_CALL_METHOD,                          setRollCallHandler);
+        handlersMap.put(ProtocolElements.END_ROLL_CALL_METHOD,                          endRollCallHandler);
+        handlersMap.put(ProtocolElements.REPLACE_ROLL_CALL_METHOD,                      replaceRollCallHandler);
+        handlersMap.put(ProtocolElements.LOCK_SESSION_METHOD,                           lockSessionHandler);
+        handlersMap.put(ProtocolElements.UNLOCK_SESSION_METHOD,                         unlockSessionHandler);
+        handlersMap.put(ProtocolElements.JOINROOM_METHOD,                               joinRoomHandler);
+        handlersMap.put(ProtocolElements.LEAVEROOM_METHOD,                              leaveRoomHandler);
+        handlersMap.put(ProtocolElements.PUBLISHVIDEO_METHOD,                           publishVideoHandler);
+        handlersMap.put(ProtocolElements.RECEIVEVIDEO_METHOD,                           receiveVideoFromHandler);
+        handlersMap.put(ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD,                   unsubscribeFromVideoHandler);
+        handlersMap.put(ProtocolElements.ONICECANDIDATE_METHOD,                         onIceCandidateHandler);
+        handlersMap.put(ProtocolElements.SENDMESSAGE_ROOM_METHOD,                       sendMessageHandler);
+        handlersMap.put(ProtocolElements.UNPUBLISHVIDEO_METHOD,                         unpublishVideoHandler);
+        handlersMap.put(ProtocolElements.STREAMPROPERTYCHANGED_METHOD,                  streamPropertyChangedHandler);
+        handlersMap.put(ProtocolElements.FORCEDISCONNECT_METHOD,                        forceDisconnectHandler);
+        handlersMap.put(ProtocolElements.FORCEUNPUBLISH_METHOD,                         forceUnpublishHandler);
+        handlersMap.put(ProtocolElements.APPLYFILTER_METHOD,                            applyFilterHandler);
+        handlersMap.put(ProtocolElements.REMOVEFILTER_METHOD,                           removeFilterHandler);
+        handlersMap.put(ProtocolElements.EXECFILTERMETHOD_METHOD,                       execFilterMethodHandler);
+        handlersMap.put(ProtocolElements.ADDFILTEREVENTLISTENER_METHOD,                 addFilterEventListenerHandler);
+        handlersMap.put(ProtocolElements.REMOVEFILTEREVENTLISTENER_METHOD,              removeFilterEventListenerHandler);
+        handlersMap.put(ProtocolElements.CLOSE_ROOM_METHOD,                             closeRoomHandler);
+        handlersMap.put(ProtocolElements.INVITE_PARTICIPANT_METHOD,                     inviteParticipantHandler);
+        handlersMap.put(ProtocolElements.REFUSE_INVITE_METHOD,                          refuseInviteHandler);
+        handlersMap.put(ProtocolElements.GET_PRESET_INFO_METHOD,                        getPresetInfoHandler);
+        handlersMap.put(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD,               setAudioSpeakerStatusHandler);
+        handlersMap.put(ProtocolElements.SET_SHARE_POWER_METHOD,                        setSharePowerHandler);
+        handlersMap.put(ProtocolElements.TRANSFER_MODERATOR_METHOD,                     transferModeratorHandler);
+        handlersMap.put(ProtocolElements.GET_ORG_METHOD,                                getOrgListHandler);
+        handlersMap.put(ProtocolElements.GET_USER_DEVICE_METHOD,                        getUserDeviceListHandler);
+        handlersMap.put(ProtocolElements.GET_DEVICE_INFO_METHOD,                        getDeviceInfoHandler);
+        handlersMap.put(ProtocolElements.UPDATE_DEVICE_INFO_METHOD,                     updateDeviceInfoHandler);
+        handlersMap.put(ProtocolElements.ROOM_DELAY_METHOD,                             roomDelayHandler);
+        handlersMap.put(ProtocolElements.GET_NOT_FINISHED_ROOM_METHOD,                  getNotFinishedRoomHandler);
+        handlersMap.put(ProtocolElements.GETROOMLAYOUT_METHOD,                          getRoomLayoutHandler);
+        handlersMap.put(ProtocolElements.BROADCASTMAJORLAYOUT_METHOD,                   broadcastMajorLayoutHandler);
+        handlersMap.put(ProtocolElements.SETCONFERENCELAYOUT_MODE_METHOD,               setConferenceLayoutHandler);
+        handlersMap.put(ProtocolElements.GET_SUB_DEVORUSER_METHOD,                      getSubDevOrUserHandler);
+        handlersMap.put(ProtocolElements.START_PTZ_CONTROL_METHOD,                      startPtzControlHandler);
+        handlersMap.put(ProtocolElements.STOP_PTZ_CONTROL_METHOD,                       stopPtzControlHandler);
+        handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD,                       swapPartWindowHandler);
+        handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD,                    getDepartmentTreeHandler);
+        handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD,                        commandUpgradeHandler);
+        handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD,                      adjustResolutionHandler);
+        handlersMap.put(ProtocolElements.GET_UNFINISHED_MEETINGS_METHOD,                getUnfinishedMeetingsHandler);
+        handlersMap.put(ProtocolElements.SHARING_CONTROL_METHOD,                        sharingControlHandler);
+        handlersMap.put(ProtocolElements.DISTRIBUTESHARECASTPLAYSTRATEGY_METHOD,        distributeShareCastPlayStrategyHandler);
+        handlersMap.put(ProtocolElements.UPLOADSHARECASTPLAYSTRATEGY_METHOD,            uploadShareCastPlayStrategyHandler);
 
     }
 

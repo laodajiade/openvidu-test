@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -49,6 +50,8 @@ public class RpcConnection {
 	private boolean isReconnected;
 	private AccessTypeEnum accessType;
 	private Long createTime;
+	private String ability;
+	private JsonObject terminalConfig;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -111,6 +114,22 @@ public class RpcConnection {
 
 	public void setAccessType(AccessTypeEnum accessType) {
 		this.accessType = accessType;
+	}
+
+	public String getAbility() {
+		return ability;
+	}
+
+	public void setAbility(String ability) {
+		this.ability = ability;
+	}
+
+	public JsonObject getTerminalConfig() {
+		return terminalConfig;
+	}
+
+	public void setTerminalConfig(JsonObject terminalConfig) {
+		this.terminalConfig = terminalConfig;
 	}
 
 	public Transaction getTransaction(Integer transactionId) {

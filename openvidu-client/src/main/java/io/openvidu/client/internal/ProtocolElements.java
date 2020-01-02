@@ -68,6 +68,8 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERHANDSTATUS_PARAM = "handStatus";
 	public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
 	public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
+	public static final String JOINROOM_ABILITY_PARAM = "ability";
+	public static final String JOINROOM_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String JOINROOM_PEERONLINESTATUS_PARAM = "onlineStatus";
 	public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
 	public static final String JOINROOM_MIXFLOWS_STREAMID_PARAM = "streamId";
@@ -153,7 +155,10 @@ public class ProtocolElements {
     public static final String ACCESS_IN_ACCESSTYPE_PARAM = "accessType";
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
+	public static final String ACCESS_IN_DEVICEMODEL_PARAM = "deviceModel";
 	public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
+	public static final String ACCESS_IN_ABILITY_PARAM = "ability";
+	public static final String ACCESS_IN_TERMINALCONFIG_PARAM = "terminalConfig";
 
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";
@@ -343,12 +348,13 @@ public class ProtocolElements {
 	public static final String SET_SHARE_POWER_TARGET_IDS_PARAM = "targetIds";
 	public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
 
-	public static final String STOP_PUBLISH_SHARING = "stopPublishSharing";
-	public static final String STOP_PUBLISH_SHARING_ROOMID_PARAM = "roomId";
-	public static final String STOP_PUBLISH_SHARING_SOURCEID_PARAM = "sourceId";
-	public static final String STOP_PUBLISH_SHARING_TARGETID_PARAM = "targetId";
+	public static final String SHARING_CONTROL_METHOD = "sharingControl";
+	public static final String SHARING_CONTROL_ROOMID_PARAM = "roomId";
+	public static final String SHARING_CONTROL_SOURCEID_PARAM = "sourceId";
+	public static final String SHARING_CONTROL_TARGETID_PARAM = "targetId";
+	public static final String SHARING_CONTROL_OPERATION_PARAM = "operation";
 
-	public static final String STOP_PUBLISH_SHARING_NOTIFY = "stopPublishSharingNotify";
+	public static final String SHARING_CONTROL_NOTIFY = "sharingControlNotify";
 
 	public static final String TRANSFER_MODERATOR_METHOD = "transferModerator";
 	public static final String TRANSFER_MODERATOR_ID_PARAM = "roomId";
@@ -464,6 +470,8 @@ public class ProtocolElements {
 	public static final String PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM = "roomCreateAt";
     public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
     public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
+    public static final String PARTICIPANTJOINED_ABILITY_PARAM = "ability";
+    public static final String PARTICIPANTJOINED_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
 	public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";
@@ -532,5 +540,13 @@ public class ProtocolElements {
 
 	public static final String RECORDER_PARTICIPANT_PUBLICID = "RECORDER";
 
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_METHOD = "distributeShareCastPlayStrategy";
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_CONNECTIONID_PARAM = "connectionId";
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_STRATEGY_PARAM = "shareCastPlayStrategy";
+    public static final String DISTRIBUTESHARECASTPLAYSTRATEGY_NOTIFY = "distributeShareCastPlayStrategyNotify";
 
+	public static final String UPLOADSHARECASTPLAYSTRATEGY_METHOD = "uploadShareCastPlayStrategy";
+	public static final String UPLOADSHARECASTPLAYSTRATEGY_CONNECTIONID_PARAM = "connectionId";
+	public static final String UPLOADSHARECASTPLAYSTRATEGY_STRATEGY_PARAM = "shareCastPlayStrategy";
+	public static final String UPLOADSHARECASTPLAYSTRATEGY_NOTIFY = "uploadShareCastPlayStrategyNotify";
 }
