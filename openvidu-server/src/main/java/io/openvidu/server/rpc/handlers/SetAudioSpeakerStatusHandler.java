@@ -42,11 +42,9 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
         }
 
         if (!StringUtils.isEmpty(targetId)) {
-            /*KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(targetId)
-                    .compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
-                            .getAsLong()) == 0).findFirst().get();*/
             KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                    .filter(s -> Objects.equals(targetId, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().get();
+                    .filter(s -> Objects.equals(targetId, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                            && !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().get();
             part.setSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
         }
 
