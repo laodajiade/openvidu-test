@@ -260,7 +260,8 @@ public class SessionEventsHandler {
 		// Fixme. Android端统计出问题,暂时加上。端上重构后，云端删除该字段
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_RAISE_HAND_NUMBER_PARAM, raiseHandNum);
 		for (Participant p : remainingParticipants) {
-			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
+			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())
+					&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
 			}
@@ -387,6 +388,7 @@ public class SessionEventsHandler {
 			params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
 
 			for (Participant p : participants) {
+				if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 				log.info("unPublish ParticipantPublicId {} p PublicId {}", participant.getParticipantPublicId(), p.getParticipantPublicId());
 				if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 					// Send response to the affected participant
@@ -473,6 +475,7 @@ public class SessionEventsHandler {
 
 		if (toSet.isEmpty()) {
 			for (Participant p : participants) {
+				if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
 			}
@@ -481,8 +484,8 @@ public class SessionEventsHandler {
 					.collect(Collectors.toSet());
 			for (String to : toSet) {
 				if (participantPublicIds.contains(to)) {
-					Optional<Participant> p = participants.stream().filter(x -> to.equals(x.getParticipantPublicId()))
-							.findFirst();
+					Optional<Participant> p = participants.stream().filter(x -> to.equals(x.getParticipantPublicId())
+							&& Objects.equals(StreamType.MAJOR, x.getStreamType())).findFirst();
 					rpcNotificationService.sendNotification(p.get().getParticipantPrivateId(),
 							ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
 				} else {
@@ -507,6 +510,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM, reason);
 
 		for (Participant p : participants) {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId,
 						new JsonObject());
@@ -557,7 +561,8 @@ public class SessionEventsHandler {
 			for (Participant p : participants) {
 				if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
 					log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
-					if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())) {
+					if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())
+							&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
 						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 								ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
 					}
@@ -577,6 +582,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.RECORDINGSTARTED_NAME_PARAM, recording.getName());
 
 		for (Participant p : filteredParticipants) {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.RECORDINGSTARTED_METHOD, params);
 		}
@@ -606,6 +612,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.RECORDINGSTOPPED_REASON_PARAM, reason != null ? reason.name() : "");
 
 		for (Participant p : filteredParticipants) {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.RECORDINGSTOPPED_METHOD, params);
 		}
@@ -644,6 +651,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM, filterReason);
 
 		for (Participant p : participants) {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				// Affected participant
 				if (isRpcFromModerator) {
@@ -680,6 +688,7 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_EVENTTYPE_PARAM, eventType);
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_DATA_PARAM, data.toString());
 		for (Participant p : participants) {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			if (subscribedParticipants.contains(p.getParticipantPublicId())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.FILTEREVENTDISPATCHED_METHOD, params);
