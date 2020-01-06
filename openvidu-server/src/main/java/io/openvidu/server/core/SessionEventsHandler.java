@@ -90,7 +90,6 @@ public class SessionEventsHandler {
 		int layoutMode = session.getLayoutMode().getMode();
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
-		ConcurrentMap<String, String> alreayNotifyRPC = new ConcurrentHashMap<>();
 		int index = 0;
 		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
@@ -112,12 +111,10 @@ public class SessionEventsHandler {
                 if (!Objects.isNull(rpcConnection.getTerminalConfig()))
                 	notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
 
-				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
-					String publicId = alreayNotifyRPC.putIfAbsent(existingParticipant.getParticipantPrivateId(), existingParticipant.getParticipantPublicId());
-					if (Objects.isNull(publicId)) {
-						rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-								ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
-					}
+				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())
+						&& Objects.equals(StreamType.MAJOR, existingParticipant.getStreamType())) {
+					rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
+							ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
 				}
 
 				if (Objects.equals(OpenViduRole.THOR, existingParticipant.getRole())) {
