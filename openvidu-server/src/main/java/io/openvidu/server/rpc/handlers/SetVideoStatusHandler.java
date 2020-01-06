@@ -56,10 +56,9 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.SET_VIDEO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_STATUS_PARAM));
 
         sessionManager.getParticipants(sessionId).forEach(participant -> {
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                    ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
-            if ((Objects.isNull(targetIds) || targetIds.isEmpty()) && !sourceId.equals(gson.fromJson(participant.getClientMetadata(),
-                    JsonObject.class).get("clientData").getAsString())) {
+            if (Objects.equals(StreamType.MAJOR, participant.getStreamType()))
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
+            if ((Objects.isNull(targetIds) || targetIds.isEmpty()) && !sourceId.equals(participant.getUserId())) {
                 KurentoParticipant part = (KurentoParticipant) participant;
                 if (part.isStreaming()) part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
             }

@@ -6,6 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantSharePowerStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -52,6 +53,7 @@ public class SetSharePowerHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
+                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
                 long userId = gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
                 if ((Objects.isNull(targetIds) || targetIds.isEmpty()) || targetIds.contains(String.valueOf(userId))) {
                     p.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(status));

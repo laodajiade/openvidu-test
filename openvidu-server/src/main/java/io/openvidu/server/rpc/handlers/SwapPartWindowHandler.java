@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ public class SwapPartWindowHandler extends RpcAbstractHandler {
 
         // broadcast the changes of layout
         conferenceSession.getParticipants().forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
             // broadcast the changes of layout
             this.notificationService.sendNotification(participant.getParticipantPrivateId(),
                     ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());

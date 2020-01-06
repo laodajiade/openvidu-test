@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantShareStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -13,6 +14,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
@@ -39,8 +41,9 @@ public class SharingControlHandler extends RpcAbstractHandler {
                 if (targetId.equals(p.getUserId())) {
                     p.setShareStatus(shareStatus);
                 }
-                this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                        ProtocolElements.SHARING_CONTROL_NOTIFY, request.getParams());
+                if (Objects.equals(StreamType.MAJOR, p.getStreamType()))
+                    this.notificationService.sendNotification(p.getParticipantPrivateId(),
+                            ProtocolElements.SHARING_CONTROL_NOTIFY, request.getParams());
             });
         }
 
