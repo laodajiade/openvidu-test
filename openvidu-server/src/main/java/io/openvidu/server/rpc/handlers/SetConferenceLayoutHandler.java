@@ -84,9 +84,11 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
             }
 
              // broadcast the changes of layout
-            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
-                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
-                            conferenceSession.getLayoutNotifyInfo()));
+            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p -> {
+                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+                notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
+                        conferenceSession.getLayoutNotifyInfo());
+            });
         }
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

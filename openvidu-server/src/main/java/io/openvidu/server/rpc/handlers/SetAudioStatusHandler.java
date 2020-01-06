@@ -63,6 +63,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
+                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
                 this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
 
                 if ((Objects.isNull(targetIds) || targetIds.isEmpty()) &&
