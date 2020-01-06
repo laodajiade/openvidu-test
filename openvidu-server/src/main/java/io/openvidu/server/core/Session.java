@@ -400,7 +400,7 @@ public class Session implements SessionInterface {
 				majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
 			} else {
 				JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());
-				if (!majorShareMixLinkedArr.contains(newPart)){
+				if (!majorShareMixLinkedArr.contains(newPart)) {
 					majorShareMixLinkedArr.add(newPart);
 				}
 			}

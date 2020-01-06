@@ -65,6 +65,9 @@ public class EndRollCallHandler extends RpcAbstractHandler {
 
         // broadcast the changes of layout
         participants.forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                return;
+            }
             this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
             if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
                 // broadcast the changes of layout
