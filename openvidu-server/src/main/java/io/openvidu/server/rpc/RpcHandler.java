@@ -192,7 +192,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, p.getSessionId());
 						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
 						this.sessionManager.getParticipants(p.getSessionId()).forEach(part -> {
-							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId()))
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
+									&& Objects.equals(StreamType.MAJOR, part.getStreamType()))
 								this.notificationService.sendNotification(part.getParticipantPrivateId(),
 										ProtocolElements.END_ROLL_CALL_METHOD, params);
 						});
@@ -247,8 +248,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_INFO_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_TIME_PARAM, remainTime);
-		sessionManager.getParticipants(sessionId).forEach(p ->
-				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params));
+		sessionManager.getParticipants(sessionId).forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params);});
 	}
 
 
@@ -257,6 +259,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, publicId);
 
 		sessionManager.getParticipants(sessionId).forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
 			RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
 			if (rpc != null) {
 				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())
@@ -273,8 +276,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 		// 1. notify all participant stop publish and receive stream.
 		// 2. close session but can not disconnect the connection.
-		sessionManager.getSession(sessionId).getParticipants().forEach(p ->
-				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
+		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());});
 		this.sessionManager.unpublishAllStream(sessionId, reason);
 		this.sessionManager.closeSession(sessionId, reason);
 	}
