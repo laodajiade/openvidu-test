@@ -66,4 +66,7 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 		return null;
 	}
 
+	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
+		rpcNotificationService.sendNotification(participarntPrivateId, method, param);
+	}
 }

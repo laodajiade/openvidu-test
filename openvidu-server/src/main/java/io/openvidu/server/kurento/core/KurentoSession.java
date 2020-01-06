@@ -17,6 +17,7 @@
 
 package io.openvidu.server.kurento.core;
 
+import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
@@ -277,6 +278,7 @@ public class KurentoSession extends Session {
 					public void onSuccess(MediaPipeline result) throws Exception {
 						pipeline = result;
 						pipelineLatch.countDown();
+						pipeline.setName(sessionId);
 						log.debug("SESSION {}: Created MediaPipeline", sessionId);
 					}
 
@@ -366,26 +368,32 @@ public class KurentoSession extends Session {
 			kParticipant.releaseAllFilters();
 			kParticipant.close(EndReason.mediaServerDisconnect, false, kmsDisconnectionTime);
 			if (wasStreaming) {
-				kurentoSessionHandler.onUnpublishMedia(kParticipant, this.getParticipants(), null, null, null,
-						EndReason.mediaServerDisconnect);
+//				kurentoSessionHandler.onUnpublishMedia(kParticipant, this.getParticipants(), null, null, null,
+//						EndReason.mediaServerDisconnect);
 			}
 		});
 
 		// Release pipeline, create a new one and prepare new PublisherEndpoints for
 		// allowed users
 		log.info("Reseting process: closing media pipeline for active session {}", this.sessionId);
+		compositeService.closeMajorShareComposite();
 		this.closePipeline(() -> {
 			log.info("Reseting process: media pipeline closed for active session {}", this.sessionId);
 			createPipeline();
-			/*createMajorShareComposite();*/
+			log.info("Reset pipeline id:{}", this.getPipeline().getId());
+			compositeService.setPipeline(this.getPipeline());
+			compositeService.createMajorShareComposite();
 			try {
 				if (!pipelineLatch.await(20, TimeUnit.SECONDS)) {
 					throw new Exception("MediaPipleine was not created in 20 seconds");
 				}
 				getParticipants().forEach(p -> {
-					if (!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
-						((KurentoParticipant) p).resetPublisherEndpoint();
-					}
+//					if (!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
+						KurentoParticipant kParticipant = (KurentoParticipant) p;
+
+						kParticipant.resetPublisherEndpoint();
+						kParticipant.notifyClient("reconnectSMS", new JsonObject());
+//					}
 				});
 				log.info(
 						"Reseting process: media pipeline created and publisher endpoints reseted for active session {}",
@@ -395,5 +403,10 @@ public class KurentoSession extends Session {
 			}
 		});
 	}
+
+	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
+		kurentoSessionHandler.notifyClient(participarntPrivateId, method, param);
+	}
+
 
 }

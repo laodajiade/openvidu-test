@@ -39,6 +39,8 @@ public class CompositeService {
             majorShareComposite = new Composite.Builder(this.pipeline).build();
             createMajorShareHubPortOut();
         }
+        majorShareComposite.setName(session.getSessionId());
+        majorShareHubPortOut.setName(session.getSessionId() + "_mix_out");
     }
 
     void closeMajorShareComposite() {
@@ -49,6 +51,7 @@ public class CompositeService {
                 return;
             }
             majorShareComposite.release();
+            majorShareComposite = null;
             log.warn("Release MajorShareComposite");
         }
     }

@@ -77,6 +77,8 @@ public class KurentoParticipant extends Participant {
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
 	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
 
+	private String publisherStreamId;
+
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager) {
@@ -93,6 +95,7 @@ public class KurentoParticipant extends Participant {
 		setSpeakerStatus(participant.getSpeakerStatus());
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
+		setParticipantName(participant.getParticipantName());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
@@ -125,9 +128,16 @@ public class KurentoParticipant extends Participant {
 		}
 		publisher.setMediaOptions(mediaOptions);
 
-		String publisherStreamId = this.getParticipantPublicId() + "_"
-				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
-				+ RandomStringUtils.random(5, true, false).toUpperCase();
+		String publisherStreamId;
+		if (StringUtils.isEmpty(this.publisherStreamId)) {
+			publisherStreamId = this.getParticipantPublicId() + "_"
+					+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
+					+ RandomStringUtils.random(5, true, false).toUpperCase();
+			this.publisherStreamId = publisherStreamId;
+		} else {
+			publisherStreamId = this.publisherStreamId;
+		}
+
 		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
 		    if (Objects.equals(StreamType.SHARING, getStreamType())) {
                 this.session.compositeService.setShareStreamId(publisherStreamId);
@@ -144,10 +154,10 @@ public class KurentoParticipant extends Participant {
 		this.publisher.getEndpoint().setName(publisherStreamId);
 		this.publisher.setStreamId(publisherStreamId);
 		endpointConfig.addEndpointListeners(this.publisher, "publisher");
+		this.publisher.getMajorShareHubPort().setName(getParticipantName());
 
 		// Remove streamId from publisher's map
 		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
-
 	}
 
 	public synchronized Filter getFilterElement(String id) {
@@ -512,8 +522,17 @@ public class KurentoParticipant extends Participant {
 
 	public void resetPublisherEndpoint() {
 		log.info("Reseting publisher endpoint for participant {}", this.getParticipantPublicId());
-		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
-				this.session.getPipeline(), this.openviduConfig);
+        if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
+            this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+                    this.session.getPipeline(), this.openviduConfig);
+
+            this.publisher.setSharing(Objects.equals(StreamType.SHARING, this.getStreamType()));
+            this.publisher.setCompositeService(this.session.compositeService);
+        }
+	}
+
+	public void notifyClient(String method, JsonObject param) {
+		this.session.notifyClient(this.participantPrivatetId, method, param);
 	}
 
 	@Override

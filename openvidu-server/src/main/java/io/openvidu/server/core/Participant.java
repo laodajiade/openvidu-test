@@ -42,6 +42,7 @@ public class Participant {
 	protected volatile boolean closed;
 
 	private String userId;
+	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
 	protected ParticipantSharePowerStatus sharePowerStatus;
@@ -111,6 +112,10 @@ public class Participant {
 	public String getUserId() {
 		return userId;
 	}
+
+	public void setParticipantName(String participantName) { this.participantName = participantName; }
+
+	public String getParticipantName() { return this.participantName; }
 
 	public Long getCreatedAt() {
 		return this.createdAt;

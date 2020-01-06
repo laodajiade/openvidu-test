@@ -399,15 +399,19 @@ public class Session implements SessionInterface {
 			if (Objects.isNull(speakerPart)) {
 				majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
 			} else {
-				majorShareMixLinkedArr.add(getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId()));
+				JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());
+				if (!majorShareMixLinkedArr.contains(newPart)){
+					majorShareMixLinkedArr.add(newPart);
+				}
 			}
 		} else if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
 			majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.SHARING, kurentoParticipant.getParticipantPublicId());
 		} else {
-			majorShareMixLinkedArr.add(getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId()));
+			JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());
+			if (!majorShareMixLinkedArr.contains(newPart)) {
+				majorShareMixLinkedArr.add(newPart);
+			}
 		}
-
-
 
     	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
     	this.invokeKmsConferenceLayout();
@@ -422,7 +426,10 @@ public class Session implements SessionInterface {
 
 	private JsonArray reorderIfPriorityJoined(StreamType streamType, String connectionId) {
 		JsonArray newMajorMixLinkedArr = new JsonArray(50);
-		newMajorMixLinkedArr.add(getPartOrderInfo(streamType.name(), connectionId));
+		JsonObject newPart = getPartOrderInfo(streamType.name(), connectionId);
+		if (!majorShareMixLinkedArr.contains(newPart)) {
+			newMajorMixLinkedArr.add(newPart);
+		}
 		newMajorMixLinkedArr.addAll(majorShareMixLinkedArr);
 		return newMajorMixLinkedArr;
 	}
