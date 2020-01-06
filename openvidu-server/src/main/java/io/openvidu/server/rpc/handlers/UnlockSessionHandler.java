@@ -4,10 +4,13 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * @author geedow
@@ -28,8 +31,10 @@ public class UnlockSessionHandler extends RpcAbstractHandler {
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
-            sessionManager.getParticipants(sessionId).forEach(participant ->
-                    this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_METHOD, params));
+            sessionManager.getParticipants(sessionId).forEach(participant -> {
+                if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_METHOD, params);
+            });
         }
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

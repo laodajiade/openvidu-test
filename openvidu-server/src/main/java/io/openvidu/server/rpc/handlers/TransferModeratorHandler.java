@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +39,8 @@ public class TransferModeratorHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.TRANSFER_MODERATOR_SOURCE_ID_PARAM, sourceId);
         params.addProperty(ProtocolElements.TRANSFER_MODERATOR_TARGET_ID_PARAM, targetId);
         sessionManager.getParticipants(sessionId).forEach(p -> {
-            long userId = gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
-            if (Objects.equals(String.valueOf(userId), targetId)) {
+            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+            if (Objects.equals(p.getUserId(), targetId)) {
                 p.setRole(OpenViduRole.MODERATOR);
             }
 
