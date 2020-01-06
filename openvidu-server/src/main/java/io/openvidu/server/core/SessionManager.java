@@ -686,6 +686,7 @@ public abstract class SessionManager {
 
 	public void dealSessionClose(String sessionId, EndReason endReason) {
 		this.getSession(sessionId).getParticipants().forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
 			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
 			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
 			if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
@@ -707,6 +708,7 @@ public abstract class SessionManager {
 			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, participant.getUserId());
 
 			for (Participant participant1 : participants) {
+				if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
 				if (participant1.getRole().equals(OpenViduRole.MODERATOR))
 					moderatePublicId = participant1.getParticipantPublicId();
 				if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
@@ -733,7 +735,7 @@ public abstract class SessionManager {
             session.invokeKmsConferenceLayout();
 
             for (Participant participant1 : participants) {
-                if (!Objects.equals(participant, participant1))
+                if (!Objects.equals(participant, participant1) && Objects.equals(StreamType.MAJOR, participant1.getStreamType()))
                     notificationService.sendNotification(participant1.getParticipantPrivateId(),
                             ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
             }
