@@ -148,13 +148,14 @@ public class KurentoParticipant extends Participant {
                         + "_" + "MAJOR-SHARE-MIX";
                 this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
             }
-        }
+
+			this.publisher.getMajorShareHubPort().setName(getParticipantName());
+		}
 
 		this.publisher.setEndpointName(publisherStreamId);
 		this.publisher.getEndpoint().setName(publisherStreamId);
 		this.publisher.setStreamId(publisherStreamId);
 		endpointConfig.addEndpointListeners(this.publisher, "publisher");
-		this.publisher.getMajorShareHubPort().setName(getParticipantName());
 
 		// Remove streamId from publisher's map
 		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
