@@ -344,7 +344,8 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             this.sessionManager.getParticipants(conferenceId).forEach(participant -> {
-                if (!Objects.equals(previousRpcConnectId, participant.getParticipantPrivateId())) {
+                if (!Objects.equals(previousRpcConnectId, participant.getParticipantPrivateId())
+                        && Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                     RpcConnection rpc = notificationService.getRpcConnection(participant.getParticipantPrivateId());
                     if (!Objects.isNull(rpc)) {
                         if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"),
