@@ -3,12 +3,14 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -47,8 +49,10 @@ public class ReplaceRollCallHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_END_TARGET_ID_PARAM, endTargetId);
         params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_START_TARGET_ID_PARAM, startTargetId);
         params.addProperty(ProtocolElements.REPLACE_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
-        participants.forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.REPLACE_ROLL_CALL_METHOD, params));
+        participants.forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.REPLACE_ROLL_CALL_METHOD, params);
+        });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

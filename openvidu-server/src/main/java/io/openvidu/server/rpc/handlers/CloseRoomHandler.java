@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -57,6 +58,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         updateReconnectInfo(rpcConnection);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
+            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
             notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
             RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
             if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {

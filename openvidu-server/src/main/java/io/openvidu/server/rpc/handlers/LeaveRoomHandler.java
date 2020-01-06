@@ -61,6 +61,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
 
                     conferenceSession.getParticipants().forEach(part -> {
+                        if (!Objects.equals(StreamType.MAJOR, part.getStreamType())) return;
                         // broadcast the changes of layout
                         this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
                     });
@@ -92,6 +93,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
 
             for (Participant participant1 : participants) {
+                if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
                 if (participant1.getRole().equals(OpenViduRole.MODERATOR))
                     moderatePublicId = participant1.getParticipantPublicId();
                 if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
@@ -115,6 +117,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
             for (Participant participant1 : participants) {
+                if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
                 notificationService.sendNotification(participant1.getParticipantPrivateId(),
                         ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
             }

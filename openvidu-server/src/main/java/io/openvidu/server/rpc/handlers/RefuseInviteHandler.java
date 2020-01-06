@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -10,6 +11,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -31,6 +33,7 @@ public class RefuseInviteHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.REFUSE_INVITE_SOURCE_ID_PARAM, sourceId);
 
             for (Participant p: participants) {
+                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
                 this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.REFUSE_INVITE_METHOD, params);
             }
         }

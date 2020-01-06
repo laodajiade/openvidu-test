@@ -6,6 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -45,6 +46,7 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
             Session conferenceSession = sessionManager.getSession(rpcConnection.getSessionId());
             if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
                 conferenceSession.getParticipants().forEach(part -> {
+                    if (!Objects.equals(StreamType.MAJOR, part.getStreamType())) return;
                     // broadcast the changes of layout
                     this.notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());

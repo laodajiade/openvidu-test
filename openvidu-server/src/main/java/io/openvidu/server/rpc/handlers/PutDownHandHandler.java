@@ -71,8 +71,10 @@ public class PutDownHandHandler extends RpcAbstractHandler {
             }
             params.addProperty(ProtocolElements.PUT_DOWN_HAND_RAISEHAND_NUMBER_PARAM, raiseHandNum);
         }
-        participants.forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.PUT_DOWN_HAND_METHOD, params));
+        participants.forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.PUT_DOWN_HAND_METHOD, params);
+        });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

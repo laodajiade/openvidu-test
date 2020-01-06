@@ -7,6 +7,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -61,8 +62,10 @@ public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
             notifyResult.addProperty(ProtocolElements.MAJORLAYOUTNOTIFY_TYPE_PARAM, changeType.name());
             notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM, layout);
 
-            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p ->
-                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult));
+            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p -> {
+                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+                notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult);
+            });
 
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         }
