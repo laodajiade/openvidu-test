@@ -33,7 +33,6 @@ public class Participant {
 	protected Long createdAt; // Timestamp when this connection was established
 	protected String clientMetadata = ""; // Metadata provided on client side
 	protected String serverMetadata = ""; // Metadata provided on server side
-//	protected Token token; // Token associated to this participant
 	private OpenViduRole role;
 	private StreamType streamType;
 	protected GeoLocation location; // Location of the participant
@@ -42,6 +41,8 @@ public class Participant {
 	protected boolean streaming = false;
 	protected volatile boolean closed;
 
+	private String userId;
+	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
 	protected ParticipantSharePowerStatus sharePowerStatus;
@@ -69,10 +70,8 @@ public class Participant {
 		} else {
 			this.createdAt = System.currentTimeMillis();
 		}
-//		this.token = token;
 		this.clientMetadata = clientMetadata;
-		/*if (!token.getServerMetadata().isEmpty())
-			this.serverMetadata = token.getServerMetadata();*/
+		this.userId = new Gson().fromJson(clientMetadata, JsonObject.class).get("clientData").getAsString();
 		this.role = role;
 		this.streamType = streamType;
 		this.location = location;
@@ -110,6 +109,14 @@ public class Participant {
 		return sessionId;
 	}
 
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setParticipantName(String participantName) { this.participantName = participantName; }
+
+	public String getParticipantName() { return this.participantName; }
+
 	public Long getCreatedAt() {
 		return this.createdAt;
 	}
@@ -129,14 +136,6 @@ public class Participant {
 	public void setServerMetadata(String serverMetadata) {
 		this.serverMetadata = serverMetadata;
 	}
-
-//	public Token getToken() {
-//		return this.token;
-//	}
-//
-//	public void setToken(Token token) {
-//		this.token = token;
-//	}
 
 	public OpenViduRole getRole() {
 		return role;

@@ -17,29 +17,26 @@
 
 package io.openvidu.server.kurento.core;
 
+import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.kms.Kms;
+import org.kurento.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import io.openvidu.server.common.enums.StreamType;
-import org.kurento.client.Continuation;
-import org.kurento.client.ErrorEvent;
-import org.kurento.client.EventListener;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.MediaPipeline;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.kurento.kms.Kms;
 
 /**
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
@@ -47,7 +44,8 @@ import io.openvidu.server.kurento.kms.Kms;
 public class KurentoSession extends Session {
 
 	private final static Logger log = LoggerFactory.getLogger(Session.class);
-	public static final int ASYNC_LATCH_TIMEOUT = 30;
+//	public static final int ASYNC_LATCH_TIMEOUT = 30;
+	public static final int ASYNC_LATCH_TIMEOUT = 60;
 
 	private MediaPipeline pipeline;
 	private CountDownLatch pipelineLatch = new CountDownLatch(1);
@@ -59,8 +57,11 @@ public class KurentoSession extends Session {
 
 	private final ConcurrentHashMap<String, String> filterStates = new ConcurrentHashMap<>();
 
+	public CompositeService compositeService;
+
 	private Object pipelineCreateLock = new Object();
 	private Object pipelineReleaseLock = new Object();
+	private final Object joinOrLeaveLock = new Object();
 	private boolean destroyKurentoClient;
 
 	public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
@@ -72,48 +73,54 @@ public class KurentoSession extends Session {
 		this.destroyKurentoClient = destroyKurentoClient;
 		this.kurentoSessionHandler = kurentoSessionHandler;
 		this.kurentoEndpointConfig = kurentoEndpointConfig;
+		this.compositeService = new CompositeService(sessionNotActive);
 		log.debug("New SESSION instance with id '{}'", sessionId);
 	}
 
 	@Override
 	public void join(Participant participant) {
-		checkClosed();
-		createPipeline();
+		synchronized (joinOrLeaveLock) {
+			checkClosed();
+			createPipeline();
+			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
+				this.compositeService.setPipeline(this.getPipeline());
+				compositeService.createMajorShareComposite();
+				if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+					compositeService.setExistSharing(true);
+				}
+			}
 
-		KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
-				this.openviduConfig, this.recordingManager);
-//		participants.put(participant.getParticipantPrivateId(), kurentoParticipant);
-		participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
-			ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
-			connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
-			return connectionParticipants;
-		});
-		participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
-			Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
-			if (newPart != null)
-				log.error("RPCConnection:{} already exists the stream type:{}", participant.getParticipantPrivateId(),
-						participant.getStreamType().name());
-			return parts;
-		});
+			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
+					this.openviduConfig, this.recordingManager);
+			participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
+				Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
+				if (newPart != null)
+					log.info("RPCConnection:{} already exists the stream type:{}, now add the stream type:{} into the map.",
+							participant.getParticipantPrivateId(), participant.getStreamType().name(),
+							kurentoParticipant.getStreamType().name());
+				return parts;
+			});
+			participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
+				ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
+				connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
+				return connectionParticipants;
+			});
 
-		filterStates.forEach((filterId, state) -> {
-			log.info("Adding filter {}", filterId);
-			kurentoSessionHandler.updateFilter(sessionId, participant, filterId, state);
-		});
+			filterStates.forEach((filterId, state) -> {
+				log.info("Adding filter {}", filterId);
+				kurentoSessionHandler.updateFilter(sessionId, participant, filterId, state);
+			});
 
-		log.info("SESSION {}: Added participant {}", sessionId, participant);
+			log.info("SESSION {}: Added participant {}", sessionId, participant);
 
-		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-			kurentoEndpointConfig.getCdr().recordParticipantJoined(participant, sessionId);
+			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+				kurentoEndpointConfig.getCdr().recordParticipantJoined(participant, sessionId);
+			}
 		}
 	}
 
 	public void newPublisher(Participant participant) {
 		registerPublisher();
-
-		// pre-load endpoints to recv video from the new publisher
-//        for (Participant p : participants.values()) {
-        // TODO exclude participants of the same RPCConnection
 		for (Participant p : getParticipants()) {
 			if (participant.equals(p)) {
 				continue;
@@ -126,9 +133,6 @@ public class KurentoSession extends Session {
 	}
 
 	public void cancelPublisher(Participant participant, EndReason reason) {
-		// Cancel all subscribers for this publisher
-//		for (Participant subscriber : participants.values()) {
-        // TODO exclude participants of the same RPCConnection
 		for (Participant subscriber : getParticipants()) {
 			if (participant.equals(subscriber)) {
 				continue;
@@ -144,7 +148,6 @@ public class KurentoSession extends Session {
 	@Override
 	public void leave(String participantPrivateId, EndReason reason) throws OpenViduException {
 		checkClosed();
-
 		for (Participant p : participants.get(participantPrivateId).values()) {
 			KurentoParticipant participant = (KurentoParticipant)p;
 
@@ -163,10 +166,25 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
+//		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
+			synchronized (joinOrLeaveLock) {
+				try {
+					leave(p, reason);
+					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
+							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
+					Thread.sleep(kurentoEndpointConfig.leaveDelay);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+//		} else {
+//			leave(p, reason);
+//		}
+	}
+
+	private void leave(Participant p, EndReason reason) {
 		checkClosed();
-
 		KurentoParticipant participant = (KurentoParticipant)p;
-
 		if (participant == null) {
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE, "Participant with private id "
 					+ p.getParticipantPrivateId() + "public id " + p.getParticipantPublicId() + " not found in session '" + sessionId + "'");
@@ -182,15 +200,14 @@ public class KurentoSession extends Session {
 	@Override
 	public boolean close(EndReason reason) {
 		if (!closed) {
-
-//			for (Participant participant : participants.values()) {
 			for (Participant participant : getParticipants()) {
-				((KurentoParticipant) participant).releaseAllFilters();
-				((KurentoParticipant) participant).close(reason, true, 0);
+			    KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+                kurentoParticipant.releaseAllFilters();
+                kurentoParticipant.close(reason, true, 0);
 			}
 
 			participants.clear();
-
+            compositeService.closeMajorShareComposite();
 			closePipeline(null);
 
 			log.debug("Session {} closed", this.sessionId);
@@ -231,8 +248,6 @@ public class KurentoSession extends Session {
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
-//		for (Participant other : participants.values()) {
-        // TODO exclude participants of the same RPCConnection
         for (Participant other : getParticipants()) {
 			((KurentoParticipant) other).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
@@ -251,7 +266,7 @@ public class KurentoSession extends Session {
 		return this.pipeline;
 	}
 
-	private void createPipeline() {
+    private void createPipeline() {
 		synchronized (pipelineCreateLock) {
 			if (pipeline != null) {
 				return;
@@ -263,6 +278,7 @@ public class KurentoSession extends Session {
 					public void onSuccess(MediaPipeline result) throws Exception {
 						pipeline = result;
 						pipelineLatch.countDown();
+						pipeline.setName(sessionId);
 						log.debug("SESSION {}: Created MediaPipeline", sessionId);
 					}
 
@@ -352,25 +368,32 @@ public class KurentoSession extends Session {
 			kParticipant.releaseAllFilters();
 			kParticipant.close(EndReason.mediaServerDisconnect, false, kmsDisconnectionTime);
 			if (wasStreaming) {
-				kurentoSessionHandler.onUnpublishMedia(kParticipant, this.getParticipants(), null, null, null,
-						EndReason.mediaServerDisconnect);
+//				kurentoSessionHandler.onUnpublishMedia(kParticipant, this.getParticipants(), null, null, null,
+//						EndReason.mediaServerDisconnect);
 			}
 		});
 
 		// Release pipeline, create a new one and prepare new PublisherEndpoints for
 		// allowed users
 		log.info("Reseting process: closing media pipeline for active session {}", this.sessionId);
+		compositeService.closeMajorShareComposite();
 		this.closePipeline(() -> {
 			log.info("Reseting process: media pipeline closed for active session {}", this.sessionId);
 			createPipeline();
+			log.info("Reset pipeline id:{}", this.getPipeline().getId());
+			compositeService.setPipeline(this.getPipeline());
+			compositeService.createMajorShareComposite();
 			try {
 				if (!pipelineLatch.await(20, TimeUnit.SECONDS)) {
 					throw new Exception("MediaPipleine was not created in 20 seconds");
 				}
 				getParticipants().forEach(p -> {
-					if (!OpenViduRole.SUBSCRIBER.equals(p.getRole())) {
-						((KurentoParticipant) p).resetPublisherEndpoint();
-					}
+//					if (!OpenViduRole.NON_PUBLISH_ROLES.contains(p.getRole())) {
+						KurentoParticipant kParticipant = (KurentoParticipant) p;
+
+						kParticipant.resetPublisherEndpoint();
+						kParticipant.notifyClient("reconnectSMS", new JsonObject());
+//					}
 				});
 				log.info(
 						"Reseting process: media pipeline created and publisher endpoints reseted for active session {}",
@@ -380,5 +403,10 @@ public class KurentoSession extends Session {
 			}
 		});
 	}
+
+	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
+		kurentoSessionHandler.notifyClient(participarntPrivateId, method, param);
+	}
+
 
 }

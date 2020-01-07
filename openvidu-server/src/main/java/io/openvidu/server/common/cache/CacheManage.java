@@ -5,7 +5,7 @@ import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import java.util.Map;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/9/12 14:50
  */
 public interface CacheManage {
@@ -19,4 +19,8 @@ public interface CacheManage {
     void updateReconnectInfo(String userUuid, String privateId);
 
     void updateDeviceName(String userUuid, String deviceName);
+
+    void setDeviceStatus(String key, String version);
+
+    String getDeviceStatus(String serialNumber);
 }

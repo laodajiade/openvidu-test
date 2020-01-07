@@ -1,5 +1,6 @@
 package io.openvidu.server.common.pojo;
 
+import com.google.gson.JsonArray;
 import lombok.Builder;
 import lombok.Data;
 

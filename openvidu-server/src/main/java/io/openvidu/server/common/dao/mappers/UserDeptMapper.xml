@@ -18,6 +18,9 @@
     from sd_user_dept
     where id = #{id,jdbcType=BIGINT}
   </select>
+  <select id="selectByUserId" parameterType="java.lang.Long" resultType="java.lang.String">
+        select project from sd_user_dept where user_id = #{userId,jdbcType=BIGINT}
+  </select>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.UserDeptSearch" >
     select
     <include refid="Base_Column_List" />

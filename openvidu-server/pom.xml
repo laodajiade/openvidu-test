@@ -48,6 +48,7 @@
 	<properties>
 		<!-- Main class -->
 		<start-class>io.openvidu.server.OpenViduServer</start-class>
+		<version.com.geedow.kurento-jsonrpc-server>1.0.3</version.com.geedow.kurento-jsonrpc-server>
 	</properties>
 
 	<profiles>
@@ -194,10 +195,10 @@
 	</profiles>
 
 	<dependencies>
-		<!--<dependency>
-			<groupId>org.kurento</groupId>
+		<dependency>
+			<groupId>com.geedow</groupId>
 			<artifactId>kurento-jsonrpc-server</artifactId>
-			<version>${version.kurento}</version>
+			<version>${version.com.geedow.kurento-jsonrpc-server}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
@@ -212,18 +213,6 @@
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>-->
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-jsonrpc-server</artifactId>
-			<version>6.12.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/kurento-jsonrpc-server-6.12.1-SNAPSHOT.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-websocket</artifactId>
-			<version>5.1.7.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>io.openvidu</groupId>

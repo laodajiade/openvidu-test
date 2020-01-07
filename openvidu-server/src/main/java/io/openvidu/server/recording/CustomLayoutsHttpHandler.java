@@ -29,6 +29,7 @@ import io.openvidu.server.config.OpenviduConfig;
 @ConditionalOnProperty(name = "openvidu.recording", havingValue = "true")
 public class CustomLayoutsHttpHandler implements WebMvcConfigurer {
 
+
 	@Autowired
 	OpenviduConfig openviduConfig;
 

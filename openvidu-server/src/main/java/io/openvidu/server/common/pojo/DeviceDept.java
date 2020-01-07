@@ -20,4 +20,6 @@ public class DeviceDept {
 
     private Date updateTime;
 
+    private String deviceName;
+
 }

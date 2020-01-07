@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.dao.DepartmentMapper;
+import io.openvidu.server.common.dao.DeviceDeptMapper;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.DepartmentTree;
+import io.openvidu.server.common.pojo.DeviceDept;
+import io.openvidu.server.common.pojo.DeviceDeptSearch;
 import io.openvidu.server.utils.TreeToolUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -20,7 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/10/18 22:35
  */
 @Service
@@ -31,18 +34,23 @@ public class DepartmentManageImpl implements DepartmentManage {
     @Resource
     private DepartmentMapper departmentMapper;
 
+    @Resource
+    private DeviceDeptMapper deviceDeptMapper;
+
     @Override
     public JsonObject genDeptTreeJsonObj(@NotNull Long orgId) {
         Department rootDept = departmentMapper.selectByPrimaryKey(orgId);
         if (Objects.isNull(rootDept)) return null;
-
-        List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
         DepartmentTree rootDeptTree = DepartmentTree.builder().orgId(rootDept.getId())
                 .organizationName(rootDept.getDeptName()).build();
 
-        return !CollectionUtils.isEmpty(deptList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
-                deptList.stream().filter(s -> !Objects.isNull(s.getOrgId()) && s.getOrgId().compareTo(orgId) != 0).collect(Collectors.toList()))
-                .getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
+        List<DepartmentTree> deptBeforeFilterList = departmentMapper.selectByCorpId(rootDept.getCorpId());
+        List<DepartmentTree> deptAfterFilterList = !CollectionUtils.isEmpty(deptBeforeFilterList) ?
+                deptBeforeFilterList.stream().filter(s -> !Objects.isNull(s.getOrgId()) && s.getOrgId().compareTo(orgId) != 0)
+                        .collect(Collectors.toList()) : null;
+
+        return !CollectionUtils.isEmpty(deptAfterFilterList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
+                deptAfterFilterList).getTree().get(0)).getAsJsonObject() : gson.toJsonTree(rootDeptTree).getAsJsonObject();
     }
 
     @Override
@@ -78,6 +86,14 @@ public class DepartmentManageImpl implements DepartmentManage {
         subDeptIds.add(deptId);
 
         return subDeptIds;
+    }
+
+    @Override
+    public DeviceDept getDeviceDeptBySerialNum(String devSerialNum) {
+        DeviceDeptSearch deviceDeptSearch = new DeviceDeptSearch();
+        deviceDeptSearch.setSerialNumber(devSerialNum);
+        List<DeviceDept> deviceDepts = deviceDeptMapper.selectBySearchCondition(deviceDeptSearch);
+        return !CollectionUtils.isEmpty(deviceDepts) ? deviceDepts.get(0) : null;
     }
 
 }

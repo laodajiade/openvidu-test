@@ -27,12 +27,12 @@ import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
@@ -100,6 +100,8 @@ public abstract class SessionManager {
 	public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
 			boolean closeWebSocket);
 
+	public abstract void changeSharingStatusInConference(KurentoSession session, Participant participant);
+
 	public abstract void accessOut(RpcConnection rpcConnection);
 
 	public abstract void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId);
@@ -107,7 +109,8 @@ public abstract class SessionManager {
 	public abstract void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
 			EndReason reason);
 
-	public abstract void subscribe(Participant participant, String senderName, String sdpOffer, Integer transactionId);
+	public abstract void subscribe(Participant participant, String senderName, StreamModeEnum streamMode,
+								   String sdpOffer, Integer transactionId);
 
 	public abstract void unsubscribe(Participant participant, String senderName, Integer transactionId);
 
@@ -184,10 +187,11 @@ public abstract class SessionManager {
 	public Set<Participant> getParticipants(String sessionId) throws OpenViduException {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
-			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+			log.error("Session:{} not found.", sessionId);
+			return null;
 		}
 		Set<Participant> participants = session.getParticipants();
-		participants.removeIf(p -> p.isClosed());
+		participants.removeIf(Participant::isClosed);
 		return participants;
 	}
 
@@ -219,12 +223,11 @@ public abstract class SessionManager {
 		if (session == null) {
 			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
 		}
-		Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
+		return session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
 		/*if (participant == null) {
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
 		}*/
-		return participant;
 	}
 
 	/**
@@ -402,7 +405,7 @@ public abstract class SessionManager {
 	public boolean isModeratorInSession(String sessionId, Participant participant) {
 		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
 			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-				return OpenViduRole.MODERATOR.equals(participant.getRole());
+				return OpenViduRole.MODERATOR_ROLES.contains(participant.getRole());
 			} else {
 				return false;
 			}
@@ -439,7 +442,7 @@ public abstract class SessionManager {
 
 			FinalUser finalUser = this.sessionidFinalUsers.get(sessionId).get(finalUserId);
 			if (finalUser == null) {
-				// First connection for new final user
+				//First connection for new final user
 				log.info("Participant {} of session {} belongs to a new final user", p.getParticipantPublicId(),
 						sessionId);
 				this.sessionidFinalUsers.get(sessionId).put(finalUserId, new FinalUser(finalUserId, sessionId, p));
@@ -500,8 +503,11 @@ public abstract class SessionManager {
 	@PreDestroy
 	public void close() {
 		log.info("Closing all sessions and update user online status");
-		notificationService.getRpcConnections().forEach(rpcConnection ->
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline));
+		notificationService.getRpcConnections().forEach(rpcConnection -> {
+			if (!Objects.isNull(rpcConnection.getUserUuid()))
+				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+		});
+
 		for (String sessionId : sessions.keySet()) {
 			try {
 				closeSession(sessionId, EndReason.openviduServerStopped);
@@ -606,7 +612,7 @@ public abstract class SessionManager {
 			return;
 		}
 
-		conferences.forEach(conference -> endConferenceInfo(conference));
+		conferences.forEach(this::endConferenceInfo);
 	}
 
 	public void endConferenceInfo(Conference conference) {
@@ -616,7 +622,8 @@ public abstract class SessionManager {
 	}
 
 	public boolean isNewSessionIdValid(String sessionId) {
-		if (sessionidConferenceInfo.containsKey(sessionId)) return false;
+		// TODO
+//		if (sessionidConferenceInfo.containsKey(sessionId)) return false;
 		sessionidConferenceInfo.put(sessionId, new ConcurrentHashMap<>());
 		return true;
 	}
@@ -665,7 +672,8 @@ public abstract class SessionManager {
 
 		Set<Participant> participants = getParticipants(sessionId);
 
-		if (EndReason.forceCloseSessionByUser.equals(reason)) {
+		if (EndReason.forceCloseSessionByUser.equals(reason) ||
+				EndReason.closeSessionByModerator.equals(reason)) {
 			for (Participant p : participants) {
 				try {
 					this.unpublishVideo(p, null, null, reason);
@@ -676,4 +684,61 @@ public abstract class SessionManager {
 		}
 	}
 
+	public void dealSessionClose(String sessionId, EndReason endReason) {
+		this.getSession(sessionId).getParticipants().forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
+			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
+			if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
+				cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
+			}});
+//		this.unpublishAllStream(sessionId, endReason);
+		this.closeSession(sessionId, endReason);
+	}
+
+	public void dealParticipantLeaveRoom(Participant participant, boolean closeWebSocket, Integer requestId) {
+		RpcConnection rpcConnection = notificationService.getRpcConnection(participant.getParticipantPrivateId());
+		String sessionId = participant.getSessionId();
+		String moderatePublicId = null;
+		String speakerId = null;
+		Set<Participant> participants = getParticipants(sessionId);
+		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, participant.getUserId());
+
+			for (Participant participant1 : participants) {
+				if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
+				if (participant1.getRole().equals(OpenViduRole.MODERATOR))
+					moderatePublicId = participant1.getParticipantPublicId();
+				if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
+					speakerId = participant1.getParticipantPublicId();
+				this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
+						ProtocolElements.END_ROLL_CALL_METHOD, params);
+			}
+		}
+
+        if (!Objects.isNull(rpcConnection) && !Objects.isNull(rpcConnection.getSerialNumber())) {
+            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
+            log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
+                    rpcConnection.getSessionId());
+        }
+
+		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+			participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+		leaveRoom(participant, requestId, EndReason.disconnect, closeWebSocket);
+
+        Session session = getSession(sessionId);
+        if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
+            session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
+            // json RPC notify KMS layout changed.
+            session.invokeKmsConferenceLayout();
+
+            for (Participant participant1 : participants) {
+                if (!Objects.equals(participant, participant1) && Objects.equals(StreamType.MAJOR, participant1.getStreamType()))
+                    notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
+            }
+        }
+	}
 }

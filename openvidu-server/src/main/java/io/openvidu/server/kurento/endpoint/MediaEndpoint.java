@@ -24,17 +24,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 
-import org.kurento.client.Continuation;
-import org.kurento.client.ErrorEvent;
-import org.kurento.client.EventListener;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.ListenerSubscription;
-import org.kurento.client.MediaElement;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.OnIceCandidateEvent;
-import org.kurento.client.RtpEndpoint;
-import org.kurento.client.SdpEndpoint;
-import org.kurento.client.WebRtcEndpoint;
+import io.openvidu.server.kurento.core.CompositeService;
+import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +53,7 @@ public abstract class MediaEndpoint {
 	private OpenviduConfig openviduConfig;
 
 	private boolean web = false;
+	private boolean isSharing = false;
 
 	private WebRtcEndpoint webEndpoint = null;
 	private RtpEndpoint endpoint = null;
@@ -81,6 +73,8 @@ public abstract class MediaEndpoint {
 	private MediaPipeline pipeline = null;
 	private ListenerSubscription endpointSubscription = null;
 
+	private CompositeService compositeService;
+
 	private final List<IceCandidate> receivedCandidateList = new LinkedList<IceCandidate>();
 	private LinkedList<IceCandidate> candidates = new LinkedList<IceCandidate>();
 
@@ -98,8 +92,8 @@ public abstract class MediaEndpoint {
 	 * @param pipeline
 	 * @param log
 	 */
-	public MediaEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
-			OpenviduConfig openviduConfig, Logger log) {
+	public MediaEndpoint(boolean web, KurentoParticipant owner, String endpointName,
+						 MediaPipeline pipeline, OpenviduConfig openviduConfig, Logger log) {
 		if (log == null) {
 			MediaEndpoint.log = LoggerFactory.getLogger(MediaEndpoint.class);
 		} else {
@@ -112,7 +106,6 @@ public abstract class MediaEndpoint {
 
 		this.openviduConfig = openviduConfig;
 
-//		KurentoTokenOptions kurentoTokenOptions = this.owner.getToken().getKurentoTokenOptions();
 		KurentoTokenOptions kurentoTokenOptions = null;
 		if (kurentoTokenOptions != null) {
 			this.maxRecvKbps = kurentoTokenOptions.getVideoMaxRecvBandwidth() != null
@@ -137,6 +130,14 @@ public abstract class MediaEndpoint {
 
 	public boolean isWeb() {
 		return web;
+	}
+
+	public void setSharing(boolean sharing) {
+		isSharing = sharing;
+	}
+
+	public boolean isSharing() {
+		return isSharing;
 	}
 
 	/**
@@ -184,6 +185,7 @@ public abstract class MediaEndpoint {
 		SdpEndpoint old = this.getEndpoint();
 		if (old == null) {
 			internalEndpointInitialization(endpointLatch);
+			log.info("MediaEndpoint createEndpoint when old SdpEndpoint is null");
 		} else {
 			endpointLatch.countDown();
 		}
@@ -210,6 +212,18 @@ public abstract class MediaEndpoint {
 	 */
 	public void setMediaPipeline(MediaPipeline pipeline) {
 		this.pipeline = pipeline;
+	}
+
+	public Composite getMajorShareComposite() {
+		return this.compositeService.getMajorShareComposite();
+	}
+
+	public CompositeService getCompositeService() {
+		return compositeService;
+	}
+
+	public void setCompositeService(CompositeService compositeService) {
+		this.compositeService = compositeService;
 	}
 
 	public String getEndpointName() {
@@ -417,7 +431,6 @@ public abstract class MediaEndpoint {
 	 * the {@link Participant}.
 	 *
 	 * @see WebRtcEndpoint#addOnIceCandidateListener(org.kurento.client.EventListener)
-	 * @see Participant#sendIceCandidate(String, IceCandidate)
 	 * @throws OpenViduException if thrown, unable to register the listener
 	 */
 	protected void registerOnIceCandidateEventListener(String senderPublicId) throws OpenViduException {
@@ -440,7 +453,7 @@ public abstract class MediaEndpoint {
 	 * If supported, it instructs the internal endpoint to start gathering
 	 * {@link IceCandidate}s.
 	 */
-	protected void gatherCandidates() throws OpenViduException {
+	public void gatherCandidates() throws OpenViduException {
 		if (!this.isWeb()) {
 			return;
 		}

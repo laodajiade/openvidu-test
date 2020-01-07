@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.google.gson.JsonObject;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.slf4j.Logger;
@@ -46,11 +48,16 @@ public class RpcConnection {
 	private String serialNumber;
 	private String macAddr;
 	private boolean isReconnected;
+	private AccessTypeEnum accessType;
+	private Long createTime;
+	private String ability;
+	private JsonObject terminalConfig;
 
 	public RpcConnection(Session session) {
 		this.session = session;
 		this.transactions = new ConcurrentHashMap<>();
 		this.participantPrivateId = session.getSessionId();
+		this.createTime = System.currentTimeMillis();
 	}
 
 	public Session getSession() {
@@ -101,6 +108,30 @@ public class RpcConnection {
 		this.sessionId = sessionId;
 	}
 
+	public AccessTypeEnum getAccessType() {
+		return accessType;
+	}
+
+	public void setAccessType(AccessTypeEnum accessType) {
+		this.accessType = accessType;
+	}
+
+	public String getAbility() {
+		return ability;
+	}
+
+	public void setAbility(String ability) {
+		this.ability = ability;
+	}
+
+	public JsonObject getTerminalConfig() {
+		return terminalConfig;
+	}
+
+	public void setTerminalConfig(JsonObject terminalConfig) {
+		this.terminalConfig = terminalConfig;
+	}
+
 	public Transaction getTransaction(Integer transactionId) {
 		return transactions.get(transactionId);
 	}
@@ -118,5 +149,13 @@ public class RpcConnection {
 
 	public Collection<Transaction> getTransactions() {
 		return transactions.values();
+	}
+
+	public Long getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Long createTime) {
+		this.createTime = createTime;
 	}
 }

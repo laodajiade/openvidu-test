@@ -3,15 +3,17 @@ package io.openvidu.server.common.cache;
 import io.openvidu.server.common.contants.CacheKeyConstants;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/9/12 14:50
  */
 @Slf4j
@@ -20,6 +22,7 @@ public class CacheManageImpl implements CacheManage {
 
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
+
 
     @Override
     public Map getUserInfoByUUID(String uuid) {
@@ -33,20 +36,34 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
+    public String getDeviceStatus(String serialNumber) {
+        return tokenStringTemplate.opsForValue().get(CacheKeyConstants.DEV_PREFIX_KEY + serialNumber);
+    }
+
+    @Override
     public void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum) {
-        if (StringUtils.isEmpty(uuid)) return;
+        if (StringUtils.isEmpty(uuid)) {
+            log.info("###########uuid is null");
+            return;
+        }
         log.info("Update user online status in cache. uuid:{}, updateStatus:{}", uuid, onlineStatusEnum.name());
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid, "status", onlineStatusEnum.name());
     }
 
     @Override
     public void updateReconnectInfo(String userUuid, String privateId) {
+        if (StringUtils.isEmpty(userUuid)) return;
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "reconnect", privateId);
     }
 
     @Override
     public void updateDeviceName(String userUuid, String deviceName) {
+        if (StringUtils.isEmpty(userUuid)) return;
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
+    }
+    public void setDeviceStatus(String serialNumber, String version) {
+        String key = CacheKeyConstants.DEV_PREFIX_KEY + serialNumber;
+        tokenStringTemplate.opsForValue().set(key, version);
     }
 
 }

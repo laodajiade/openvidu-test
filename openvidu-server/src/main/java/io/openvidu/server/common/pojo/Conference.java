@@ -14,6 +14,10 @@ public class Conference {
 
     private String conferenceDesc;
 
+    private Integer conferenceMode;
+
+    private Long userId;
+
     private Date startTime;
 
     private Date endTime;
@@ -25,6 +29,8 @@ public class Conference {
     private String password;
 
     private Integer inviteLimit;
+
+    private String project;
 
     private Date createTime;
 

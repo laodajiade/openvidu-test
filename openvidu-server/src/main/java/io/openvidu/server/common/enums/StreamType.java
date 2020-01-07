@@ -1,7 +1,7 @@
 package io.openvidu.server.common.enums;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/9/20 18:21
  */
 public enum StreamType {
