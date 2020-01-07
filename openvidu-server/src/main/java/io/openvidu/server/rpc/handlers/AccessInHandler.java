@@ -318,10 +318,11 @@ public class AccessInHandler extends RpcAbstractHandler {
                 // maybe can not find participant,because of server is restart
                 log.warn("CAN NOT FIND THE PARTICIPANT, the account:{} previous rpc connect id:{} userId:{} in conferenceId:{} when reconnect",
                         uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
+            } else {
+                params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
+                        part.getParticipantPublicId());
             }
 
-            params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
-                    part.getParticipantPublicId());
 
             Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
             JsonObject notifyObj = new JsonObject();
@@ -355,8 +356,11 @@ public class AccessInHandler extends RpcAbstractHandler {
                                         ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
                             }
 
-                            notificationService.sendNotification(participant.getParticipantPrivateId(),
-                                    ProtocolElements.USER_BREAK_LINE_METHOD, params);
+                            if (params.size() > 0) {
+                                notificationService.sendNotification(participant.getParticipantPrivateId(),
+                                        ProtocolElements.USER_BREAK_LINE_METHOD, params);
+                            }
+
                             if (endRollNotify) {
                                 notificationService.sendNotification(participant.getParticipantPrivateId(),
                                         ProtocolElements.END_ROLL_CALL_METHOD, endRollNotifyObj);
