@@ -17,18 +17,22 @@
 
 package io.openvidu.server.kurento.endpoint;
 
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.kurento.core.CompositeService;
+import io.openvidu.server.kurento.core.KurentoParticipant;
+import org.kurento.client.Continuation;
+import org.kurento.client.MediaElement;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.kurento.core.KurentoParticipant;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Subscriber aspect of the {@link MediaEndpoint}.
@@ -43,19 +47,54 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	private PublisherEndpoint publisher = null;
 
 	public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
-			OpenviduConfig openviduConfig) {
+							  CompositeService compositeService, OpenviduConfig openviduConfig) {
 		super(web, owner, endpointName, pipeline, openviduConfig, log);
+		this.setCompositeService(compositeService);
 	}
 
-	public synchronized String subscribe(String sdpOffer, PublisherEndpoint publisher) {
-		registerOnIceCandidateEventListener(publisher.getOwner().getParticipantPublicId());
+	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
+		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
+				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getParticipantPublicId());
+
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
-		publisher.connect(this.getEndpoint());
+		if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
+		} else {
+			publisher.connect(this.getEndpoint());
+		}
+
 		setConnectedToPublisher(true);
 		setPublisher(publisher);
 		this.createdAt = System.currentTimeMillis();
 		return sdpAnswer;
+	}
+
+	public synchronized String subscribeAudio(PublisherEndpoint publisher) {
+		if (Objects.isNull(publisher)) {
+			log.info("web subscribe all audio mix output. but it is not input.");
+			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.AUDIO);
+		} else {
+			publisher.connectAudioOut(this.getEndpoint());
+		}
+
+		return "";
+	}
+
+	private void internalSinkConnect(final MediaElement source, final MediaElement sink, MediaType mediaType) {
+		source.connect(sink, mediaType, new Continuation<Void>() {
+			@Override
+			public void onSuccess(Void result) throws Exception {
+				log.debug("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
+						source.getId(), sink.getId());
+			}
+
+			@Override
+			public void onError(Throwable cause) throws Exception {
+				log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
+						source.getId(), sink.getId(), cause);
+			}
+		});
 	}
 
 	public boolean isConnectedToPublisher() {

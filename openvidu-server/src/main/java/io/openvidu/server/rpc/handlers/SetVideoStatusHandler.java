@@ -6,6 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantMicStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -39,9 +40,9 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         JsonArray tsArray = new JsonArray();
         if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
             targetIds.forEach(t -> {
-                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> Long.valueOf(t)
-                        .compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData")
-                                .getAsLong()) == 0).findFirst().get();
+                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                        .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                                && !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().get();
                 if (part.isStreaming())
                     part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
                 tsArray.add(t);
@@ -55,10 +56,9 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.SET_VIDEO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_VIDEO_STATUS_PARAM));
 
         sessionManager.getParticipants(sessionId).forEach(participant -> {
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                    ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
-            if ((Objects.isNull(targetIds) || targetIds.isEmpty()) && !sourceId.equals(gson.fromJson(participant.getClientMetadata(),
-                    JsonObject.class).get("clientData").getAsString())) {
+            if (Objects.equals(StreamType.MAJOR, participant.getStreamType()))
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_VIDEO_STATUS_METHOD, params);
+            if ((Objects.isNull(targetIds) || targetIds.isEmpty()) && !sourceId.equals(participant.getUserId())) {
                 KurentoParticipant part = (KurentoParticipant) participant;
                 if (part.isStreaming()) part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
             }

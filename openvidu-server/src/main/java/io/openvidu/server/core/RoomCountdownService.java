@@ -25,6 +25,9 @@ public class RoomCountdownService {
     public void roomCountDown() {
         SessionManager sessionManager = handler.getSessionManager();
         sessionManager.getSessions().forEach(s -> {
+            if (s.getPresetInfo().getRoomDuration() == -1) {
+                return;
+            }
             String sessionId = s.getSessionId();
             long confStartTime = s.getConfStartTime();
             long confEndTime = s.getConfEndTime();

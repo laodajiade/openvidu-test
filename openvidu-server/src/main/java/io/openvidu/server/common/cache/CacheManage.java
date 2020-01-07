@@ -19,4 +19,8 @@ public interface CacheManage {
     void updateReconnectInfo(String userUuid, String privateId);
 
     void updateDeviceName(String userUuid, String deviceName);
+
+    void setDeviceStatus(String key, String version);
+
+    String getDeviceStatus(String serialNumber);
 }

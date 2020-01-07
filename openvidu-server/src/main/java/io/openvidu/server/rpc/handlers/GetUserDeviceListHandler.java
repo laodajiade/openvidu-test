@@ -27,7 +27,6 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         Long orgId = getLongParam(request, ProtocolElements.GET_USER_DEVICE_ORGID_PARAM);
         String localSerialNumber = rpcConnection.getSerialNumber();
-        Long localUserId = rpcConnection.getUserId();
         Map<String, Long> onlineDeviceList = new HashMap<>();
         Map<Long, String> onlineUserList = new HashMap<>();
         for (RpcConnection c : notificationService.getRpcConnections()) {
@@ -55,38 +54,23 @@ public class GetUserDeviceListHandler extends RpcAbstractHandler {
 
                 JsonObject devObj = new JsonObject();
                 devObj.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_NAME_PARAM, device.getDeviceName());
-                devObj.addProperty("appShowName", device.getDeviceName());
-                devObj.addProperty("appShowDesc", "(" + device.getDeviceModel() + ")");
                 if (onlineDeviceList.containsKey(device.getSerialNumber())) {
                     devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.online.name());
-                    devObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, Long.valueOf(onlineDeviceList.get(device.getSerialNumber())));
+                    devObj.addProperty(ProtocolElements.GET_USER_DEVICE_DEVICE_SERIAL_NUMBER_PARAM , Long.valueOf(onlineDeviceList.get(device.getSerialNumber())));
                 } else {
                     devObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, DeviceStatus.offline.name());
+                }
+                for (RpcConnection rpc : notificationService.getRpcConnections()) {
+                    if (device.getSerialNumber().equals(rpc.getSerialNumber())){
+                        devObj.addProperty(ProtocolElements.GET_ACCOUNT_PARAM, rpc.getUserUuid());
+                        break;
+                    }
                 }
 
                 userDevList.add(devObj);
             });
         }
 
-        Collection<Long> loginByDeviceUserList = onlineDeviceList.values();
-        List<User> userList = userManage.getSubUserByDeptId(orgId);
-        if (!CollectionUtils.isEmpty(userList)) {
-            userList.forEach(user -> {
-                // 返回列表中排除自己的用户
-                if (user.getId().equals(localUserId) || loginByDeviceUserList.contains(user.getId()))
-                    return ;
-
-                JsonObject userObj = new JsonObject();
-                userObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_NAME_PARAM, user.getUsername());
-                userObj.addProperty("appShowName", user.getUsername() + " (" + user.getTitle() + ")");
-                userObj.addProperty("appShowDesc", "ID: " + user.getUuid());
-                userObj.addProperty(ProtocolElements.GET_USER_DEVICE_STATUS_PARAM, onlineUserList.containsKey(user.getId()) ?
-                        DeviceStatus.online.name() : DeviceStatus.offline.name());
-                userObj.addProperty(ProtocolElements.GET_USER_DEVICE_USER_ID_PARAM, user.getId());
-
-                userDevList.add(userObj);
-            });
-        }
 
         params.add(ProtocolElements.GET_USER_DEVICE_LIST_PARAM, userDevList);
 

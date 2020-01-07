@@ -17,13 +17,11 @@
 
 package io.openvidu.server.cdr;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import io.openvidu.java.client.OpenViduRole;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.openvidu.java.client.Recording.Status;
@@ -169,6 +167,7 @@ public class CallDetailRecord {
 
 	public void recordNewSubscriber(Participant participant, String sessionId, String streamId, String senderPublicId,
 			Long timestamp) {
+		if (Objects.equals(OpenViduRole.THOR, participant.getRole())) return;
 		CDREventWebrtcConnection publisher = this.publications.get(senderPublicId);
 		CDREventWebrtcConnection subscriber = new CDREventWebrtcConnection(sessionId, streamId, participant,
 				publisher.mediaOptions, senderPublicId, timestamp);

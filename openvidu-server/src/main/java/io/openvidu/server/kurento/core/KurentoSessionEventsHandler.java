@@ -17,8 +17,10 @@
 
 package io.openvidu.server.kurento.core;
 
+import java.util.Objects;
 import java.util.Set;
 
+import io.openvidu.server.common.enums.StreamType;
 import org.kurento.client.IceCandidate;
 
 import com.google.gson.JsonObject;
@@ -48,6 +50,7 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 		JsonObject notifParams = new JsonObject();
 		notifParams.addProperty(ProtocolElements.MEDIAERROR_ERROR_PARAM, description);
 		for (Participant p : participants) {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MEDIAERROR_METHOD,
 					notifParams);
 		}
@@ -66,4 +69,7 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 		return null;
 	}
 
+	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
+		rpcNotificationService.sendNotification(participarntPrivateId, method, param);
+	}
 }

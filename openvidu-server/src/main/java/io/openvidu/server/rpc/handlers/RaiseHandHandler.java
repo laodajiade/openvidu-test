@@ -34,7 +34,8 @@ public class RaiseHandHandler extends RpcAbstractHandler {
         sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.up);
 
         List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
-                .stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+                .stream().filter(participant -> Objects.equals(StreamType.MAJOR, participant.getStreamType()))
+                .map(Participant::getParticipantPrivateId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(notifyClientPrivateIds)) {
             int raiseHandNum = 0;
             for (Participant p : sessionManager.getParticipants(sessionId)) {

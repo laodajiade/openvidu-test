@@ -30,7 +30,6 @@ public class ConfirmApplyForLoginHandler extends RpcAbstractHandler {
             JsonObject param = new JsonObject();
             param.addProperty("loginAllowable", accept);
             notificationService.sendNotification(applicantSessionId, ProtocolElements.RESULT_OF_LOGIN_APPLY_NOTIFY, param);
-
             if (accept) {
                 sessionManager.accessOut(rpcConnection);
             }

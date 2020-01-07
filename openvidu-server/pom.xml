@@ -48,7 +48,7 @@
 	<properties>
 		<!-- Main class -->
 		<start-class>io.openvidu.server.OpenViduServer</start-class>
-		<version.com.geedow.kurento-jsonrpc-server>1.0.1</version.com.geedow.kurento-jsonrpc-server>
+		<version.com.geedow.kurento-jsonrpc-server>1.0.3</version.com.geedow.kurento-jsonrpc-server>
 	</properties>
 
 	<profiles>

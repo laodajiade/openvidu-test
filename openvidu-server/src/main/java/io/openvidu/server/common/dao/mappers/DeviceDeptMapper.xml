@@ -7,6 +7,7 @@
     <result column="dept_id" property="deptId" jdbcType="BIGINT" />
     <result column="corp_id" property="corpId" jdbcType="BIGINT" />
     <result column="project" property="project" jdbcType="VARCHAR" />
+    <result column="device_name"  property="deviceName" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
@@ -21,17 +22,28 @@
   </select>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.DeviceDeptSearch" >
     select
-    <include refid="Base_Column_List" />
-    from sd_device_dept
+    d.id, d.serial_number, d.dept_id, d.corp_id, d.project, d.create_time, d.update_time, v.device_name
+    from sd_device_dept d left join sd_device v on d.serial_number = v.serial_number
     where
     <if test="serialNumber != null" >
-      serial_number = #{serialNumber,jdbcType=VARCHAR}
+      d.serial_number = #{serialNumber,jdbcType=VARCHAR}
     </if>
     <if test="deptId != null" >
       dept_id = #{deptId,jdbcType=BIGINT}
     </if>
   </select>
-
+  <select id="selectByCorpId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select
+    d.id, d.serial_number, d.dept_id, d.corp_id, d.project, d.create_time, d.update_time, v.device_name
+    from sd_device_dept d left join sd_device v on d.serial_number = v.serial_number
+    where
+      corp_id = #{corpId,jdbcType=BIGINT}
+  </select>
+  <select id="selectCorpByOrgId" resultType="java.lang.Long" parameterType="java.lang.Long" >
+    select  corp_id
+    from sd_device_dept
+    where dept_id = #{orgId,jdbcType=BIGINT} LIMIT 1
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_device_dept
     where id = #{id,jdbcType=BIGINT}

@@ -17,17 +17,35 @@
 
 package io.openvidu.server.kurento.kms;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.kurento.client.KurentoClient;
 import org.kurento.commons.exception.KurentoException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FixedOneKmsManager extends KmsManager {
 
 	@Override
 	public List<Kms> initializeKurentoClients(List<String> kmsUris) throws Exception {
-		final String kmsUri = kmsUris.get(0);
+		List<Kms> kmsList = new ArrayList<>(4);
+		for (String kmsUri : kmsUris) {
+			KurentoClient kClient = null;
+			Kms kms = new Kms(kmsUri, loadManager);
+			this.addKms(kms);
+			try {
+				kClient = KurentoClient.create(kmsUri, this.generateKurentoConnectionListener(kms.getId()));
+			} catch (KurentoException e) {
+				log.error("KMS in {} is not reachable by OpenVidu Server", kmsUri);
+				throw new Exception();
+			}
+
+			kms.setKurentoClient(kClient);
+			this.addKms(kms);
+			kmsList.add(kms);
+		}
+
+		return kmsList;
+		/*final String kmsUri = kmsUris.get(0);
 		KurentoClient kClient = null;
 		Kms kms = new Kms(kmsUri, loadManager);
 		this.addKms(kms);
@@ -40,7 +58,7 @@ public class FixedOneKmsManager extends KmsManager {
 
 		kms.setKurentoClient(kClient);
 
-		return Arrays.asList(kms);
+		return Arrays.asList(kms);*/
 	}
 
 }

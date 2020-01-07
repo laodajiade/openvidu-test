@@ -18,12 +18,16 @@
 package io.openvidu.server.kurento.core;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.Continuation;
 import org.kurento.client.ErrorEvent;
@@ -53,6 +57,7 @@ import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.recording.service.RecordingManager;
+import org.springframework.util.StringUtils;
 
 public class KurentoParticipant extends Participant {
 
@@ -70,7 +75,9 @@ public class KurentoParticipant extends Participant {
 	private CountDownLatch publisherLatch = new CountDownLatch(1);
 
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<String, SubscriberEndpoint>();
+	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
+
+	private String publisherStreamId;
 
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
@@ -88,21 +95,25 @@ public class KurentoParticipant extends Participant {
 		setSpeakerStatus(participant.getSpeakerStatus());
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
+		setParticipantName(participant.getParticipantName());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
 		this.session = kurentoSession;
 
-		if (!OpenViduRole.SUBSCRIBER.equals(participant.getRole())) {
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setSharing(Objects.equals(StreamType.SHARING, participant.getStreamType()));
+			this.publisher.setCompositeService(this.session.compositeService);
 		}
 
 		for (Participant other : session.getParticipants()) {
 			if (!other.getParticipantPublicId().equals(this.getParticipantPublicId())
-					&& !OpenViduRole.SUBSCRIBER.equals(other.getRole())) {
+					&& !OpenViduRole.NON_PUBLISH_ROLES.contains(other.getRole())) {
 				// Initialize a SubscriberEndpoint for each other user connected with PUBLISHER
 				// or MODERATOR role
 				getNewOrExistingSubscriber(other.getParticipantPublicId());
@@ -111,26 +122,43 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public void createPublishingEndpoint(MediaOptions mediaOptions) {
-
 		publisher.createEndpoint(publisherLatch);
 		if (getPublisher().getEndpoint() == null) {
 			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
 		}
 		publisher.setMediaOptions(mediaOptions);
 
-		String publisherStreamId = this.getParticipantPublicId() + "_"
-				+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
-				+ RandomStringUtils.random(5, true, false).toUpperCase();
+		String publisherStreamId;
+		if (StringUtils.isEmpty(this.publisherStreamId)) {
+			publisherStreamId = this.getParticipantPublicId() + "_"
+					+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
+					+ RandomStringUtils.random(5, true, false).toUpperCase();
+			this.publisherStreamId = publisherStreamId;
+		} else {
+			publisherStreamId = this.publisherStreamId;
+		}
+
+		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+		    if (Objects.equals(StreamType.SHARING, getStreamType())) {
+                this.session.compositeService.setShareStreamId(publisherStreamId);
+            }
+
+            if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
+                String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
+                        + "_" + "MAJOR-SHARE-MIX";
+                this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+            }
+
+			this.publisher.getMajorShareHubPort().setName(getParticipantName());
+		}
 
 		this.publisher.setEndpointName(publisherStreamId);
 		this.publisher.getEndpoint().setName(publisherStreamId);
 		this.publisher.setStreamId(publisherStreamId);
-
 		endpointConfig.addEndpointListeners(this.publisher, "publisher");
 
 		// Remove streamId from publisher's map
 		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
-
 	}
 
 	public synchronized Filter getFilterElement(String id) {
@@ -192,6 +220,12 @@ public class KurentoParticipant extends Participant {
 				loopbackConnectionType);
 		this.streaming = true;
 
+		// deal part default order in the conference
+		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU) &&
+				!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
+			this.session.dealParticipantDefaultOrder(this);
+		}
+
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);
 		log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
@@ -211,20 +245,24 @@ public class KurentoParticipant extends Participant {
 		log.info("PARTICIPANT {}: unpublishing media stream from room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
 		releasePublisherEndpoint(reason, kmsDisconnectionTime);
-		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(), this.getPipeline(),
-				this.openviduConfig);
+		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+				this.getPipeline(), this.openviduConfig);
 		log.info("PARTICIPANT {}: released publisher endpoint and left it initialized (ready for future streaming)",
 				this.getParticipantPublicId());
 	}
 
-	public String receiveMediaFrom(Participant sender, String sdpOffer) {
-		final String senderName = sender.getParticipantPublicId();
+	public String receiveMediaFrom(Participant sender, StreamModeEnum streamMode, String sdpOffer, String externalSenderName) {
+		String senderName = sender.getParticipantPublicId();
+		if (!StringUtils.isEmpty(externalSenderName)) {
+			senderName = externalSenderName;
+		}
 
 		log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getParticipantPublicId(),
 				senderName, this.session.getSessionId());
 		log.trace("PARTICIPANT {}: SdpOffer for {} is {}", this.getParticipantPublicId(), senderName, sdpOffer);
 
-		if (senderName.equals(this.getParticipantPublicId())) {
+		if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) &&
+				senderName.equals(this.getParticipantPublicId())) {
 			log.warn("PARTICIPANT {}: trying to configure loopback by subscribing", this.getParticipantPublicId());
 			throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE, "Can loopback only when publishing media");
 		}
@@ -280,7 +318,7 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
 		try {
-			String sdpAnswer = subscriber.subscribe(sdpOffer, kSender.getPublisher());
+			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, kSender.getPublisher(), streamMode);
 			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
 			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
 					senderName, this.session.getSessionId());
@@ -288,6 +326,15 @@ public class KurentoParticipant extends Participant {
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(this.getParticipantPublicId())) {
 				endpointConfig.getCdr().recordNewSubscriber(this, this.session.getSessionId(),
 						sender.getPublisherStreamId(), sender.getParticipantPublicId(), subscriber.createdAt());
+			}
+
+			if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU) &&
+                    Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+				if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
+					subscriber.subscribeAudio(this.getPublisher());
+				} else {
+					subscriber.subscribeAudio(null);
+				}
 			}
 
 			return sdpAnswer;
@@ -340,18 +387,22 @@ public class KurentoParticipant extends Participant {
 		}
 		this.subscribers.clear();
 		releasePublisherEndpoint(reason, kmsDisconnectionTime);
+		if (Objects.equals(StreamType.SHARING, getStreamType()) &&
+				!Objects.isNull(session.compositeService.getShareStreamId())) {
+			session.compositeService.setShareStreamId(null);
+		}
 	}
 
 	/**
 	 * Returns a {@link SubscriberEndpoint} for the given participant public id. The
 	 * endpoint is created if not found.
 	 *
-	 * @param remotePublicId id of another user
+	 * @param senderPublicId id of another user
 	 * @return the endpoint instance
 	 */
 	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
-				this.getPipeline(), this.openviduConfig);
+				this.getPipeline(), this.session.compositeService, this.openviduConfig);
 
 		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {
@@ -359,8 +410,7 @@ public class KurentoParticipant extends Participant {
 			log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),
 					senderPublicId);
 		} else {
-			log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(),
-					senderPublicId);
+			log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(), senderPublicId);
 		}
 
 		return subscriberEndpoint;
@@ -403,7 +453,9 @@ public class KurentoParticipant extends Participant {
 
 			for (MediaElement el : publisher.getMediaElements()) {
 				releaseElement(getParticipantPublicId(), el);
+				log.info("Release publisher self mediaElement and object id:{}", el.getId());
 			}
+			publisher.closeAudioComposite();
 			releaseElement(getParticipantPublicId(), publisher.getEndpoint());
 			this.streaming = false;
 			this.session.deregisterPublisher();
@@ -437,7 +489,8 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
-	private void releaseElement(final String senderName, final MediaElement element) {
+	public void releaseElement(final String senderName, final MediaElement element) {
+		if (Objects.isNull(element)) return;
 		final String eid = element.getId();
 		try {
 			element.release(new Continuation<Void>() {
@@ -470,8 +523,17 @@ public class KurentoParticipant extends Participant {
 
 	public void resetPublisherEndpoint() {
 		log.info("Reseting publisher endpoint for participant {}", this.getParticipantPublicId());
-		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
-				this.session.getPipeline(), this.openviduConfig);
+        if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
+            this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+                    this.session.getPipeline(), this.openviduConfig);
+
+            this.publisher.setSharing(Objects.equals(StreamType.SHARING, this.getStreamType()));
+            this.publisher.setCompositeService(this.session.compositeService);
+        }
+	}
+
+	public void notifyClient(String method, JsonObject param) {
+		this.session.notifyClient(this.participantPrivatetId, method, param);
 	}
 
 	@Override

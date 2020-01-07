@@ -2,9 +2,9 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ParticipantShareStatus;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.*;
@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 /**
- * @author chosongi
+ * @author geedow
  * @date 2019/11/5 16:34
  */
 @Slf4j
@@ -35,6 +35,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         Map<Long, String> onlineUserList = new HashMap<>();
         for (RpcConnection c : notificationService.getRpcConnections()) {
+            if (Objects.equals(AccessTypeEnum.web, c.getAccessType())) continue;
             Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
             if (Objects.isNull(userInfo)) continue;
             String status = String.valueOf(userInfo.get("status"));
@@ -44,38 +45,45 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             }
         }
 
-        sessionManager.getParticipants(sessionId).forEach(s -> userIds.add(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()));
+        if (Objects.isNull(sessionManager.getParticipants(sessionId))) {
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+            return;
+        }
+        sessionManager.getParticipants(sessionId).forEach(s -> {
+            if (!Objects.equals(s.getRole(), OpenViduRole.THOR)) {
+                userIds.add(Long.valueOf(s.getUserId()));
+            }
+        });
+
         if (!CollectionUtils.isEmpty(userIds)) {
             List<User> userList = userMapper.selectByPrimaryKeys(userIds);
             userList.forEach(user -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
-                        .compareTo(gson.fromJson(s.getClientMetadata(), JsonObject.class).get("clientData").getAsLong()) == 0 &&
-                        Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().get();
+                        .compareTo(Long.valueOf(s.getUserId())) == 0 && Objects.equals(StreamType.MAJOR, s.getStreamType()) &&
+                        !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().orElse(null);
+                if (Objects.isNull(part)) return;
 
                 // User and dept info.
                 UserDeptSearch udSearch = new UserDeptSearch();
                 udSearch.setUserId(user.getId());
                 UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
-                Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-
-                String shareStatus;
-                try{
-                    sessionManager.getParticipant(sessionId, part.getParticipantPrivateId(), StreamType.SHARING);
-                    shareStatus = ParticipantShareStatus.on.name();
-                } catch (OpenViduException e) {
-                    shareStatus = ParticipantShareStatus.off.name();
+                if (Objects.isNull(userDeptCom)) {
+                    log.warn("GetParticipant userDept is null and privateId:{}, userId:{}",
+                            part.getParticipantPrivateId(), user.getId());
+                    return;
                 }
+                Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
                 JsonObject userObj = new JsonObject();
                 userObj.addProperty("userId", user.getId());
                 userObj.addProperty("account", user.getUsername());
                 userObj.addProperty("userOrgName", userDep.getDeptName());
                 userObj.addProperty("role", part.getRole().name());
-                userObj.addProperty("shareStatus", shareStatus);
+                userObj.addProperty("shareStatus", part.getShareStatus().name());
                 userObj.addProperty("handStatus", part.getHandStatus().name());
                 // 获取发布者时存在同步阻塞的状态
-                userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
-                userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
+                userObj.addProperty("audioActive", !part.isStreaming() || part.getPublisherMediaOptions().isAudioActive());
+                userObj.addProperty("videoActive", !part.isStreaming() || part.getPublisherMediaOptions().isVideoActive());
 
                 // get device info if have device.
                 String serialNumber = onlineUserList.get(user.getId());

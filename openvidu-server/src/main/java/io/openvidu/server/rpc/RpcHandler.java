@@ -21,14 +21,14 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.kurento.core.KurentoParticipant;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -135,16 +135,26 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
 		Participant p = null;
+		RpcConnection rpcConnection;
 
 		// update user online status in cache
-		if (notificationService.getRpcConnection(rpcSessionId) != null) {
+		if ((rpcConnection = notificationService.getRpcConnection(rpcSessionId)) != null) {
+			if (Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
+				sessionManager.accessOut(rpcConnection);
+				return;
+			}
 			cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
 					UserOnlineStatusEnum.offline);
+			if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(rpcConnection.getSerialNumber())) {
+				cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
+			}
 		} else {
 			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
 		}
 		if ("Close for not receive ping from client".equals(status)) {
 			message = "Evicting participant with private id {} because of a network disconnection";
+		} else if ("Connection reset by peer".equals(status)) {
+			message = "Evicting participant with private id {} because of connection reset by peer";
 		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
 			try {
 				p = sessionManager.getParticipant(rpcSession.getSessionId());
@@ -167,8 +177,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
-					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+					// release audio composite
+					KurentoParticipant kp = (KurentoParticipant) participant;
+					if (!Objects.isNull(kp.getPublisher()))
+						kp.getPublisher().closeAudioComposite();
 
+					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
 					// send end roll notify if the offline connection's hand status is speaker
 					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
 					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
@@ -178,7 +192,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, p.getSessionId());
 						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
 						this.sessionManager.getParticipants(p.getSessionId()).forEach(part -> {
-							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId()))
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
+									&& Objects.equals(StreamType.MAJOR, part.getStreamType()))
 								this.notificationService.sendNotification(part.getParticipantPrivateId(),
 										ProtocolElements.END_ROLL_CALL_METHOD, params);
 						});
@@ -198,7 +213,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
 		// update user online status in cache
 		if (rpcSession != null) {
-			if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null)
+			if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null &&
+					Objects.equals(AccessTypeEnum.terminal, notificationService.getRpcConnection(rpcSession.getSessionId()).getAccessType()))
 				cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
 						UserOnlineStatusEnum.offline);
 			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
@@ -232,8 +248,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_INFO_ID_PARAM, sessionId);
 		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_TIME_PARAM, remainTime);
-		sessionManager.getParticipants(sessionId).forEach(p ->
-				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params));
+		sessionManager.getParticipants(sessionId).forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params);});
 	}
 
 
@@ -242,9 +259,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, publicId);
 
 		sessionManager.getParticipants(sessionId).forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
 			RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
 			if (rpc != null) {
-				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())) {
+				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())
+						|| Objects.equals(OpenViduRole.THOR, p.getRole())) {
 					notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
 				}
 			}
@@ -257,8 +276,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 		// 1. notify all participant stop publish and receive stream.
 		// 2. close session but can not disconnect the connection.
-		sessionManager.getSession(sessionId).getParticipants().forEach(p ->
-				notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
+		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
+			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());});
 		this.sessionManager.unpublishAllStream(sessionId, reason);
 		this.sessionManager.closeSession(sessionId, reason);
 	}

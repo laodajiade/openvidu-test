@@ -1,13 +1,12 @@
 package io.openvidu.server.rpc;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
@@ -16,10 +15,13 @@ import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -27,10 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author geedow
@@ -81,6 +80,10 @@ public abstract class RpcAbstractHandler {
     @Resource
     protected DeviceDeptMapper deviceDeptMapper;
 
+    @Resource
+    protected CorporationMapper corporationMapper;
+
+
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);
 
@@ -92,7 +95,7 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsString();
     }
 
-    protected static String getStringOptionalParam(Request<JsonObject> request, String key) {
+    public static String getStringOptionalParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             return null;
         }
@@ -116,18 +119,21 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsLong();
     }
 
-    protected void leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {
+    protected String leaveRoomAfterConnClosed(String participantPrivateId, EndReason reason) {
+        String publicId = null;
         try {
-            sessionManager.evictParticipant(this.sessionManager.getParticipant(participantPrivateId), null, null,
-                    reason);
+            Participant participant = this.sessionManager.getParticipant(participantPrivateId);
+            publicId = Objects.isNull(participant) ? null : participant.getParticipantPublicId();
+            sessionManager.evictParticipant(participant, null, null, reason);
             log.info("Evicted participant with privateId {}", participantPrivateId);
         } catch (OpenViduException e) {
             log.warn("Unable to evict: {}", e.getMessage());
             log.trace("Unable to evict user", e);
         }
+        return publicId;
     }
 
-    protected static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
+    public static Integer getIntOptionalParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             return null;
         }
@@ -164,6 +170,13 @@ public abstract class RpcAbstractHandler {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
                     + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+        }
+        return request.getParams().get(key);
+    }
+
+    public static JsonElement getOptionalParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null) {
+            return null;
         }
         return request.getParams().get(key);
     }
@@ -211,6 +224,43 @@ public abstract class RpcAbstractHandler {
         return false;
     }
 
+    protected JsonArray deviceList(List<DeviceDept> devices) {
+        JsonArray DeviceList = new JsonArray();
+        Map<String, String> onlineDeviceList = new HashMap<>();
+        Map<String, Long> onlineUserIdList = new HashMap<>();
+        for (RpcConnection rpc : notificationService.getRpcConnections()) {
+            if (!StringUtils.isEmpty(rpc.getUserUuid())) {
+                Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
+                if (Objects.isNull(userInfo) || userInfo.isEmpty()) continue;
+                if (Objects.equals(UserOnlineStatusEnum.online.name(), String.valueOf(userInfo.get("status"))) &&
+                        !Objects.isNull(rpc.getSerialNumber())) {
+                    onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
+                    onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
+                }
+                /*if (!Objects.isNull(rpc.getSerialNumber())) {
+                    onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
+                    onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
+                }*/
+            }
+        }
+        for (DeviceDept device : devices) {
+            JsonObject jsonDevice = new JsonObject();
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
+            if (onlineDeviceList.containsKey(device.getSerialNumber())) {
+                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, onlineDeviceList.get(device.getSerialNumber()));
+                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, onlineUserIdList.get(device.getSerialNumber()));
+                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
+            } else {
+                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
+            }
+
+            DeviceList.add(jsonDevice);
+        }
+        return  DeviceList;
+
+    }
+
     protected ErrorCodeEnum cleanSession(String sessionId, String privateId, boolean checkModerator, EndReason reason) {
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
             return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
@@ -220,7 +270,7 @@ public abstract class RpcAbstractHandler {
             return ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED;
         }
 
-        if (checkModerator && sessionManager.getParticipant(sessionId, privateId).getRole() != OpenViduRole.MODERATOR) {
+        if (checkModerator && !OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(sessionId, privateId).getRole())) {
             return ErrorCodeEnum.PERMISSION_LIMITED;
         }
 
@@ -234,7 +284,7 @@ public abstract class RpcAbstractHandler {
 
     protected static boolean isModerator(String role) {
         // TODO. Fixme. user account have moderator power.
-        if (Objects.equals(OpenViduRole.MODERATOR.name(), role)) {
+        if (OpenViduRole.MODERATOR_ROLES.contains(OpenViduRole.valueOf(role))) {
 //		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
             return true;
         }
@@ -242,6 +292,7 @@ public abstract class RpcAbstractHandler {
     }
 
     protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
+        RpcConnection oldRpcConnection = null;
         try {
             Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
             if (Objects.isNull(userInfo)) {
@@ -257,16 +308,27 @@ public abstract class RpcAbstractHandler {
                     return false;
                 }
 
-                RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
+                oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
                 cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
-                leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
-//				accessOut(oldRpcConnection, null);
+                String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
+                // update partLinkedArr and sharing status in conference
+                Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
+                session.evictReconnectOldPart(partPublicId);
+                Participant sharingPart = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
+                        oldPrivateId, StreamType.SHARING);
+                if (!Objects.isNull(sharingPart)) {
+                    session.evictReconnectOldPart(sharingPart.getParticipantPublicId());
+                    KurentoSession kurentoSession = (KurentoSession) session;
+                    kurentoSession.compositeService.setShareStreamId(null);
+                    kurentoSession.compositeService.setExistSharing(false);
+                }
                 sessionManager.accessOut(oldRpcConnection);
                 return true;
             }
         } catch (Exception e) {
             log.warn("exception:{}", e);
+            sessionManager.accessOut(oldRpcConnection);
             return false;
         }
 
@@ -344,5 +406,11 @@ public abstract class RpcAbstractHandler {
     protected boolean userIsStreamOwner(String sessionId, Participant participant, String streamId) {
         return participant.getParticipantPrivateId()
                 .equals(this.sessionManager.getParticipantPrivateIdFromStreamId(sessionId, streamId));
+    }
+
+    protected  RpcConnection lookingDevice(RpcConnection rpcConnection, String connectionId){
+        io.openvidu.server.core.Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
+        Participant participant = session.getParticipantByPublicId(connectionId);
+        return notificationService.getRpcConnection(participant.getParticipantPrivateId());
     }
 }

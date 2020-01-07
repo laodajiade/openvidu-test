@@ -19,4 +19,6 @@ public interface ConferenceMapper {
     int updateByPrimaryKey(Conference record);
 
     List<Conference> selectBySearchCondition(ConferenceSearch search);
+
+    List<Conference> selectUnclosedConference(Conference conference);
 }

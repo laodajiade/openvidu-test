@@ -45,6 +45,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -94,6 +95,7 @@ public class KurentoSessionManager extends SessionManager {
 				log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
 				kSession = createSession(sessionNotActive, lessLoadedKms);
 				kSession.setConference(conference);
+				kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
 				kSession.setPresetInfo(getPresetInfo(sessionId));
 			}
 
@@ -161,19 +163,13 @@ public class KurentoSessionManager extends SessionManager {
 		session.leaveRoom(participant, reason);
 
 		// Update control data structures
-
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-//			log.info("before remove size:{}", sessionidParticipantpublicidParticipant.get(sessionId).size());
 			Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
 					.remove(participant.getParticipantPublicId());
-//			log.info("after remove size:{}", sessionidParticipantpublicidParticipant.get(sessionId).size());
 			if (this.coturnCredentialsService.isCoturnAvailable()) {
 //				this.coturnCredentialsService.deleteUser(p.getToken().getTurnCredentials().getUsername());
 			}
 
-			/*if (sessionidTokenTokenobj.get(sessionId) != null) {
-				sessionidTokenTokenobj.get(sessionId).remove(p.getToken().getToken());
-			}*/
 			boolean stillParticipant = false;
 			for (Session s : sessions.values()) {
 				if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
@@ -186,12 +182,8 @@ public class KurentoSessionManager extends SessionManager {
 			}
 		}
 
-		// record share status.
-		if (StreamType.SHARING.equals(participant.getStreamType())) {
-			participant.setShareStatus(ParticipantShareStatus.off);
-			Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
-			majorPart.setShareStatus(ParticipantShareStatus.off);
-		}
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
+			changeSharingStatusInConference(session, participant);
 
 		// Close Session if no more participants
 		Set<Participant> remainingParticipants = null;
@@ -248,12 +240,29 @@ public class KurentoSessionManager extends SessionManager {
 		return sessionClosedByLastParticipant;
 	}
 
+    @Override
+    public void changeSharingStatusInConference(KurentoSession session, Participant participant) {
+		// change composite and sharing publisher share status
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		if (!Objects.isNull(kParticipant.getPublisher()))
+			kParticipant.getPublisher().setSharing(false);
+		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            session.compositeService.setExistSharing(false);
+            session.compositeService.setShareStreamId(null);
+        }
+		// record share status.
+		participant.setShareStatus(ParticipantShareStatus.off);
+		Participant majorPart = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.MAJOR);
+		if (!Objects.isNull(majorPart))
+			majorPart.setShareStatus(ParticipantShareStatus.off);
+	}
+
 	@Override
 	public void accessOut(RpcConnection rpcConnection) {
 		// update user online status in cache
 //		cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
-		cacheManage.updateDeviceName(rpcConnection.getUserUuid(), "");
-
+		if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()))
+			cacheManage.updateDeviceName(rpcConnection.getUserUuid(), "");
 		sessionEventsHandler.closeRpcSession(rpcConnection.getParticipantPrivateId());
 	}
 
@@ -372,6 +381,7 @@ public class KurentoSessionManager extends SessionManager {
 					kParticipant.getPublisher().createdAt(), kSession.getSessionId(), mediaOptions, sdpAnswer,
 					participants, transactionId, null);
 		}
+		kParticipant.getPublisher().gatherCandidates();
 	}
 
 	@Override
@@ -388,8 +398,8 @@ public class KurentoSessionManager extends SessionManager {
 								+ "in session {} but user is not streaming media",
 						moderator != null ? moderator.getParticipantPublicId() : participant.getParticipantPublicId(),
 						participant.getParticipantPublicId(), session.getSessionId());
-				throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
-						"Participant '" + participant.getParticipantPublicId() + "' is not streaming media");
+				/*throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
+						"Participant '" + participant.getParticipantPublicId() + "' is not streaming media");*/
 			}
 			kParticipant.unpublishMedia(reason, 0);
 			session.cancelPublisher(participant, reason);
@@ -405,7 +415,7 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
-	public void subscribe(Participant participant, String senderName, String sdpOffer, Integer transactionId) {
+	public void subscribe(Participant participant, String senderName, StreamModeEnum streamMode, String sdpOffer, Integer transactionId) {
 		String sdpAnswer = null;
 		Session session = null;
 		try {
@@ -414,17 +424,40 @@ public class KurentoSessionManager extends SessionManager {
 
 			KurentoParticipant kParticipant = (KurentoParticipant) participant;
 			session = ((KurentoParticipant) participant).getSession();
-			Participant senderParticipant = session.getParticipantByPublicId(senderName);
+			/*Participant senderParticipant = !Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
+					session.getParticipantByPublicId(senderName) : participant;*/
+			Participant senderParticipant;
+			if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+				senderParticipant = session.getParticipantByPublicId(senderName);
+            } else {
+				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+					senderParticipant = participant;
+				} else {
+					senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
+							part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+							Objects.equals(StreamType.MAJOR, part.getStreamType())).findFirst().orElse(null);
+					if (senderParticipant == null) {
+						log.info("Not found the same account login terminal cause the delay of inviting parts.");
+						Thread.sleep(3600);
+						if (Objects.isNull(getSession(participant.getSessionId()))) return;
+						senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
+								part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
+										Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);
+					}
+				}
+			}
 
 			if (senderParticipant == null) {
 				log.warn(
 						"PARTICIPANT {}: Requesting to recv media from user {} "
 								+ "in session {} but user could not be found",
 						participant.getParticipantPublicId(), senderName, session.getSessionId());
-				throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-						"User '" + senderName + " not found in session '" + session.getSessionId() + "'");
+				sessionEventsHandler.sendSuccessResp(participant.getParticipantPrivateId(), transactionId);
+				return;
+				/*throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+						"User '" + senderName + " not found in session '" + session.getSessionId() + "'");*/
 			}
-			if (!senderParticipant.isStreaming()) {
+			if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
 				log.warn(
 						"PARTICIPANT {}: Requesting to recv media from user {} "
 								+ "in session {} but user is not streaming media",
@@ -433,7 +466,7 @@ public class KurentoSessionManager extends SessionManager {
 						"User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
 			}
 
-			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, sdpOffer);
+			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
 			if (sdpAnswer == null) {
 				throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 						"Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()
@@ -442,6 +475,9 @@ public class KurentoSessionManager extends SessionManager {
 		} catch (OpenViduException e) {
 			log.error("PARTICIPANT {}: Error subscribing to {}", participant.getParticipantPublicId(), senderName, e);
 			sessionEventsHandler.onSubscribe(participant, session, null, transactionId, e);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			log.error("Exception:", e);
 		}
 		if (sdpAnswer != null) {
 			sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, transactionId, null);
@@ -453,7 +489,8 @@ public class KurentoSessionManager extends SessionManager {
 		log.debug("Request [UNSUBSCRIBE] remoteParticipant={} ({})", senderName, participant.getParticipantPublicId());
 
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
-		Session session = ((KurentoParticipant) participant).getSession();
+		// modify by chosongi to fit the server mcu
+		/*Session session = ((KurentoParticipant) participant).getSession();
 		Participant sender = session.getParticipantByPublicId(senderName);
 
 		if (sender == null) {
@@ -463,7 +500,7 @@ public class KurentoSessionManager extends SessionManager {
 					participant.getParticipantPublicId(), senderName, session.getSessionId());
 			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
 					"User " + senderName + " not found in session " + session.getSessionId());
-		}
+		}*/
 
 		kParticipant.cancelReceivingMedia(senderName, EndReason.unsubscribe);
 
@@ -605,9 +642,10 @@ public class KurentoSessionManager extends SessionManager {
 		try {
 			audioActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
 			videoActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
-			typeOfVideo = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
-			videoDimensions = RpcAbstractHandler.getStringParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);
-			frameRate = RpcAbstractHandler.getIntParam(request, ProtocolElements.PUBLISHVIDEO_FRAMERATE_PARAM);
+			typeOfVideo = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
+			if (Objects.isNull(typeOfVideo)) typeOfVideo = "CAMERA";
+			videoDimensions = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);
+			frameRate = RpcAbstractHandler.getIntOptionalParam(request, ProtocolElements.PUBLISHVIDEO_FRAMERATE_PARAM);
 		} catch (RuntimeException noParameterFound) {
 			log.error("Exception:{}\n", noParameterFound);
 		}
@@ -638,18 +676,40 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public boolean unpublishStream(Session session, String streamId, Participant moderator, Integer transactionId,
 			EndReason reason) {
-		String participantPrivateId = ((KurentoSession) session).getParticipantPrivateIdFromStreamId(streamId);
+		boolean result = false;
+		KurentoSession kSession = (KurentoSession) session;
+		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
+		String moderatorPublicId = null, speakerId = null;
+		Set<Participant> participants = session.getParticipants();
+		for (Participant participant : participants) {
+			if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
+					Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				moderatorPublicId = participant.getParticipantPublicId();
+			}
+			if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+				speakerId = participant.getParticipantPublicId();
+				break;
+			}
+		}
+		/*String moderatePublicId = session.getParticipants().stream().filter(participant ->
+                Objects.equals(OpenViduRole.MODERATOR, participant.getRole())).findAny().get().getParticipantPublicId();*/
 		if (participantPrivateId != null) {
-			Participant participant = this.getParticipant(participantPrivateId);
+			Participant participant = this.getParticipant(participantPrivateId, StreamType.SHARING);
 			if (participant != null) {
 				this.unpublishVideo(participant, moderator, transactionId, reason);
-				return true;
-			} else {
-				return false;
+				if (Objects.equals(kSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+                    // change conference layout and notify kms
+                    session.leaveRoomSetLayout(participant, Objects.equals(speakerId, participant.getParticipantPublicId())
+                            ? moderatorPublicId : speakerId);
+                    session.invokeKmsConferenceLayout();
+                }
+				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
+					changeSharingStatusInConference(kSession, participant);
+
+				result = true;
 			}
-		} else {
-			return false;
 		}
+		return result;
 	}
 
 	@Override

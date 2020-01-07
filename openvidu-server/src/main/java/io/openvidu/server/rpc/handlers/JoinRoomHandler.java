@@ -2,9 +2,8 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantJoinType;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -82,22 +81,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
-                // check preset and set share power in room info. for example: sharePower.
-//		if (Objects.equals(streamType, StreamType.SHARING.name())) {
-//			Participant p = sessionManager.getParticipant(rpcConnection.getParticipantPrivateId());
-//			if (Objects.isNull(p) || ParticipantSharePowerStatus.off.equals(p.getSharePowerStatus())) {
-//				this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
-//						null, ErrorCodeEnum.PERMISSION_LIMITED);
-//				return ;
-//			}
-//		}
                 // remove previous participant if reconnect
                 updateReconnectInfo(rpcConnection);
                 GeoLocation location = null;
                 boolean recorder = false;
 
                 // verify room capacity limit.
-                if (!Objects.isNull(sessionManager.getSession(sessionId))) {
+                if (!Objects.isNull(sessionManager.getSession(sessionId)) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
                     Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
                     if (Objects.equals(StreamType.MAJOR.name(), streamType) && majorParts.size() >= preset.getRoomCapacity()) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
@@ -126,6 +116,20 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
+                // change participant role if web THOR invite the same user
+                if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
+                    JsonObject clientMetadataObj = gson.fromJson(clientMetadata, JsonObject.class);
+                    Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
+                            part.getRole())).findFirst().orElse(null);
+                    if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsString()) &&
+                            !Objects.equals(OpenViduRole.THOR.name(), role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
+                        role = OpenViduRole.MODERATOR.name();
+                        clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
+                        clientMetadata = clientMetadataObj.toString();
+                        log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
+                    }
+                }
+
                 Participant participant;
                 if (generateRecorderParticipant) {
                     participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
@@ -135,10 +139,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())));
                 }
 
-                String serialNumber = rpcConnection.getSerialNumber();
                 Long userId = rpcConnection.getUserId();
+                String serialNumber = rpcConnection.getSerialNumber();
+                String participantName = sessionId + "_" + rpcConnection.getUserUuid() + "_" + streamType;
                 participant.setPreset(preset);
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
+                participant.setParticipantName(participantName);
                 if (StringUtils.isEmpty(serialNumber)) {
                     User user = userMapper.selectByPrimaryKey(userId);
 
@@ -178,6 +184,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     sessionManager.cleanCacheCollections(sessionId);
                     cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), false, EndReason.forceCloseSessionByUser);
                 }
+            } else {
+                if (!Objects.isNull(rpcConnection.getSerialNumber()) ) {
+                    cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
+                }
             }
         } catch (Exception e) {
             log.error("Unknown error e:{}", e);
@@ -186,4 +196,5 @@ public class JoinRoomHandler extends RpcAbstractHandler {
             }
         }
     }
+
 }

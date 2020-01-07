@@ -2,9 +2,13 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -28,16 +32,71 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
-        participants.stream().filter(part ->
-                targetId.equals(gson.fromJson(part.getClientMetadata(), JsonObject.class).get("clientData").getAsString())
-                        && Objects.equals(part.getStreamType(), StreamType.MAJOR))
-                .findFirst().get().setHandStatus(ParticipantHandStatus.speaker);
+        Participant moderatorPart = participants.stream().filter(participant -> Objects.equals(sourceId,
+                participant.getUserId()) && Objects.equals(StreamType.MAJOR, participant.getStreamType()) &&
+                !Objects.equals(OpenViduRole.THOR, participant.getRole())).findFirst().orElse(null);
+        /*boolean permitted = !Objects.isNull(moderatorPart) && OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
+        if (!permitted) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }*/
 
         int raiseHandNum = 0;
-        for (Participant p : participants) {
-            if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && p.getHandStatus() == ParticipantHandStatus.up) {
-                ++raiseHandNum;
+        String sourceConnectionId;
+        String targetConnectionId;
+        Participant existSpeakerPart = null;
+        Participant targetPart = null;
+        for (Participant participant : participants) {
+            if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+                    existSpeakerPart = participant;
+                }
+                if (participant.getUserId().equals(targetId)) {
+                    targetPart = participant;
+                }
+                if (Objects.equals(participant.getHandStatus(), ParticipantHandStatus.up)) {
+                    raiseHandNum++;
+                }
             }
+        }
+
+        assert targetPart != null;
+        targetPart.setHandStatus(ParticipantHandStatus.speaker);
+        targetConnectionId = targetPart.getParticipantPublicId();
+        Session conferenceSession = sessionManager.getSession(sessionId);
+        if (Objects.isNull(existSpeakerPart)) {
+            // switch layout with moderator
+            assert moderatorPart != null;
+            sourceConnectionId = moderatorPart.getParticipantPublicId();
+            if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
+                JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+                if (!firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+                    sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+                } else {
+                    sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+                }
+
+            }
+        } else {
+            // switch layout with current speaker participant
+            sourceConnectionId = existSpeakerPart.getParticipantPublicId();
+            // change current speaker part status and send notify
+            existSpeakerPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUserId());
+            params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+            sendEndRollCallNotify(participants, params);
+        }
+
+        boolean isMcu;
+        if (isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            // change conference layout
+            conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+            // json RPC notify KMS layout changed.
+            conferenceSession.invokeKmsConferenceLayout();
         }
 
         JsonObject params = new JsonObject();
@@ -45,9 +104,27 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
         params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetId);
         params.addProperty(ProtocolElements.SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
-        participants.forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params));
+
+        // broadcast the changes of layout
+        participants.forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                return;
+            }
+            // SetRollCall notify
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
+            if (isMcu) {
+                // broadcast the changes of layout
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+            }
+        });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
+
+    private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params) {
+        participants.forEach(participant -> this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                ProtocolElements.END_ROLL_CALL_METHOD, params));
+    }
+
 }
