@@ -181,6 +181,7 @@ public class ProtocolElements {
 	public static final String GETROOMLAYOUT_MODE_PARAM = "mode";
 	public static final String GETROOMLAYOUT_TYPE_PARAM = "type";
 	public static final String GETROOMLAYOUT_LAYOUT_PARAM = "layout";
+	public static final String GETROOMLAYOUT_MODERATOR_INDEX_PARAM_PARAM = "moderatorIndex";
 
 	public static final String BROADCASTMAJORLAYOUT_METHOD = "broadcastMajorLayout";
 	public static final String BROADCASTMAJORLAYOUT_MODE_PARAM = "mode";

@@ -70,6 +70,7 @@ public class Session implements SessionInterface {
 	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.ONE);
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
+	protected int moderatorIndex = -1;
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean notifyCountdown10Min = false;
@@ -181,7 +182,21 @@ public class Session implements SessionInterface {
 		this.layoutInfo = layoutInfo;
 	}
 
-	public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
+    public int getModeratorIndex() {
+        return moderatorIndex;
+    }
+
+    public void setModeratorIndex(String moderatorPublicId) {
+        int length = layoutInfo.size();
+        for (int i = 0; i < length; i++) {
+            if (layoutInfo.get(i).getAsString().equals(moderatorPublicId)) {
+                this.moderatorIndex = i;
+                break;
+            }
+        }
+    }
+
+    public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
 
 	public int incDelayConfCnt() { return this.delayConfCnt++; }
 
@@ -593,8 +608,8 @@ public class Session implements SessionInterface {
 		} else {
 			for (JsonElement element : layoutInfo) {
 				if (Objects.equals(element.getAsString(), partPublicId)) {
-					layoutInfo.remove(element);
-					break;
+                    layoutInfo.remove(element);
+                    break;
 				}
 			}
 			if (!Objects.isNull(layoutInfo) && layoutInfo.size() > 0) {

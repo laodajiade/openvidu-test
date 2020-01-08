@@ -40,6 +40,9 @@ public class GetRoomLayoutHandler extends RpcAbstractHandler {
         jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODE_PARAM, layoutModeEnum.getMode());
         jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_TYPE_PARAM, conferenceSession.getLayoutChangeTypeEnum().name());
         jsonObject.add(ProtocolElements.GETROOMLAYOUT_LAYOUT_PARAM, layoutInfo);
+        if (conferenceSession.getModeratorIndex() > 0) {
+            jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODERATOR_INDEX_PARAM_PARAM, conferenceSession.getModeratorIndex());
+        }
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }

@@ -308,9 +308,15 @@ public abstract class RpcAbstractHandler {
                 oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
                 cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
+                Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
+                Participant participant = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
+                        oldPrivateId, StreamType.MAJOR);
+                if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()) && Objects.equals(OpenViduRole.MODERATOR,
+                        participant.getRole()) && Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                    sessionManager.getSession(participant.getSessionId()).setModeratorIndex(participant.getParticipantPublicId());
+                }
                 String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
                 // update partLinkedArr and sharing status in conference
-                Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
                 session.evictReconnectOldPart(partPublicId);
                 Participant sharingPart = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
                         oldPrivateId, StreamType.SHARING);
@@ -320,7 +326,8 @@ public abstract class RpcAbstractHandler {
                     kurentoSession.compositeService.setShareStreamId(null);
                     kurentoSession.compositeService.setExistSharing(false);
                     if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()))
-                        sessionManager.evictParticipant(sharingPart, null, null, EndReason.sessionClosedByServer);
+                        sessionManager.evictParticipant(sharingPart, null, null,
+                                EndReason.sessionClosedByServer);
                 }
                 sessionManager.accessOut(oldRpcConnection);
                 return true;
