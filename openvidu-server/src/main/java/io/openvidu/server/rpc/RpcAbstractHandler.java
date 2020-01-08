@@ -6,10 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
-import io.openvidu.server.common.enums.DeviceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.DeviceManage;
 import io.openvidu.server.common.manage.UserManage;
@@ -322,6 +319,8 @@ public abstract class RpcAbstractHandler {
                     KurentoSession kurentoSession = (KurentoSession) session;
                     kurentoSession.compositeService.setShareStreamId(null);
                     kurentoSession.compositeService.setExistSharing(false);
+                    if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()))
+                        sessionManager.evictParticipant(sharingPart, null, null, EndReason.sessionClosedByServer);
                 }
                 sessionManager.accessOut(oldRpcConnection);
                 return true;

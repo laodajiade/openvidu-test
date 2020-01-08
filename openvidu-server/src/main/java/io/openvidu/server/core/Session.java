@@ -576,19 +576,33 @@ public class Session implements SessionInterface {
 
 	public synchronized void evictReconnectOldPart(String partPublicId) {
     	if (StringUtils.isEmpty(partPublicId)) return;
-		for (JsonElement element : majorShareMixLinkedArr) {
-			JsonObject jsonObject = element.getAsJsonObject();
-			if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
-				majorShareMixLinkedArr.remove(element);
-				if (Objects.equals(StreamType.SHARING.name(), jsonObject.get("streamType").getAsString()) && automatically
-                        && !Objects.equals(LayoutModeEnum.ONE, layoutMode) && majorShareMixLinkedArr.size() < layoutMode.getMode()) {
-                    switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
-                }
-				break;
+    	if (Objects.equals(ConferenceModeEnum.MCU, getConferenceMode())) {
+			for (JsonElement element : majorShareMixLinkedArr) {
+				JsonObject jsonObject = element.getAsJsonObject();
+				if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
+					majorShareMixLinkedArr.remove(element);
+					if (Objects.equals(StreamType.SHARING.name(), jsonObject.get("streamType").getAsString()) && automatically
+							&& !Objects.equals(LayoutModeEnum.ONE, layoutMode) && majorShareMixLinkedArr.size() < layoutMode.getMode()) {
+						switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
+					}
+					break;
+				}
 			}
-		}
 
-		log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+			log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+		} else {
+			for (JsonElement element : layoutInfo) {
+				if (Objects.equals(element.getAsString(), partPublicId)) {
+					layoutInfo.remove(element);
+					break;
+				}
+			}
+			if (!Objects.isNull(layoutInfo) && layoutInfo.size() > 0) {
+				setLayoutMode(LayoutModeEnum.getLayoutMode(layoutInfo.size()));
+			}
+
+			log.info("evictReconnectOldPart layoutInfo:{}", layoutInfo.toString());
+		}
 	}
 
 	public JsonArray getCurrentPartInMcuLayout() {
