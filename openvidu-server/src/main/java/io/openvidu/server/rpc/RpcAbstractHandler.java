@@ -229,7 +229,7 @@ public abstract class RpcAbstractHandler {
             if (!StringUtils.isEmpty(rpc.getUserUuid())) {
                 Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
                 if (Objects.isNull(userInfo) || userInfo.isEmpty()) continue;
-                if (Objects.equals(UserOnlineStatusEnum.online.name(), String.valueOf(userInfo.get("status"))) &&
+                if (!Objects.equals(UserOnlineStatusEnum.offline.name(), String.valueOf(userInfo.get("status"))) &&
                         !Objects.isNull(rpc.getSerialNumber())) {
                     onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
                     onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
