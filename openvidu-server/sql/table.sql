@@ -293,4 +293,20 @@ CREATE TABLE `sd_user_role` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+
+DROP TABLE IF EXISTS `sd_application`;
+CREATE TABLE `sd_application` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `app_name` varchar(256) NOT NULL COMMENT '应用名称',
+  `access_key` varchar(128) NOT NULL COMMENT '应用AK',
+  `secret_key` varchar(128) NOT NULL COMMENT '应用SK',
+  `conference_mode` tinyint(2) unsigned DEFAULT '1' COMMENT '会议模式（0：SFU，1：MCU）',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_ak` (`access_key`) USING BTREE,
+  KEY `index_project` (`project`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='应用表';
+
 -- Dump completed on 2019-11-01 22:21:46
