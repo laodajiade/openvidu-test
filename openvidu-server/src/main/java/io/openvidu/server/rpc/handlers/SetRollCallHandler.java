@@ -123,8 +123,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
     }
 
     private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params) {
-        participants.forEach(participant -> this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                ProtocolElements.END_ROLL_CALL_METHOD, params));
+        participants.forEach(participant -> {
+            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                return;
+            }
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
+        });
     }
 
 }
