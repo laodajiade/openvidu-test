@@ -402,7 +402,14 @@ public class Session implements SessionInterface {
 
 	public synchronized void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
     	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
-    		if (automatically && layoutMode.ordinal() < (LayoutModeEnum.values().length - 1)) {
+    		boolean notContains = true;
+    		for (JsonElement jsonElement : majorShareMixLinkedArr) {
+    			if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(kurentoParticipant.getParticipantPublicId())) {
+    				notContains = false;
+    				break;
+				}
+			}
+    		if (notContains && automatically && layoutMode.ordinal() < (LayoutModeEnum.values().length - 1)) {
 				// switch layout mode automatically
 				switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() + 1]);
 			}
