@@ -14,6 +14,7 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -28,8 +29,12 @@ import java.util.Objects;
 @Service
 public class AccessInHandler extends RpcAbstractHandler {
 
+    @Value("${request.expired-duration}")
+    private long reqExpiredDuration;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        Long clientTimestamp = getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM);
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
@@ -40,6 +45,13 @@ public class AccessInHandler extends RpcAbstractHandler {
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
 //        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        if (Math.abs(clientTimestamp - System.currentTimeMillis()) > reqExpiredDuration) {
+            JsonObject errResp = new JsonObject();
+            errResp.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
+                    request.getId(), errResp, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+            return;
+        }
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
