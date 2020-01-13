@@ -49,7 +49,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             JsonObject errResp = new JsonObject();
             errResp.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                    request.getId(), errResp, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+                    request.getId(), errResp, ErrorCodeEnum.REQUEST_EXPIRED);
             return;
         }
 

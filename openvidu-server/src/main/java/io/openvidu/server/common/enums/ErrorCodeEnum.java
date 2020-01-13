@@ -40,6 +40,7 @@ public enum ErrorCodeEnum {
     DEVICE_BUSY(13101,"device busy");*/
 
     SUCCESS(0, "成功"),
+    REQUEST_EXPIRED(10002, "request expired"),
     REQUEST_PARAMS_ERROR(10006, "请求参数错误"),
 
     SERVER_UNKNOWN_ERROR(11000, "未知错误"),
