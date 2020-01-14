@@ -172,8 +172,8 @@ CREATE TABLE `sd_industry` (
 
 LOCK TABLES `sd_industry` WRITE;
 /*!40000 ALTER TABLE `sd_industry` DISABLE KEYS */;
-INSERT INTO `sd_industry` VALUES (101, 'Customer', now(), now());
-INSERT INTO `sd_industry` VALUES (102, 'Business', now(), now());
+INSERT INTO `sd_industry` VALUES (1, 'Business', now(), now());
+INSERT INTO `sd_industry` VALUES (2, 'Customer', now(), now());
 /*!40000 ALTER TABLE `sd_industry` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -308,5 +308,18 @@ CREATE TABLE `sd_application` (
   UNIQUE KEY `unique_ak` (`access_key`) USING BTREE,
   KEY `index_project` (`project`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='应用表';
+
+DROP TABLE IF EXISTS `sd_user_dev`;
+CREATE TABLE `sd_user_dev` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `user_id` bigint(11) unsigned NOT NULL COMMENT '用户ID',
+  `serial_number` varchar(128) NOT NULL COMMENT '设备序列号',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_device` (`serial_number`) USING BTREE,
+  KEY `index_user` (`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户设备关联表';
 
 -- Dump completed on 2019-11-01 22:21:46
