@@ -24,7 +24,7 @@ public class StringUtil {
     public static String createSessionId() {
         StringBuffer sb = new StringBuffer();
         sb.append("2");
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 10; i++) {
             sb.append(chars[random.nextInt(9)]);
         }
         return sb.toString();
