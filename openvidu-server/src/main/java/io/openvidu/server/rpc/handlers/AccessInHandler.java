@@ -79,6 +79,14 @@ public class AccessInHandler extends RpcAbstractHandler {
                 errCode = ErrorCodeEnum.TOKEN_INVALID;
                 break;
             }
+
+            if (userInfo.containsKey("serialNumber") && !Objects.equals(deviceSerialNumber, userInfo.get("serialNumber"))) {
+                log.error("account:{} related device:{} and SN in request params is :{}", uuid,
+                        userInfo.get("serialNumber"), deviceSerialNumber);
+                errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
+                break;
+            }
+
             accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
             rpcConnection.setMacAddr(deviceMac);
             rpcConnection.setUserId(accessInUserId);
