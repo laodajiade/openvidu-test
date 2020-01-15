@@ -464,6 +464,7 @@ public class ProtocolElements {
 	public static final String GET_GROUP_INFO_DEVIDE_NAME_PARAM = "deviceName";
     public static final String GET_GROUP_INFO_SERIAL_NUMBER_PARAM = "serialNumber";
 	public static final String GET_GROUP_INFO_ACCOUNT_PARAM = "account";
+    public static final String GET_GROUP_INFO_USERID_PARAM = "userId";
 	public static final String GET_GROUP_INFO_DEVICE_STATUS_PARAM = "deviceStatus";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,

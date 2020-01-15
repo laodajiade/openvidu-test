@@ -51,6 +51,7 @@ public class GetGroupInfoHandler extends RpcAbstractHandler {
             object.addProperty(ProtocolElements.GET_GROUP_INFO_DEVIDE_NAME_PARAM, deviceName);
             object.addProperty(ProtocolElements.GET_GROUP_INFO_SERIAL_NUMBER_PARAM, deviceSerialNumber);
             object.addProperty(ProtocolElements.GET_GROUP_INFO_ACCOUNT_PARAM, user.getUuid());
+            object.addProperty(ProtocolElements.GET_GROUP_INFO_USERID_PARAM, user.getId());
             object.addProperty(ProtocolElements.GET_GROUP_INFO_DEVICE_STATUS_PARAM, deviceStatus);
             array.add(object);
         }
