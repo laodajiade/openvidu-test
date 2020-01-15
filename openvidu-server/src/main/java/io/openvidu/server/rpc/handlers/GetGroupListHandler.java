@@ -36,7 +36,7 @@ public class GetGroupListHandler extends RpcAbstractHandler {
         for (int i = 0; i < userGroupList.size(); i++) {
             JsonObject object = new JsonObject();
             UserGroup userGroup = userGroupList.get(i);
-            Group group = groupMapper.selectByPrimaryKey(userGroup.getId());
+            Group group = groupMapper.selectByPrimaryKey(userGroup.getGroupId());
 
             object.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPID_PARAM, userGroup.getGroupId());
             object.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPNAME_PARAM, group.getGroupName());
