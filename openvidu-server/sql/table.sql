@@ -322,4 +322,30 @@ CREATE TABLE `sd_user_dev` (
   KEY `index_user` (`user_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户设备关联表';
 
+DROP TABLE IF EXISTS `sd_group`;
+CREATE TABLE `sd_group` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `group_name` varchar(128) NOT NULL COMMENT '群组名称',
+  `corp_id` bigint(11) unsigned NOT NULL COMMENT '企业ID',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `index_corp_id` (`corp_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='群组表';
+
+DROP TABLE IF EXISTS `sd_user_group`;
+CREATE TABLE `sd_user_group` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `user_id` bigint(11) unsigned NOT NULL COMMENT '用户ID',
+  `group_id` bigint(11) unsigned NOT NULL COMMENT '群组ID',
+  `project` varchar(128) DEFAULT 'Base' COMMENT '项目属性',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `unique_user_group` (`user_id`,`group_id`) USING BTREE,
+  KEY `index_group` (`group_id`) USING BTREE,
+  KEY `index_project` (`project`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='用户群组关联表';
+
 -- Dump completed on 2019-11-01 22:21:46
