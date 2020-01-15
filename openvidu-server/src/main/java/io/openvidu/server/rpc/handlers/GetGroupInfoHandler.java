@@ -36,6 +36,7 @@ public class GetGroupInfoHandler extends RpcAbstractHandler {
             UserGroup userGroup = userGroups.get(i);
             String deviceName = "TODO.NotImplment";
             String deviceStatus = "offline";
+            String deviceSerialNumber = "TODO.NotImplment";
 
             User user = userMapper.selectByPrimaryKey(userGroup.getUserId());
             UserDevice userDevSearch = new UserDevice();
@@ -45,8 +46,10 @@ public class GetGroupInfoHandler extends RpcAbstractHandler {
             devSearch.setSerialNumber(userDevice.getSerialNumber());
             Device device = deviceMapper.selectBySearchCondition(devSearch);
             deviceName = device.getDeviceName();
+            deviceSerialNumber = device.getSerialNumber();
             deviceStatus = cacheManage.getDeviceStatus(device.getSerialNumber());
             object.addProperty(ProtocolElements.GET_GROUP_INFO_DEVIDE_NAME_PARAM, deviceName);
+            object.addProperty(ProtocolElements.GET_GROUP_INFO_SERIAL_NUMBER_PARAM, deviceSerialNumber);
             object.addProperty(ProtocolElements.GET_GROUP_INFO_ACCOUNT_PARAM, user.getUuid());
             object.addProperty(ProtocolElements.GET_GROUP_INFO_DEVICE_STATUS_PARAM, deviceStatus);
             array.add(object);
