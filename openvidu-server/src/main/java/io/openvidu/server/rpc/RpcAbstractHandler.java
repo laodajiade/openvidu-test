@@ -80,6 +80,15 @@ public abstract class RpcAbstractHandler {
     @Resource
     protected CorporationMapper corporationMapper;
 
+    @Resource
+    protected GroupMapper groupMapper;
+
+    @Resource
+    protected UserGroupMapper userGroupMapper;
+
+    @Resource
+    protected UserDeviceMapper userDeviceMapper;
+
 
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);

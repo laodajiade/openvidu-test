@@ -452,6 +452,19 @@ public class ProtocolElements {
 
 	public static  final  String  ADJUST_RESOLUTION_NOTIFY_METHOD = "adjustResolutionNotify";
 
+	public static final String GET_GROUP_LIST_METHOD = "getGroupList";
+	public static final String GET_GROUP_LIST_USERID_PARAM = "userId";
+	public static final String GET_GROUP_LIST_GROUPLIST_PARAM = "groupList";
+	public static final String GET_GROUP_LIST_GROUPID_PARAM = "groupId";
+	public static final String GET_GROUP_LIST_GROUPNAME_PARAM = "groupName";
+
+	public static final String GET_GROUP_INFO_METHOD = "getGroupInfo";
+	public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupId";
+	public static final String GET_GROUP_INFO_GROUPINFO_PARAM = "groupInfo";
+	public static final String GET_GROUP_INFO_DEVIDE_NAME_PARAM = "deviceName";
+	public static final String GET_GROUP_INFO_ACCOUNT_PARAM = "account";
+	public static final String GET_GROUP_INFO_DEVICE_STATUS_PARAM = "deviceStatus";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,
