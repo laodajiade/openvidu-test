@@ -147,7 +147,7 @@ public class ProtocolElements {
 
 	// ---------------------------- add by chosongi at 2019-09-12
 	public static final String ACCESS_IN_METHOD = "accessIn";
-	public static final String ACCESS_IN_UUID_PARAM = "userId";
+	public static final String ACCESS_IN_UUID_PARAM = "account";
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";

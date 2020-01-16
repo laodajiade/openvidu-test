@@ -34,7 +34,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Long clientTimestamp = getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM);
+        long clientTimestamp = getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM);
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
