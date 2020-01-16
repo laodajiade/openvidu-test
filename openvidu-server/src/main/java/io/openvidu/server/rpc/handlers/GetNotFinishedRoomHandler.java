@@ -45,6 +45,10 @@ public class GetNotFinishedRoomHandler extends RpcAbstractHandler {
         }
 
         RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
+        if (Objects.isNull(oldRpcConnection)) {
+            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
+            return;
+        }
         try {
             Participant participant = sessionManager.getParticipant(oldRpcConnection.getParticipantPrivateId());
             if (!Objects.isNull(participant)) {
