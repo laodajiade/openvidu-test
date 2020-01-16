@@ -328,7 +328,8 @@ public class AccessInHandler extends RpcAbstractHandler {
             rpcConnection.setSessionId(conferenceId);
             if (StringUtils.isEmpty(conferenceId)) {
                 log.info("the account:{} previous rpc connect id:{} not in conference when reconnect", uuid, previousRpcConnectId);
-                return ;
+                notificationService.closeRpcSession(previousRpcConnectId);
+                return;
             }
 
             // Send user break line notify
@@ -336,8 +337,10 @@ public class AccessInHandler extends RpcAbstractHandler {
             Participant part = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.MAJOR);
             if (part == null) {
                 // maybe can not find participant,because of server is restart
-                log.warn("CAN NOT FIND THE PARTICIPANT, the account:{} previous rpc connect id:{} userId:{} in conferenceId:{} when reconnect",
-                        uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
+                log.warn("CAN NOT FIND THE PARTICIPANT, the account:{} previous rpc connect id:{} userId:{} in conferenceId:{} " +
+                                "when reconnect and then close it.", uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
+                notificationService.closeRpcSession(previousRpcConnectId);
+                return;
             } else {
                 params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
                         part.getParticipantPublicId());
