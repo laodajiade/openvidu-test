@@ -299,6 +299,7 @@ public abstract class RpcAbstractHandler {
 
     protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
         RpcConnection oldRpcConnection = null;
+        String oldPrivateId = null;
         try {
             Session session;
             Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
@@ -309,7 +310,7 @@ public abstract class RpcAbstractHandler {
 
             if (Objects.equals(UserOnlineStatusEnum.reconnect.name(), userInfo.get("status"))) {
                 log.info("reconnect userId:{} mac:{}", rpcConnection.getUserId(), rpcConnection.getMacAddr());
-                String oldPrivateId = String.valueOf(userInfo.get("reconnect"));
+                oldPrivateId = String.valueOf(userInfo.get("reconnect"));
                 if (StringUtils.isEmpty(oldPrivateId)) {
                     log.warn("reconnect privateId:{}", oldPrivateId);
                     return false;
@@ -348,7 +349,8 @@ public abstract class RpcAbstractHandler {
             }
         } catch (Exception e) {
             log.warn("exception:{}", e);
-            sessionManager.accessOut(oldRpcConnection);
+            if (!StringUtils.isEmpty(oldPrivateId))
+                notificationService.closeRpcSession(oldPrivateId);
             return false;
         }
 
