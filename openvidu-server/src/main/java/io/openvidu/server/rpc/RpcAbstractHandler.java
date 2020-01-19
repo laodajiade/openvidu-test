@@ -300,11 +300,7 @@ public abstract class RpcAbstractHandler {
     protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
         RpcConnection oldRpcConnection = null;
         try {
-            Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
-            if (Objects.isNull(session)) {
-                notificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
-                return false;
-            }
+            Session session;
             Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
             if (Objects.isNull(userInfo)) {
                 log.warn("user:{} info is null.", rpcConnection.getUserUuid());
@@ -322,6 +318,11 @@ public abstract class RpcAbstractHandler {
                 oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
                 cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
+                if (StringUtils.isEmpty(rpcConnection.getSessionId()) || Objects.isNull(session =
+                        this.sessionManager.getSession(rpcConnection.getSessionId()))) {
+                    notificationService.closeRpcSession(oldPrivateId);
+                    return false;
+                }
                 Participant participant = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
                         oldPrivateId, StreamType.MAJOR);
                 if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()) && Objects.equals(OpenViduRole.MODERATOR,
