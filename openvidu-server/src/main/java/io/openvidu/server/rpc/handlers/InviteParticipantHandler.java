@@ -68,7 +68,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, sourceId);
-        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, username);
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, StringUtils.isEmpty(username) ? "" : username);
         if (!StringUtils.isEmpty(deviceName)) {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
         }
