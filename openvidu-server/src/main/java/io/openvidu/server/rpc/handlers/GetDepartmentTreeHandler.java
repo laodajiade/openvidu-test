@@ -54,12 +54,13 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
         }
 
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
+        deptList = !CollectionUtils.isEmpty(deptList) ? deptList.stream().filter(s -> !Objects.isNull(s.getParentId())
+                && s.getOrgId().compareTo(rootDept.getId()) != 0).collect(Collectors.toList()) : null;
         DepartmentTree rootDeptTree = DepartmentTree.builder().orgId(rootDept.getId()).parentId(rootDept.getParentId())
                 .organizationName(rootDept.getDeptName()).build();
 
-        JsonObject object = !CollectionUtils.isEmpty(deptList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
-                deptList.stream().filter(s -> !Objects.isNull(s.getParentId()) && s.getOrgId().compareTo(rootDept.getId()) != 0).collect(Collectors.toList()))
-                .getTree().get(0)).getAsJsonObject()
+        JsonObject object = !CollectionUtils.isEmpty(deptList) ?
+                gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree), deptList).getTree().get(0)).getAsJsonObject()
                 : gson.toJsonTree(rootDeptTree).getAsJsonObject();
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);

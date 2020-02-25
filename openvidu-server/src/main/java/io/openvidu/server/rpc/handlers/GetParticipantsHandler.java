@@ -76,7 +76,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
                 JsonObject userObj = new JsonObject();
                 userObj.addProperty("userId", user.getId());
-                userObj.addProperty("account", user.getUsername());
+                userObj.addProperty("account", user.getUuid());
+                userObj.addProperty("username", user.getUsername());
                 userObj.addProperty("userOrgName", userDep.getDeptName());
                 userObj.addProperty("role", part.getRole().name());
                 userObj.addProperty("shareStatus", part.getShareStatus().name());
