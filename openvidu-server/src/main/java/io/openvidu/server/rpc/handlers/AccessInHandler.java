@@ -34,7 +34,6 @@ public class AccessInHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        long clientTimestamp = getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM);
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
@@ -45,18 +44,20 @@ public class AccessInHandler extends RpcAbstractHandler {
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
 //        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
-        if (Math.abs(clientTimestamp - System.currentTimeMillis()) > reqExpiredDuration) {
-            JsonObject errResp = new JsonObject();
-            errResp.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                    request.getId(), errResp, ErrorCodeEnum.REQUEST_EXPIRED);
-            return;
-        }
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
             rpcConnection.setAccessType(AccessTypeEnum.valueOf(accessType));
             webLogin = Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web);
+            if (!webLogin) {
+                if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
+                    JsonObject errResp = new JsonObject();
+                    errResp.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
+                    this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
+                            request.getId(), errResp, ErrorCodeEnum.REQUEST_EXPIRED);
+                    return;
+                }
+            }
         }
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
@@ -80,7 +81,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 break;
             }
 
-            if (userInfo.containsKey("serialNumber") && !Objects.equals(deviceSerialNumber, userInfo.get("serialNumber"))) {
+            if (!webLogin && userInfo.containsKey("serialNumber") && !Objects.equals(deviceSerialNumber, userInfo.get("serialNumber"))) {
                 log.error("account:{} related device:{} and SN in request params is :{}", uuid,
                         userInfo.get("serialNumber"), deviceSerialNumber);
                 errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
