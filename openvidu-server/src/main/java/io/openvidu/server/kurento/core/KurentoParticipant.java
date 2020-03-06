@@ -85,7 +85,7 @@ public class KurentoParticipant extends Participant {
 			RecordingManager recordingManager) {
 		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
-				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt());
+				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility());
 		setMicStatus(participant.getMicStatus());
 		setVideoStatus(participant.getVideoStatus());
 		setSharePowerStatus(participant.getSharePowerStatus());
@@ -97,7 +97,6 @@ public class KurentoParticipant extends Participant {
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
 		setParticipantName(participant.getParticipantName());
-		setAbility(participant.getAbility());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
@@ -229,7 +228,7 @@ public class KurentoParticipant extends Participant {
 					participant.getStreamType().equals(StreamType.MAJOR) && participant.getRole().equals(OpenViduRole.MODERATOR))
 					.findAny().orElse(null);
 			if (!(Objects.equals(getStreamType(), StreamType.SHARING)
-					&& !Objects.isNull(moderatePart)
+					&& !Objects.isNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 					&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY))) {
 				this.session.dealParticipantDefaultOrder(this);
 			}

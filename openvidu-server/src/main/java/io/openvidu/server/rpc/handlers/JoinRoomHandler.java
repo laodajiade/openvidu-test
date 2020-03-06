@@ -135,8 +135,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
                 } else {
                     participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
-                            role, streamType, location, platform,
-                            participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())));
+                            role, streamType, location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility());
                 }
 
                 Long userId = rpcConnection.getUserId();

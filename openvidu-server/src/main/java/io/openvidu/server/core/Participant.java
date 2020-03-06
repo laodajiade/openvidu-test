@@ -61,7 +61,7 @@ public class Participant {
     protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
-					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt) {
+					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
@@ -84,6 +84,7 @@ public class Participant {
 		this.speakerStatus = ParticipantSpeakerStatus.on;
 		this.shareStatus = ParticipantShareStatus.off;
 		this.joinType = ParticipantJoinType.active;
+		this.ability = ability;
 	}
 
 	public String getFinalUserId() {
