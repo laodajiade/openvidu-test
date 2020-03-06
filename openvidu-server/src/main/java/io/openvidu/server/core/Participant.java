@@ -55,6 +55,7 @@ public class Participant {
 	protected ParticipantShareStatus shareStatus;
 	protected SessionPreset preset;
 	protected ParticipantJoinType joinType;
+	private String ability;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -195,6 +196,14 @@ public class Participant {
 	public void setJoinType(ParticipantJoinType joinType) { this.joinType = joinType; }
 
 	public ParticipantJoinType getJoinType() { return this.joinType; }
+
+	public String getAbility() {
+		return ability;
+	}
+
+	public void setAbility(String ability) {
+		this.ability = ability;
+	}
 
 	public void setPreset(SessionPreset preset) { this.preset = preset; }
 

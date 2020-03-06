@@ -1,16 +1,14 @@
 package io.openvidu.server.common.cache;
 
-import io.openvidu.server.common.contants.CacheKeyConstants;
+import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author geedow

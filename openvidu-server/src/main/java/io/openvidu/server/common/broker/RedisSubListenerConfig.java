@@ -1,6 +1,6 @@
 package io.openvidu.server.common.broker;
 
-import io.openvidu.server.common.contants.BrokerChannelConstans;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

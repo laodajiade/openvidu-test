@@ -1,4 +1,4 @@
-package io.openvidu.server.common.contants;
+package io.openvidu.server.common.constants;
 
 import io.openvidu.server.common.enums.StreamType;
 

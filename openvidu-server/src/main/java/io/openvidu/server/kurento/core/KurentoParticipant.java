@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
@@ -96,6 +97,7 @@ public class KurentoParticipant extends Participant {
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
 		setParticipantName(participant.getParticipantName());
+		setAbility(participant.getAbility());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
@@ -223,7 +225,14 @@ public class KurentoParticipant extends Participant {
 		// deal part default order in the conference
 		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU) &&
 				!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
-			this.session.dealParticipantDefaultOrder(this);
+			Participant moderatePart = session.getParticipants().stream().filter(participant ->
+					participant.getStreamType().equals(StreamType.MAJOR) && participant.getRole().equals(OpenViduRole.MODERATOR))
+					.findAny().orElse(null);
+			if (!(Objects.equals(getStreamType(), StreamType.SHARING)
+					&& !Objects.isNull(moderatePart)
+					&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY))) {
+				this.session.dealParticipantDefaultOrder(this);
+			}
 		}
 
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);

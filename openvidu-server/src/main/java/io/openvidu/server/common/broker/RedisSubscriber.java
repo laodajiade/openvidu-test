@@ -2,7 +2,7 @@ package io.openvidu.server.common.broker;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.openvidu.server.common.contants.BrokerChannelConstans;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.extern.slf4j.Slf4j;
