@@ -87,10 +87,10 @@ public class SessionEventsHandler {
 			return;
 		}
 		Session session = sessionManager.getSession(sessionId);
-		int layoutMode = session.getLayoutMode().getMode();
+//		int layoutMode = session.getLayoutMode().getMode();
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
-		int index = 0;
+//		int index = 0;
 		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
 
@@ -173,7 +173,7 @@ public class SessionEventsHandler {
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
 						kParticipant.getPublisherMediaOptions().hasVideo);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
-						index < layoutMode);
+						kParticipant.isMixIncluded());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM,
 						kParticipant.getPublisherMediaOptions().videoActive);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM,
@@ -195,7 +195,7 @@ public class SessionEventsHandler {
 				streamsArray.add(stream);
 				participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
 			}
-			index++;
+//			index++;
 
 			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
 			// openvidu-browser in newly joined participants
@@ -285,7 +285,7 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
-        Session session = sessionManager.getSession(sessionId);
+        /*Session session = sessionManager.getSession(sessionId);
 		JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
         int index = 0;
 		for (JsonElement jsonElement : majorShareMixLinkedArr) {
@@ -294,7 +294,7 @@ public class SessionEventsHandler {
                 break;
             }
             index++;
-        }
+        }*/
 
 		JsonObject result = new JsonObject();
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM, sdpAnswer);
@@ -314,7 +314,7 @@ public class SessionEventsHandler {
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, createdAt);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);
-		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM, index < session.getLayoutMode().getMode());
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM, participant.isMixIncluded());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_AUDIOACTIVE_PARAM, mediaOptions.audioActive);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_VIDEOACTIVE_PARAM, mediaOptions.videoActive);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_TYPEOFVIDEO_PARAM, mediaOptions.typeOfVideo);

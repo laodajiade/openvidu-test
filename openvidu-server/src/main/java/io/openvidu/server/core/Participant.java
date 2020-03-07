@@ -56,6 +56,7 @@ public class Participant {
 	protected SessionPreset preset;
 	protected ParticipantJoinType joinType;
 	private String ability;
+	private boolean mixIncluded;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -206,7 +207,15 @@ public class Participant {
 		this.ability = ability;
 	}
 
-	public void setPreset(SessionPreset preset) { this.preset = preset; }
+    public boolean isMixIncluded() {
+        return mixIncluded;
+    }
+
+    public void setMixIncluded(boolean mixIncluded) {
+        this.mixIncluded = mixIncluded;
+    }
+
+    public void setPreset(SessionPreset preset) { this.preset = preset; }
 
 	public SessionPreset getPreset() { return this.preset; }
 

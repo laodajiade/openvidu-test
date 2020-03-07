@@ -97,6 +97,7 @@ public class KurentoParticipant extends Participant {
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
 		setParticipantName(participant.getParticipantName());
+		setMixIncluded(participant.isMixIncluded());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
@@ -230,6 +231,7 @@ public class KurentoParticipant extends Participant {
 			if (!(Objects.equals(getStreamType(), StreamType.SHARING)
 					&& !Objects.isNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 					&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY))) {
+				this.setMixIncluded(true);
 				this.session.dealParticipantDefaultOrder(this);
 			}
 		}
