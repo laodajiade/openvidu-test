@@ -162,6 +162,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                                 Objects.equals(OpenViduRole.THOR, participant.getRole())).findAny().orElse(null);
                         if (!Objects.isNull(thorPart)) {
                             if (!forceLogin) {
+                                log.info("1####thorPart privateId:{}, role:{}, userId:{}", thorPart.getParticipantPrivateId(), thorPart.getRole().name(), thorPart.getUserId());
                                 errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
                             } else {
                                 // send remote login notify to current terminal
@@ -178,6 +179,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                             && Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
                     if (!Objects.isNull(currLoginThorConnect)) {
                         if (!forceLogin) {
+                            log.info("2####currLoginThorConnect privateId:{}, uuid:{}, accessType:{}", currLoginThorConnect.getParticipantPrivateId(), currLoginThorConnect.getUserUuid(), currLoginThorConnect.getAccessType().name());
                             errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
                         } else {
                             notificationService.sendNotification(currLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
