@@ -18,6 +18,7 @@
 package io.openvidu.server.core;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.gson.JsonObject;
 
@@ -55,4 +56,5 @@ public interface SessionInterface {
 
 	Long getStartTime();
 
+    ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId);
 }

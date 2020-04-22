@@ -203,6 +203,9 @@ public class RpcHandlerFactory {
     @Resource
     private GetGroupInfoHandler getGroupInfoHandler;
 
+    @Resource
+    private UploadTerminalInfoHandler uploadTerminalInfoHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
@@ -266,6 +269,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.UPLOADSHARECASTPLAYSTRATEGY_METHOD,            uploadShareCastPlayStrategyHandler);
         handlersMap.put(ProtocolElements.GET_GROUP_LIST_METHOD,                         getGroupListHandler);
         handlersMap.put(ProtocolElements.GET_GROUP_INFO_METHOD,                         getGroupInfoHandler);
+        handlersMap.put(ProtocolElements.UPLOADTERMINALINFO_METHOD,                     uploadTerminalInfoHandler);
 
     }
 

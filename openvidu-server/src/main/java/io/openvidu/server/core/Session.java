@@ -264,6 +264,11 @@ public class Session implements SessionInterface {
         return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
     }
 
+	@Override
+	public ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId) {
+		return participants.get(participantPrivateId);
+	}
+
     public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
         checkClosed();
 
