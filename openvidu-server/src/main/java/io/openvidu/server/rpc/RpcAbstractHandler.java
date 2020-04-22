@@ -165,6 +165,16 @@ public abstract class RpcAbstractHandler {
         return values;
     }
 
+    protected static List<Long> getLongListParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
+            return null;
+        }
+
+        List<Long> values = new ArrayList<>();
+        request.getParams().get(key).getAsJsonArray().forEach(s -> values.add(s.getAsLong()));
+        return values;
+    }
+
     public static int getIntParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("RMBER");

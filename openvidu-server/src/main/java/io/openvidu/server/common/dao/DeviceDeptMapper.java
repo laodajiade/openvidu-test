@@ -24,4 +24,6 @@ public interface DeviceDeptMapper {
     List<DeviceDept> selectByCorpId(Long corp);
 
     Long selectCorpByOrgId(Long orgId);
+
+    List<DeviceDept> selectByDeptIds(List<Long> targetIds);
 }
