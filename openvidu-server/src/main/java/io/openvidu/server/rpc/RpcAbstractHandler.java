@@ -242,30 +242,14 @@ public abstract class RpcAbstractHandler {
 
     protected JsonArray deviceList(List<DeviceDept> devices) {
         JsonArray DeviceList = new JsonArray();
-        Map<String, String> onlineDeviceList = new HashMap<>();
-        Map<String, Long> onlineUserIdList = new HashMap<>();
-        for (RpcConnection rpc : notificationService.getRpcConnections()) {
-            if (!StringUtils.isEmpty(rpc.getUserUuid())) {
-                Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
-                if (Objects.isNull(userInfo) || userInfo.isEmpty()) continue;
-                if (!Objects.equals(UserOnlineStatusEnum.offline.name(), String.valueOf(userInfo.get("status"))) &&
-                        !Objects.isNull(rpc.getSerialNumber())) {
-                    onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
-                    onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
-                }
-                /*if (!Objects.isNull(rpc.getSerialNumber())) {
-                    onlineDeviceList.put(rpc.getSerialNumber(), rpc.getUserUuid());
-                    onlineUserIdList.put(rpc.getSerialNumber(), rpc.getUserId());
-                }*/
-            }
-        }
         for (DeviceDept device : devices) {
             JsonObject jsonDevice = new JsonObject();
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, device.getUuid());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, device.getUserId());
-            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM,
+                    cacheManage.getDeviceStatus(device.getSerialNumber()));
 
             DeviceList.add(jsonDevice);
         }
