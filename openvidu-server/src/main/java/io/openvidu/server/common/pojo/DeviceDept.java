@@ -22,4 +22,8 @@ public class DeviceDept {
 
     private String deviceName;
 
+    private Long userId;
+
+    private String uuid;
+
 }

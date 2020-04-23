@@ -32,6 +32,8 @@ public class UploadTerminalInfoHandler extends RpcAbstractHandler {
             return;
         }
 
+        rpcConnection.setAbility(ability);
+
         Session session;
         if (!StringUtils.isEmpty(rpcConnection.getSessionId()) &&
                 Objects.nonNull(session = sessionManager.getSession(rpcConnection.getSessionId()))) {

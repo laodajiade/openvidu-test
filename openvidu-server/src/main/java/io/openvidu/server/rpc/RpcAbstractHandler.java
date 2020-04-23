@@ -263,13 +263,11 @@ public abstract class RpcAbstractHandler {
             JsonObject jsonDevice = new JsonObject();
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
-            if (onlineDeviceList.containsKey(device.getSerialNumber())) {
-                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, onlineDeviceList.get(device.getSerialNumber()));
-                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, onlineUserIdList.get(device.getSerialNumber()));
-                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, cacheManage.getDeviceStatus(device.getSerialNumber()));
-            } else {
-                jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
-            }
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, device.getUuid());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, device.getUserId());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, onlineDeviceList.containsKey(device.getSerialNumber()) ?
+                    cacheManage.getDeviceStatus(device.getSerialNumber()) : DeviceStatus.offline.toString());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM, DeviceStatus.offline.toString());
 
             DeviceList.add(jsonDevice);
         }
