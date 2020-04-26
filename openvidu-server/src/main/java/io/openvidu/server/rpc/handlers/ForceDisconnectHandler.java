@@ -44,17 +44,23 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
             String speakerId = null;
             Set<Participant> participants = sessionManager.getParticipants(rpcConnection.getSessionId());
             if (Objects.equals(ParticipantHandStatus.speaker, evictPart.getHandStatus())) {
+                JsonObject params = new JsonObject();
+                params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, rpcConnection.getSessionId());
+                params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, evictPart.getUserId());
+
                 for (Participant participant1 : participants) {
                     if (Objects.equals(StreamType.MAJOR, participant1.getStreamType())) {
                         if (participant1.getRole().equals(OpenViduRole.MODERATOR))
                             moderatePublicId = participant1.getParticipantPublicId();
                         if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
                             speakerId = participant1.getParticipantPublicId();
+
+                        this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
+                                ProtocolElements.END_ROLL_CALL_METHOD, params);
                     }
                 }
             }
 
-            sessionManager.evictParticipant(evictPart, participant, request.getId(), EndReason.forceDisconnectByUser);
             Participant sharePart = session.getPartByPrivateIdAndStreamType(evictPart.getParticipantPrivateId(), StreamType.SHARING);
             if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
                 session.leaveRoomSetLayout(evictPart, !Objects.equals(speakerId, evictPart.getParticipantPublicId()) ?
