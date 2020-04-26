@@ -54,11 +54,20 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
                 }
             }
 
+            sessionManager.evictParticipant(evictPart, participant, request.getId(), EndReason.forceDisconnectByUser);
+            Participant sharePart = session.getPartByPrivateIdAndStreamType(evictPart.getParticipantPrivateId(), StreamType.SHARING);
             if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
                 session.leaveRoomSetLayout(evictPart, !Objects.equals(speakerId, evictPart.getParticipantPublicId()) ?
                         speakerId : moderatePublicId);
                 // json RPC notify KMS layout changed.
                 session.invokeKmsConferenceLayout();
+
+                if (Objects.nonNull(sharePart)) {
+                    session.leaveRoomSetLayout(sharePart, !Objects.equals(speakerId, sharePart.getParticipantPublicId()) ?
+                            speakerId : moderatePublicId);
+                    // json RPC notify KMS layout changed.
+                    session.invokeKmsConferenceLayout();
+                }
 
                 for (Participant participant1 : participants) {
                     if (Objects.equals(StreamType.MAJOR, participant1.getStreamType())) {
@@ -68,13 +77,16 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
                 }
             }
 
+
+            sessionManager.evictParticipant(evictPart, participant, request.getId(), EndReason.forceDisconnectByUser);
+            if (Objects.nonNull(sharePart)) {
+                sessionManager.evictParticipant(sharePart, null, null, EndReason.forceDisconnectByUser);
+            }
+
             RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
             if (!Objects.isNull(evictRpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, evictPart.getStreamType())) {
                 cacheManage.setDeviceStatus(evictRpcConnection.getSerialNumber(), DeviceStatus.online.name());
             }
-
-            sessionManager.evictParticipant(evictPart, participant, request.getId(), EndReason.forceDisconnectByUser);
-
         } else {
             log.error("Error: participant {} is not a moderator", participant.getParticipantPublicId());
             throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,
