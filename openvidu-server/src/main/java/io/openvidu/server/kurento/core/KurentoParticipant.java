@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import com.google.gson.JsonElement;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamModeEnum;
@@ -97,7 +98,6 @@ public class KurentoParticipant extends Participant {
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
 		setParticipantName(participant.getParticipantName());
-		setMixIncluded(participant.isMixIncluded());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
@@ -231,7 +231,6 @@ public class KurentoParticipant extends Participant {
 			if (!(Objects.equals(getStreamType(), StreamType.SHARING)
 					&& !Objects.isNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 					&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY))) {
-				this.setMixIncluded(true);
 				this.session.dealParticipantDefaultOrder(this);
 			}
 		}
@@ -570,6 +569,16 @@ public class KurentoParticipant extends Participant {
 		json.add("publishers", publisherEnpoints);
 		json.add("subscribers", subscriberEndpoints);
 		return json;
+	}
+
+	public boolean isMixIncluded() {
+		JsonArray mixArr = session.getMajorShareMixLinkedArr();
+		for (JsonElement jsonElement : mixArr) {
+			if (getParticipantPublicId().equals(jsonElement.getAsJsonObject().get("connectionId").getAsString())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
