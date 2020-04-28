@@ -179,10 +179,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 					// release audio composite
 					KurentoParticipant kp = (KurentoParticipant) participant;
-					if (!Objects.isNull(kp.getPublisher()))
+					if (!Objects.isNull(kp.getPublisher())) {
 						kp.getPublisher().closeAudioComposite();
-
+					}
 					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+
+					// notify if exists share part
+					Participant sharePart = session.getPartByPrivateIdAndStreamType(rpc.getParticipantPrivateId(), StreamType.SHARING);
+					if (Objects.nonNull(sharePart)) {
+						notifyUserBreakLine(session.getSessionId(), sharePart.getParticipantPublicId());
+					}
+
 					// send end roll notify if the offline connection's hand status is speaker
 					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
 					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
