@@ -502,10 +502,14 @@ public abstract class SessionManager {
 	 */
 	@PreDestroy
 	public void close() {
-		log.info("Closing all sessions and update user online status");
+		log.info("Closing all sessions and update user/device online status");
 		notificationService.getRpcConnections().forEach(rpcConnection -> {
-			if (!Objects.isNull(rpcConnection.getUserUuid()))
+			if (!Objects.isNull(rpcConnection.getUserUuid())) {
 				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+			}
+			if (Objects.nonNull(rpcConnection.getSerialNumber())) {
+				cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
+			}
 		});
 
 		for (String sessionId : sessions.keySet()) {
