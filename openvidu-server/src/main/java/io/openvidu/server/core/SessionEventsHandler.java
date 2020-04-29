@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -145,8 +144,10 @@ public class SessionEventsHandler {
 						UserOnlineStatusEnum.offline.name());
 			} else {
 				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
-				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, Objects.isNull(userInfo) ?
-						UserOnlineStatusEnum.offline.name() : String.valueOf(userInfo.get("status")));
+				String status = Objects.isNull(userInfo) ? UserOnlineStatusEnum.offline.name() :
+						UserOnlineStatusEnum.offline.name().equals(String.valueOf(userInfo.get("status"))) ?
+								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
+				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
 				if (!Objects.isNull(rpc.getTerminalConfig()))
                 	participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());

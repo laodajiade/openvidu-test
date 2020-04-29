@@ -28,6 +28,7 @@ import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.TempCompensateForReconnect;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -62,6 +63,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
     @Autowired
     AuthorizationManage authorizationManage;
+
+    @Resource
+    TempCompensateForReconnect compensateForReconnect;
 
 	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
 
@@ -183,11 +187,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 						kp.getPublisher().closeAudioComposite();
 					}
 					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
+                    compensateForReconnect.addReconnectCheck(session, participant);
 
 					// notify if exists share part
 					Participant sharePart = session.getPartByPrivateIdAndStreamType(rpc.getParticipantPrivateId(), StreamType.SHARING);
 					if (Objects.nonNull(sharePart)) {
 						notifyUserBreakLine(session.getSessionId(), sharePart.getParticipantPublicId());
+                        compensateForReconnect.addReconnectCheck(session, sharePart);
 					}
 
 					// send end roll notify if the offline connection's hand status is speaker
