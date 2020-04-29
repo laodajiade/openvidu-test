@@ -108,10 +108,10 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     userObj.addProperty("deviceName", device.getDeviceName());
                     userObj.addProperty("deviceOrgName", devDep.getDeptName());
                     userObj.addProperty("appShowName", device.getDeviceName());
-                    userObj.addProperty("appShowDesc", "(" + device.getDeviceModel() + ") " + devDep.getDeptName());
+                    userObj.addProperty("appShowDesc", devDep.getDeptName());
                 } else {
                     userObj.addProperty("appShowName", user.getUsername());
-                    userObj.addProperty("appShowDesc", "(" + user.getTitle() + ") " + userDep.getDeptName());
+                    userObj.addProperty("appShowDesc", userDep.getDeptName());
                 }
 
                 jsonArray.add(userObj);
