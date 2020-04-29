@@ -210,6 +210,14 @@ public class AccessInHandler extends RpcAbstractHandler {
                 reconnect = true;
                 rpcConnection.setReconnected(true);
                 cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
+                /*if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
+                    Session session = sessionManager.getSession(previousRpc.getSessionId());
+                    Participant participant;
+                    if (Objects.nonNull(session) && Objects.nonNull(previousRpc.getUserId())
+                            && Objects.nonNull(participant = session.getParticipantByUserId(String.valueOf(previousRpc.getUserId())))) {
+                        cacheManage.updateReconnectInfo(uuid, participant.getParticipantPrivateId());
+                    }
+                }*/
                 rpcConnection.setUserUuid(uuid);
                 previousRpc.setUserUuid(null);
                 log.info("the account:{} now reconnect.", uuid);
