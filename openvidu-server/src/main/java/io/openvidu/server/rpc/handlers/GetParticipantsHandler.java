@@ -5,10 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -18,9 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author geedow
@@ -36,7 +35,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         JsonArray jsonArray = new JsonArray();
         List<Long> userIds = new ArrayList<>();
 
-        Map<Long, String> onlineUserList = new HashMap<>();
+       /* Map<Long, String> onlineUserList = new HashMap<>();
         for (RpcConnection c : notificationService.getRpcConnections()) {
             if (Objects.equals(AccessTypeEnum.web, c.getAccessType())) continue;
             Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
@@ -46,7 +45,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 onlineUserList.put(c.getUserId(), c.getSerialNumber());
                 log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
             }
-        }
+        }*/
 
         if (Objects.isNull(sessionManager.getParticipants(sessionId))) {
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -91,17 +90,20 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 userObj.addProperty("videoActive", !part.isStreaming() || part.getPublisherMediaOptions().isVideoActive());
 
                 // get device info if have device.
-                String serialNumber = onlineUserList.get(user.getId());
-                if (!StringUtils.isEmpty(serialNumber)) {
-                    log.info("select userId:{} online key(userId):{} serialNumber:{}", user.getId(),
-                            onlineUserList.get(user.getId()), serialNumber);
+//                String serialNumber = onlineUserList.get(user.getId());
+//                if (!StringUtils.isEmpty(serialNumber)) {
+//                    log.info("select userId:{} online key(userId):{} serialNumber:{}", user.getId(),
+//                            onlineUserList.get(user.getId()), serialNumber);
 
                     // device and dept info.
+                    UserDevice userDeviceSearch = new UserDevice();
+                    userDeviceSearch.setUserId(user.getId());
+                    UserDevice result = userDeviceMapper.selectByCondition(userDeviceSearch);
                     DeviceSearch deviceSearch = new DeviceSearch();
-                    deviceSearch.setSerialNumber(serialNumber);
+                    deviceSearch.setSerialNumber(result.getSerialNumber());
                     Device device = deviceMapper.selectBySearchCondition(deviceSearch);
                     DeviceDeptSearch ddSearch = new DeviceDeptSearch();
-                    ddSearch.setSerialNumber(serialNumber);
+                    ddSearch.setSerialNumber(result.getSerialNumber());
                     List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
                     Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
 
@@ -109,10 +111,10 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     userObj.addProperty("deviceOrgName", devDep.getDeptName());
                     userObj.addProperty("appShowName", device.getDeviceName());
                     userObj.addProperty("appShowDesc", devDep.getDeptName());
-                } else {
-                    userObj.addProperty("appShowName", user.getUsername());
-                    userObj.addProperty("appShowDesc", userDep.getDeptName());
-                }
+//                } else {
+//                    userObj.addProperty("appShowName", user.getUsername());
+//                    userObj.addProperty("appShowDesc", userDep.getDeptName());
+//                }
 
                 jsonArray.add(userObj);
             }
