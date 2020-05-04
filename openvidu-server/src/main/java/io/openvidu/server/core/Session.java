@@ -584,13 +584,16 @@ public class Session implements SessionInterface {
 				try {
 					KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(linkedArr
 							.get(index).getAsJsonObject().get("connectionId").getAsString());
-					temp.addProperty("connectionId", "connectionId");
-					temp.addProperty("streamType", "streamType");
-					temp.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
-					temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
-					temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
+					if (kurentoParticipant.isStreaming() && Objects.nonNull(kurentoParticipant.getPublisher())
+							&& Objects.nonNull(kurentoParticipant.getPublisher().getMajorShareHubPort())) {
+						temp.addProperty("connectionId", "connectionId");
+						temp.addProperty("streamType", "streamType");
+						temp.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
+						temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
+						temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
 
-					layoutInfos.add(temp);
+						layoutInfos.add(temp);
+					}
 					index++;
 				} catch (Exception e) {
 					log.error("Exception when compose layout invoke request:{}", temp.toString(), e);
