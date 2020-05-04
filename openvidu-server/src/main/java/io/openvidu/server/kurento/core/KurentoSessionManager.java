@@ -36,6 +36,7 @@ import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
@@ -45,7 +46,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -61,6 +61,9 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Autowired
 	private KurentoParticipantEndpointConfig kurentoEndpointConfig;
+
+	@Autowired
+	protected RpcNotificationService rpcNotificationService;
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -82,15 +85,21 @@ public class KurentoSessionManager extends SessionManager {
 							openviduConfig, recordingManager);
 				}
 
-				Kms lessLoadedKms = null;
+				Kms lessLoadedKms;
 				try {
 					lessLoadedKms = this.kmsManager.getLessLoadedKms();
+					if (Double.compare(lessLoadedKms.getLoad(), Double.valueOf("0.0")) != 0) {
+						throw new NoSuchElementException();
+					}
 				} catch (NoSuchElementException e) {
 					// Restore session not active
 					this.cleanCollections(sessionId);
 					this.storeSessionNotActive(sessionNotActive);
-					throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
-							"There is no available media server where to initialize session '" + sessionId + "'");
+					/*throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
+							"There is no available media server where to initialize session '" + sessionId + "'");*/
+					rpcNotificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(),
+							transactionId, null, ErrorCodeEnum.COUNT_OF_CONFERENCE_LIMIT);
+					return;
 				}
 				log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
 				kSession = createSession(sessionNotActive, lessLoadedKms);

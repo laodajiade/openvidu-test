@@ -69,7 +69,8 @@ public enum ErrorCodeEnum {
     TERMINAL_IS_NOT_MODERATOR(13015, "硬终端不是主持人"),
     WEB_MODERATOR_ALREADY_EXIST(13016, "会议中已存在web会控"),
     DEVICE_NOT_FOUND(13100, "设备不存在"),
-    DEVICE_BUSY(13101,"设备在会议或升级中");
+    DEVICE_BUSY(13101,"设备在会议或升级中"),
+    COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
 
     private int code;
     private String message;
