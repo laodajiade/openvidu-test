@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AuthorizationManage;
@@ -272,12 +271,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, publicId);
 
 		sessionManager.getParticipants(sessionId).forEach(p -> {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
-			RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
-			if (rpc != null) {
-				if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.online.name())
-						|| Objects.equals(OpenViduRole.THOR, p.getRole())) {
-					notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+			if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+				RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
+				if (rpc != null) {
+					if (!Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.offline.name())) {
+						notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
+					}
 				}
 			}
 		});
