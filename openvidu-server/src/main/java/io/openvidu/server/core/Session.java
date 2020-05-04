@@ -313,8 +313,8 @@ public class Session implements SessionInterface {
 	public Participant getParticipantByUserId(String userId) {
     	checkClosed();
 		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && Objects.equals(userId, participant.getUserId()))
-				.findAny().orElse(null);
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(userId, participant.getUserId())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
 	public int getActivePublishers() {
