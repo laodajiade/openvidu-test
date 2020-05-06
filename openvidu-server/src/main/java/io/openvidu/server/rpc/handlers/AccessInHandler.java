@@ -254,13 +254,19 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (!Objects.isNull(previousRpc)) {
                 log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",
                         rpcConnection.getParticipantPrivateId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
-                // TODO. 原有断线重连服务端无法及时捕捉原有链接断开信息，此处根据mac及online状态直接判定为重连
                 if (Objects.equals(previousRpc.getMacAddr(), deviceMac) &&
-                        Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
+                        !Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name())) {
                     log.info("the account:{} now reconnect.", uuid);
                     rpcConnection.setReconnected(true);
                     reconnect = true;
-                    cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
+                    if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
+                        Session session = sessionManager.getSession(previousRpc.getSessionId());
+                        Participant participant;
+                        if (Objects.nonNull(session) && Objects.nonNull(previousRpc.getUserId())
+                                && Objects.nonNull(participant = session.getParticipantByUserId(String.valueOf(previousRpc.getUserId())))) {
+                            cacheManage.updateReconnectInfo(uuid, participant.getParticipantPrivateId());
+                        }
+                    }
                     rpcConnection.setUserUuid(uuid);
                     previousRpc.setUserUuid(null);
                     break;
