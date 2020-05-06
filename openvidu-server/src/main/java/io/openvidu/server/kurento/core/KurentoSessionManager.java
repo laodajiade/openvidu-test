@@ -27,6 +27,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
@@ -65,6 +66,9 @@ public class KurentoSessionManager extends SessionManager {
 	@Autowired
 	protected RpcNotificationService rpcNotificationService;
 
+	@Autowired
+	protected OpenviduConfig openviduConfig;
+
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
 		Set<Participant> existingParticipants = null;
@@ -88,7 +92,7 @@ public class KurentoSessionManager extends SessionManager {
 				Kms lessLoadedKms;
 				try {
 					lessLoadedKms = this.kmsManager.getLessLoadedKms();
-					if (Double.compare(lessLoadedKms.getLoad(), Double.valueOf("0.0")) != 0) {
+					if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.valueOf("0.0")) != 0) {
 						throw new NoSuchElementException();
 					}
 				} catch (NoSuchElementException e) {

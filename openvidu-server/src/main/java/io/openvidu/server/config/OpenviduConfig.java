@@ -23,14 +23,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CDREventName;
+import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
@@ -148,6 +147,10 @@ public class OpenviduConfig {
 
 	@Value("${voip.delay.maxTime}")
 	private int voipDelayMaxTime;		// unit is hour
+
+	@Getter
+	@Value("${kms.load.limit.switch}")
+	private int kmsLoadLimitSwitch;
 
 	private String finalUrl;
 	private List<String> kmsUrisList;
