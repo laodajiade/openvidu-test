@@ -323,6 +323,13 @@ public abstract class RpcAbstractHandler {
                 }
                 String partPublicId = leaveRoomAfterConnClosed(oldPrivateId, EndReason.sessionClosedByServer);
                 // update partLinkedArr and sharing status in conference
+                Participant speakPart = this.sessionManager.getSpeakerPart(rpcConnection.getSessionId());
+                if (Objects.isNull(speakPart)) {
+                    Participant moderatorPart = this.sessionManager.getModeratorPart(rpcConnection.getSessionId());
+                    if (Objects.nonNull(moderatorPart)) {
+                        session.reorder(moderatorPart.getParticipantPublicId());
+                    }
+                }
                 session.evictReconnectOldPart(partPublicId);
                 Participant sharingPart = this.sessionManager.getParticipant(rpcConnection.getSessionId(),
                         oldPrivateId, StreamType.SHARING);

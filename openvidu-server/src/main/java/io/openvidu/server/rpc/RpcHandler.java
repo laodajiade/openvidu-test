@@ -196,14 +196,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					}
 
 					// send end roll notify if the offline connection's hand status is speaker
-					p = !Objects.isNull(p) ? p : this.sessionManager.getParticipant(rpcSessionId);
-					if (!Objects.isNull(p) && Objects.equals(ParticipantHandStatus.speaker, p.getHandStatus())) {
-						p.setHandStatus(ParticipantHandStatus.endSpeaker);
+					if (Objects.equals(ParticipantHandStatus.speaker, kp.getHandStatus())) {
+//						kp.setHandStatus(ParticipantHandStatus.endSpeaker);
 
 						JsonObject params = new JsonObject();
-						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, p.getSessionId());
+						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, kp.getSessionId());
 						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
-						this.sessionManager.getParticipants(p.getSessionId()).forEach(part -> {
+						this.sessionManager.getParticipants(kp.getSessionId()).forEach(part -> {
 							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
 									&& Objects.equals(StreamType.MAJOR, part.getStreamType()))
 								this.notificationService.sendNotification(part.getParticipantPrivateId(),

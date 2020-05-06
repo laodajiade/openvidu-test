@@ -317,6 +317,20 @@ public class Session implements SessionInterface {
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
+	public Participant getSpeakerPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
+	public Participant getModeratorPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
 	public int getActivePublishers() {
 		return activePublishers.get();
 	}
