@@ -193,20 +193,29 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					if (Objects.nonNull(sharePart)) {
 						notifyUserBreakLine(session.getSessionId(), sharePart.getParticipantPublicId());
                         compensateForReconnect.addReconnectCheck(session, sharePart);
+						JsonObject params = new JsonObject();
+						params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+								sharePart.getParticipantPublicId());
+						this.sessionManager.getParticipants(kp.getSessionId()).forEach(part -> {
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
+									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+								this.notificationService.sendNotification(part.getParticipantPrivateId(),
+										ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params);
+							}
+						});
 					}
 
 					// send end roll notify if the offline connection's hand status is speaker
 					if (Objects.equals(ParticipantHandStatus.speaker, kp.getHandStatus())) {
-//						kp.setHandStatus(ParticipantHandStatus.endSpeaker);
-
 						JsonObject params = new JsonObject();
 						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, kp.getSessionId());
 						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
 						this.sessionManager.getParticipants(kp.getSessionId()).forEach(part -> {
 							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
-									&& Objects.equals(StreamType.MAJOR, part.getStreamType()))
+									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
 								this.notificationService.sendNotification(part.getParticipantPrivateId(),
 										ProtocolElements.END_ROLL_CALL_METHOD, params);
+							}
 						});
 					}
 				}
