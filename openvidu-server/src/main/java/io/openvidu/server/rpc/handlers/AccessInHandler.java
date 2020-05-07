@@ -296,9 +296,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                     if (!Objects.isNull(device))
                         result.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
                     notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), result, errCode);
-                    //---------------------
+                    /*//---------------------
                     notificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
-                    return;
+                    return;*/
                 } else {
                     assert previousRpc != null;
                     try {

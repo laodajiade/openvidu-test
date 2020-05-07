@@ -127,10 +127,9 @@ public class TempCompensateForReconnect {
                         }
 
                         log.info("CompensateForReconnect clean up the unused rpc connection:{}", partPrivateId);
-                        rpcNotificationService.closeRpcSession(partPrivateId);
                     }
                 }
-
+                rpcNotificationService.closeRpcSession(partPrivateId);
                 evictTask.cancel(false);
             }
         };
