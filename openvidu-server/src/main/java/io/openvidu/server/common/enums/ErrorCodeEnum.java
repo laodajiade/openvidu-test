@@ -44,7 +44,8 @@ public enum ErrorCodeEnum {
     REQUEST_PARAMS_ERROR(10006, "请求参数错误"),
 
     SERVER_UNKNOWN_ERROR(11000, "未知错误"),
-    SERVER_INTERNAL_ERROR(11001, "服务内部错误"),
+    SERVER_INTERNAL_ERROR(11001, "请稍后再试"),
+//    SERVER_INTERNAL_ERROR(11001, "服务内部错误"),
     PERFORMANCE_EXCEED(11002, "服务不给力，请稍后再试"),
     INVALID_METHOD_CALL(11003, "非法调用"),
     UNRECOGNIZED_API(11005, "非法API调用"),
