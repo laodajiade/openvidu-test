@@ -336,6 +336,12 @@ public abstract class RpcAbstractHandler {
                 if (!Objects.isNull(sharingPart)) {
                     session.evictReconnectOldPart(sharingPart.getParticipantPublicId());
                     KurentoSession kurentoSession = (KurentoSession) session;
+                    /*if (kurentoSession.compositeService.getShareStreamId().contains(sharingPart.getParticipantPublicId())) {
+                        kurentoSession.compositeService.setShareStreamId(null);
+                        kurentoSession.compositeService.setExistSharing(false);
+                    }
+//                    if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()))
+                    sessionManager.evictParticipant(sharingPart, null, null, EndReason.sessionClosedByServer);*/
                     kurentoSession.compositeService.setShareStreamId(null);
                     kurentoSession.compositeService.setExistSharing(false);
                     if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()))

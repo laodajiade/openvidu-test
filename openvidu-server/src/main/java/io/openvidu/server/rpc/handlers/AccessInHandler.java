@@ -371,6 +371,11 @@ public class AccessInHandler extends RpcAbstractHandler {
                 // Send reconnected participant stop publish previous sharing if exists
                 notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
                         preSharingPart.getParticipantPublicId());
+                /*KurentoSession kurentoSession = (KurentoSession) sessionManager.getSession(conferenceId);
+                if (kurentoSession.compositeService.getShareStreamId().contains(preSharingPart.getParticipantPublicId())) {
+                    kurentoSession.compositeService.setExistSharing(false);
+                    kurentoSession.compositeService.setShareStreamId(null);
+                }*/
             }
 
             Participant preMajorPart = this.sessionManager.getParticipant(conferenceId, previousRpcConnectId, StreamType.MAJOR);

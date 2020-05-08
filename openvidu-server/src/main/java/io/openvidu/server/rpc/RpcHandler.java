@@ -191,6 +191,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					// notify if exists share part
 					Participant sharePart = session.getPartByPrivateIdAndStreamType(rpc.getParticipantPrivateId(), StreamType.SHARING);
 					if (Objects.nonNull(sharePart)) {
+						/*KurentoSession kurentoSession = (KurentoSession) session;
+						kurentoSession.compositeService.setExistSharing(false);
+						kurentoSession.compositeService.setShareStreamId(null);*/
 						notifyUserBreakLine(session.getSessionId(), sharePart.getParticipantPublicId());
                         compensateForReconnect.addReconnectCheck(session, sharePart);
 						JsonObject params = new JsonObject();
