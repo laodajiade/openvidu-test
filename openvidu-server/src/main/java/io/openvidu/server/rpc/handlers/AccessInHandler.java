@@ -10,6 +10,7 @@ import io.openvidu.server.common.pojo.DeviceSearch;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -371,11 +372,12 @@ public class AccessInHandler extends RpcAbstractHandler {
                 // Send reconnected participant stop publish previous sharing if exists
                 notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
                         preSharingPart.getParticipantPublicId());
-                /*KurentoSession kurentoSession = (KurentoSession) sessionManager.getSession(conferenceId);
-                if (kurentoSession.compositeService.getShareStreamId().contains(preSharingPart.getParticipantPublicId())) {
+                KurentoSession kurentoSession = (KurentoSession) sessionManager.getSession(conferenceId);
+                if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId()) &&
+                        kurentoSession.compositeService.getShareStreamId().contains(preSharingPart.getParticipantPublicId())) {
                     kurentoSession.compositeService.setExistSharing(false);
                     kurentoSession.compositeService.setShareStreamId(null);
-                }*/
+                }
             }
 
             Participant preMajorPart = this.sessionManager.getParticipant(conferenceId, previousRpcConnectId, StreamType.MAJOR);

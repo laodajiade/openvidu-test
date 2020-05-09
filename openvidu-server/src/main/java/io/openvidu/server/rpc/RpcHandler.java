@@ -29,6 +29,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.core.TempCompensateForReconnect;
 import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.kurento.core.KurentoSession;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -36,6 +37,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -191,9 +193,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					// notify if exists share part
 					Participant sharePart = session.getPartByPrivateIdAndStreamType(rpc.getParticipantPrivateId(), StreamType.SHARING);
 					if (Objects.nonNull(sharePart)) {
-						/*KurentoSession kurentoSession = (KurentoSession) session;
-						kurentoSession.compositeService.setExistSharing(false);
-						kurentoSession.compositeService.setShareStreamId(null);*/
+						KurentoSession kurentoSession = (KurentoSession) session;
+						if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId()) &&
+								kurentoSession.compositeService.getShareStreamId().contains(sharePart.getParticipantPublicId())) {
+							kurentoSession.compositeService.setExistSharing(false);
+							kurentoSession.compositeService.setShareStreamId(null);
+						}
 						notifyUserBreakLine(session.getSessionId(), sharePart.getParticipantPublicId());
                         compensateForReconnect.addReconnectCheck(session, sharePart);
 						JsonObject params = new JsonObject();
