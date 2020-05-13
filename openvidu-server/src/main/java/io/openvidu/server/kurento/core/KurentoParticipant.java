@@ -17,39 +17,17 @@
 
 package io.openvidu.server.kurento.core;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import com.google.gson.JsonElement;
-import io.openvidu.server.common.constants.CommonConstants;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.StreamModeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.kurento.client.Continuation;
-import org.kurento.client.ErrorEvent;
-import org.kurento.client.Filter;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.MediaElement;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.MediaType;
-import org.kurento.client.SdpEndpoint;
-import org.kurento.client.internal.server.KurentoServerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.constants.CommonConstants;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
@@ -59,7 +37,20 @@ import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.recording.service.RecordingManager;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.kurento.client.*;
+import org.kurento.client.internal.server.KurentoServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 public class KurentoParticipant extends Participant {
 
@@ -572,7 +563,7 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public boolean isMixIncluded() {
-		JsonArray mixArr = session.getMajorShareMixLinkedArr();
+		JsonArray mixArr = session.getCurrentPartInMcuLayout();
 		for (JsonElement jsonElement : mixArr) {
 			if (getParticipantPublicId().equals(jsonElement.getAsJsonObject().get("connectionId").getAsString())) {
 				return true;
