@@ -632,8 +632,8 @@ public class Session implements SessionInterface {
 				JsonObject jsonObject = element.getAsJsonObject();
 				if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
 					majorShareMixLinkedArr.remove(element);
-					if (Objects.equals(StreamType.SHARING.name(), jsonObject.get("streamType").getAsString()) && automatically
-							&& !Objects.equals(LayoutModeEnum.ONE, layoutMode) && majorShareMixLinkedArr.size() < layoutMode.getMode()) {
+					if (automatically && !Objects.equals(LayoutModeEnum.ONE, layoutMode)
+							&& majorShareMixLinkedArr.size() < layoutMode.getMode()) {
 						switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
 					}
 					break;
