@@ -82,8 +82,9 @@ public class Session implements SessionInterface {
 
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
 
-//	protected JsonArray majorMixLinkedArr = new JsonArray(50);
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
+
+	private AtomicInteger majorParts = new AtomicInteger(0);
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -342,6 +343,18 @@ public class Session implements SessionInterface {
 	public void deregisterPublisher() {
 		this.activePublishers.decrementAndGet();
 	}
+
+	public boolean getPartRoleAccordingToLimit() {
+    	int size;
+    	if ((size = majorParts.incrementAndGet()) > openviduConfig.getMcuMajorPartLimit()) {
+    		majorParts.set(openviduConfig.getMcuMajorPartLimit());
+		}
+    	return size <= openviduConfig.getMcuMajorPartLimit();
+	}
+
+	public void deregisterMajorParticipant() {
+    	log.info("session:{} decrement majorPart size:{}", sessionId, majorParts.decrementAndGet());
+    }
 
 	public boolean isClosed() {
 		return closed;

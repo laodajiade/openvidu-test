@@ -32,7 +32,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
-        String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
+        OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         String streamType = getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM);
@@ -96,6 +96,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
+                // change the part role according to the mcu limit when the role is PUBLISHER
+
+
                 try {
                     recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
                 } catch (RuntimeException e) {
@@ -122,8 +125,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
                     if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsString()) &&
-                            !Objects.equals(OpenViduRole.THOR.name(), role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
-                        role = OpenViduRole.MODERATOR.name();
+                            !Objects.equals(OpenViduRole.THOR, role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
+                        role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
                         clientMetadata = clientMetadataObj.toString();
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
@@ -132,10 +135,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 Participant participant;
                 if (generateRecorderParticipant) {
-                    participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
+                    participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role.name(), streamType);
                 } else {
                     participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
-                            role, streamType, location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility());
+                            role.name(), streamType, location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility());
                 }
 
                 Long userId = rpcConnection.getUserId();

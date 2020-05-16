@@ -279,13 +279,8 @@ public abstract class RpcAbstractHandler {
         return ErrorCodeEnum.SUCCESS;
     }
 
-    protected static boolean isModerator(String role) {
-        // TODO. Fixme. user account have moderator power.
-        if (OpenViduRole.MODERATOR_ROLES.contains(OpenViduRole.valueOf(role))) {
-//		if (OpenViduRole.MODERATOR.equals(OpenViduRole.valueOf(role))) {
-            return true;
-        }
-        return false;
+    protected static boolean isModerator(OpenViduRole role) {
+       return OpenViduRole.MODERATOR_ROLES.contains(role);
     }
 
     protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
