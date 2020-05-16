@@ -299,6 +299,16 @@ public abstract class SessionManager {
 		return null;
 	}
 
+	public boolean isSubscriberInSession(String sessionId, String userId) {
+		Session session = sessions.get(sessionId);
+		if (Objects.nonNull(session)) {
+			Participant sourcePart = session.getParticipants().stream().filter(participant ->
+					userId.equals(participant.getUserId())).findAny().orElse(null);
+			return Objects.nonNull(sourcePart) && OpenViduRole.SUBSCRIBER.equals(sourcePart.getRole());
+		}
+		return false;
+	}
+
 	public Map<String, FinalUser> getFinalUsers(String sessionId) {
 		return this.sessionidFinalUsers.get(sessionId);
 	}

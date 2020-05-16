@@ -30,10 +30,18 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
         List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
         String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
+
         if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0)))
                 && sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).getRole() != OpenViduRole.MODERATOR) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
+        // SUBSCRIBER part role can not operate video status
+        if (sessionManager.isSubscriberInSession(sessionId, sourceId)) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;
         }
 
@@ -42,9 +50,10 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                         .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                && !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().get();
-                if (part.isStreaming())
-                    part.getPublisherMediaOptions().setVideoActive(!status.equals(ParticipantMicStatus.off.name()));
+                                && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().get();
+                if (part.isStreaming()) {
+                    part.getPublisherMediaOptions().setVideoActive(status.equals(ParticipantMicStatus.on.name()));
+                }
                 tsArray.add(t);
             });
         }

@@ -42,12 +42,19 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             return;
         }
 
+        // SUBSCRIBER part role can not operate video status
+        if (sessionManager.isSubscriberInSession(sessionId, sourceId)) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.INVALID_METHOD_CALL);
+            return;
+        }
+
         JsonArray tsArray = new JsonArray();
         if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                         .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                && !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().get();
+                                && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().get();
                 if (part.isStreaming())
                     part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
 

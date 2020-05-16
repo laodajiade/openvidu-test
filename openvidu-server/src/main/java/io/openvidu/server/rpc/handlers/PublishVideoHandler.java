@@ -3,6 +3,8 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
@@ -26,6 +28,13 @@ public class PublishVideoHandler extends RpcAbstractHandler {
         try {
             participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
         } catch (OpenViduException e) {
+            return;
+        }
+
+        // check part role
+        if (OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+            notificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;
         }
 
