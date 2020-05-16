@@ -96,9 +96,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
-                // change the part role according to the mcu limit when the role is PUBLISHER
-
-
                 try {
                     recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
                 } catch (RuntimeException e) {

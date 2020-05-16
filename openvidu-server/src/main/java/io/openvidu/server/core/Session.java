@@ -344,12 +344,12 @@ public class Session implements SessionInterface {
 		this.activePublishers.decrementAndGet();
 	}
 
-	public boolean getPartRoleAccordingToLimit() {
+	public boolean needToChangePartRoleAccordingToLimit() {
     	int size;
     	if ((size = majorParts.incrementAndGet()) > openviduConfig.getMcuMajorPartLimit()) {
     		majorParts.set(openviduConfig.getMcuMajorPartLimit());
 		}
-    	return size <= openviduConfig.getMcuMajorPartLimit();
+    	return size > openviduConfig.getMcuMajorPartLimit();
 	}
 
 	public void deregisterMajorParticipant() {

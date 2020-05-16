@@ -87,6 +87,13 @@ public class Participant {
 		this.ability = ability;
 	}
 
+	public void changePartRole(OpenViduRole role) {
+		setRole(role);
+		JsonObject clientMetadataObj = new Gson().fromJson(clientMetadata, JsonObject.class);
+		clientMetadataObj.addProperty("role", role.name());
+		setClientMetadata(clientMetadataObj.toString());
+	}
+
 	public String getFinalUserId() {
 		return finalUserId;
 	}
@@ -316,11 +323,9 @@ public class Participant {
 		json.addProperty("createdAt", this.createdAt);
 		json.addProperty("location", this.location != null ? this.location.toString() : "unknown");
 		json.addProperty("platform", this.platform);
-//		json.addProperty("token", this.token.getToken());
 		json.addProperty("role", this.getRole().name());
 		json.addProperty("serverData", this.serverMetadata);
 		json.addProperty("clientData", this.clientMetadata);
 		return json;
 	}
-
 }
