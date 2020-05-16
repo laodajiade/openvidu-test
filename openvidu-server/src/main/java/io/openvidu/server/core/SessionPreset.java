@@ -84,7 +84,7 @@ public class SessionPreset {
         this.micStatusInRoom = SessionPresetEnum.off;
         this.videoStatusInRoom = SessionPresetEnum.on;
         this.sharePowerInRoom = SessionPresetEnum.off;
-        this.roomSubject = "sudiRoom";
+        this.roomSubject = subject;
         this.roomCapacity = 16;
         this.roomDuration = -1f;
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
