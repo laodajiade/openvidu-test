@@ -352,8 +352,12 @@ public class Session implements SessionInterface {
     	return size > openviduConfig.getMcuMajorPartLimit();
 	}
 
-	public void deregisterMajorParticipant() {
-    	log.info("session:{} decrement majorPart size:{}", sessionId, majorParts.decrementAndGet());
+	public void deregisterMajorParticipant(Participant participant) {
+    	if (StreamType.MAJOR.equals(participant.getStreamType())
+                && !OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
+                    participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
+		}
     }
 
 	public boolean isClosed() {

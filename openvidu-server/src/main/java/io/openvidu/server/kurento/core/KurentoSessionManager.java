@@ -179,7 +179,7 @@ public class KurentoSessionManager extends SessionManager {
 			throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
 					+ "' is trying to leave from session '" + sessionId + "' but it is closing");
 		}
-//		session.leave(participant.getParticipantPrivateId(), reason);
+
 		session.leaveRoom(participant, reason);
 
 		// Update control data structures

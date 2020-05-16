@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
@@ -166,20 +165,17 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
-//		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
-			synchronized (joinOrLeaveLock) {
-				try {
-					leave(p, reason);
-					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
-							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
-					Thread.sleep(kurentoEndpointConfig.leaveDelay);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		deregisterMajorParticipant(p);
+		synchronized (joinOrLeaveLock) {
+			try {
+				leave(p, reason);
+				log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
+						p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
+				Thread.sleep(kurentoEndpointConfig.leaveDelay);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-//		} else {
-//			leave(p, reason);
-//		}
+		}
 	}
 
 	private void leave(Participant p, EndReason reason) {
