@@ -362,6 +362,14 @@ public class Session implements SessionInterface {
 		}
     }
 
+    public void registerMajorParticipant(Participant participant) {
+        if (StreamType.MAJOR.equals(participant.getStreamType())) {
+            int size = majorParts.incrementAndGet();
+            log.info("ParticipantName:{} is going to publish in session:{} and increment majorPart size:{}",
+                    participant.getParticipantName(), sessionId, size);
+        }
+    }
+
     public int getMajorPartSize() {
     	return majorParts.get();
 	}
@@ -515,6 +523,7 @@ public class Session implements SessionInterface {
 		}
 
 		// change subscriberPart role
+        registerMajorParticipant(subscriberPart);
 		subscriberPart.changePartRole(OpenViduRole.PUBLISHER);
 		sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
 				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
