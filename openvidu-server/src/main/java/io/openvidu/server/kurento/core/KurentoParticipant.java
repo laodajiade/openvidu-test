@@ -565,6 +565,8 @@ public class KurentoParticipant extends Participant {
 	public boolean isMixIncluded() {
 		JsonArray mixArr = session.getCurrentPartInMcuLayout();
 		for (JsonElement jsonElement : mixArr) {
+			log.info("publicId:{}", getParticipantPublicId());
+			log.info("jsonElement:{}", jsonElement.toString());
 			if (getParticipantPublicId().equals(jsonElement.getAsJsonObject().get("connectionId").getAsString())) {
 				return true;
 			}
