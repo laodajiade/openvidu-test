@@ -344,11 +344,13 @@ public class Session implements SessionInterface {
 		this.activePublishers.decrementAndGet();
 	}
 
-	public boolean needToChangePartRoleAccordingToLimit() {
+	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
     	int size;
     	if ((size = majorParts.incrementAndGet()) > openviduConfig.getMcuMajorPartLimit()) {
     		majorParts.set(openviduConfig.getMcuMajorPartLimit());
 		}
+		log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
+				participant.getParticipantName(), sessionId, size);
     	return size > openviduConfig.getMcuMajorPartLimit();
 	}
 
@@ -359,6 +361,10 @@ public class Session implements SessionInterface {
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
 		}
     }
+
+    public int getMajorPartSize() {
+    	return majorParts.get();
+	}
 
 	public boolean isClosed() {
 		return closed;
@@ -437,6 +443,90 @@ public class Session implements SessionInterface {
 	@Override
 	public boolean close(EndReason reason) {
 		return false;
+	}
+
+	/**
+	 * notify KMS layout changed and send conferenceLayoutChanged notify to clients
+	 * change the role of original part which is publishing from PUBLISHER to SUBSCRIBER
+	 * evict the lastPart according to its role and status(speaker/sharing)
+	 * change the subscriberPart role from SUBSCRIBER to PUBLISHER
+	 * send notifyPartRoleChanged notify to clients
+	 */
+	public ErrorCodeEnum evictPartInCompositeWhenSubToPublish(Participant subscriberPart, SessionManager sessionManager) {
+		// get the last participant in session's majorShareMixLinkedArr
+		JsonObject lastPartObj = majorShareMixLinkedArr.get(majorShareMixLinkedArr.size() - 1).getAsJsonObject();
+		Participant lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
+
+		String moderatorId = null, speakerId = null;
+		Set<Participant> participants = getParticipants();
+		for (Participant part : participants) {
+			if (StreamType.MAJOR.equals(part.getStreamType())) {
+				if (part.getRole().equals(OpenViduRole.MODERATOR)) {
+					moderatorId = part.getParticipantPublicId();
+				}
+				if (Objects.equals(ParticipantHandStatus.speaker, part.getHandStatus())) {
+					speakerId = part.getParticipantPublicId();
+				}
+			}
+		}
+
+		Participant otherPart = null;
+		if (OpenViduRole.MODERATOR.equals(lastPart.getRole())) {
+			// moderator can not be replaced in session
+			return ErrorCodeEnum.INVALID_METHOD_CALL;
+		} else if (ParticipantSpeakerStatus.on.equals(lastPart.getSpeakerStatus())) {
+			// send endRoll notify
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, lastPart.getUserId());
+			participants.forEach(part -> {
+				if (!Objects.equals(part, lastPart) && Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+					sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),
+							ProtocolElements.END_ROLL_CALL_METHOD, params);
+				}
+			});
+		}
+
+		leaveRoomSetLayout(lastPart, !Objects.equals(speakerId, lastPart.getParticipantPublicId()) ? speakerId : moderatorId);
+		if (ParticipantShareStatus.on.equals(lastPart.getShareStatus())) {
+			otherPart = getPartByPrivateIdAndStreamType(lastPart.getParticipantPrivateId(),
+					StreamType.MAJOR.equals(lastPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
+			leaveRoomSetLayout(otherPart, !Objects.equals(speakerId, otherPart.getParticipantPublicId()) ? speakerId : moderatorId);
+		}
+
+		// notify KMS layout changed and send conferenceLayoutChanged notify
+		invokeKmsConferenceLayout();
+		participants.forEach(participant -> {
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
+			}
+		});
+
+		// change lastPart role
+		lastPart.changePartRole(OpenViduRole.SUBSCRIBER);
+		sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
+				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER));
+
+		// evict the parts in session
+		sessionManager.evictParticipant(lastPart, null, null, EndReason.sessionClosedByServer);
+		if (Objects.nonNull(otherPart)) {
+			sessionManager.evictParticipant(otherPart, null, null, EndReason.sessionClosedByServer);
+		}
+
+		// change subscriberPart role
+		subscriberPart.changePartRole(OpenViduRole.PUBLISHER);
+		sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
+				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
+
+		return ErrorCodeEnum.SUCCESS;
+	}
+
+	private JsonObject getPartRoleChangedNotifyParam(OpenViduRole originalRole, OpenViduRole presentRole) {
+		JsonObject param = new JsonObject();
+		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM, originalRole.name());
+		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM, presentRole.name());
+		return param;
 	}
 
 	public JsonArray getMajorShareMixLinkedArr() {
@@ -702,5 +792,4 @@ public class Session implements SessionInterface {
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
         return notifyResult;
     }
-
 }

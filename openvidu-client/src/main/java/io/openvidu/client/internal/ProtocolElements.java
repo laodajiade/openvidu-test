@@ -287,6 +287,10 @@ public class ProtocolElements {
 	public static final String REPLACE_ROLL_CALL_START_TARGET_ID_PARAM = "startTargetId";
 	public static final String REPLACE_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
 
+	public static final String NOTIFY_PART_ROLE_CHANGED_METHOD = "notifyPartRoleChanged";
+	public static final String NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM = "originalRole";
+	public static final String NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM = "presentRole";
+
 	public static final String LOCK_SESSION_METHOD = "lockSession";
 	public static final String LOCK_SESSION_ROOM_ID_PARAM = "roomId";
 	public static final String LOCK_SESSION_SOURCE_ID_PARAM = "sourceId";

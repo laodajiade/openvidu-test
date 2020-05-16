@@ -3,10 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -31,16 +28,36 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
+        Session conferenceSession = sessionManager.getSession(sessionId);
+        boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
+        // check if target participant is SUBSCRIBER
+        if (sessionManager.isSubscriberInSession(sessionId, targetId) && isMcu) {
+            ErrorCodeEnum errorCodeEnum;
+            Participant subscriberPart = conferenceSession.getParticipantByUserId(targetId);
+
+            // check if the size of major part is up to 12(current)
+            if (conferenceSession.getMajorPartSize() == openviduConfig.getMcuMajorPartLimit()) {
+                errorCodeEnum = conferenceSession.evictPartInCompositeWhenSubToPublish(subscriberPart, sessionManager);
+            } else {
+                // invalid rpc call when size of major part is not up to 12
+                log.error("Invalid rpc call when size of major part in session:{} is not up to {}",
+                        sessionId, openviduConfig.getMcuMajorPartLimit());
+                errorCodeEnum = ErrorCodeEnum.INVALID_METHOD_CALL;
+            }
+
+            if (Objects.equals(ErrorCodeEnum.SUCCESS, errorCodeEnum)) {
+                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+            } else {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, errorCodeEnum);
+            }
+            return;
+        }
+
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         Participant moderatorPart = participants.stream().filter(participant -> Objects.equals(sourceId,
                 participant.getUserId()) && Objects.equals(StreamType.MAJOR, participant.getStreamType()) &&
                 !Objects.equals(OpenViduRole.THOR, participant.getRole())).findFirst().orElse(null);
-        /*boolean permitted = !Objects.isNull(moderatorPart) && OpenViduRole.MODERATOR_ROLES.contains(moderatorPart.getRole());
-        if (!permitted) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PERMISSION_LIMITED);
-            return;
-        }*/
 
         int raiseHandNum = 0;
         String sourceConnectionId;
@@ -64,7 +81,6 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         assert targetPart != null;
         targetPart.setHandStatus(ParticipantHandStatus.speaker);
         targetConnectionId = targetPart.getParticipantPublicId();
-        Session conferenceSession = sessionManager.getSession(sessionId);
         if (Objects.isNull(existSpeakerPart)) {
             // switch layout with moderator
             assert moderatorPart != null;
@@ -91,8 +107,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             sendEndRollCallNotify(participants, params);
         }
 
-        boolean isMcu;
-        if (isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+        if (isMcu) {
             // change conference layout
             conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
             // json RPC notify KMS layout changed.
