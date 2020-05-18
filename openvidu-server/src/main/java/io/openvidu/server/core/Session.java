@@ -364,9 +364,11 @@ public class Session implements SessionInterface {
 
     public void registerMajorParticipant(Participant participant) {
         if (StreamType.MAJOR.equals(participant.getStreamType())) {
-            int size = majorParts.incrementAndGet();
+			if (majorParts.incrementAndGet() > openviduConfig.getMcuMajorPartLimit()) {
+				majorParts.set(openviduConfig.getMcuMajorPartLimit());
+			}
             log.info("ParticipantName:{} is going to publish in session:{} and increment majorPart size:{}",
-                    participant.getParticipantName(), sessionId, size);
+                    participant.getParticipantName(), sessionId, majorParts.get());
         }
     }
 
