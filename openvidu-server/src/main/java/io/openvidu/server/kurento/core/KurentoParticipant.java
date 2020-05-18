@@ -114,6 +114,18 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
+	public void createPublisher() {
+		log.info("#####create publisher when role changed and id:{}", getParticipantName());
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) && Objects.isNull(publisher)) {
+			// Initialize a PublisherEndpoint
+			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setSharing(Objects.equals(StreamType.SHARING, getStreamType()));
+			this.publisher.setCompositeService(this.session.compositeService);
+		}
+	}
+
 	public void createPublishingEndpoint(MediaOptions mediaOptions) {
 		publisher.createEndpoint(publisherLatch);
 		if (getPublisher().getEndpoint() == null) {

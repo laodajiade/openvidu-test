@@ -530,6 +530,8 @@ public class Session implements SessionInterface {
 		// change subscriberPart role
         registerMajorParticipant(subscriberPart);
 		subscriberPart.changePartRole(OpenViduRole.PUBLISHER);
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) subscriberPart;
+		kurentoParticipant.createPublisher();
 		sessionManager.notificationService.sendNotification(subscriberPart.getParticipantPrivateId(),
 				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
 
