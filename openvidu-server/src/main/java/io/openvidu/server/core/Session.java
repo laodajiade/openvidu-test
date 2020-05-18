@@ -517,15 +517,20 @@ public class Session implements SessionInterface {
 				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER));
 
 		// evict the parts in session
-		sessionManager.evictParticipant(lastPart, null, null, EndReason.sessionClosedByServer);
+		Participant moderatorPart = getModeratorPart();
+//		sessionManager.evictParticipant(lastPart, null, null, EndReason.sessionClosedByServer);
+		sessionManager.unpublishStream(this, lastPart.getPublisherStreamId(), moderatorPart,
+				null, EndReason.forceUnpublishByUser);
 		if (Objects.nonNull(otherPart)) {
-			sessionManager.evictParticipant(otherPart, null, null, EndReason.sessionClosedByServer);
+			sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
+					null, EndReason.forceUnpublishByUser);
+//			sessionManager.evictParticipant(otherPart, null, null, EndReason.sessionClosedByServer);
 		}
 
 		// change subscriberPart role
         registerMajorParticipant(subscriberPart);
 		subscriberPart.changePartRole(OpenViduRole.PUBLISHER);
-		sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
+		sessionManager.notificationService.sendNotification(subscriberPart.getParticipantPrivateId(),
 				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
 
 		return ErrorCodeEnum.SUCCESS;
