@@ -516,7 +516,7 @@ public class Session implements SessionInterface {
 		JsonObject pub2SubNotifyParam = getPartRoleChangedNotifyParam(lastPart, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
 		participants.forEach(participant -> {
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
-				sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
 						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, pub2SubNotifyParam);
 			}
 		});
@@ -539,7 +539,7 @@ public class Session implements SessionInterface {
 		JsonObject sub2PubNotifyParam = getPartRoleChangedNotifyParam(subscriberPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER);
 		participants.forEach(participant -> {
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
-				sessionManager.notificationService.sendNotification(subscriberPart.getParticipantPrivateId(),
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
 						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, sub2PubNotifyParam);
 			}
 		});
