@@ -288,6 +288,7 @@ public class ProtocolElements {
 	public static final String REPLACE_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String NOTIFY_PART_ROLE_CHANGED_METHOD = "notifyPartRoleChanged";
+	public static final String NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM = "connectionId";
 	public static final String NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM = "originalRole";
 	public static final String NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM = "presentRole";
 

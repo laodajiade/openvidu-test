@@ -513,18 +513,22 @@ public class Session implements SessionInterface {
 
 		// change lastPart role
 		lastPart.changePartRole(OpenViduRole.SUBSCRIBER);
-		sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
-				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER));
+		JsonObject pub2SubNotifyParam = getPartRoleChangedNotifyParam(lastPart, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
+		participants.forEach(participant -> {
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				sessionManager.notificationService.sendNotification(lastPart.getParticipantPrivateId(),
+						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, pub2SubNotifyParam);
+			}
+		});
 
 		// evict the parts in session
 		Participant moderatorPart = getModeratorPart();
-//		sessionManager.evictParticipant(lastPart, null, null, EndReason.sessionClosedByServer);
 		sessionManager.unpublishStream(this, lastPart.getPublisherStreamId(), moderatorPart,
 				null, EndReason.forceUnpublishByUser);
+		deregisterMajorParticipant(lastPart);
 		if (Objects.nonNull(otherPart)) {
 			sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
 					null, EndReason.forceUnpublishByUser);
-//			sessionManager.evictParticipant(otherPart, null, null, EndReason.sessionClosedByServer);
 		}
 
 		// change subscriberPart role
@@ -532,14 +536,20 @@ public class Session implements SessionInterface {
 		subscriberPart.changePartRole(OpenViduRole.PUBLISHER);
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) subscriberPart;
 		kurentoParticipant.createPublisher();
-		sessionManager.notificationService.sendNotification(subscriberPart.getParticipantPrivateId(),
-				ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, getPartRoleChangedNotifyParam(OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
+		JsonObject sub2PubNotifyParam = getPartRoleChangedNotifyParam(subscriberPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER);
+		participants.forEach(participant -> {
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				sessionManager.notificationService.sendNotification(subscriberPart.getParticipantPrivateId(),
+						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, sub2PubNotifyParam);
+			}
+		});
 
 		return ErrorCodeEnum.SUCCESS;
 	}
 
-	private JsonObject getPartRoleChangedNotifyParam(OpenViduRole originalRole, OpenViduRole presentRole) {
+	private JsonObject getPartRoleChangedNotifyParam(Participant participant, OpenViduRole originalRole, OpenViduRole presentRole) {
 		JsonObject param = new JsonObject();
+		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM, participant.getParticipantPublicId());
 		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM, originalRole.name());
 		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM, presentRole.name());
 		return param;
