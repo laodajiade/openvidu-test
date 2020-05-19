@@ -209,6 +209,9 @@ public class RpcHandlerFactory {
     @Resource
     private GetSubDevOrUserByDeptIdsHandler getSubDevOrUserByDeptIdsHandler;
 
+    @Resource
+    private ChangePartRoleHandler changePartRoleHandler;
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
@@ -274,6 +277,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_GROUP_INFO_METHOD,                         getGroupInfoHandler);
         handlersMap.put(ProtocolElements.UPLOADTERMINALINFO_METHOD,                     uploadTerminalInfoHandler);
         handlersMap.put(ProtocolElements.GETSUBDEVORUSERBYDEPTIDS_METHOD,               getSubDevOrUserByDeptIdsHandler);
+        handlersMap.put(ProtocolElements.CHANGE_PART_ROLE_METHOD,                       changePartRoleHandler);
 
     }
 
