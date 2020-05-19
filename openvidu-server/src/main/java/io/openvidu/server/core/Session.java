@@ -476,19 +476,6 @@ public class Session implements SessionInterface {
                 StreamType.MAJOR.equals(lastPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
         Set<Participant> participants = getParticipants();
 
-		/*String moderatorId = null, speakerId = null;
-		Set<Participant> participants = getParticipants();
-		for (Participant part : participants) {
-			if (StreamType.MAJOR.equals(part.getStreamType())) {
-				if (part.getRole().equals(OpenViduRole.MODERATOR)) {
-					moderatorId = part.getParticipantPublicId();
-				}
-				if (Objects.equals(ParticipantHandStatus.speaker, part.getHandStatus())) {
-					speakerId = part.getParticipantPublicId();
-				}
-			}
-		}*/
-
 		if (OpenViduRole.MODERATOR.equals(lastPart.getRole())) {
 			// moderator can not be replaced in session
 			return ErrorCodeEnum.INVALID_METHOD_CALL;
@@ -505,13 +492,6 @@ public class Session implements SessionInterface {
 			});
 		}
 
-		/*leaveRoomSetLayout(lastPart, !Objects.equals(speakerId, lastPart.getParticipantPublicId()) ? speakerId : moderatorId);
-		if (ParticipantShareStatus.on.equals(lastPart.getShareStatus())) {
-			otherPart = getPartByPrivateIdAndStreamType(lastPart.getParticipantPrivateId(),
-					StreamType.MAJOR.equals(lastPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
-			leaveRoomSetLayout(otherPart, !Objects.equals(speakerId, otherPart.getParticipantPublicId()) ? speakerId : moderatorId);
-		}*/
-
 		// change lastPart role
 		lastPart.changePartRole(OpenViduRole.SUBSCRIBER);
 		JsonObject pub2SubNotifyParam = getPartRoleChangedNotifyParam(lastPart, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
@@ -522,7 +502,7 @@ public class Session implements SessionInterface {
 			}
 		});
 
-		// evict the parts in session
+		// evict the parts in session and notify KMS layout changed
         deregisterMajorParticipant(lastPart);
         Participant moderatorPart = getModeratorPart();
         sessionManager.unpublishStream(this, lastPart.getPublisherStreamId(), moderatorPart,
@@ -532,8 +512,7 @@ public class Session implements SessionInterface {
 					null, EndReason.forceUnpublishByUser);
         }
 
-        // notify KMS layout changed and send conferenceLayoutChanged notify
-//		invokeKmsConferenceLayout();
+        // send conferenceLayoutChanged notify
         participants.forEach(participant -> {
             if (StreamType.MAJOR.equals(participant.getStreamType())) {
                 sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
