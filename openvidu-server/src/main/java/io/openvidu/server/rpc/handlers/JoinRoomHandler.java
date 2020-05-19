@@ -5,10 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.SessionPreset;
-import io.openvidu.server.core.SessionPresetUseIDEnum;
+import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
@@ -128,6 +125,16 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         clientMetadata = clientMetadataObj.toString();
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
                     }
+                }
+
+                // check ever already exits share part
+                Session session;
+                if (Objects.nonNull(session = sessionManager.getSession(sessionId)) &&
+                        Objects.nonNull(session.getParticipants().stream()
+                                .filter(participant -> StreamType.SHARING.equals(participant.getStreamType()))
+                                .findAny().orElse(null))) {
+                    errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;
+                    break;
                 }
 
                 Participant participant;
