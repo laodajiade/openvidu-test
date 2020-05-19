@@ -473,8 +473,13 @@ public class Session implements SessionInterface {
 		JsonObject lastPartObj = majorShareMixLinkedArr.get(majorShareMixLinkedArr.size() - 1).getAsJsonObject();
 		Participant lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
         if (OpenViduRole.MODERATOR.equals(lastPart.getRole())) {
-            // moderator can not be replaced in session
-            return ErrorCodeEnum.INVALID_METHOD_CALL;
+            if (majorShareMixLinkedArr.size() == 1) {
+                // moderator can not be replaced in session
+                return ErrorCodeEnum.INVALID_METHOD_CALL;
+            } else {
+                lastPartObj = majorShareMixLinkedArr.get(majorShareMixLinkedArr.size() - 2).getAsJsonObject();
+                lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
+            }
         }
         dealUpAndDownTheWall(lastPart, subscriberPart, sessionManager, true);
 

@@ -774,4 +774,97 @@ public abstract class SessionManager {
         }
 	}
 
+	public void setRollCallInSession(Session conferenceSession, Participant targetPart) {
+		Set<Participant> participants = conferenceSession.getParticipants();
+		Participant moderatorPart = conferenceSession.getModeratorPart();
+		boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
+
+		int raiseHandNum = 0;
+		String sourceConnectionId;
+		String targetConnectionId;
+		Participant existSpeakerPart = null;
+		for (Participant participant : participants) {
+			if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+					existSpeakerPart = participant;
+				}
+
+				if (Objects.equals(participant.getHandStatus(), ParticipantHandStatus.up)) {
+					raiseHandNum++;
+				}
+			}
+		}
+
+		assert targetPart != null;
+		targetPart.setHandStatus(ParticipantHandStatus.speaker);
+		targetConnectionId = targetPart.getParticipantPublicId();
+		if (Objects.isNull(existSpeakerPart)) {
+			// switch layout with moderator
+			/*assert moderatorPart != null;
+			sourceConnectionId = moderatorPart.getParticipantPublicId();
+			if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
+				JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+				if (!firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+					sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+				} else {
+					sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+				}
+
+			}*/
+			JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+			if (firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+				sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+			} else {
+				sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+			}
+
+		} else {
+			// switch layout with current speaker participant
+			sourceConnectionId = existSpeakerPart.getParticipantPublicId();
+			// change current speaker part status and send notify
+			existSpeakerPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUserId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUserId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+			sendEndRollCallNotify(participants, params);
+		}
+
+		if (isMcu) {
+			// change conference layout
+			conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+			// json RPC notify KMS layout changed.
+			conferenceSession.invokeKmsConferenceLayout();
+		}
+
+		JsonObject params = new JsonObject();
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUserId());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUserId());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+
+		// broadcast the changes of layout
+		participants.forEach(participant -> {
+			if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				return;
+			}
+			// SetRollCall notify
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
+			if (isMcu) {
+				// broadcast the changes of layout
+				this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+			}
+		});
+	}
+
+	private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params) {
+		participants.forEach(participant -> {
+			if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				return;
+			}
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
+		});
+	}
 }

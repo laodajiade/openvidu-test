@@ -91,6 +91,7 @@ public class ProtocolElements {
 	public static final String PUBLISHVIDEO_FRAMERATE_PARAM = "frameRate";
 	public static final String PUBLISHVIDEO_VIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String PUBLISHVIDEO_KURENTOFILTER_PARAM = "filter";
+	public static final String PUBLISHVIDEO_HAND_STATUS_PARAM = "handStatus";
 
 	public static final String UNPUBLISHVIDEO_METHOD = "unpublishVideo";
 
