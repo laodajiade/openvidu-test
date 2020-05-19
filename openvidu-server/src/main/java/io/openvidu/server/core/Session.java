@@ -332,6 +332,12 @@ public class Session implements SessionInterface {
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
+    public Participant getParticipantByStreamId(String streamId) {
+        checkClosed();
+        return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
+                participant.isStreaming() && streamId.equals(participant.getPublisherStreamId())).findAny().orElse(null);
+    }
+
 	public int getActivePublishers() {
 		return activePublishers.get();
 	}
@@ -456,7 +462,7 @@ public class Session implements SessionInterface {
 	}
 
 	/**
-	 * notify KMS layout changed and send conferenceLayoutChanged notify to clients
+	 * send conferenceLayoutChanged notify to clients
 	 * change the role of original part which is publishing from PUBLISHER to SUBSCRIBER
 	 * evict the lastPart according to its role and status(speaker/sharing)
 	 * change the subscriberPart role from SUBSCRIBER to PUBLISHER
@@ -466,8 +472,11 @@ public class Session implements SessionInterface {
 		// get the last participant in session's majorShareMixLinkedArr
 		JsonObject lastPartObj = majorShareMixLinkedArr.get(majorShareMixLinkedArr.size() - 1).getAsJsonObject();
 		Participant lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
+        Participant otherPart = getPartByPrivateIdAndStreamType(lastPart.getParticipantPrivateId(),
+                StreamType.MAJOR.equals(lastPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
+        Set<Participant> participants = getParticipants();
 
-		String moderatorId = null, speakerId = null;
+		/*String moderatorId = null, speakerId = null;
 		Set<Participant> participants = getParticipants();
 		for (Participant part : participants) {
 			if (StreamType.MAJOR.equals(part.getStreamType())) {
@@ -478,9 +487,8 @@ public class Session implements SessionInterface {
 					speakerId = part.getParticipantPublicId();
 				}
 			}
-		}
+		}*/
 
-		Participant otherPart = null;
 		if (OpenViduRole.MODERATOR.equals(lastPart.getRole())) {
 			// moderator can not be replaced in session
 			return ErrorCodeEnum.INVALID_METHOD_CALL;
@@ -497,21 +505,12 @@ public class Session implements SessionInterface {
 			});
 		}
 
-		leaveRoomSetLayout(lastPart, !Objects.equals(speakerId, lastPart.getParticipantPublicId()) ? speakerId : moderatorId);
+		/*leaveRoomSetLayout(lastPart, !Objects.equals(speakerId, lastPart.getParticipantPublicId()) ? speakerId : moderatorId);
 		if (ParticipantShareStatus.on.equals(lastPart.getShareStatus())) {
 			otherPart = getPartByPrivateIdAndStreamType(lastPart.getParticipantPrivateId(),
 					StreamType.MAJOR.equals(lastPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
 			leaveRoomSetLayout(otherPart, !Objects.equals(speakerId, otherPart.getParticipantPublicId()) ? speakerId : moderatorId);
-		}
-
-		// notify KMS layout changed and send conferenceLayoutChanged notify
-		invokeKmsConferenceLayout();
-		participants.forEach(participant -> {
-			if (StreamType.MAJOR.equals(participant.getStreamType())) {
-				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
-						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
-			}
-		});
+		}*/
 
 		// change lastPart role
 		lastPart.changePartRole(OpenViduRole.SUBSCRIBER);
@@ -524,14 +523,23 @@ public class Session implements SessionInterface {
 		});
 
 		// evict the parts in session
-		Participant moderatorPart = getModeratorPart();
-		sessionManager.unpublishStream(this, lastPart.getPublisherStreamId(), moderatorPart,
+        deregisterMajorParticipant(lastPart);
+        Participant moderatorPart = getModeratorPart();
+        sessionManager.unpublishStream(this, lastPart.getPublisherStreamId(), moderatorPart,
 				null, EndReason.forceUnpublishByUser);
-		deregisterMajorParticipant(lastPart);
-		if (Objects.nonNull(otherPart)) {
-			sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
+        if (Objects.nonNull(otherPart)) {
+            sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
 					null, EndReason.forceUnpublishByUser);
-		}
+        }
+
+        // notify KMS layout changed and send conferenceLayoutChanged notify
+//		invokeKmsConferenceLayout();
+        participants.forEach(participant -> {
+            if (StreamType.MAJOR.equals(participant.getStreamType())) {
+                sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
+            }
+        });
 
 		// change subscriberPart role
         registerMajorParticipant(subscriberPart);
@@ -820,4 +828,5 @@ public class Session implements SessionInterface {
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
         return notifyResult;
     }
+
 }

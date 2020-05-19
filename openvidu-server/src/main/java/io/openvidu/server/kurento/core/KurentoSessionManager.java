@@ -696,9 +696,13 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public boolean unpublishStream(Session session, String streamId, Participant moderator, Integer transactionId,
 			EndReason reason) {
-		boolean result = false;
+        log.info("Stream:{} unPublish in session:{}", streamId, session.getSessionId());
 		KurentoSession kSession = (KurentoSession) session;
-		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
+//		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
+		Participant unPubPart = kSession.getParticipantByStreamId(streamId);
+		if (Objects.isNull(unPubPart)) {
+		    return false;
+        }
 		String moderatorPublicId = null, speakerId = null;
 		Set<Participant> participants = session.getParticipants();
 		for (Participant participant : participants) {
@@ -711,25 +715,19 @@ public class KurentoSessionManager extends SessionManager {
 				break;
 			}
 		}
-		/*String moderatePublicId = session.getParticipants().stream().filter(participant ->
-                Objects.equals(OpenViduRole.MODERATOR, participant.getRole())).findAny().get().getParticipantPublicId();*/
-		if (participantPrivateId != null) {
-			Participant participant = this.getParticipant(participantPrivateId, StreamType.SHARING);
-			if (participant != null) {
-				this.unpublishVideo(participant, moderator, transactionId, reason);
-				if (Objects.equals(kSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-                    // change conference layout and notify kms
-                    session.leaveRoomSetLayout(participant, Objects.equals(speakerId, participant.getParticipantPublicId())
-                            ? moderatorPublicId : speakerId);
-                    session.invokeKmsConferenceLayout();
-                }
-				if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
-					changeSharingStatusInConference(kSession, participant);
 
-				result = true;
-			}
-		}
-		return result;
+        this.unpublishVideo(unPubPart, moderator, transactionId, reason);
+        if (Objects.equals(kSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            // change conference layout and notify kms
+            session.leaveRoomSetLayout(unPubPart, Objects.equals(speakerId, unPubPart.getParticipantPublicId())
+                    ? moderatorPublicId : speakerId);
+            session.invokeKmsConferenceLayout();
+        }
+        if (Objects.equals(StreamType.SHARING, unPubPart.getStreamType())) {
+            changeSharingStatusInConference(kSession, unPubPart);
+        }
+
+        return true;
 	}
 
 	@Override

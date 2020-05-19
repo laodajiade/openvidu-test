@@ -116,7 +116,8 @@ public class KurentoParticipant extends Participant {
 
 	public void createPublisher() {
 		log.info("#####create publisher when role changed and id:{}", getParticipantName());
-		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) && Objects.isNull(publisher)) {
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
+                (Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
