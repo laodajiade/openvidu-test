@@ -129,10 +129,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // check ever already exits share part
                 Session session;
-                if (Objects.nonNull(session = sessionManager.getSession(sessionId)) &&
-                        Objects.nonNull(session.getParticipants().stream()
-                                .filter(participant -> StreamType.SHARING.equals(participant.getStreamType()))
-                                .findAny().orElse(null))) {
+                if (StreamType.SHARING.name().equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
+                        && Objects.nonNull(session.getParticipants().stream()
+                        .filter(participant -> StreamType.SHARING.equals(participant.getStreamType())).findAny().orElse(null))) {
                     errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;
                     break;
                 }
