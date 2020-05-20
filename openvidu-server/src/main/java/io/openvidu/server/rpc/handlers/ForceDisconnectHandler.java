@@ -93,6 +93,9 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
             if (!Objects.isNull(evictRpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, evictPart.getStreamType())) {
                 cacheManage.setDeviceStatus(evictRpcConnection.getSerialNumber(), DeviceStatus.online.name());
             }
+
+            session.putPartOnWallAutomatically(sessionManager);
+
         } else {
             log.error("Error: participant {} is not a moderator", participant.getParticipantPublicId());
             throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,

@@ -40,9 +40,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -555,6 +553,35 @@ public class Session implements SessionInterface {
 		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM, originalRole.name());
 		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM, presentRole.name());
 		return param;
+	}
+
+	// TODO record the order when part publish and put the first order part which down the wall
+	// current version put the random participant who down the wall
+	public void putPartOnWallAutomatically(SessionManager sessionManager) {
+		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() < openviduConfig.getMcuMajorPartLimit()) {
+			List<String> publishedParts = new ArrayList<>(16);
+			for (JsonElement jsonElement : majorShareMixLinkedArr) {
+				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
+			}
+			Set<Participant> participants = getParticipants();
+			Participant automaticOnWallPart = participants.stream().filter(participant ->
+					!publishedParts.contains(participant.getParticipantPublicId()) &&
+							OpenViduRole.SUBSCRIBER.equals(participant.getRole())).findAny().orElse(null);
+			if (Objects.nonNull(automaticOnWallPart)) {
+				registerMajorParticipant(automaticOnWallPart);
+				JsonObject notifyParam = getPartRoleChangedNotifyParam(automaticOnWallPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER);
+				participants.forEach(participant -> {
+					if (StreamType.MAJOR.equals(participant.getStreamType())) {
+						sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+								ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, notifyParam);
+					}
+				});
+			} else {
+				log.info("Not found the below wall SUBSCRIBER participant.");
+			}
+		} else {
+			log.info("Not above the conditions when put Part On Wall Automatically.");
+		}
 	}
 
 	public JsonArray getMajorShareMixLinkedArr() {
