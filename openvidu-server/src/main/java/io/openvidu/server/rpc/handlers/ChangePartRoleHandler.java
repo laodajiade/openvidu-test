@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -48,11 +49,15 @@ public class ChangePartRoleHandler extends RpcAbstractHandler {
             }
         }
 
+        // deal the toDownWallPart if necessary
+        toDownWallPart = getTheLegalToDownPart(session, toDownWallPart);
+
         if (Objects.isNull(toDownWallPart) || Objects.isNull(toOnWallPart)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
+
 
         if (OpenViduRole.MODERATOR.equals(toDownWallPart.getRole()) ||
                 !ConferenceModeEnum.MCU.equals(session.getConferenceMode()) ||
@@ -66,5 +71,23 @@ public class ChangePartRoleHandler extends RpcAbstractHandler {
         session.dealUpAndDownTheWall(toDownWallPart, toOnWallPart, sessionManager, false);
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+
+    private Participant getTheLegalToDownPart(Session session, Participant toDownWallPart) {
+        if (Objects.nonNull(toDownWallPart) && OpenViduRole.MODERATOR.equals(toDownWallPart.getRole())) {
+            int size;
+            JsonArray mixLinkedArr = session.getMajorShareMixLinkedArr();
+            // moderator is the last in the composite
+            if ((size = mixLinkedArr.size()) > 1 && toDownWallPart.getParticipantPublicId()
+                    .equals(mixLinkedArr.get(size - 1).getAsJsonObject().get("connectionId").getAsString())) {
+                String downPartPublicId = mixLinkedArr.get(size - 2).getAsJsonObject().get("connectionId").getAsString();
+                return session.getParticipants().stream().filter(participant ->
+                        Objects.equals(downPartPublicId, participant.getParticipantPublicId())).findAny().orElse(null);
+            } else {
+                return null;
+            }
+        }
+
+        return toDownWallPart;
     }
 }
