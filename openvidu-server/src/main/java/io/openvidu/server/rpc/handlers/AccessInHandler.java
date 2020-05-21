@@ -45,6 +45,9 @@ public class AccessInHandler extends RpcAbstractHandler {
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
 //        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        String userTypeStr = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_USERTYPE_PARAM);
+        UserType userType = !StringUtils.isEmpty(userTypeStr) ? UserType.valueOf(userTypeStr) : UserType.register;
+        String clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE);
 
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
@@ -90,6 +93,8 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
+            rpcConnection.setUserType(userType);
+            rpcConnection.setClientType(clientType);
             rpcConnection.setMacAddr(deviceMac);
             rpcConnection.setUserId(accessInUserId);
 

@@ -23,6 +23,8 @@ import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.utils.GeoLocation;
+import lombok.Getter;
+import lombok.Setter;
 
 public class Participant {
 
@@ -56,6 +58,14 @@ public class Participant {
 	protected SessionPreset preset;
 	protected ParticipantJoinType joinType;
 	private String ability;
+
+	@Getter
+	@Setter
+	private UserType userType;
+
+	@Getter
+	@Setter
+	private String clientType;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
