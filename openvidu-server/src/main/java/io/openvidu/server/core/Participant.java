@@ -44,6 +44,10 @@ public class Participant {
 	protected volatile boolean closed;
 
 	private String userId;
+
+	@Getter
+	@Setter
+	private String uuid;
 	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;

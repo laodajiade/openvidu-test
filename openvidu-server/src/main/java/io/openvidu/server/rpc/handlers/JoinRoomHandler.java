@@ -153,6 +153,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setAbility(rpcConnection.getAbility());
                 participant.setUserType(rpcConnection.getUserType());
                 participant.setClientType(rpcConnection.getClientType());
+                participant.setUuid(rpcConnection.getUserUuid());
                 if (StringUtils.isEmpty(serialNumber)) {
                     User user = userMapper.selectByPrimaryKey(userId);
 
