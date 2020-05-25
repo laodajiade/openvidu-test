@@ -182,6 +182,10 @@ public class SessionProperties {
 		return this.recordingMode;
 	}
 
+	public LivingMode livingMode() {
+		return this.livingMode;
+	}
+
 	/**
 	 * Defines the default value used to initialize property
 	 * {@link io.openvidu.java.client.RecordingProperties#outputMode()} of every

@@ -42,6 +42,7 @@ public class Participant {
 	protected volatile boolean closed;
 
 	private String userId;
+	private String uuid;
 	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
@@ -120,6 +121,14 @@ public class Participant {
 
 	public String getUserId() {
 		return userId;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	public void setParticipantName(String participantName) { this.participantName = participantName; }

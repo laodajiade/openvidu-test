@@ -34,6 +34,8 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import io.openvidu.server.living.Living;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -62,6 +64,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	protected RecordingManager recordingManager;
+
+	@Autowired
+	protected LivingManager livingManager;
 
 	@Autowired
 	protected OpenviduConfig openviduConfig;
@@ -577,6 +582,8 @@ public abstract class SessionManager {
 
 		boolean sessionClosedByLastParticipant = false;
 
+		session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
+
 		for (Participant p : participants) {
 			try {
 				sessionClosedByLastParticipant = this.evictParticipant(p, null, null, reason);
@@ -596,10 +603,10 @@ public abstract class SessionManager {
 
 	public void closeSessionAndEmptyCollections(Session session, EndReason reason) {
 
-		if (openviduConfig.isRecordingModuleEnabled()
-				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
-			recordingManager.stopRecording(session, null, RecordingManager.finalReason(reason));
-		}
+//		if (openviduConfig.isRecordingModuleEnabled()
+//				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
+//			recordingManager.stopRecording(session, null, RecordingManager.finalReason(reason));
+//		}
 
 		if (session.close(reason)) {
 			sessionEventsHandler.onSessionClosed(session.getSessionId(), reason);
@@ -891,5 +898,12 @@ public abstract class SessionManager {
 		}
 		session.setStartLivingTime(startLivingTime);
 	}
+
+	public String getLivingUrl(Session session) {
+		if (Objects.isNull(session)) return null;
+		Living living = livingManager.getLiving(session.getSessionId());
+		return Objects.isNull(living) ? null : living.getUrl();
+	}
+
 
 }

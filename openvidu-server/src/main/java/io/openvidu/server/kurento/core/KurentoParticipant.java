@@ -36,6 +36,7 @@ import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
@@ -58,6 +59,7 @@ public class KurentoParticipant extends Participant {
 
 	private OpenviduConfig openviduConfig;
 	private RecordingManager recordingManager;
+	private LivingManager livingManager;
 
 	private boolean webParticipant = true;
 
@@ -74,7 +76,7 @@ public class KurentoParticipant extends Participant {
 
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
-			RecordingManager recordingManager) {
+			RecordingManager recordingManager, LivingManager livingManager) {
 		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility());
@@ -93,6 +95,7 @@ public class KurentoParticipant extends Participant {
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
+		this.livingManager = livingManager;
 		this.session = kurentoSession;
 
 		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
@@ -246,6 +249,11 @@ public class KurentoParticipant extends Participant {
 		if (this.openviduConfig.isRecordingModuleEnabled()
 				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
 			this.recordingManager.startOneIndividualStreamRecording(session, null, null, this);
+		}
+
+		if (this.openviduConfig.isLivingModuleEnabled()
+				&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
+			this.livingManager.startOneIndividualStreamLiving(session, null, null, this);
 		}
 
 		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
@@ -456,6 +464,11 @@ public class KurentoParticipant extends Participant {
 			if (this.openviduConfig.isRecordingModuleEnabled()
 					&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
 				this.recordingManager.stopOneIndividualStreamRecording(session, this.getPublisherStreamId(),
+						kmsDisconnectionTime);
+			}
+			if (this.openviduConfig.isLivingModuleEnabled()
+					&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
+				this.livingManager.stopOneIndividualStreamLiving(session, this.getPublisherStreamId(),
 						kmsDisconnectionTime);
 			}
 
