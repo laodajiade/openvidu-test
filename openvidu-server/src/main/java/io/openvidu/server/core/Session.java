@@ -489,7 +489,7 @@ public class Session implements SessionInterface {
         Participant otherPart = getPartByPrivateIdAndStreamType(pup2SubPart.getParticipantPrivateId(),
                 StreamType.MAJOR.equals(pup2SubPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
 
-        if (ParticipantSpeakerStatus.on.equals(pup2SubPart.getSpeakerStatus())) {
+        if (ParticipantHandStatus.speaker.equals(pup2SubPart.getHandStatus())) {
             // send endRoll notify
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
