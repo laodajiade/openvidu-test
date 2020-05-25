@@ -583,12 +583,46 @@ public class ProtocolElements {
     public static final String GETSUBDEVORUSERBYDEPTIDS_METHOD = "getSubDevOrUserByDeptIds";
     public static final String GETSUBDEVORUSERBYDEPTIDS_ORGIDS_PARAM = "orgIds";
 
+	public static final String START_CONF_RECORD_METHOD = "startConferenceRecord";
+	public static final String START_CONF_RECORD_ROOMID_PARAM = "roomId";
 
+	public static final String STOP_CONF_RECORD_METHOD = "stopConferenceRecord";
+	public static final String STOP_CONF_RECORD_ROOMID_PARAM = "roomId";
+
+	public static final String GET_CONF_RECORD_METHOD = "getConferenceRecord";
+	public static final String GET_CONF_RECORD__PAGENUM_PARAM = "pageNum";
+	public static final String GET_CONF_RECORD__SIZE_PARAM = "size";
+	public static final String GET_CONF_RECORD__TOTAL_PARAM = "total";
+	public static final String GET_CONF_RECORD__RECORDS_PARAM = "records";
+
+	public static final String GET_CONF_RECORD_STATUS_METHOD = "getConferenceRecordStatus";
+	public static final String GET_CONF_RECORD_ROOMID_PARAM = "roomId";
+
+	public static final String PLAYBACK_CONF_RECORD_METHOD = "playbackConferenceRecord";
+	public static final String PLAYBACK_CONF_RECORD_ID_PARAM = "id";
+
+	public static final String DOWNLOAD_CONF_RECORD_METHOD = "downloadConferenceRecord";
+	public static final String DOWNLOAD_CONF_RECORD_ID_PARAM = "id";
+
+	public static final String DEL_CONF_RECORD_METHOD = "delConferenceRecord";
+	public static final String DEL_CONF_RECORD_ID_PARAM = "id";
+
+	public static final String START_LIVE_METHOD = "startLive";
+	public static final String START_LIVE_ROOMID_PARAM = "roomId";
+
+	public static final String STOP_LIVE_METHOD = "stopLive";
+	public static final String STOP_LIVE_ROOMID_PARAM = "roomId";
+
+	public static final String GET_LIVE_STATUS_METHOD = "getLiveStatus";
+	public static final String GET_LIVE_STATUS_ROOMID_PARAM = "roomId";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,
 			GETROOMLAYOUT_METHOD, GET_ORG_METHOD, GET_USER_DEVICE_METHOD, GET_SUB_DEVORUSER_METHOD,GET_DEPARTMENT_TREE_METHOD,
 			COMMAND_UOGRADE_METHOD, GET_UNFINISHED_MEETINGS_METHOD, GET_GROUP_LIST_METHOD, GET_GROUP_INFO_METHOD,
-            UPLOADTERMINALINFO_METHOD, GETSUBDEVORUSERBYDEPTIDS_METHOD);
+            UPLOADTERMINALINFO_METHOD, GETSUBDEVORUSERBYDEPTIDS_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_METHOD,
+			PLAYBACK_CONF_RECORD_METHOD, DOWNLOAD_CONF_RECORD_METHOD, DEL_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
+			GET_LIVE_STATUS_METHOD
+	);
 }

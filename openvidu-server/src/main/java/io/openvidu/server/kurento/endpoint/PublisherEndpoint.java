@@ -55,6 +55,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private HubPort majorShareHubPort = null;
 	private ListenerSubscription majorShareHubPortSubscription = null;
 
+	private HubPort recordHubPort = null;
+	private HubPort liveHubPort = null;
+
 	// Audio composite.
 	private Composite audioComposite = null;
 	private final Object audioCompositeCreateLock = new Object();
@@ -110,6 +113,16 @@ public class PublisherEndpoint extends MediaEndpoint {
 		HubPort hubPort = new HubPort.Builder(composite).build();
 		elements.put(hubPort.getId(), hubPort);
 		return hubPort;
+	}
+
+	public HubPort createRecordHubPort(Composite composite) {
+		recordHubPort = new HubPort.Builder(composite).build();
+		return recordHubPort;
+	}
+
+	public HubPort createLiveHubPort(Composite composite) {
+		liveHubPort = new HubPort.Builder(composite).build();
+		return liveHubPort;
 	}
 
 	public void connectAudioIn(MediaElement sink) {
@@ -335,6 +348,15 @@ public class PublisherEndpoint extends MediaEndpoint {
 		internalSinkDisconnect(passThru, sink, type);
 		internalSinkDisconnect(majorShareHubPort, sink, type);
 	}
+
+	public void connectRecordHubPort(HubPort hubPort) {
+		internalSinkConnect(this.getEndpoint(), hubPort);
+	}
+
+	public void disconnectRecordHubPort(HubPort hubPort) {
+		internalSinkDisconnect(this.getEndpoint(), hubPort);
+	}
+
 
 	/**
 	 * Changes the media passing through a chain of media elements by applying the
@@ -667,6 +689,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	public HubPort getMajorShareHubPort() {
 		return majorShareHubPort;
+	}
+
+	public HubPort getRecordHubPort() {
+		return recordHubPort;
+	}
+
+	public HubPort getLiveHubPort() {
+		return liveHubPort;
 	}
 
 	@Override

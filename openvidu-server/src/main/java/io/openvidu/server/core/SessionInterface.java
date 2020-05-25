@@ -57,4 +57,17 @@ public interface SessionInterface {
 	Long getStartTime();
 
     ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId);
+
+	boolean setIsRecording(boolean flag);
+
+	boolean sessionAllowedStartToRecord();
+
+	boolean sessionAllowedToStopRecording();
+
+	boolean setIsLiving(boolean flag);
+
+	boolean sessionAllowedStartToLive();
+
+	boolean sessionAllowedToStopLiving();
+
 }

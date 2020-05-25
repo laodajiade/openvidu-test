@@ -179,10 +179,13 @@ public abstract class RecordingService {
 		return new OpenViduException(Code.RECORDING_START_ERROR_CODE, errorMessage);
 	}
 
-	protected void cleanRecordingMaps(Recording recording) {
+	protected void cleanRecordingMaps(Session session, Recording recording) {
+		log.info("cleanRecordingMaps for session:{}", session.getSessionId());
+		session.setIsRecording(false);
 		this.recordingManager.sessionsRecordings.remove(recording.getSessionId());
 		this.recordingManager.startedRecordings.remove(recording.getId());
 	}
+
 
 	/**
 	 * Simple wrapper for returning update RecordingProperties and a free

@@ -867,4 +867,29 @@ public abstract class SessionManager {
 			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
 		});
 	}
+
+	public void setStartRecordingTime(String sessionId, Long startRecordingTime) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		session.setStartRecordingTime(startRecordingTime);
+	}
+
+	public void setStopRecordingTime(String sessionId, Long stopRecordingTime) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		session.setStopRecordingTime(stopRecordingTime);
+	}
+
+	public void setStartLivingTime(String sessionId, Long startLivingTime) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		session.setStartLivingTime(startLivingTime);
+	}
+
 }

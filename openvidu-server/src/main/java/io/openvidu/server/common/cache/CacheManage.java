@@ -23,4 +23,10 @@ public interface CacheManage {
     void setDeviceStatus(String key, String version);
 
     String getDeviceStatus(String serialNumber);
+
+    void saveLivingInfo(String sessionId, String entryKey, String entryValue);
+
+    String getLivingInfo(String sessionId, String entryKey);
+
+    void delLivingInfo(String sessionId);
 }
