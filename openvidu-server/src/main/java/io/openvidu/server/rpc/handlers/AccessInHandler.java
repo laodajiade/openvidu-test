@@ -94,6 +94,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
             rpcConnection.setUserType(userType);
+            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
             rpcConnection.setClientType(clientType);
             rpcConnection.setMacAddr(deviceMac);
             rpcConnection.setUserId(accessInUserId);

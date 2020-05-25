@@ -55,12 +55,18 @@ public class RpcConnection {
 	private Long createTime;
 	private String ability;
 	private JsonObject terminalConfig;
+
 	@Getter
 	@Setter
-	private UserType userType;
+	private UserType userType = UserType.register;
+
 	@Getter
 	@Setter
 	private String clientType;
+
+	@Getter
+	@Setter
+	private String username;
 
 	public RpcConnection(Session session) {
 		this.session = session;

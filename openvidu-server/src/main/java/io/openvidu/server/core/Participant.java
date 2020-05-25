@@ -65,7 +65,7 @@ public class Participant {
 
 	@Getter
 	@Setter
-	private UserType userType;
+	private UserType userType = UserType.register;
 
 	@Getter
 	@Setter
