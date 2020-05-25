@@ -83,6 +83,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 userObj.addProperty("username", user.getUsername());
                 userObj.addProperty("userOrgName", userDep.getDeptName());
                 userObj.addProperty("role", part.getRole().name());
+                userObj.addProperty("userType", part.getUserType().name());
+                userObj.addProperty("terminalType", part.getClientType());
                 userObj.addProperty("shareStatus", part.getShareStatus().name());
                 userObj.addProperty("handStatus", part.getHandStatus().name());
                 // 获取发布者时存在同步阻塞的状态

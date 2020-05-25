@@ -592,7 +592,7 @@ public class Session implements SessionInterface {
         Participant otherPart = getPartByPrivateIdAndStreamType(pup2SubPart.getParticipantPrivateId(),
                 StreamType.MAJOR.equals(pup2SubPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
 
-        if (ParticipantSpeakerStatus.on.equals(pup2SubPart.getSpeakerStatus())) {
+        if (ParticipantHandStatus.speaker.equals(pup2SubPart.getHandStatus())) {
             // send endRoll notify
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
@@ -612,20 +612,32 @@ public class Session implements SessionInterface {
         Participant moderatorPart = getModeratorPart();
         sessionManager.unpublishStream(this, pup2SubPart.getPublisherStreamId(), moderatorPart,
                 null, EndReason.forceUnpublishByUser);
+
+        boolean sendStopShareNotify = false;
+		JsonObject stopShareParams = new JsonObject();
         if (Objects.nonNull(otherPart)) {
             sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
                     null, EndReason.forceUnpublishByUser);
+            sendStopShareNotify = true;
+			stopShareParams.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+					StreamType.SHARING.equals(otherPart.getStreamType()) ?
+							otherPart.getParticipantPublicId() : pup2SubPart.getParticipantPublicId());
         }
 
         // send conferenceLayoutChanged notify
-        participants.forEach(participant -> {
-            if (StreamType.MAJOR.equals(participant.getStreamType())) {
-                sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
-            }
-        });
+		for (Participant participant : participants) {
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
+				if (!sendStopShareNotify) {
+					continue;
+				}
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, stopShareParams);
+			}
+		}
 
-        // change subscriberPart role
+		// change subscriberPart role
 		changeThePartRole(sessionManager, sub2PubPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, isSub2PubSpeaker);
     }
 

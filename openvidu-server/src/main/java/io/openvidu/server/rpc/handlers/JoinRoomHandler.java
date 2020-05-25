@@ -151,17 +151,22 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
                 participant.setParticipantName(participantName);
                 participant.setAbility(rpcConnection.getAbility());
+                participant.setUserType(rpcConnection.getUserType());
+                participant.setClientType(rpcConnection.getClientType());
                 participant.setUuid(rpcConnection.getUserUuid());
                 if (StringUtils.isEmpty(serialNumber)) {
-                    User user = userMapper.selectByPrimaryKey(userId);
+                    if (UserType.register.equals(participant.getUserType())) {
+                        User user = userMapper.selectByPrimaryKey(userId);
+                        // User and dept info.
+                        UserDeptSearch udSearch = new UserDeptSearch();
+                        udSearch.setUserId(userId);
+                        UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
+                        Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
-                    // User and dept info.
-                    UserDeptSearch udSearch = new UserDeptSearch();
-                    udSearch.setUserId(userId);
-                    UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
-                    Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-
-                    participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
+                        participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
+                    } else {
+                        participant.setAppShowInfo(rpcConnection.getUsername(), rpcConnection.getUsername());
+                    }
                 } else {
                     DeviceSearch devSearch = new DeviceSearch();
                     devSearch.setSerialNumber(serialNumber);

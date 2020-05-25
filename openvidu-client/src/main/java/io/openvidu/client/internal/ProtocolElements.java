@@ -162,6 +162,8 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String ACCESS_IN_CLIENTTIMESTAMP_PARAM = "clientTimestamp";
 	public static final String ACCESS_IN_SERVERTIMESTAMP_PARAM = "serverTimestamp";
+	public static final String ACCESS_IN_USERTYPE_PARAM = "userType";
+	public static final String ACCESS_IN_CLIENT_TYPE = "type";
 
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";
