@@ -7,7 +7,9 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.UserType;
 import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -75,21 +77,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     continue;
                 }
                 Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-
-                JsonObject userObj = new JsonObject();
-                userObj.addProperty("userId", user.getId());
-                userObj.addProperty("account", user.getUuid());
-                userObj.addProperty("connectionId", part.getParticipantPublicId());
-                userObj.addProperty("username", user.getUsername());
-                userObj.addProperty("userOrgName", userDep.getDeptName());
-                userObj.addProperty("role", part.getRole().name());
-                userObj.addProperty("userType", part.getUserType().name());
-                userObj.addProperty("terminalType", part.getClientType());
-                userObj.addProperty("shareStatus", part.getShareStatus().name());
-                userObj.addProperty("handStatus", part.getHandStatus().name());
-                // 获取发布者时存在同步阻塞的状态
-                userObj.addProperty("audioActive", !part.isStreaming() || part.getPublisherMediaOptions().isAudioActive());
-                userObj.addProperty("videoActive", !part.isStreaming() || part.getPublisherMediaOptions().isVideoActive());
+                JsonObject userObj = getPartInfo(part, user, userDep);
 
                 // get device info if have device.
 //                String serialNumber = onlineUserList.get(user.getId());
@@ -119,6 +107,12 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 //                }
 
                 jsonArray.add(userObj);
+            }
+            // add tourist participant
+            for (Participant participant : sessionManager.getParticipants(sessionId)) {
+                if (StreamType.MAJOR.equals(participant.getStreamType()) && UserType.tourist.equals(participant.getUserType())) {
+                    jsonArray.add(getPartInfo(participant, null, null));
+                }
             }
         }
 
@@ -154,5 +148,28 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         respJson.add("participantList", jsonArray);
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
+    }
+
+    private static JsonObject getPartInfo(Participant participant, User user, Department department) {
+        JsonObject userObj = new JsonObject();
+        KurentoParticipant part = (KurentoParticipant) participant;
+        userObj.addProperty("connectionId", part.getParticipantPublicId());
+        userObj.addProperty("role", part.getRole().name());
+        userObj.addProperty("userType", part.getUserType().name());
+        userObj.addProperty("terminalType", part.getClientType());
+        userObj.addProperty("shareStatus", part.getShareStatus().name());
+        userObj.addProperty("handStatus", part.getHandStatus().name());
+        // 获取发布者时存在同步阻塞的状态
+        userObj.addProperty("audioActive", !part.isStreaming() || part.getPublisherMediaOptions().isAudioActive());
+        userObj.addProperty("videoActive", !part.isStreaming() || part.getPublisherMediaOptions().isVideoActive());
+
+        if (UserType.register.equals(part.getUserType())) {
+            userObj.addProperty("userId", user.getId());
+            userObj.addProperty("account", user.getUuid());
+            userObj.addProperty("username", user.getUsername());
+            userObj.addProperty("userOrgName", department.getDeptName());
+        }
+
+        return userObj;
     }
 }

@@ -17,25 +17,20 @@
 
 package io.openvidu.server.cdr;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-
 import io.openvidu.java.client.OpenViduRole;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import io.openvidu.java.client.Recording.Status;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.MediaOptions;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.endpoint.KmsEvent;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.summary.SessionSummary;
 import io.openvidu.server.webhook.CDRLoggerWebhook;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * CDR logger to register all information of a Session.
@@ -189,6 +184,12 @@ public class CallDetailRecord {
 					this.log(eventSubscriberEnd);
 
 					// Summary: update final user ended subscriber
+					if (Objects.isNull(sessionManager.getFinalUsers(eventSubscriberEnd.getSessionId())) ||
+							Objects.isNull(eventSubscriberEnd.getParticipant()) ||
+							Objects.isNull(sessionManager.getFinalUsers(eventSubscriberEnd.getSessionId())
+									.get(eventSubscriberEnd.getParticipant().getFinalUserId()))) {
+						return;
+					}
 					sessionManager.getFinalUsers(eventSubscriberEnd.getSessionId())
 							.get(eventSubscriberEnd.getParticipant().getFinalUserId()).getConnections()
 							.get(participantPublicId).addSubscriberClosed(streamId, eventSubscriberEnd);

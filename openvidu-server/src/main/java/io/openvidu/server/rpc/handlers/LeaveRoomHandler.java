@@ -111,8 +111,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             session.invokeKmsConferenceLayout();
         }
 
-        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
             participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+        }
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
@@ -128,5 +129,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
+        if (Objects.nonNull(session = sessionManager.getSession(sessionId)) && !session.isClosed()) {
+            session.putPartOnWallAutomatically(sessionManager);
+        }
     }
 }

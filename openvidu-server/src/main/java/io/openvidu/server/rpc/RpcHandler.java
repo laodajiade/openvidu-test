@@ -184,7 +184,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 					// release audio composite
 					KurentoParticipant kp = (KurentoParticipant) participant;
-					if (!Objects.isNull(kp.getPublisher())) {
+					if (kp.isStreaming() && !Objects.isNull(kp.getPublisher())) {
 						kp.getPublisher().closeAudioComposite();
 					}
 					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());

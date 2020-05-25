@@ -571,7 +571,8 @@ public class Session implements SessionInterface {
 	// TODO record the order when part publish and put the first order part which down the wall
 	// current version put the random participant who down the wall
 	public void putPartOnWallAutomatically(SessionManager sessionManager) {
-		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() < openviduConfig.getMcuMajorPartLimit()) {
+		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && getParticipants().size() > openviduConfig.getMcuMajorPartLimit()
+                && majorParts.get() < openviduConfig.getMcuMajorPartLimit()) {
 			List<String> publishedParts = new ArrayList<>(16);
 			for (JsonElement jsonElement : majorShareMixLinkedArr) {
 				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
@@ -581,6 +582,7 @@ public class Session implements SessionInterface {
 					!publishedParts.contains(participant.getParticipantPublicId()) &&
 							OpenViduRole.SUBSCRIBER.equals(participant.getRole())).findAny().orElse(null);
 			if (Objects.nonNull(automaticOnWallPart)) {
+			    log.info("Put Part:{} On Wall Automatically in session:{}", automaticOnWallPart.getParticipantName(), automaticOnWallPart.getSessionId());
 				changeThePartRole(sessionManager, automaticOnWallPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, false);
 			} else {
 				log.info("Not found the below wall SUBSCRIBER participant.");
