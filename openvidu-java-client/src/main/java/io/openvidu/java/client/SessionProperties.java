@@ -26,8 +26,10 @@ public class SessionProperties {
 
 	private MediaMode mediaMode;
 	private RecordingMode recordingMode;
+	private LivingMode livingMode;
 	private OutputMode defaultOutputMode;
 	private RecordingLayout defaultRecordingLayout;
+	private LivingLayout defaultLivingLayout;
 	private String defaultCustomLayout;
 	private String customSessionId;
 
@@ -38,8 +40,10 @@ public class SessionProperties {
 
 		private MediaMode mediaMode = MediaMode.ROUTED;
 		private RecordingMode recordingMode = RecordingMode.MANUAL;
+		private LivingMode livingMode = LivingMode.MANUAL;
 		private OutputMode defaultOutputMode = OutputMode.COMPOSED;
 		private RecordingLayout defaultRecordingLayout = RecordingLayout.BEST_FIT;
+		private LivingLayout defaultLivingLayout = LivingLayout.BEST_FIT;
 		private String defaultCustomLayout = "";
 		private String customSessionId = "";
 
@@ -48,8 +52,8 @@ public class SessionProperties {
 		 * configured
 		 */
 		public SessionProperties build() {
-			return new SessionProperties(this.mediaMode, this.recordingMode, this.defaultOutputMode,
-					this.defaultRecordingLayout, this.defaultCustomLayout, this.customSessionId);
+			return new SessionProperties(this.mediaMode, this.recordingMode, this.livingMode, this.defaultOutputMode,
+					this.defaultRecordingLayout, this.defaultLivingLayout, this.defaultCustomLayout, this.customSessionId);
 		}
 
 		/**
@@ -147,15 +151,18 @@ public class SessionProperties {
 		this.customSessionId = "";
 	}
 
-	private SessionProperties(MediaMode mediaMode, RecordingMode recordingMode, OutputMode outputMode,
-			RecordingLayout layout, String defaultCustomLayout, String customSessionId) {
+	private SessionProperties(MediaMode mediaMode, RecordingMode recordingMode, LivingMode livingMode, OutputMode outputMode,
+							  RecordingLayout recordingLayout, LivingLayout livingLayout, String defaultCustomLayout, String customSessionId) {
 		this.mediaMode = mediaMode;
 		this.recordingMode = recordingMode;
+		this.livingMode = livingMode;
 		this.defaultOutputMode = outputMode;
-		this.defaultRecordingLayout = layout;
+		this.defaultRecordingLayout = recordingLayout;
+		this.defaultLivingLayout = livingLayout;
 		this.defaultCustomLayout = defaultCustomLayout;
 		this.customSessionId = customSessionId;
 	}
+
 
 	/**
 	 * Defines how the media streams will be sent and received by your clients:
@@ -173,6 +180,10 @@ public class SessionProperties {
 	 */
 	public RecordingMode recordingMode() {
 		return this.recordingMode;
+	}
+
+	public LivingMode livingMode() {
+		return this.livingMode;
 	}
 
 	/**
@@ -199,6 +210,10 @@ public class SessionProperties {
 	 */
 	public RecordingLayout defaultRecordingLayout() {
 		return this.defaultRecordingLayout;
+	}
+
+	public LivingLayout defaultLivingLayout() {
+		return this.defaultLivingLayout;
 	}
 
 	/**

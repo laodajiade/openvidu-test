@@ -23,18 +23,17 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.java.client.Recording;
-import io.openvidu.java.client.RecordingLayout;
-import io.openvidu.java.client.SessionProperties;
+import io.openvidu.java.client.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import lombok.extern.slf4j.Slf4j;
+import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
@@ -53,10 +52,12 @@ public class Session implements SessionInterface {
 
 	protected OpenviduConfig openviduConfig;
 	protected RecordingManager recordingManager;
+	protected LivingManager livingManager;
 
   //protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
 	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
+	protected String ruid;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
 	// TODO. Maybe we should relate conference in here.
@@ -73,12 +74,18 @@ public class Session implements SessionInterface {
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean notifyCountdown10Min = false;
 	protected boolean notifyCountdown1Min = false;
+	protected Long startRecordingTime;
+	protected Long stopRecordingTime;
+	protected Long startLivingTime;
+	protected String livingUrl;
 
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
 	protected AtomicInteger activePublishers = new AtomicInteger(0);
-
+	public final AtomicBoolean isRecording = new AtomicBoolean(false);
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
+
+	public final AtomicBoolean isLiving = new AtomicBoolean(false);
 
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
 
@@ -117,7 +124,15 @@ public class Session implements SessionInterface {
 		return this.sessionId;
 	}
 
-    public boolean isAutomatically() {
+	public String getRuid() {
+		return ruid;
+	}
+
+	public void setRuid(String ruid) {
+		this.ruid = ruid;
+	}
+
+	public boolean isAutomatically() {
         return automatically;
     }
 
@@ -131,6 +146,61 @@ public class Session implements SessionInterface {
 
 	public Long getStartTime() {
 		return this.startTime;
+	}
+
+	private boolean isRecordingConfigured() {
+		return this.openviduConfig.isRecordingModuleEnabled() && MediaMode.ROUTED.equals(sessionProperties.mediaMode());
+	}
+
+	private boolean isLivingConfigured() {
+		return this.openviduConfig.isLivingModuleEnabled() && MediaMode.ROUTED.equals(sessionProperties.mediaMode());
+	}
+
+	@Override
+	public boolean setIsRecording(boolean flag) {
+		return isRecording.compareAndSet(!flag, flag);
+	}
+
+	@Override
+	public boolean sessionAllowedStartToRecord() {
+		log.info("to start recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
+				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
+		return isRecordingConfigured() && !this.recordingManager.sessionIsBeingRecorded(sessionId)
+				&& isRecording.compareAndSet(false, true);
+	}
+
+	@Override
+	public boolean sessionAllowedToStopRecording() {
+		log.info("to stop recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
+				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
+		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
+				&& isRecording.compareAndSet(true, false);
+	}
+
+	@Override
+	public boolean setIsLiving(boolean flag) {
+		log.info("session {} set isLiving:{}", this.getSessionId(), flag);
+		return isLiving.compareAndSet(!flag, flag);
+	}
+
+	@Override
+	public boolean sessionAllowedStartToLive() {
+		log.info("to start living, isLivingConfigured:{}, sessionsLivings contains {}:{}, session isLiving:{}",
+				isLivingConfigured(), sessionId, this.livingManager.sessionIsBeingLived(sessionId), isLiving.get());
+		return isLivingConfigured() && !this.livingManager.sessionIsBeingLived(sessionId)
+				&& isLiving.compareAndSet(false, true);
+	}
+
+	@Override
+	public boolean sessionAllowedToStopLiving() {
+		log.info("to stop living, isLivingConfigured:{}, sessionsLivings contains {}:{}, session isLiving:{}",
+				isLivingConfigured(), sessionId, this.livingManager.sessionIsBeingLived(sessionId), isLiving.get());
+		return isLivingConfigured() && this.livingManager.sessionIsBeingLived(sessionId)
+				&& isLiving.compareAndSet(true, false);
+	}
+
+	public RecordingManager getRecordingManager() {
+		return recordingManager;
 	}
 
 	public void setConference(Conference conference){ this.conference = conference; }
@@ -208,6 +278,39 @@ public class Session implements SessionInterface {
 	public void setNotifyCountdown1Min(boolean notifyCountdown1Min) { this.notifyCountdown1Min = notifyCountdown1Min; }
 
 	public boolean getNotifyCountdown1Min() { return this.notifyCountdown1Min; }
+
+
+	public Long getStartRecordingTime() {
+		return startRecordingTime;
+	}
+
+	public void setStartRecordingTime(Long startRecordingTime) {
+		this.startRecordingTime = startRecordingTime;
+	}
+
+	public Long getStopRecordingTime() {
+		return stopRecordingTime;
+	}
+
+	public void setStopRecordingTime(Long stopRecordingTime) {
+		this.stopRecordingTime = stopRecordingTime;
+	}
+
+	public Long getStartLivingTime() {
+		return startLivingTime;
+	}
+
+	public void setStartLivingTime(Long startLivingTime) {
+		this.startLivingTime = startLivingTime;
+	}
+
+	public String getLivingUrl() {
+		return livingUrl;
+	}
+
+	public void setLivingUrl(String livingUrl) {
+		this.livingUrl = livingUrl;
+	}
 
 	public int getConfDelayTime() { return this.delayConfCnt * this.delayTimeUnit; }
 
@@ -596,7 +699,7 @@ public class Session implements SessionInterface {
 		return majorShareMixLinkedArr;
 	}
 
-	public synchronized void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
+	public synchronized void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant, EndpointTypeEnum... typeEnums) {
     	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
     		boolean notContains = true;
     		for (JsonElement jsonElement : majorShareMixLinkedArr) {
@@ -632,7 +735,7 @@ public class Session implements SessionInterface {
 		}
 
     	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
-    	this.invokeKmsConferenceLayout();
+    	this.invokeKmsConferenceLayout(typeEnums);
 	}
 
 	private static JsonObject getPartOrderInfo(String streamType, String publicId) {
@@ -739,45 +842,52 @@ public class Session implements SessionInterface {
         }
     }
 
-    public synchronized int invokeKmsConferenceLayout() {
-        KurentoSession kurentoSession = (KurentoSession) this;
-        KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
-        try {
-        	kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-					majorShareMixLinkedArr, kurentoClient.getSessionId()));
-        } catch (IOException e) {
-            log.error("Exception:\n", e);
-            return 0;
-        }
+	public synchronized int invokeKmsConferenceLayout(EndpointTypeEnum... typeEnums) {
+		KurentoSession kurentoSession = (KurentoSession) this;
+		KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
+		try {
+			kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
+					majorShareMixLinkedArr, kurentoClient.getSessionId(), typeEnums));
+		} catch (IOException e) {
+			log.error("Exception:\n", e);
+			return 0;
+		}
 
-        return 1;
-    }
+		return 1;
+	}
 
-    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId) {
-        Request<JsonObject> kmsRequest = new Request<>();
-        JsonObject params = new JsonObject();
-        params.addProperty("object", pipelineId);
-        params.addProperty("operation", "setLayout");
-        params.addProperty("sessionId", sessionId);
-        JsonArray layoutInfos = new JsonArray(50);
-        int index = 0;
-        int size = linkedArr.size();
-        for (JsonElement jsonElement : layoutCoordinates) {
-        	if (index < size) {
+
+    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId, EndpointTypeEnum... typeEnums) {
+		Request<JsonObject> kmsRequest = new Request<>();
+		JsonObject params = new JsonObject();
+		params.addProperty("object", pipelineId);
+		params.addProperty("operation", "setLayout");
+		params.addProperty("sessionId", sessionId);
+		JsonArray layoutInfos = new JsonArray(50);
+		int index = 0;
+		int size = linkedArr.size();
+		for (JsonElement jsonElement : layoutCoordinates) {
+			if (index < size) {
 				JsonObject temp = jsonElement.getAsJsonObject().deepCopy();
 				try {
 					KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(linkedArr
 							.get(index).getAsJsonObject().get("connectionId").getAsString());
-//					if (kurentoParticipant.isStreaming() && Objects.nonNull(kurentoParticipant.getPublisher())
-//							&& Objects.nonNull(kurentoParticipant.getPublisher().getMajorShareHubPort())) {
-						temp.addProperty("connectionId", "connectionId");
-						temp.addProperty("streamType", "streamType");
-						temp.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
-						temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
-						temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
+					temp.addProperty("connectionId", "connectionId");
+					temp.addProperty("streamType", "streamType");
 
-						layoutInfos.add(temp);
-//					}
+					EndpointTypeEnum type;
+					HubPort hubPort = null;
+					if (!kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)
+							&& Objects.nonNull(typeEnums) && typeEnums.length > 0 && Objects.nonNull(type = typeEnums[0])) {
+						hubPort = Objects.equals(type, EndpointTypeEnum.recording) ? kurentoParticipant.getPublisher().getRecordHubPort() : kurentoParticipant.getPublisher().getLiveHubPort();
+					}
+					temp.addProperty("object", kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU) ?
+							kurentoParticipant.getPublisher().getMajorShareHubPort().getId() : hubPort.getId());
+
+					temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
+					temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
+
+					layoutInfos.add(temp);
 					index++;
 				} catch (Exception e) {
 					log.error("Exception when compose layout invoke request:{}", temp.toString(), e);
@@ -785,15 +895,16 @@ public class Session implements SessionInterface {
 
 			} else break;
 		}
-        JsonObject operationParams = new JsonObject();
-        operationParams.add("layoutInfo", layoutInfos);
-        params.add("operationParams", operationParams);
-        kmsRequest.setMethod("invoke");
-        kmsRequest.setParams(params);
-        log.info("send sms setLayout params:{}", params);
+		JsonObject operationParams = new JsonObject();
+		operationParams.add("layoutInfo", layoutInfos);
+		params.add("operationParams", operationParams);
+		kmsRequest.setMethod("invoke");
+		kmsRequest.setParams(params);
+		log.info("send sms setLayout params:{}", params);
 
-        return kmsRequest;
-    }
+		return kmsRequest;
+
+	}
 
 	public synchronized void evictReconnectOldPart(String partPublicId) {
     	if (StringUtils.isEmpty(partPublicId)) return;
@@ -855,5 +966,28 @@ public class Session implements SessionInterface {
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
         return notifyResult;
     }
+
+	public boolean getConferenceRecordStatus() {
+		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
+				&& isRecording.get();
+	}
+
+	public boolean getLivingStatus() {
+		return isLivingConfigured() && this.livingManager.sessionIsBeingLived(sessionId)
+				&& isLiving.get();
+	}
+
+	public void stopRecordAndLiving(long kmsDisconnectionTime, EndReason reason) {
+		// Stop recording if session is being recorded
+		if (recordingManager.sessionIsBeingRecorded(sessionId)) {
+			this.recordingManager.forceStopRecording(this, reason, kmsDisconnectionTime);
+		}
+
+		// Stop living if session is being lived
+		if (livingManager.sessionIsBeingLived(sessionId)) {
+			this.livingManager.forceStopLiving(this, reason, kmsDisconnectionTime);
+		}
+	}
+
 
 }

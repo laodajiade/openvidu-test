@@ -97,6 +97,25 @@ public class OpenviduConfig {
 	@Value("${openvidu.recording.composed-url}")
 	private String openviduRecordingComposedUrl;
 
+	@Value("${openvidu.living}")
+	private boolean openviduLiving;
+
+	@Value("${openvidu.living.path}")
+	private String openviduLivingPath;
+
+	@Value("${openvidu.living.http.port}")
+	private String openviduLivingHttpPort;
+
+	@Value("${openvidu.living.http.url.prefix}")
+	private String openviduLivingHttpUrlPrefix;
+
+	@Value("${openvidu.living.url.prefix}")
+	private String openviduLivingUrlPrefix;
+
+	@Value("${openvidu.living.autostop-timeout}")
+	private int openviduLivingAutostopTimeout;
+
+
 	@Value("${openvidu.webhook}")
 	private boolean openviduWebhook;
 
@@ -155,6 +174,23 @@ public class OpenviduConfig {
 	@Getter
 	@Value("${mcu.composite.limit.size}")
 	private int mcuMajorPartLimit;
+
+	@Getter
+	@Value("${conference.record.playback.server}")
+	private String recordPlaybackServer;
+
+	@Getter
+	@Value("${conference.record.thumbnail.server}")
+	private String recordThumbnailServer;
+
+	@Getter
+	@Value("${conference.transcoding.server.request.url}")
+	private String recordTranscodingRequestUrl;
+
+	@Getter
+	@Value("${conference.record.download.server}")
+	private String recordDownloadServer;
+
 
 	private String finalUrl;
 	private List<String> kmsUrisList;
@@ -285,6 +321,31 @@ public class OpenviduConfig {
 	public boolean openviduRecordingCustomLayoutChanged(String path) {
 		return !"/opt/openvidu/custom-layout".equals(path);
 	}
+
+	public boolean isLivingModuleEnabled() {
+		return this.openviduLiving;
+	}
+
+	public String getOpenViduLivingPath() {
+		return this.openviduLivingPath;
+	}
+
+	public String getOpenviduLivingHttpPort() {
+		return this.openviduLivingHttpPort;
+	}
+
+	public String getOpenviduLivingHttpUrlPrefix() {
+		return openviduLivingHttpUrlPrefix;
+	}
+
+	public String getOpenviduLivingUrlPrefix() {
+		return this.openviduLivingUrlPrefix;
+	}
+
+	public int getOpenviduLivingAutostopTimeout() {
+		return this.openviduLivingAutostopTimeout;
+	}
+
 
 	public String getFinalUrl() {
 		return finalUrl;

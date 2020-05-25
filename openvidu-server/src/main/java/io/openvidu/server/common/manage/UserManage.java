@@ -5,4 +5,8 @@ import java.util.List;
 
 public interface UserManage {
     List<User> getSubUserByDeptId(Long deptId);
+
+    User queryByUuid(String uuid);
+
+    boolean isAdmin(String uuid);
 }

@@ -69,8 +69,13 @@ public enum ErrorCodeEnum {
     TERMINAL_MUST_LOGIN_FIRST(13014, "硬终端须先登录"),
     TERMINAL_IS_NOT_MODERATOR(13015, "硬终端不是主持人"),
     WEB_MODERATOR_ALREADY_EXIST(13016, "会议中已存在web会控"),
+    CONFERENCE_RECORD_NOT_EXIST(13025, "会议记录不存在"),
+    CONFERENCE_RECORD_NOT_START(13027, "会议尚未开始录制"),
+    CONFERENCE_IS_RECORDING(13028, "会议正在录制中"),
     SHARING_ALREADY_EXISTS(13029, "会议中已存在共享"),
-
+    CONFERENCE_IS_LIVING(13031, "会议正在直播中"),
+    CONFERENCE_LIVE_NOT_START(13032, "会议尚未开始直播"),
+    CONFERENCE_RECORD_FREQUENT_OPERATION(13034, "会议录制操作频繁，请稍后再试"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中"),

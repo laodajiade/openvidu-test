@@ -34,6 +34,7 @@ import io.openvidu.server.kurento.kms.FixedOneKmsManager;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.kurento.kms.LoadManager;
 import io.openvidu.server.kurento.kms.MaxWebRtcLoadManager;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.DummyRecordingDownloader;
 import io.openvidu.server.recording.RecordingDownloader;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -164,6 +165,12 @@ public class OpenViduServer implements JsonRpcConfigurer {
 
 	@Bean
 	@ConditionalOnMissingBean
+	public LivingManager livingManager() {
+		return new LivingManager();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public RecordingDownloader recordingDownload() {
 		return new DummyRecordingDownloader();
 	}
@@ -273,6 +280,15 @@ public class OpenViduServer implements JsonRpcConfigurer {
 							+ "\" set with system property \"openvidu.recording.custom-layout\"";
 				}
 				log.error(finalErrorMessage + ". Shutting down OpenVidu Server");
+				System.exit(1);
+			}
+		}
+
+		if(this.openviduConfig.isLivingModuleEnabled()) {
+			try {
+				this.livingManager().initializeLivingManager();
+			} catch (OpenViduException e) {
+				log.error(e.getMessage() + ". Error initializing living, Shutting down OpenVidu Server");
 				System.exit(1);
 			}
 		}

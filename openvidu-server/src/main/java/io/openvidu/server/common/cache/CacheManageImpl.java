@@ -9,6 +9,8 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author geedow
@@ -59,9 +61,32 @@ public class CacheManageImpl implements CacheManage {
         if (StringUtils.isEmpty(userUuid)) return;
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
     }
+
+    @Override
     public void setDeviceStatus(String serialNumber, String version) {
         String key = CacheKeyConstants.DEV_PREFIX_KEY + serialNumber;
         tokenStringTemplate.opsForValue().set(key, version);
     }
+
+    @Override
+    public void saveLivingInfo(String sessionId, String entryKey, String livingUrl) {
+        String key = CacheKeyConstants.CONFERENCE_LIVING_INFO_KEY + sessionId;
+        tokenStringTemplate.opsForHash().put(key, entryKey, livingUrl);
+        tokenStringTemplate.expire(key, CacheKeyConstants.DEFAULT_CONFERENCE_EXPIRE, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public String getLivingInfo(String sessionId, String entryKey) {
+        String key = CacheKeyConstants.CONFERENCE_LIVING_INFO_KEY + sessionId;
+        Object obj = tokenStringTemplate.opsForHash().get(key, entryKey);
+        return Objects.isNull(obj) ? null : (String) obj;
+    }
+
+    @Override
+    public void delLivingInfo(String sessionId) {
+        String key = CacheKeyConstants.CONFERENCE_LIVING_INFO_KEY + sessionId;
+        tokenStringTemplate.delete(key);
+    }
+
 
 }

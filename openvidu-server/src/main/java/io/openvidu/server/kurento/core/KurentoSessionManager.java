@@ -233,14 +233,17 @@ public class KurentoSessionManager extends SessionManager {
 					log.info(
 							"Last participant left. Starting {} seconds countdown for stopping recording of session {}",
 							this.openviduConfig.getOpenviduRecordingAutostopTimeout(), sessionId);
-					recordingManager.initAutomaticRecordingStopThread(session);
-				} else {
-					log.info("No more participants in session '{}', removing it and closing it", sessionId);
-					this.closeSessionAndEmptyCollections(session, reason);
-					sessionClosedByLastParticipant = true;
-					showTokens();
+					recordingManager.stopRecording(session, null, EndReason.automaticStop);
 				}
-			} else if (remainingParticipants.size() == 1 && openviduConfig.isRecordingModuleEnabled()
+
+				if (openviduConfig.isLivingModuleEnabled()
+						&& MediaMode.ROUTED.equals(session.getSessionProperties().mediaMode())
+						&& (this.livingManager.sessionIsBeingLived(sessionId))) {
+					log.info("Last participant left. Stop living of session {}", sessionId);
+					livingManager.stopLiving(session, null, EndReason.automaticStop);
+				}
+
+			} /*else if (remainingParticipants.size() == 1 && openviduConfig.isRecordingModuleEnabled()
 					&& MediaMode.ROUTED.equals(session.getSessionProperties().mediaMode())
 					&& this.recordingManager.sessionIsBeingRecorded(sessionId)
 					&& ProtocolElements.RECORDER_PARTICIPANT_PUBLICID
@@ -249,7 +252,7 @@ public class KurentoSessionManager extends SessionManager {
 				log.info("Last participant left. Starting {} seconds countdown for stopping recording of session {}",
 						this.openviduConfig.getOpenviduRecordingAutostopTimeout(), sessionId);
 				recordingManager.initAutomaticRecordingStopThread(session);
-			}
+			}*/
 		}
 
 		// Finally close websocket session if required
@@ -362,7 +365,35 @@ public class KurentoSessionManager extends SessionManager {
 					kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
 		}
 
-		if (this.openviduConfig.isRecordingModuleEnabled()
+		if (kSession.getSessionProperties().recordingMode().equals(RecordingMode.ALWAYS) && !kSession.isRecording.get()
+				&& kSession.sessionAllowedStartToRecord()) {
+			// Start automatic recording for sessions configured with RecordingMode.ALWAYS
+			new Thread(() -> recordingManager.startRecording(kSession,
+					new RecordingProperties.Builder().name("")
+							.outputMode(kSession.getSessionProperties().defaultOutputMode())
+							.recordingLayout(kSession.getSessionProperties().defaultRecordingLayout())
+							.customLayout(kSession.getSessionProperties().defaultCustomLayout()).build())).start();
+		} else if (kSession.isRecording.get()) {
+			new Thread(() -> recordingManager.connectStreamToExistingRecorderComposite(kSession, participant)).start();
+		}
+
+		if (kSession.getSessionProperties().livingMode().equals(LivingMode.ALWAYS) && !kSession.isLiving.get()
+				&& kSession.sessionAllowedStartToLive()) {
+			// Start automatic recording for sessions configured with RecordingMode.ALWAYS
+			new Thread(() -> livingManager.startLiving(kSession,
+					new LivingProperties.Builder()
+							.name("")
+							.outputMode(kSession.getSessionProperties().defaultOutputMode())
+							.livingLayout(kSession.getSessionProperties().defaultLivingLayout())
+							.customLayout(kSession.getSessionProperties().defaultCustomLayout())
+							.build(),
+					participant.getUuid())).start();
+		} else if (kSession.isLiving.get()) {
+			new Thread(() -> livingManager.connectStreamToExistingLiveComposite(kSession, participant)).start();
+		}
+
+
+		/*if (this.openviduConfig.isRecordingModuleEnabled()
 				&& MediaMode.ROUTED.equals(kSession.getSessionProperties().mediaMode())
 				&& kSession.getActivePublishers() == 0) {
 			if (RecordingMode.ALWAYS.equals(kSession.getSessionProperties().recordingMode())
@@ -390,7 +421,7 @@ public class KurentoSessionManager extends SessionManager {
 							kSession.getSessionId());
 				}
 			}
-		}
+		}*/
 
 		kSession.newPublisher(participant);
 

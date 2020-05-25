@@ -90,7 +90,7 @@ public class KurentoSession extends Session {
 			}
 
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
-					this.openviduConfig, this.recordingManager);
+					this.openviduConfig, this.recordingManager, this.livingManager);
 			participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
 				Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
 				if (newPart != null)

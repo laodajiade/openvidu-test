@@ -7,18 +7,20 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.manage.DepartmentManage;
-import io.openvidu.server.common.manage.DeviceManage;
-import io.openvidu.server.common.manage.UserManage;
+import io.openvidu.server.common.manage.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.DeviceDept;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.living.service.LivingManager;
+import io.openvidu.server.recording.service.RecordingManager;
+import io.openvidu.server.utils.HttpUtil;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -43,6 +45,11 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected SessionManager sessionManager;
+    @Resource
+    protected RecordingManager recordingManager;
+
+    @Resource
+    protected LivingManager livingManager;
 
     @Resource
     protected RpcNotificationService notificationService;
@@ -89,7 +96,14 @@ public abstract class RpcAbstractHandler {
     @Resource
     protected UserDeviceMapper userDeviceMapper;
 
+    @Resource
+    protected ConferenceRecordManage conferenceRecordManage;
 
+    @Resource
+    protected ConferenceRecordInfoManage conferenceRecordInfoManage;
+
+    @Resource
+    protected HttpUtil httpUtil;
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);
 
@@ -429,5 +443,12 @@ public abstract class RpcAbstractHandler {
         io.openvidu.server.core.Session session = this.sessionManager.getSession(rpcConnection.getSessionId());
         Participant participant = session.getParticipantByPublicId(connectionId);
         return notificationService.getRpcConnection(participant.getParticipantPrivateId());
+    }
+
+    protected User getUserByRpcConnection(RpcConnection rpcConnection) {
+        User user = new User();
+        user.setUuid(rpcConnection.getUserUuid());
+        user.setUsername("");
+        return user;
     }
 }
