@@ -86,7 +86,7 @@ public class KurentoSessionManager extends SessionManager {
 							new SessionProperties.Builder().mediaMode(MediaMode.ROUTED)
 									.recordingMode(RecordingMode.ALWAYS)
 									.defaultRecordingLayout(RecordingLayout.BEST_FIT).build(),
-							openviduConfig, recordingManager);
+							openviduConfig, recordingManager, livingManager);
 				}
 
 				Kms lessLoadedKms;

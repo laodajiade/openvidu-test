@@ -212,6 +212,37 @@ public class RpcHandlerFactory {
     @Resource
     private ChangePartRoleHandler changePartRoleHandler;
 
+    @Resource
+    private StartConferenceRecordHandler startConferenceRecordHandler;
+
+    @Resource
+    private StopConferenceRecordHandler stopConferenceRecordHandler;
+
+    @Resource
+    private GetConferenceRecordHandler getConferenceRecordHandler;
+
+    @Resource
+    private PlaybackConferenceRecordHandler playbackConferenceRecordHandler;
+
+    @Resource
+    private DownloadConferenceRecordHandler downloadConferenceRecordHandler;
+
+    @Resource
+    private DelConferenceRecordHandler delConferenceRecordHandler;
+
+    @Resource
+    private StartLiveHandler startLiveHandler;
+
+    @Resource
+    private StopLiveHandler stopLiveHandler;
+
+    @Resource
+    private GetLiveStatusHandler getLiveStatusHandler;
+
+    @Resource
+    private GetConferenceRecordStatusHandler getConferenceRecordStatusHandler;
+
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
@@ -278,6 +309,17 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.UPLOADTERMINALINFO_METHOD,                     uploadTerminalInfoHandler);
         handlersMap.put(ProtocolElements.GETSUBDEVORUSERBYDEPTIDS_METHOD,               getSubDevOrUserByDeptIdsHandler);
         handlersMap.put(ProtocolElements.CHANGE_PART_ROLE_METHOD,                       changePartRoleHandler);
+        handlersMap.put(ProtocolElements.START_CONF_RECORD_METHOD,                      startConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.STOP_CONF_RECORD_METHOD,                       stopConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.GET_CONF_RECORD_METHOD,                        getConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.PLAYBACK_CONF_RECORD_METHOD,                   playbackConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.DOWNLOAD_CONF_RECORD_METHOD,                   downloadConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.DEL_CONF_RECORD_METHOD,                        delConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.GET_CONF_RECORD_STATUS_METHOD,                 getConferenceRecordStatusHandler);
+        handlersMap.put(ProtocolElements.START_LIVE_METHOD,                             startLiveHandler);
+        handlersMap.put(ProtocolElements.STOP_LIVE_METHOD,                              stopLiveHandler);
+        handlersMap.put(ProtocolElements.GET_LIVE_STATUS_METHOD,                        getLiveStatusHandler);
+
 
     }
 
