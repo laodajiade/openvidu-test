@@ -110,6 +110,7 @@ public class KurentoSessionManager extends SessionManager {
 				kSession.setConference(conference);
 				kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
 				kSession.setPresetInfo(getPresetInfo(sessionId));
+				kSession.setRuid(conference.getRuid());
 			}
 
 			if (kSession.isClosed()) {
