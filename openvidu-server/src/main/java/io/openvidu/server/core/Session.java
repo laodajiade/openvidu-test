@@ -598,7 +598,7 @@ public class Session implements SessionInterface {
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId());
             participants.forEach(part -> {
-                if (!Objects.equals(part, pup2SubPart) && Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+                if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
                     sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.END_ROLL_CALL_METHOD, params);
                 }
