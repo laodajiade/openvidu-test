@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
+import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.RecordingProperties;
 import io.openvidu.server.common.enums.AccessTypeEnum;
@@ -11,6 +12,7 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -63,14 +65,15 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
-        // 权限校验（web：管理员，terminal：主持人）
-        boolean permissionLimit;
-        if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
-            permissionLimit = userManage.isAdmin(rpcConnection.getUserUuid());
-        } else {
-            permissionLimit = rpcConnection.getUserUuid().equals(conferenceList.get(0).getRoomId());
+        Participant participant;
+        try {
+            participant = sanityCheckOfSession(rpcConnection, "startConferenceRecord");
+        } catch (OpenViduException e) {
+            return;
         }
-        if (!permissionLimit) {
+
+        // 权限校验（web：管理员，terminal：主持人）
+        if (!isModerator(participant.getRole())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
