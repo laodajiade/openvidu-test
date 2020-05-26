@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author geedow
@@ -45,6 +46,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
             // save conference info
             Conference conference = new Conference();
+            conference.setRuid(UUID.randomUUID().toString());
             conference.setRoomId(sessionId);
             conference.setConferenceSubject(roomSubject);
             conference.setConferenceMode(conferenceMode.getMode());

@@ -3,6 +3,7 @@
 <mapper namespace="io.openvidu.server.common.dao.ConferenceMapper" >
   <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.Conference" >
     <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="ruid" property="ruid" jdbcType="VARCHAR" />
     <result column="room_id" property="roomId" jdbcType="VARCHAR" />
     <result column="conference_subject" property="conferenceSubject" jdbcType="VARCHAR" />
     <result column="conference_desc" property="conferenceDesc" jdbcType="VARCHAR" />
@@ -19,7 +20,7 @@
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
+    id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
     status, password, invite_limit, create_time, update_time
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
@@ -57,10 +58,10 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Conference" >
-    insert into sd_conference (id, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time,
+    insert into sd_conference (id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time,
       end_time, status, password, project
       )
-    values (#{id,jdbcType=BIGINT}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
+    values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
       #{conferenceDesc,jdbcType=VARCHAR}, #{conferenceMode,jdbcType=TINYINT}, #{userId,jdbcType=BIGINT}, #{startTime,jdbcType=TIMESTAMP},
       #{endTime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},#{project,jdbcType=VARCHAR}
       )
@@ -70,6 +71,9 @@
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
         id,
+      </if>
+      <if test="ruid != null" >
+        ruid,
       </if>
       <if test="roomId != null" >
         room_id,
@@ -115,6 +119,9 @@
       <if test="id != null" >
         #{id,jdbcType=BIGINT},
       </if>
+      <if test="ruid != null" >
+        #{ruid,jdbcType=VARCHAR},
+      </if>
       <if test="roomId != null" >
         #{roomId,jdbcType=VARCHAR},
       </if>
@@ -159,6 +166,9 @@
   <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.Conference" >
     update sd_conference
     <set >
+      <if test="ruid != null" >
+        ruid = #{ruid,jdbcType=VARCHAR},
+      </if>
       <if test="roomId != null" >
         room_id = #{roomId,jdbcType=VARCHAR},
       </if>
@@ -203,7 +213,8 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.Conference" >
     update sd_conference
-    set room_id = #{roomId,jdbcType=VARCHAR},
+    set ruid = #{ruid,jdbcType=VARCHAR},
+      room_id = #{roomId,jdbcType=VARCHAR},
       conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
       conference_desc = #{conferenceDesc,jdbcType=VARCHAR},
       conference_mode = #{conferenceMode,jdbcType=TINYINT},
