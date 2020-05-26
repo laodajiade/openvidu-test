@@ -582,7 +582,9 @@ public abstract class SessionManager {
 
 		boolean sessionClosedByLastParticipant = false;
 
-		session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
+		if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
+			session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
+		}
 
 		for (Participant p : participants) {
 			try {
