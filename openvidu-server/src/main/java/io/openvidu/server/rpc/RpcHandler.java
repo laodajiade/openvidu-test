@@ -225,6 +225,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 										ProtocolElements.END_ROLL_CALL_METHOD, params);
 							}
 						});
+						kp.setHandStatus(ParticipantHandStatus.endSpeaker);
 					}
 				}
 			}

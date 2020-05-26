@@ -168,6 +168,10 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             userObj.addProperty("account", user.getUuid());
             userObj.addProperty("username", user.getUsername());
             userObj.addProperty("userOrgName", department.getDeptName());
+        } else {
+            userObj.addProperty("account", participant.getUuid());
+            userObj.addProperty("username", participant.getUsername());
+            userObj.addProperty("userId", 0L);
         }
 
         return userObj;

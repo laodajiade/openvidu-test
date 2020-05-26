@@ -603,6 +603,7 @@ public class Session implements SessionInterface {
                             ProtocolElements.END_ROLL_CALL_METHOD, params);
                 }
             });
+            pup2SubPart.setHandStatus(ParticipantHandStatus.endSpeaker);
         }
 
         // change lastPart role

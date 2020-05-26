@@ -59,6 +59,8 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
                                 ProtocolElements.END_ROLL_CALL_METHOD, params);
                     }
                 }
+
+                evictPart.setHandStatus(ParticipantHandStatus.endSpeaker);
             }
 
             Participant sharePart = session.getPartByPrivateIdAndStreamType(evictPart.getParticipantPrivateId(), StreamType.SHARING);

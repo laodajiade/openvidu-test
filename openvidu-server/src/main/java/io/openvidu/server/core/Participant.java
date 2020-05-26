@@ -48,6 +48,10 @@ public class Participant {
 	@Getter
 	@Setter
 	private String uuid;
+
+	@Getter
+	@Setter
+	private String username;
 	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
