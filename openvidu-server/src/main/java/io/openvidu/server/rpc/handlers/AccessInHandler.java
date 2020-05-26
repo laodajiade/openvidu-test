@@ -98,6 +98,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             rpcConnection.setClientType(clientType);
             rpcConnection.setMacAddr(deviceMac);
             rpcConnection.setUserId(accessInUserId);
+            rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : null);
 
             // verify device valid & TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
             if (!StringUtils.isEmpty(deviceSerialNumber)) {
@@ -147,7 +148,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (webLogin) {
                 Session session;
                 rpcConnection.setUserUuid(uuid);
-                if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber()) ) {
+                if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
                     errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
                     break;
                 } else {
@@ -182,8 +183,8 @@ public class AccessInHandler extends RpcAbstractHandler {
                     break;
                 } else {
                     RpcConnection currLoginThorConnect = notificationService.getRpcConnections().stream()
-                        .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection) && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
-                            && Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
+                            .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection) && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
+                                    && Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
                     if (!Objects.isNull(currLoginThorConnect)) {
                         if (!forceLogin) {
                             log.info("2####currLoginThorConnect privateId:{}, uuid:{}, accessType:{}", currLoginThorConnect.getParticipantPrivateId(), currLoginThorConnect.getUserUuid(), currLoginThorConnect.getAccessType().name());
@@ -291,7 +292,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
             log.warn("AccessIn Warning. privateId:{}, errCode:{}", rpcConnection.getParticipantPrivateId(), errCode.name());
             if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),null, errCode);
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, errCode);
                 if (!Objects.equals(errCode, ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST)) {
                     sessionManager.accessOut(rpcConnection);
                 }
@@ -362,7 +363,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (part == null) {
                 // maybe can not find participant,because of server is restart
                 log.warn("CAN NOT FIND THE PARTICIPANT, the account:{} previous rpc connect id:{} userId:{} in conferenceId:{} " +
-                                "when reconnect and then close it.", uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
+                        "when reconnect and then close it.", uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
                 notificationService.closeRpcSession(previousRpcConnectId);
                 return;
             } else {

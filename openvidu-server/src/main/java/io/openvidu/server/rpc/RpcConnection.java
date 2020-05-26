@@ -48,6 +48,7 @@ public class RpcConnection {
 	private String participantPrivateId;
 	private Long userId;
 	private String userUuid;	// the uuid of user
+	private String project;
 	private String serialNumber;
 	private String macAddr;
 	private boolean isReconnected;
@@ -94,6 +95,14 @@ public class RpcConnection {
 	public String getUserUuid() { return this.userUuid; }
 
 	public void setUserUuid(String userUuid) { this.userUuid = userUuid; }
+
+	public String getProject() {
+		return project;
+	}
+
+	public void setProject(String project) {
+		this.project = project;
+	}
 
 	public String getSerialNumber() { return this.serialNumber; }
 

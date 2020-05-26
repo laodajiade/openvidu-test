@@ -42,7 +42,7 @@ public class GetConferenceRecordHandler extends RpcAbstractHandler {
 
         // 根据roomId进行查询
         ConferenceRecord record = new ConferenceRecord();
-        record.setRoomId(rpcConnection.getUserUuid());
+        record.setProject(rpcConnection.getProject());
         List<ConferenceRecord> conferenceRecordList = conferenceRecordManage.getByCondition(record);
 
         if (Objects.isNull(conferenceRecordList) || conferenceRecordList.isEmpty()) {
