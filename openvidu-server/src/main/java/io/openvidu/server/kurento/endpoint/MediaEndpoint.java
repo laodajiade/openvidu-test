@@ -17,28 +17,28 @@
 
 package io.openvidu.server.kurento.endpoint;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.Participant;
+import io.openvidu.server.kurento.core.CompositeService;
+import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import org.kurento.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
-
-import io.openvidu.server.kurento.core.CompositeService;
-import org.kurento.client.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link WebRtcEndpoint} wrapper that supports buffering of
@@ -190,6 +190,14 @@ public abstract class MediaEndpoint {
 			endpointLatch.countDown();
 		}
 		if (this.isWeb()) {
+			try {
+				if (!endpointLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+					throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+							"Timeout reached when creating subscriber endpoint");
+				}
+			} catch (InterruptedException e) {
+				log.info("Exception:", e);
+			}
 			while (!candidates.isEmpty()) {
 				internalAddIceCandidate(candidates.removeFirst());
 			}
