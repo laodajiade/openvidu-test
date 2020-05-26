@@ -113,19 +113,20 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
+                JsonObject clientMetadataObj = gson.fromJson(clientMetadata, JsonObject.class);
+                clientMetadataObj.addProperty("account", rpcConnection.getUserUuid());
                 // change participant role if web THOR invite the same user
                 if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
-                    JsonObject clientMetadataObj = gson.fromJson(clientMetadata, JsonObject.class);
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
                     if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsString()) &&
                             !Objects.equals(OpenViduRole.THOR, role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
                         role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
-                        clientMetadata = clientMetadataObj.toString();
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
                     }
                 }
+                clientMetadata = clientMetadataObj.toString();
 
                 // check ever already exits share part
                 Session session;
