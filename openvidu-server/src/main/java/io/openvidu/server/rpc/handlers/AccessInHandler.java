@@ -83,6 +83,10 @@ public class AccessInHandler extends RpcAbstractHandler {
                 log.warn("local token:{} userInfo:{}", token, userInfo);
                 errCode = ErrorCodeEnum.TOKEN_INVALID;
                 break;
+            } else {
+                if (userInfo.containsKey("role") && "admin".equals(String.valueOf(userInfo.get("role")))) {
+                    break;
+                }
             }
 
             if (!webLogin && userInfo.containsKey("serialNumber") && !Objects.equals(deviceSerialNumber, userInfo.get("serialNumber"))) {
