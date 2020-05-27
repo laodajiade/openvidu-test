@@ -103,6 +103,9 @@ public abstract class RpcAbstractHandler {
     protected ConferenceRecordInfoManage conferenceRecordInfoManage;
 
     @Resource
+    protected RoomManage roomManage;
+
+    @Resource
     protected HttpUtil httpUtil;
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);

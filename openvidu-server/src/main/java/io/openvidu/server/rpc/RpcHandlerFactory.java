@@ -241,6 +241,8 @@ public class RpcHandlerFactory {
 
     @Resource
     private GetConferenceRecordStatusHandler getConferenceRecordStatusHandler;
+    @Resource
+    private GetAllRoomsOfCorpHandler getAllRoomsOfCorpHandler;
 
 
     @PostConstruct
@@ -319,6 +321,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.START_LIVE_METHOD,                             startLiveHandler);
         handlersMap.put(ProtocolElements.STOP_LIVE_METHOD,                              stopLiveHandler);
         handlersMap.put(ProtocolElements.GET_LIVE_STATUS_METHOD,                        getLiveStatusHandler);
+        handlersMap.put(ProtocolElements.GETALLROOMSOFCORP_METHOD,                      getAllRoomsOfCorpHandler);
 
 
     }

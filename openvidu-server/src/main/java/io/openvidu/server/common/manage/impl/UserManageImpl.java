@@ -46,13 +46,22 @@ public class UserManageImpl implements UserManage {
     @Override
     public boolean isAdmin(String uuid) {
         User user = this.queryByUuid(uuid);
-        if (Objects.isNull(user)) return false;
-        if (Objects.equals("administrator", uuid)) return true;
+        if (Objects.isNull(user)) {
+            return false;
+        }
+        if (Objects.equals("administrator", uuid)) {
+            return true;
+        }
 
         Long roleId = userRoleMapper.selectByUserId(user.getId());
         Role role = roleMapper.selectByPrimaryKey(roleId);
 
         return (Objects.nonNull(role) && Objects.equals(role.getRoleName(), "admin"));
+    }
+
+    @Override
+    public Role getUserRoleById(Long roleId) {
+        return roleMapper.selectByPrimaryKey(roleId);
     }
 
 }
