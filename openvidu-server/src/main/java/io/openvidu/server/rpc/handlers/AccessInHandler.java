@@ -76,6 +76,10 @@ public class AccessInHandler extends RpcAbstractHandler {
                 errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
                 break;
             }
+            rpcConnection.setUserType(userType);
+            rpcConnection.setClientType(clientType);
+            rpcConnection.setMacAddr(deviceMac);
+            rpcConnection.setUserUuid(uuid);
 
             // verify access token
             Map userInfo = cacheManage.getUserInfoByUUID(uuid);
@@ -84,7 +88,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 errCode = ErrorCodeEnum.TOKEN_INVALID;
                 break;
             } else {
-                if (userInfo.containsKey("role") && "admin".equals(String.valueOf(userInfo.get("role")))) {
+                if (isAdmin(uuid)) {
                     break;
                 }
             }
@@ -97,11 +101,8 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
-            rpcConnection.setUserType(userType);
-            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
-            rpcConnection.setClientType(clientType);
-            rpcConnection.setMacAddr(deviceMac);
             rpcConnection.setUserId(accessInUserId);
+            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
             rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : null);
 
             // verify device valid & TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
