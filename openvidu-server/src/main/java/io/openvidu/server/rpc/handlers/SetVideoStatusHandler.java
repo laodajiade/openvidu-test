@@ -34,7 +34,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
         String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
         // add params for tourist
-        String source = getStringParam(request, ProtocolElements.SET_VIDEO_SOURCE_PARAM);
+        String source = getStringOptionalParam(request, ProtocolElements.SET_VIDEO_SOURCE_PARAM);
         List<String> accountTargets = getStringListParam(request, ProtocolElements.SET_VIDEO_TARGETS_PARAM);
 
         /*if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0)))
