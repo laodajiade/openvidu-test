@@ -39,13 +39,13 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         String source = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_PARAM);
         List<String> accountTargets = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGETS_PARAM);
 
-        if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0))) &&
+        /*if ((Objects.isNull(targetIds) || targetIds.isEmpty() || !Objects.equals(sourceId, targetIds.get(0))) &&
                 !OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(sessionId,
                         rpcConnection.getParticipantPrivateId(), StreamType.MAJOR).getRole())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
-        }
+        }*/
 
         // SUBSCRIBER part role can not operate audio status
         Participant sourcePart;
