@@ -37,6 +37,7 @@ public class PlaybackConferenceRecordHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_EXIST);
             return;
         }
+        log.info("playbackConferenceRecord rpcConnection userUuid:{}, conference recorder uuid:{}", rpcConnection.getUserUuid(), conferenceRecordList.get(0).getRecorderUuid());
         if (!rpcConnection.getUserUuid().equals(conferenceRecordList.get(0).getRecorderUuid())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);

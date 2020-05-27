@@ -345,6 +345,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
             cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
         }
+        log.info("accessIn rpcConnection userUuid:{}", rpcConnection.getUserUuid());
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
 
         if (reconnect) {
