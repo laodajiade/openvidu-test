@@ -451,4 +451,9 @@ public abstract class RpcAbstractHandler {
         user.setUsername("");
         return user;
     }
+
+    protected boolean isAdmin(String uuid) {
+        Map userInfo = cacheManage.getUserInfoByUUID(uuid);
+        return userInfo.containsKey("role") && "admin".equals(String.valueOf(userInfo.get("role")));
+    }
 }
