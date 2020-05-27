@@ -97,6 +97,7 @@ public class Session implements SessionInterface {
 		this.sessionProperties = previousSession.getSessionProperties();
 		this.openviduConfig = previousSession.openviduConfig;
 		this.recordingManager = previousSession.recordingManager;
+		this.livingManager = previousSession.livingManager;
 
 		this.conference = previousSession.conference;
 		this.preset = previousSession.preset;
@@ -107,12 +108,13 @@ public class Session implements SessionInterface {
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
-			RecordingManager recordingManager) {
+			RecordingManager recordingManager, LivingManager livingManager) {
 		this.sessionId = sessionId;
 		this.startTime = System.currentTimeMillis();
 		this.sessionProperties = sessionProperties;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
+		this.livingManager = livingManager;
 
 		this.layoutMode = LayoutModeEnum.ONE;
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;

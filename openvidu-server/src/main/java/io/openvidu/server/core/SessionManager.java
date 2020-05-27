@@ -335,7 +335,7 @@ public abstract class SessionManager {
 	}
 
 	public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
-		Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager);
+		Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager, livingManager);
 		dealSessionNotActiveStored(sessionId, sessionNotActive);
 		showTokens();
 		return sessionNotActive;
@@ -350,7 +350,7 @@ public abstract class SessionManager {
 
 	public void storeSessionNotActiveWhileRoomCreated(String sessionId) {
 		Session sessionNotActive = new Session(sessionId,
-				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager);
+				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
 		dealSessionNotActiveStored(sessionId, sessionNotActive);
 	}
 

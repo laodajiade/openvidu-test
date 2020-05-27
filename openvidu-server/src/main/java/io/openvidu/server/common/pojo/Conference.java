@@ -8,6 +8,8 @@ import java.util.Date;
 public class Conference {
     private Long id;
 
+    private String ruid;
+
     private String roomId;
 
     private String conferenceSubject;

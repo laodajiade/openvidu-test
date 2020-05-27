@@ -86,7 +86,7 @@ public class KurentoSessionManager extends SessionManager {
 							new SessionProperties.Builder().mediaMode(MediaMode.ROUTED)
 									.recordingMode(RecordingMode.ALWAYS)
 									.defaultRecordingLayout(RecordingLayout.BEST_FIT).build(),
-							openviduConfig, recordingManager);
+							openviduConfig, recordingManager, livingManager);
 				}
 
 				Kms lessLoadedKms;
@@ -110,6 +110,7 @@ public class KurentoSessionManager extends SessionManager {
 				kSession.setConference(conference);
 				kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
 				kSession.setPresetInfo(getPresetInfo(sessionId));
+				kSession.setRuid(conference.getRuid());
 			}
 
 			if (kSession.isClosed()) {
