@@ -421,6 +421,13 @@ public class Session implements SessionInterface {
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
+	public Participant getParticipantByUUID(String uuid) {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(uuid, participant.getUuid())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
 	public Participant getSpeakerPart() {
 		checkClosed();
 		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
@@ -991,6 +998,5 @@ public class Session implements SessionInterface {
 			this.livingManager.forceStopLiving(this, reason, kmsDisconnectionTime);
 		}
 	}
-
 
 }

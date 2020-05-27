@@ -246,12 +246,16 @@ public class ProtocolElements {
 	public static final String SET_AUDIO_ROOM_ID_PARAM = "roomId";
 	public static final String SET_AUDIO_SOURCE_ID_PARAM = "sourceId";
 	public static final String SET_AUDIO_TARGET_IDS_PARAM = "targetIds";
+	public static final String SET_AUDIO_SOURCE_PARAM = "source";
+	public static final String SET_AUDIO_TARGETS_PARAM = "targets";
 	public static final String SET_AUDIO_STATUS_PARAM = "status";
 
 	public static final String SET_VIDEO_STATUS_METHOD = "setVideoStatus";
 	public static final String SET_VIDEO_ROOM_ID_PARAM = "roomId";
 	public static final String SET_VIDEO_SOURCE_ID_PARAM = "sourceId";
 	public static final String SET_VIDEO_TARGET_IDS_PARAM = "targetIds";
+	public static final String SET_VIDEO_SOURCE_PARAM = "source";
+	public static final String SET_VIDEO_TARGETS_PARAM = "targets";
 	public static final String SET_VIDEO_STATUS_PARAM = "status";
 
 	public static final String RAISE_HAND_METHOD = "raiseHand";
