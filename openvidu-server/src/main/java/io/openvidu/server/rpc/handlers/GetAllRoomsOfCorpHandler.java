@@ -68,7 +68,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
             jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
             jsonObject.addProperty("startTime", conference.getStartTime().getTime());
             jsonObject.addProperty("moderatorAccount", conference.getRoomId());
-            jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(conference.getRoomId()).get("token").toString());
+            jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(conference.getModeratorUuid()).get("token").toString());
             jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->
                     StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
         }
