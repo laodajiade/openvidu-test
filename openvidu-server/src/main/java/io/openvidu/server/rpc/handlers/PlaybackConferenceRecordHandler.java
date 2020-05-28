@@ -1,8 +1,10 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.ConferenceRecordInfo;
@@ -47,18 +49,41 @@ public class PlaybackConferenceRecordHandler extends RpcAbstractHandler {
         conferenceRecordInfoManage.playbackConferenceRecord(conferenceRecordInfo, getUserByRpcConnection(rpcConnection));
 
         JsonObject jsonObject = new JsonObject();
-        String recordUrl;
-        if (!StringUtil.isNullOrEmpty(recordUrl = getRecordUrl(conferenceRecordInfo))) {
+        String recordUrl = Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType()) ? getWebRecordUrl(conferenceRecordInfo) : getRecordUrl(conferenceRecordInfo);
+        if (!StringUtil.isNullOrEmpty(recordUrl)) {
             jsonObject.addProperty("recordUrl", recordUrl);
         }
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
 
     public String getRecordUrl(ConferenceRecordInfo conferenceRecordInfo) {
-        String recordName = conferenceRecordInfo.getRecordName();
-        String recordUrl = openviduConfig.getRecordPlaybackServer() + recordName.substring(0, recordName.lastIndexOf(".")) + "/" + recordName;
+        String recordUrl = openviduConfig.getRecordPlaybackServer() + conferenceRecordInfo.getRecordUrl().replace("/opt/openvidu/recordings/", "");
         log.info("PlaybackConferenceRecordHandler getRecordUrl status:" + (StringUtil.isNullOrEmpty(recordUrl) ? "fail" : "success"));
         return recordUrl;
+    }
+
+    private String getWebRecordUrl(ConferenceRecordInfo conferenceRecordInfo) {
+        String recordUrl = null;
+        JSONObject respObj = httpUtil.syncRequest(openviduConfig.getRecordTranscodingRequestUrl(),
+                constructDownloadReqBody(conferenceRecordInfo));
+        if (Objects.nonNull(respObj) && respObj.containsKey("hlsVodAddr")) {
+            recordUrl = openviduConfig.getRecordThumbnailServer() + respObj.getString("hlsVodAddr").replace("/opt/openvidu/recordings/", "");
+        }
+        log.info("PlaybackConferenceRecordHandler getWebRecordUrl result:{}", recordUrl);
+        return recordUrl;
+    }
+
+    private String constructDownloadReqBody(ConferenceRecordInfo conferenceRecordInfo) {
+        JSONObject reqBody = new JSONObject();
+        reqBody.fluentPut("fileAddr", conferenceRecordInfo.getRecordUrl())
+                .fluentPut("outputAddr", conferenceRecordInfo.getRecordUrl().substring(0,
+                        conferenceRecordInfo.getRecordUrl().lastIndexOf("/")))
+                .fluentPut("remuxMp4", false)
+                .fluentPut("screenshot", false)
+                .fluentPut("indexFile", false)
+                .fluentPut("hlsVod", true)
+                .fluentPut("extend", "extend");
+        return reqBody.toString();
     }
 }
 
