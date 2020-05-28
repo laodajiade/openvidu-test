@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * @author geedow
@@ -64,12 +63,11 @@ public class CloseRoomHandler extends RpcAbstractHandler {
             if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
                 cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
             }});
-//        this.sessionManager.unpublishAllStream(sessionId, EndReason.closeSessionByModerator);
 
         // TODO: compatible to the delay of leaving room
         this.sessionManager.updateConferenceInfo(sessionId);
 
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
-//        this.sessionManager.dealSessionClose(sessionId, EndReason.closeSessionByModerator);
+        rpcConnection.setReconnected(false);
     }
 }

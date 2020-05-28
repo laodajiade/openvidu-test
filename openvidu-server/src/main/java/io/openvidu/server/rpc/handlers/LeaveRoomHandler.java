@@ -134,5 +134,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         if (Objects.nonNull(session = sessionManager.getSession(sessionId)) && !session.isClosed()) {
             session.putPartOnWallAutomatically(sessionManager);
         }
+        rpcConnection.setReconnected(false);
     }
 }
