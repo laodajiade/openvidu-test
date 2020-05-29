@@ -132,6 +132,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                     deviceMapper.updateBySerialNumberSelective(dev);
                 }
                 rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
+                rpcConnection.setUsername(device.getDeviceName());
                 rpcConnection.setAbility(ability);
                 rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
                 cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
