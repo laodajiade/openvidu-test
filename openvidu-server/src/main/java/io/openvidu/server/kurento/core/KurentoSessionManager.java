@@ -26,6 +26,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
 import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
@@ -68,6 +69,9 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Autowired
 	protected OpenviduConfig openviduConfig;
+
+	@Autowired
+	private RoomManage roomManage;
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -151,6 +155,9 @@ public class KurentoSessionManager extends SessionManager {
 				Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
 				majorPart.setShareStatus(ParticipantShareStatus.on);
 			}
+
+			// save part info
+			roomManage.storePartHistory(participant, conference);
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
@@ -182,6 +189,9 @@ public class KurentoSessionManager extends SessionManager {
 		}
 
 		session.leaveRoom(participant, reason);
+
+		//update partInfo
+		roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
 
 		// Update control data structures
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {

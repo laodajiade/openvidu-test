@@ -1,7 +1,9 @@
 package io.openvidu.server.common.manage;
 
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.core.Participant;
 
 import java.util.List;
 
@@ -11,4 +13,10 @@ import java.util.List;
  */
 public interface RoomManage {
     List<Conference> getAllRoomsOfCorp(ConferenceSearch allRoomsOfCropSearch);
+
+    List<ConferencePartHistory> getConfHistoryRecordsByCondition(ConferencePartHistory search);
+
+    void storePartHistory(Participant participant, Conference conference);
+
+    void updatePartHistory(String ruid, String uuid, Long createdAt);
 }
