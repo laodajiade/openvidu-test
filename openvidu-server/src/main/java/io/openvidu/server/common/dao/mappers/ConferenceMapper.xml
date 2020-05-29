@@ -9,6 +9,7 @@
     <result column="conference_desc" property="conferenceDesc" jdbcType="VARCHAR" />
     <result column="conference_mode" property="conferenceMode" jdbcType="TINYINT" />
     <result column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="moderator_uuid" property="moderatorUuid" jdbcType="VARCHAR" />
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
     <result column="room_capacity" property="roomCapacity" jdbcType="INTEGER" />
@@ -27,28 +28,30 @@
       select
       <include refid="Base_Column_List" />
       from sd_conference
-      where
-      <if test="roomId != null">
+      <where>
+        <if test="roomId != null">
           room_id = #{roomId,jdbcType=VARCHAR}
-      </if>
-      <if test="status != null">
+        </if>
+        <if test="status != null">
           and status = #{status,jdbcType=TINYINT}
-      </if>
-      <if test="project != null">
+        </if>
+        <if test="project != null">
           and project = #{project,jdbcType=VARCHAR}
-      </if>
+        </if>
+      </where>
   </select>
   <select id="selectUnclosedConference" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.Conference">
     select
     <include refid="Base_Column_List" />
     from sd_conference
-    where
-    <if test="userId != null" >
-      user_id = #{userId,jdbcType=BIGINT} and
-    </if>
-    <if test="status != null">
-      status = #{status,jdbcType=TINYINT}
-    </if>
+    <where>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=BIGINT}
+      </if>
+      <if test="status != null">
+        and status = #{status,jdbcType=TINYINT}
+      </if>
+    </where>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 

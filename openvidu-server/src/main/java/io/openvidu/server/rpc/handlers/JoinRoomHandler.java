@@ -189,6 +189,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
             } while (false);
 
+            rpcConnection.setReconnected(false);
             if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
                 this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
                         null, errCode);

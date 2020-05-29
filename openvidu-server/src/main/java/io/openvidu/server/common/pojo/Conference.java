@@ -20,6 +20,8 @@ public class Conference {
 
     private Long userId;
 
+    private String moderatorUuid;
+
     private Date startTime;
 
     private Date endTime;
