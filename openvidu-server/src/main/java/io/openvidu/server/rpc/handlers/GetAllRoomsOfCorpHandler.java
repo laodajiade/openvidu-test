@@ -64,6 +64,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
         if (Objects.nonNull(session) && !session.isClosed()) {
             jsonObject = new JsonObject();
             jsonObject.addProperty("roomId", conference.getRoomId());
+            jsonObject.addProperty("ruid", conference.getRuid());
             jsonObject.addProperty("password", conference.getPassword());
             jsonObject.addProperty("subject", conference.getConferenceSubject());
             jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
