@@ -60,7 +60,7 @@ public class DownloadConferenceRecordHandler extends RpcAbstractHandler {
         JSONObject respObj = httpUtil.syncRequest(openviduConfig.getRecordTranscodingRequestUrl(),
                 constructDownloadReqBody(conferenceRecordInfo));
         if (Objects.nonNull(respObj) && respObj.containsKey("mp4FileAddr")) {
-            downloadUrl = openviduConfig.getRecordDownloadServer() + respObj.getString("mp4FileAddr");
+            downloadUrl = openviduConfig.getRecordThumbnailServer() + respObj.getString("mp4FileAddr").replace("/opt/openvidu/recordings/", "");
         }
         log.info("DownloadConferenceRecordHandler getDownloadUrl result:{}", downloadUrl);
         return downloadUrl;
@@ -74,7 +74,7 @@ public class DownloadConferenceRecordHandler extends RpcAbstractHandler {
                 .fluentPut("remuxMp4", true)
                 .fluentPut("screenshot", false)
                 .fluentPut("indexFile", false)
-                .fluentPut("extend", new JSONObject());
+                .fluentPut("extend", "downloadConferenceRecord");
         return reqBody.toString();
     }
 }

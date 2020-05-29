@@ -82,7 +82,7 @@ public class PlaybackConferenceRecordHandler extends RpcAbstractHandler {
                 .fluentPut("screenshot", false)
                 .fluentPut("indexFile", false)
                 .fluentPut("hlsVod", true)
-                .fluentPut("extend", "extend");
+                .fluentPut("extend", "playbackConferenceRecord");
         return reqBody.toString();
     }
 }
