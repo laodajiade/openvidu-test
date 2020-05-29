@@ -20,8 +20,10 @@ import java.util.List;
  */
 @Service
 public class RoomManageImpl implements RoomManage {
+
     @Resource
     private ConferenceMapper conferenceMapper;
+
     @Resource
     private ConferencePartHistoryMapper conferencePartHistoryMapper;
 
@@ -76,5 +78,10 @@ public class RoomManageImpl implements RoomManage {
         int duration = (int) ((endTime.getTime() - createdAt) / 60000);
         update.setDuration(duration == 0 ? 1 : duration);
         conferencePartHistoryMapper.updatePartHistroy(update);
+    }
+
+    @Override
+    public Conference getConferenceByRuid(String ruid) {
+        return conferenceMapper.selectByRuid(ruid);
     }
 }

@@ -19,4 +19,6 @@ public interface RoomManage {
     void storePartHistory(Participant participant, Conference conference);
 
     void updatePartHistory(String ruid, String uuid, Long createdAt);
+
+    Conference getConferenceByRuid(String ruid);
 }

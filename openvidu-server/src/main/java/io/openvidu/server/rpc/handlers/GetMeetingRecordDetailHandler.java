@@ -3,8 +3,10 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.UserType;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
@@ -21,6 +24,16 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
         String ruid = getStringParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_RUID_PARAM);
         JsonObject respObj = new JsonObject();
         JsonArray parts = new JsonArray();
+
+        Conference conference = roomManage.getConferenceByRuid(ruid);
+        if (Objects.isNull(conference)) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+            return;
+        }
+        respObj.addProperty("roomId", conference.getRoomId());
+        respObj.addProperty("createAt", conference.getStartTime().getTime());
+
 
         ConferencePartHistory search = new ConferencePartHistory();
         search.setRuid(ruid);
