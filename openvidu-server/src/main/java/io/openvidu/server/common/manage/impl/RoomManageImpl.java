@@ -1,5 +1,6 @@
 package io.openvidu.server.common.manage.impl;
 
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
@@ -40,6 +41,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Override
     public void storePartHistory(Participant participant, Conference conference) {
+        if (OpenViduRole.THOR.equals(participant.getRole())) {
+            return;
+        }
         ConferencePartHistory history = new ConferencePartHistory();
         history.setRuid(conference.getRuid());
         history.setUserId(Long.valueOf(participant.getUserId()));
