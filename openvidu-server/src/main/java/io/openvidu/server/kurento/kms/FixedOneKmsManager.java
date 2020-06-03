@@ -29,7 +29,7 @@ public class FixedOneKmsManager extends KmsManager {
 	public List<Kms> initializeKurentoClients(List<String> kmsUris) throws Exception {
 		List<Kms> kmsList = new ArrayList<>(4);
 		for (String kmsUri : kmsUris) {
-			KurentoClient kClient = null;
+			KurentoClient kClient;
 			Kms kms = new Kms(kmsUri, loadManager);
 			this.addKms(kms);
 			try {
