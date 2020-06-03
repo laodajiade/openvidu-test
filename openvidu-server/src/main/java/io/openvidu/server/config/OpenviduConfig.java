@@ -17,16 +17,15 @@
 
 package io.openvidu.server.config;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CDREventName;
+import io.openvidu.server.common.manage.KmsRegistrationManage;
 import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
-import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +34,7 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,12 +51,6 @@ public class OpenviduConfig {
 
 	@Value("#{'${spring.config.additional-location:}'.length() > 0 ? '${spring.config.additional-location:}' : \"\"}")
 	private String springConfigLocation;
-
-//	@Autowired
-//	BuildProperties buildProperties;
-
-	@Value("${kms.uris}")
-	private String kmsUris;
 
 	@Value("${openvidu.publicurl}")
 	private String openviduPublicUrl; // local, docker, [FINAL_URL]
@@ -114,7 +108,6 @@ public class OpenviduConfig {
 
 	@Value("${openvidu.living.autostop-timeout}")
 	private int openviduLivingAutostopTimeout;
-
 
 	@Value("${openvidu.webhook}")
 	private boolean openviduWebhook;
@@ -192,6 +185,9 @@ public class OpenviduConfig {
 	private String recordDownloadServer;
 
 
+	@Resource
+	private KmsRegistrationManage kmsRegistrationManage;
+
 	private String finalUrl;
 	private List<String> kmsUrisList;
 	private List<Header> webhookHeadersList;
@@ -224,7 +220,7 @@ public class OpenviduConfig {
 		}
 
 		try {
-			this.initiateKmsUris(this.kmsUris);
+			kmsUrisList = kmsRegistrationManage.getAllRegisterKms();
 		} catch (Exception e) {
 			log.error("Error in 'kms.uris' system property: " + e.getMessage());
 			log.error("Shutting down OpenVidu Server");
@@ -479,21 +475,6 @@ public class OpenviduConfig {
 		return this.externalizedProperties;
 	}
 
-	private void initiateKmsUris(String kmsUris) throws Exception {
-		kmsUris = kmsUris.replaceAll("\\s", ""); // Remove all white spaces
-		kmsUris = kmsUris.replaceAll("\\\\", ""); // Remove previous escapes
-		kmsUris = kmsUris.replaceAll("\"", ""); // Remove previous double quotes
-		kmsUris = kmsUris.replaceFirst("^\\[", "[\\\""); // Escape first char
-		kmsUris = kmsUris.replaceFirst("\\]$", "\\\"]"); // Escape last char
-		kmsUris = kmsUris.replaceAll(",", "\\\",\\\""); // Escape middle uris
-		Gson gson = new Gson();
-		JsonArray kmsUrisArray = gson.fromJson(kmsUris, JsonArray.class);
-		this.kmsUrisList = JsonUtils.toStringList(kmsUrisArray);
-		for (String uri : kmsUrisList) {
-			this.checkWebsocketUri(uri);
-		}
-	}
-
 	public void initiateOpenViduWebhookEndpoint(String endpoint) throws Exception {
 		try {
 			new URL(endpoint);
@@ -548,15 +529,4 @@ public class OpenviduConfig {
 		}
 		log.info("OpenVidu Webhook events: {}", this.getOpenViduWebhookEvents().toString());
 	}
-
-	public void checkWebsocketUri(String uri) throws MalformedURLException {
-		try {
-			String parsedUri = uri.replaceAll("^ws://", "http://").replaceAll("^wss://", "https://");
-			new URL(parsedUri);
-		} catch (MalformedURLException e) {
-			log.error("URI {} is not a valid WebSocket endpoint", uri);
-			throw e;
-		}
-	}
-
 }
