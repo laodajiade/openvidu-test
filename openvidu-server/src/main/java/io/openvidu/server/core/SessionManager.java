@@ -804,6 +804,11 @@ public abstract class SessionManager {
 			}
 		}
 
+		// do nothing when set roll call to the same speaker
+		if (Objects.equals(existSpeakerPart, targetPart)) {
+			return;
+		}
+
 		assert targetPart != null;
 		targetPart.setHandStatus(ParticipantHandStatus.speaker);
 		targetConnectionId = targetPart.getParticipantPublicId();
@@ -826,7 +831,6 @@ public abstract class SessionManager {
 			} else {
 				sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
 			}
-
 		} else {
 			// switch layout with current speaker participant
 			sourceConnectionId = existSpeakerPart.getParticipantPublicId();
