@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.ParticipantSpeakerStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.UserType;
 import io.openvidu.server.common.pojo.*;
@@ -162,7 +163,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         // 获取发布者时存在同步阻塞的状态
         userObj.addProperty("audioActive", !part.isStreaming() || part.getPublisherMediaOptions().isAudioActive());
         userObj.addProperty("videoActive", !part.isStreaming() || part.getPublisherMediaOptions().isVideoActive());
-        userObj.addProperty("speakerStatus", part.getSpeakerStatus().name());
+        userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(part.getSpeakerStatus()));
 
         if (UserType.register.equals(part.getUserType())) {
             userObj.addProperty("userId", user.getId());
