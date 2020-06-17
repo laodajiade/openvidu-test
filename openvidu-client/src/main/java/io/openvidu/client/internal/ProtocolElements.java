@@ -632,6 +632,7 @@ public class ProtocolElements {
 	public static final String SETSUBTITLECONFIG_SOURCEID_PARAM = "sourceId";
 	public static final String SETSUBTITLECONFIG_OPERATION_PARAM = "operation";
 	public static final String SETSUBTITLECONFIG_SOURCELANGUAGE_PARAM = "sourceLanguage";
+	public static final String SETSUBTITLECONFIG_NOTIFY = "setSubtitleConfigNotify";
 
 	public static final String SENDSUBTITLE_METHOD = "sendSubtitle";
 	public static final String SENDSUBTITLE_STATUS_PARAM = "status";
