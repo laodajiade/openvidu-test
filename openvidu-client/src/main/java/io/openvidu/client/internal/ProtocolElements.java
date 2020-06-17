@@ -636,6 +636,7 @@ public class ProtocolElements {
 	public static final String SENDSUBTITLE_METHOD = "sendSubtitle";
 	public static final String SENDSUBTITLE_STATUS_PARAM = "status";
 	public static final String SENDSUBTITLE_SUBTITLES_PARAM = "subtitles";
+	public static final String SENDDISPLAYSUBTITLE_NOTIFY = "sendDisplaySubtitle";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
