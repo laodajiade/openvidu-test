@@ -57,7 +57,7 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
 
             JsonObject recognitionSubtitleObj = recogSubtitleObj;
             session.getMajorPartEachConnect().forEach(participant -> {
-                if (!participant.getSubtitleConfig().needToSendSubtitle()) {
+                if (participant.getSubtitleConfig().needToSendSubtitle()) {
                     JsonArray eachSubtitleArr = new JsonArray(8);
                     eachSubtitleArr.add(recognitionSubtitleObj);
 
