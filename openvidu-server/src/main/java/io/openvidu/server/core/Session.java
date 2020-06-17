@@ -91,6 +91,9 @@ public class Session implements SessionInterface {
 
 	private AtomicInteger majorParts = new AtomicInteger(0);
 
+	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
+	private Set<String> languages = new HashSet<>();
+
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
 		this.startTime = previousSession.getStartTime();
@@ -120,6 +123,19 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
+	}
+
+	public SubtitleConfigEnum getSubtitleConfig() {
+		return subtitleConfig;
+	}
+
+	public void setSubtitleConfig(SubtitleConfigEnum subtitleConfig, SubtitleLanguageEnum language) {
+		this.subtitleConfig = subtitleConfig;
+		languages.add(language.name());
+	}
+
+	public Set<String> getLanguages() {
+		return languages;
 	}
 
 	public String getSessionId() {

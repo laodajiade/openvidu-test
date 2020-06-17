@@ -245,6 +245,8 @@ public class RpcHandlerFactory {
     private GetAllRoomsOfCorpHandler getAllRoomsOfCorpHandler;
     @Resource
     private GetMeetingRecordDetailHandler getMeetingRecordDetailHandler;
+    @Resource
+    private SetSubtitleConfigHandler setSubtitleConfigHandler;
 
 
     @PostConstruct
@@ -325,6 +327,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_LIVE_STATUS_METHOD,                        getLiveStatusHandler);
         handlersMap.put(ProtocolElements.GETALLROOMSOFCORP_METHOD,                      getAllRoomsOfCorpHandler);
         handlersMap.put(ProtocolElements.GETMEETINGSRECORDDETAIL_METHOD,                getMeetingRecordDetailHandler);
+        handlersMap.put(ProtocolElements.SETSUBTITLECONFIG_METHOD,                      setSubtitleConfigHandler);
 
     }
 
