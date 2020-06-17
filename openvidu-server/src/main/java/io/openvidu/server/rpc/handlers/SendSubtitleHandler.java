@@ -44,6 +44,9 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
                 return;
             }
 
+            // resp
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
             // construct notification param according to part's subtitle config and source language
             // send notification to other participant
             JsonObject notifyParam = new JsonObject();
@@ -54,8 +57,7 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
 
             JsonObject recognitionSubtitleObj = recogSubtitleObj;
             session.getMajorPartEachConnect().forEach(participant -> {
-                if (!rpcConnection.getParticipantPrivateId().equals(participant.getParticipantPrivateId())
-                        && participant.getSubtitleConfig().needToSendSubtitle()) {
+                if (!participant.getSubtitleConfig().needToSendSubtitle()) {
                     JsonArray eachSubtitleArr = new JsonArray(8);
                     eachSubtitleArr.add(recognitionSubtitleObj);
 
@@ -74,8 +76,5 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
                 }
             });
         }
-
-        // resp
-        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }
