@@ -218,6 +218,9 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		result.addProperty("subtitleConfig", session.getSubtitleConfig().name());
 		result.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
+		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
+			result.add("extraInfo", session.getSubtitleExtraConfig());
+		}
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());

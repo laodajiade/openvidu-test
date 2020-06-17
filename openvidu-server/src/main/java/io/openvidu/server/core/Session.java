@@ -93,6 +93,7 @@ public class Session implements SessionInterface {
 
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private Set<String> languages = new HashSet<>();
+	private JsonObject subtitleExtraConfig = null;
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -129,9 +130,18 @@ public class Session implements SessionInterface {
 		return subtitleConfig;
 	}
 
-	public void setSubtitleConfig(SubtitleConfigEnum subtitleConfig, SubtitleLanguageEnum language) {
+	public void setSubtitleConfig(SubtitleConfigEnum subtitleConfig, SubtitleLanguageEnum language, JsonObject extraInfo) {
 		this.subtitleConfig = subtitleConfig;
 		languages.add(language.name());
+		setSubtitleExtraConfig(extraInfo);
+	}
+
+	public JsonObject getSubtitleExtraConfig() {
+		return subtitleExtraConfig;
+	}
+
+	public void setSubtitleExtraConfig(JsonObject subtitleExtraConfig) {
+		this.subtitleExtraConfig = subtitleExtraConfig;
 	}
 
 	public Set<String> getLanguages() {

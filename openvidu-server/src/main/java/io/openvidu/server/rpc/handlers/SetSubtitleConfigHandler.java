@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -27,6 +28,9 @@ public class SetSubtitleConfigHandler extends RpcAbstractHandler {
         String sessionId = getStringParam(request, ProtocolElements.SETSUBTITLECONFIG_ROOMID_PARAM);
         SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.valueOf(getStringParam(request, ProtocolElements.SETSUBTITLECONFIG_OPERATION_PARAM));
         SubtitleLanguageEnum language = SubtitleLanguageEnum.valueOf(getStringParam(request, ProtocolElements.SETSUBTITLECONFIG_SOURCELANGUAGE_PARAM));
+        JsonElement jsonElement;
+        JsonObject extraInfo = Objects.nonNull(jsonElement = getOptionalParam(request, ProtocolElements.SETSUBTITLECONFIG_EXTRAINFO_PARAM)) ?
+                jsonElement.getAsJsonObject() : null;
 
         // check request ever from moderator
         Participant participant;
@@ -38,7 +42,7 @@ public class SetSubtitleConfigHandler extends RpcAbstractHandler {
         }
 
         // set subtitle config into session and this participant
-        session.setSubtitleConfig(subtitleConfig, language);
+        session.setSubtitleConfig(subtitleConfig, language, extraInfo);
         participant.setSubtitleConfig(subtitleConfig).setSubtitleLanguage(language);
 
         // resp
