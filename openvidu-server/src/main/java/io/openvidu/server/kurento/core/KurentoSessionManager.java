@@ -146,6 +146,8 @@ public class KurentoSessionManager extends SessionManager {
 					&& kSession.needToChangePartRoleAccordingToLimit(participant)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
+			// deal the default subtitle config
+			participant.setSubtitleConfig(kSession.getSubtitleConfig());
 
 			kSession.join(participant);
 

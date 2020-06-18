@@ -75,8 +75,8 @@ public class Participant {
 	@Setter
 	private String clientType;
 
-	private SubtitleConfigEnum subtitleConfig;
-	private SubtitleLanguageEnum subtitleLanguage;
+	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
+	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();

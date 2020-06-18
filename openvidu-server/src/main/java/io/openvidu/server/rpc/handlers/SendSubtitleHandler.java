@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.SubtitleType;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -24,7 +25,16 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
         JsonArray subtitles = getParam(request, ProtocolElements.SENDSUBTITLE_SUBTITLES_PARAM).getAsJsonArray();
 
         Session session = sessionManager.getSession(rpcConnection.getSessionId());
-        if (Objects.nonNull(session) && subtitles.size() > 0) {
+
+        // check sender permission
+        Participant senderPart = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
+        if (!senderPart.getSubtitleConfig().ableToSendSubtitle()) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
+        if (subtitles.size() > 0) {
             JsonObject recogSubtitleObj = null;
             Map<String, JsonObject> translateSubtitleMap = new HashMap<>();
             for (JsonElement jsonElement : subtitles) {
@@ -57,11 +67,11 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
 
             JsonObject recognitionSubtitleObj = recogSubtitleObj;
             session.getMajorPartEachConnect().forEach(participant -> {
-                if (participant.getSubtitleConfig().needToSendSubtitle()) {
+                if (participant.getSubtitleConfig().needToDisPatchSubtitle()) {
                     JsonArray eachSubtitleArr = new JsonArray(8);
                     eachSubtitleArr.add(recognitionSubtitleObj);
 
-                    if (participant.getSubtitleConfig().needToSendTranslation()) {
+                    if (participant.getSubtitleConfig().needToDispatchTranslation()) {
                         // get translate subtitle
                         JsonObject translationObj = translateSubtitleMap.get(participant.getSubtitleLanguage().name());
                         if (Objects.nonNull(translationObj)) {

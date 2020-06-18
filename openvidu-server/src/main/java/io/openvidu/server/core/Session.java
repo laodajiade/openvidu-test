@@ -109,6 +109,8 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = previousSession.getLayoutChangeTypeEnum();
 		this.layoutInfo = previousSession.getLayoutInfo();
 		this.delayConfCnt = previousSession.delayConfCnt;
+		this.subtitleConfig = previousSession.getSubtitleConfig();
+		this.languages = previousSession.getLanguages();
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,

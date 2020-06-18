@@ -11,7 +11,12 @@ public enum SubtitleConfigEnum {
     Off {
 
         @Override
-        public boolean needToSendSubtitle() {
+        public boolean needToDisPatchSubtitle() {
+            return false;
+        }
+
+        @Override
+        public boolean ableToSendSubtitle() {
             return false;
         }
     },
@@ -27,16 +32,20 @@ public enum SubtitleConfigEnum {
     Translate {
 
         @Override
-        public boolean needToSendTranslation() {
+        public boolean needToDispatchTranslation() {
             return true;
         }
     };
 
-    public boolean needToSendSubtitle() {
+    public boolean needToDisPatchSubtitle() {
         return true;
     }
 
-    public boolean needToSendTranslation() {
+    public boolean needToDispatchTranslation() {
         return false;
+    }
+
+    public boolean ableToSendSubtitle() {
+        return true;
     }
 }
