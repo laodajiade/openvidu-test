@@ -54,7 +54,7 @@ public class SetSubtitleConfigHandler extends RpcAbstractHandler {
                 // set config
                 part.setSubtitleLanguage(language).setSubtitleConfig(subtitleConfig);
                 // send notification
-                notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SETSUBTITLECONFIG_NOTIFY, request.getParams());
+                notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SETSUBTITLECONFIG_NOTIFY, request.getParams());
             }
         });
     }
