@@ -43,12 +43,11 @@ public class SetSubtitleConfigHandler extends RpcAbstractHandler {
 
         // set subtitle config into session and this participant
         session.setSubtitleConfig(subtitleConfig, language, extraInfo);
-        participant.setSubtitleConfig(subtitleConfig).setSubtitleLanguage(language);
 
         // resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
-        // set subtitle config and send notification to other participant
+        // set subtitle config and send notification to all participant
         session.getParticipants().forEach(part -> {
             if (StreamType.MAJOR.equals(part.getStreamType())) {
                 // set config
