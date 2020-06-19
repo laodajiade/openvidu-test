@@ -681,10 +681,9 @@ public abstract class SessionManager {
 	}
 
 	public boolean setPresetInfo(String sessionId, SessionPreset preset) {
-	    if (!Objects.isNull(sessionidPreset.get(sessionId))) {
+	    /*if (!Objects.isNull(sessionidPreset.get(sessionId))) {
             log.info("session {} {} replace preset info {}", sessionId, preset, sessionidPreset.get(sessionId));
-        }
-
+        }*/
 	    sessionidPreset.put(sessionId, preset);
         return true;
     }

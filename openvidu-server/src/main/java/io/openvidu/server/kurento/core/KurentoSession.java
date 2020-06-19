@@ -237,10 +237,17 @@ public class KurentoSession extends Session {
 
 		checkClosed();
 
-		Participant p1 = participants.get(participant.getParticipantPrivateId()).remove(participant.getStreamType().name());
+		ConcurrentMap majorOrSharePartsMap = participants.get(participant.getParticipantPrivateId());
+		if (Objects.nonNull(majorOrSharePartsMap)) {
+			majorOrSharePartsMap.remove(participant.getStreamType().name());
+			if (majorOrSharePartsMap.size() == 0) {
+				participants.remove(participant.getParticipantPrivateId());
+			}
+		}
+		/*Participant p1 = participants.get(participant.getParticipantPrivateId()).remove(participant.getStreamType().name());
 		if (participants.get(participant.getParticipantPrivateId()).size() == 0) {
 			participants.remove(participant.getParticipantPrivateId());
-		}
+		}*/
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
