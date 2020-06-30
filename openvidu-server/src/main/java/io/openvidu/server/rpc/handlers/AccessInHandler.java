@@ -349,7 +349,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         // update user online status in cache
         if (!webLogin) {
             cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
-//            cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
             cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online,
                     rpcConnection.getSerialNumber(), DeviceStatus.online);
 

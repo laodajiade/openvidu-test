@@ -322,7 +322,6 @@ public abstract class RpcAbstractHandler {
                 oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
                 cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online,
                         rpcConnection.getSerialNumber(), DeviceStatus.online);
-//                cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
                 if (StringUtils.isEmpty(rpcConnection.getSessionId()) || Objects.isNull(session =
                         this.sessionManager.getSession(rpcConnection.getSessionId()))) {
@@ -355,7 +354,6 @@ public abstract class RpcAbstractHandler {
                         kurentoSession.compositeService.setShareStreamId(null);
                         kurentoSession.compositeService.setExistSharing(false);
                     }
-//                    if (Objects.equals(ConferenceModeEnum.SFU, session.getConferenceMode()))
                     sessionManager.evictParticipant(sharingPart, null, null, EndReason.sessionClosedByServer);
                 }
                 sessionManager.accessOut(oldRpcConnection);
