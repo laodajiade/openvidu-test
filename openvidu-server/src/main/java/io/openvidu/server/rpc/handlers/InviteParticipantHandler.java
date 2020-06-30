@@ -4,9 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -35,34 +33,22 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Session session;
         String sessionId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM);
         List<String> targetIds = getStringListParam(request, ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM);
-
-        // check request parameters
         if (CollectionUtils.isEmpty(targetIds)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
 
-        // check legal session
-        if (Objects.isNull(session = sessionManager.getSession(sessionId))) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
-            return;
-        }
-
-        // check participant operate permission
-        if (!OpenViduRole.MODERATOR_ROLES.contains(session.getPartByPrivateIdAndStreamType(rpcConnection.getParticipantPrivateId(),
-                StreamType.MAJOR).getRole())) {
+        if (!OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(sessionId,
+                rpcConnection.getParticipantPrivateId()).getRole())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
         }
 
-        // check room capacity
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
         if (!Objects.isNull(sessionManager.getSession(sessionId))) {
             Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
@@ -86,31 +72,25 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         if (!StringUtils.isEmpty(deviceName)) {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
         }
-        Set<Participant> participants = session.getParticipants();
         Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
         for (RpcConnection rpcConnect : rpcConnections) {
-            if (Objects.nonNull(rpcConnect.getUserId()) && isTerminalFree(participants, rpcConnect.getUserId().toString())) {
-                String userId = String.valueOf(rpcConnect.getUserId());
-                if (targetIds.contains(userId)) {
-                    if (i % stepSize == 0) {
-                        try {
-                            Thread.sleep(delayTime);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            if (Objects.isNull(rpcConnect.getUserId())) continue;
+            String userId = String.valueOf(rpcConnect.getUserId());
+            if (targetIds.contains(userId)) {
+                if (i % stepSize == 0) {
+                    try {
+                        Thread.sleep(delayTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, userId);
-                    this.notificationService.sendNotification(rpcConnect.getParticipantPrivateId(),
-                            ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
-                    i++;
                 }
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, userId);
+                this.notificationService.sendNotification(rpcConnect.getParticipantPrivateId(),
+                        ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
+                i++;
             }
         }
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-    }
-
-    private boolean isTerminalFree(Set<Participant> participants, String userId) {
-        return participants.stream().noneMatch(participant -> Objects.equals(participant.getUserId(), userId));
     }
 }
