@@ -148,11 +148,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				sessionManager.accessOut(rpcConnection);
 				return;
 			}
-			cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
+			cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+					rpcConnection.getSerialNumber(), DeviceStatus.offline);
+			/*cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSessionId).getUserUuid(),
 					UserOnlineStatusEnum.offline);
 			if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(rpcConnection.getSerialNumber())) {
 				cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
-			}
+			}*/
 		} else {
 			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
 		}
@@ -242,10 +244,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
 		// update user online status in cache
 		if (rpcSession != null) {
-			if (notificationService.getRpcConnection(rpcSession.getSessionId()) != null &&
-					Objects.equals(AccessTypeEnum.terminal, notificationService.getRpcConnection(rpcSession.getSessionId()).getAccessType()))
-				cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
-						UserOnlineStatusEnum.offline);
+			RpcConnection rpcConnection;
+			if (Objects.nonNull(rpcConnection = notificationService.getRpcConnection(rpcSession.getSessionId())) &&
+					Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType())) {
+				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+						rpcConnection.getSerialNumber(), DeviceStatus.offline);
+				/*cacheManage.updateUserOnlineStatus(notificationService.getRpcConnection(rpcSession.getSessionId()).getUserUuid(),
+						UserOnlineStatusEnum.offline);*/
+			}
 			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
 					exception.getMessage());
 			if ("IOException".equals(exception.getClass().getSimpleName())) {

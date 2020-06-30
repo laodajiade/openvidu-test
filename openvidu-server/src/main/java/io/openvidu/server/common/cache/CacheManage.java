@@ -1,5 +1,6 @@
 package io.openvidu.server.common.cache;
 
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 
 import java.util.Map;
@@ -29,4 +30,6 @@ public interface CacheManage {
     String getLivingInfo(String sessionId, String entryKey);
 
     void delLivingInfo(String sessionId);
+
+    void updateTerminalStatus(String userUuid, UserOnlineStatusEnum offline, String serialNumber, DeviceStatus offline1);
 }

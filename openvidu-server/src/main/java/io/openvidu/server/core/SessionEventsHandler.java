@@ -702,8 +702,14 @@ public class SessionEventsHandler {
 		// update user online status in cache
 		RpcConnection rpcConnection;
 		if (!Objects.isNull(rpcConnection = rpcNotificationService.getRpcConnection(participantPrivateId))) {
-			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()))
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType())) {
+				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+						rpcConnection.getSerialNumber(), DeviceStatus.offline);
+				/*cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+				if (!StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
+					cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
+				}*/
+			}
 			this.rpcNotificationService.closeRpcSession(participantPrivateId);
 		}
 	}

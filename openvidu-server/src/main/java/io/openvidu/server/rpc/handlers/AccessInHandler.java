@@ -135,7 +135,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 rpcConnection.setUsername(device.getDeviceName());
                 rpcConnection.setAbility(ability);
                 rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
-                cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
+//                cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
 
@@ -349,7 +349,10 @@ public class AccessInHandler extends RpcAbstractHandler {
         // update user online status in cache
         if (!webLogin) {
             cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
-            cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
+//            cacheManage.updateUserOnlineStatus(uuid, reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online);
+            cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), reconnect ? UserOnlineStatusEnum.reconnect : UserOnlineStatusEnum.online,
+                    rpcConnection.getSerialNumber(), DeviceStatus.online);
+
         }
         log.info("accessIn rpcConnection userUuid:{}", rpcConnection.getUserUuid());
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);

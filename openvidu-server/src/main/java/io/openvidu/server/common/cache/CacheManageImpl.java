@@ -1,6 +1,7 @@
 package io.openvidu.server.common.cache;
 
 import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -86,6 +87,19 @@ public class CacheManageImpl implements CacheManage {
     public void delLivingInfo(String sessionId) {
         String key = CacheKeyConstants.CONFERENCE_LIVING_INFO_KEY + sessionId;
         tokenStringTemplate.delete(key);
+    }
+
+    @Override
+    public void updateTerminalStatus(String userUuid, UserOnlineStatusEnum userOnlineStatus, String serialNumber, DeviceStatus deviceStatus) {
+        if (!StringUtils.isEmpty(userUuid)) {
+            log.info("Update user online status in cache. uuid:{}, updateStatus:{}", userUuid, userOnlineStatus.name());
+            tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "status", userOnlineStatus.name());
+        }
+
+        if (!StringUtils.isEmpty(serialNumber)) {
+            log.info("Update device online status in cache. serialNumber:{}, updateStatus:{}", serialNumber, deviceStatus.name());
+            tokenStringTemplate.opsForValue().set(CacheKeyConstants.DEV_PREFIX_KEY + serialNumber, deviceStatus.name());
+        }
     }
 
 

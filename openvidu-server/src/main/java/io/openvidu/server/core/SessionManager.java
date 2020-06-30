@@ -536,15 +536,9 @@ public abstract class SessionManager {
 	@PreDestroy
 	public void close() {
 		log.info("Closing all sessions and update user/device online status");
-		notificationService.getRpcConnections().forEach(rpcConnection -> {
-			if (!Objects.isNull(rpcConnection.getUserUuid())) {
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
-			}
-			if (Objects.nonNull(rpcConnection.getSerialNumber())) {
-				cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
-			}
-		});
-
+		notificationService.getRpcConnections().forEach(rpcConnection ->
+				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+						rpcConnection.getSerialNumber(), DeviceStatus.offline));
 		for (String sessionId : sessions.keySet()) {
 			try {
 				closeSession(sessionId, EndReason.openviduServerStopped);
