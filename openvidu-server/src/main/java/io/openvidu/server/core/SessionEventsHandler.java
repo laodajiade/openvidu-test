@@ -705,10 +705,6 @@ public class SessionEventsHandler {
 			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType())) {
 				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
 						rpcConnection.getSerialNumber(), DeviceStatus.offline);
-				/*cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
-				if (!StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
-					cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
-				}*/
 			}
 			this.rpcNotificationService.closeRpcSession(participantPrivateId);
 		}
