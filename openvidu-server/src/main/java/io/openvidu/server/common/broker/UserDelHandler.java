@@ -3,6 +3,7 @@ package io.openvidu.server.common.broker;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -15,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -63,8 +65,11 @@ public class UserDelHandler {
                         Long userId = delUserObj.get("userId").getAsLong();
                         // find the websocket connection with userId
                         RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
-                                .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId()))
-                                .findAny().orElse(null);
+                                .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId())
+                                        && !StringUtils.isEmpty(rpcConnection.getSerialNumber())
+                                        && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType()))
+                                .max(Comparator.comparing(RpcConnection::getCreateTime))
+                                .orElse(null);
                         if (Objects.nonNull(delUserRpcConnection)) {
                             // check user deleted ever in conference
                             String sessionId;
