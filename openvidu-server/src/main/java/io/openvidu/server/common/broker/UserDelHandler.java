@@ -3,7 +3,9 @@ package io.openvidu.server.common.broker;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -78,10 +80,19 @@ public class UserDelHandler {
                             if (!StringUtils.isEmpty(sessionId = delUserRpcConnection.getSessionId())
                                     && Objects.nonNull(session = sessionManager.getSession(sessionId))
                                     && Objects.nonNull(participant = session.getParticipantByUserId(userId.toString()))) {
-                                // evict participant from conference
-                                log.info("Evict participant:{} from session: {} and access out the user:{} websocket " +
-                                        "connection directly cause it is free", participant.getUuid(), sessionId, userId);
-                                sessionManager.evictParticipant(participant, null, null, EndReason.forceDisconnectByServer);
+                                log.info("Evict participant:{} from session: {} and access out the user:{} websocket.", participant.getUuid(), sessionId, userId);
+                                if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+                                    // close the session
+                                    log.info("Close the session cause the deleted user is moderator:{}.", participant.getUuid());
+                                    sessionManager.dealSessionClose(participant.getSessionId(), EndReason.closeSessionByModerator);
+                                } else {
+                                    // evict participant from conference and change the layout
+                                    Participant shareParticipant = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.SHARING);
+                                    if (Objects.nonNull(shareParticipant)) {
+                                        sessionManager.dealParticipantLeaveRoom(shareParticipant, false, null);
+                                    }
+                                    sessionManager.dealParticipantLeaveRoom(participant, false, null);
+                                }
                             } else {
                                 // access out the delUserRpcConnection directly
                                 log.info("Access out the user:{} websocket connection directly cause it is free", userId);
