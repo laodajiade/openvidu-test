@@ -56,36 +56,42 @@ public class UserDelHandler {
         @Override
         public void run() {
             while (true) {
-                JsonObject delUserObj = gson.fromJson(delUserInfos.poll(), JsonObject.class);
-                if (delUserObj.has("userId")) {
-                    Long userId = delUserObj.get("userId").getAsLong();
-                    // find the websocket connection with userId
-                    RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
-                            .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId()))
-                            .findAny().orElse(null);
-                    if (Objects.nonNull(delUserRpcConnection)) {
-                        // check user deleted ever in conference
-                        String sessionId;
-                        Session session;
-                        Participant participant;
-                        if (!StringUtils.isEmpty(sessionId = delUserRpcConnection.getSessionId())
-                                && Objects.nonNull(session = sessionManager.getSession(sessionId))
-                                && Objects.nonNull(participant = session.getParticipantByUserId(userId.toString()))) {
-                            // evict participant from conference
-                            log.info("Evict participant:{} from session: {} and access out the user:{} websocket " +
-                                    "connection directly cause it is free", participant.getUuid(), sessionId, userId);
-                            sessionManager.evictParticipant(participant, null, null, EndReason.forceDisconnectByServer);
+                JsonObject delUserObj;
+                try {
+                    delUserObj = gson.fromJson(delUserInfos.take(), JsonObject.class);
+                    if (delUserObj.has("userId")) {
+                        Long userId = delUserObj.get("userId").getAsLong();
+                        // find the websocket connection with userId
+                        RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
+                                .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId()))
+                                .findAny().orElse(null);
+                        if (Objects.nonNull(delUserRpcConnection)) {
+                            // check user deleted ever in conference
+                            String sessionId;
+                            Session session;
+                            Participant participant;
+                            if (!StringUtils.isEmpty(sessionId = delUserRpcConnection.getSessionId())
+                                    && Objects.nonNull(session = sessionManager.getSession(sessionId))
+                                    && Objects.nonNull(participant = session.getParticipantByUserId(userId.toString()))) {
+                                // evict participant from conference
+                                log.info("Evict participant:{} from session: {} and access out the user:{} websocket " +
+                                        "connection directly cause it is free", participant.getUuid(), sessionId, userId);
+                                sessionManager.evictParticipant(participant, null, null, EndReason.forceDisconnectByServer);
+                            } else {
+                                // access out the delUserRpcConnection directly
+                                log.info("Access out the user:{} websocket connection directly cause it is free", userId);
+                            }
+                            rpcNotificationService.closeRpcSession(delUserRpcConnection.getParticipantPrivateId());
                         } else {
-                            // access out the delUserRpcConnection directly
-                            log.info("Access out the user:{} websocket connection directly cause it is free", userId);
+                            log.info("User:{} deleted did not access the signal server.", userId);
                         }
-                        rpcNotificationService.closeRpcSession(delUserRpcConnection.getParticipantPrivateId());
                     } else {
-                        log.info("User:{} deleted did not access the signal server.", userId);
+                        log.error("Invalid user delete info:{}", delUserObj.toString());
                     }
-                } else {
-                    log.error("Invalid user delete info:{}", delUserObj.toString());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+
             }
         }
     }
