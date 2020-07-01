@@ -19,6 +19,7 @@ public class RedisSubListenerConfig {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(tokenRedisConnectionFactory);
         container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.DEVICE_UPGRADE_CHANNEL));
+        container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.USER_DELETE_CHANNEL));
         log.info("Meeting Control Center now subscribe to the redis channel ==> {}", BrokerChannelConstans.DEVICE_UPGRADE_CHANNEL);
         return container;
     }
