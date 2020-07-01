@@ -15,6 +15,7 @@ public class RedisSubscriber {
                 break;
             case BrokerChannelConstans.USER_DELETE_CHANNEL:
                 UserDelHandler.accessOutDeletedUser(message);
+                break;
             default:
                 log.error("Unrecognized listening channel:{}", channel);
                 break;
