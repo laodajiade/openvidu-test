@@ -22,18 +22,20 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
-import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -60,8 +62,8 @@ public abstract class MediaEndpoint {
 
 	private final int maxRecvKbps;
 	private final int minRecvKbps;
-	private final int maxSendKbps;
-	private final int minSendKbps;
+	private int maxSendKbps;
+	private int minSendKbps;
 
 	private KurentoParticipant owner;
 	protected String endpointName; // KMS media object identifier. Unique for every MediaEndpoint
@@ -105,26 +107,20 @@ public abstract class MediaEndpoint {
 		this.setMediaPipeline(pipeline);
 
 		this.openviduConfig = openviduConfig;
+		this.maxRecvKbps = this.openviduConfig.getVideoMaxRecvBandwidth();
+		this.minRecvKbps = this.openviduConfig.getVideoMinRecvBandwidth();
+		this.maxSendKbps = this.openviduConfig.getVideoMaxSendBandwidth();
+		this.minSendKbps = this.openviduConfig.getVideoMinSendBandwidth();
 
-		KurentoTokenOptions kurentoTokenOptions = null;
-		if (kurentoTokenOptions != null) {
-			this.maxRecvKbps = kurentoTokenOptions.getVideoMaxRecvBandwidth() != null
-					? kurentoTokenOptions.getVideoMaxRecvBandwidth()
-					: this.openviduConfig.getVideoMaxRecvBandwidth();
-			this.minRecvKbps = kurentoTokenOptions.getVideoMinRecvBandwidth() != null
-					? kurentoTokenOptions.getVideoMinRecvBandwidth()
-					: this.openviduConfig.getVideoMinRecvBandwidth();
-			this.maxSendKbps = kurentoTokenOptions.getVideoMaxSendBandwidth() != null
-					? kurentoTokenOptions.getVideoMaxSendBandwidth()
-					: this.openviduConfig.getVideoMaxSendBandwidth();
-			this.minSendKbps = kurentoTokenOptions.getVideoMinSendBandwidth() != null
-					? kurentoTokenOptions.getVideoMinSendBandwidth()
-					: this.openviduConfig.getVideoMinSendBandwidth();
-		} else {
-			this.maxRecvKbps = this.openviduConfig.getVideoMaxRecvBandwidth();
-			this.minRecvKbps = this.openviduConfig.getVideoMinRecvBandwidth();
-			this.maxSendKbps = this.openviduConfig.getVideoMaxSendBandwidth();
-			this.minSendKbps = this.openviduConfig.getVideoMinSendBandwidth();
+		CorpMcuConfig corpMcuConfig;
+		if (ConferenceModeEnum.MCU.equals(owner.getSession().getConferenceMode())
+				&& Objects.nonNull(corpMcuConfig = owner.getSession().getCorpMcuConfig())) {
+			if (corpMcuConfig.getMaxsendkbps() > 0) {
+				this.maxSendKbps = corpMcuConfig.getMaxsendkbps();
+			}
+			if (corpMcuConfig.getMinsendkbps() > 0) {
+				this.minSendKbps = corpMcuConfig.getMinsendkbps();
+			}
 		}
 	}
 

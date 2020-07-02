@@ -3,6 +3,7 @@ package io.openvidu.server.common.manage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.core.Participant;
 
 import java.util.List;
@@ -21,4 +22,6 @@ public interface RoomManage {
     void updatePartHistory(String ruid, String uuid, Long createdAt);
 
     Conference getConferenceByRuid(String ruid);
+
+    CorpMcuConfig getCorpMcuConfig(String project);
 }

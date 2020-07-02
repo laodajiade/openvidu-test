@@ -3,11 +3,13 @@ package io.openvidu.server.common.manage.impl;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
+import io.openvidu.server.common.dao.CorpMcuConfigMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.core.Participant;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Resource
     private ConferencePartHistoryMapper conferencePartHistoryMapper;
+
+    @Resource
+    private CorpMcuConfigMapper corpMcuConfigMapper;
 
 
     @Override
@@ -87,5 +92,10 @@ public class RoomManageImpl implements RoomManage {
     @Override
     public Conference getConferenceByRuid(String ruid) {
         return conferenceMapper.selectByRuid(ruid);
+    }
+
+    @Override
+    public CorpMcuConfig getCorpMcuConfig(String project) {
+        return corpMcuConfigMapper.selectByProject(project);
     }
 }

@@ -27,11 +27,14 @@ import io.openvidu.java.client.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
@@ -78,6 +81,9 @@ public class Session implements SessionInterface {
 	protected Long stopRecordingTime;
 	protected Long startLivingTime;
 	protected String livingUrl;
+	@Getter
+	@Setter
+	private CorpMcuConfig corpMcuConfig;
 
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
@@ -105,6 +111,7 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = previousSession.getLayoutChangeTypeEnum();
 		this.layoutInfo = previousSession.getLayoutInfo();
 		this.delayConfCnt = previousSession.delayConfCnt;
+		this.corpMcuConfig = previousSession.getCorpMcuConfig();
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,

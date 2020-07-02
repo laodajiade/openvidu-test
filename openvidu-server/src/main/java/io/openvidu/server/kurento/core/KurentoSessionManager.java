@@ -115,6 +115,10 @@ public class KurentoSessionManager extends SessionManager {
 				kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
 				kSession.setPresetInfo(getPresetInfo(sessionId));
 				kSession.setRuid(conference.getRuid());
+
+				if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
+					kSession.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
+				}
 			}
 
 			if (kSession.isClosed()) {
