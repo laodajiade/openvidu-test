@@ -201,24 +201,23 @@ public class KurentoSessionManager extends SessionManager {
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 			Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
 					.remove(participant.getParticipantPublicId());
-			if (this.coturnCredentialsService.isCoturnAvailable()) {
-//				this.coturnCredentialsService.deleteUser(p.getToken().getTurnCredentials().getUsername());
-			}
-
 			boolean stillParticipant = false;
-			for (Session s : sessions.values()) {
-				if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-					stillParticipant = true;
-					break;
+			if (Objects.nonNull(p)) {
+				for (Session s : sessions.values()) {
+					if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+						stillParticipant = true;
+						break;
+					}
 				}
-			}
-			if (!stillParticipant) {
-				insecureUsers.remove(p.getParticipantPrivateId());
+				if (!stillParticipant) {
+					insecureUsers.remove(p.getParticipantPrivateId());
+				}
 			}
 		}
 
-		if (Objects.equals(StreamType.SHARING, participant.getStreamType()))
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
 			changeSharingStatusInConference(session, participant);
+		}
 
 		// Close Session if no more participants
 		Set<Participant> remainingParticipants = null;
