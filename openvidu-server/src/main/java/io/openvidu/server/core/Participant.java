@@ -75,6 +75,9 @@ public class Participant {
 	@Setter
 	private String clientType;
 
+	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
+	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
+
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
 
@@ -261,6 +264,24 @@ public class Participant {
 
 	public void setStreaming(boolean streaming) {
 		this.streaming = streaming;
+	}
+
+	public SubtitleConfigEnum getSubtitleConfig() {
+		return subtitleConfig;
+	}
+
+	public Participant setSubtitleConfig(SubtitleConfigEnum subtitleConfig) {
+		this.subtitleConfig = subtitleConfig;
+		return this;
+	}
+
+	public SubtitleLanguageEnum getSubtitleLanguage() {
+		return subtitleLanguage;
+	}
+
+	public Participant setSubtitleLanguage(SubtitleLanguageEnum subtitleLanguage) {
+		this.subtitleLanguage = subtitleLanguage;
+		return this;
 	}
 
 	public String getPublisherStreamId() {

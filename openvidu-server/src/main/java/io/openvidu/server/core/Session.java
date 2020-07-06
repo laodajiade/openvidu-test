@@ -97,6 +97,10 @@ public class Session implements SessionInterface {
 
 	private AtomicInteger majorParts = new AtomicInteger(0);
 
+	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
+	private Set<String> languages = new HashSet<>();
+	private JsonObject subtitleExtraConfig = null;
+
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
 		this.startTime = previousSession.getStartTime();
@@ -111,6 +115,8 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = previousSession.getLayoutChangeTypeEnum();
 		this.layoutInfo = previousSession.getLayoutInfo();
 		this.delayConfCnt = previousSession.delayConfCnt;
+		this.subtitleConfig = previousSession.getSubtitleConfig();
+		this.languages = previousSession.getLanguages();
 		this.corpMcuConfig = previousSession.getCorpMcuConfig();
 	}
 
@@ -127,6 +133,28 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
+	}
+
+	public SubtitleConfigEnum getSubtitleConfig() {
+		return subtitleConfig;
+	}
+
+	public void setSubtitleConfig(SubtitleConfigEnum subtitleConfig, SubtitleLanguageEnum language, JsonObject extraInfo) {
+		this.subtitleConfig = subtitleConfig;
+		languages.add(language.name());
+		setSubtitleExtraConfig(extraInfo);
+	}
+
+	public JsonObject getSubtitleExtraConfig() {
+		return subtitleExtraConfig;
+	}
+
+	public void setSubtitleExtraConfig(JsonObject subtitleExtraConfig) {
+		this.subtitleExtraConfig = subtitleExtraConfig;
+	}
+
+	public Set<String> getLanguages() {
+		return languages;
 	}
 
 	public String getSessionId() {
