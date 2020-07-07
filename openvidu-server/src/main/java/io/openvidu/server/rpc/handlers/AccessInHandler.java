@@ -43,7 +43,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
-//        String terminalConfig = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         String userTypeStr = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_USERTYPE_PARAM);
         UserType userType = !StringUtils.isEmpty(userTypeStr) ? UserType.valueOf(userTypeStr) : UserType.register;
@@ -135,7 +134,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                 rpcConnection.setUsername(device.getDeviceName());
                 rpcConnection.setAbility(ability);
                 rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
-//                cacheManage.setDeviceStatus(deviceSerialNumber, DeviceStatus.online.name());
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
 
@@ -238,33 +236,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                 break;
             }
 
-            // RECONNECT AFTER RECONNECT
-            /*if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.reconnect.name()))
-                    && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
-                if (previousRpc.isReconnected()) {
-                    log.info("the account:{} now reconnect after reconnect. previous connect id:{} userId:{} sessionId:{}",
-                            uuid, previousRpc.getParticipantPrivateId(), previousRpc.getUserId(), previousRpc.getSessionId());
-                    previousRpc.setUserUuid(null);
-                    sessionManager.accessOut(previousRpc);
-
-                    String firstConnectPrivateId = String.valueOf(userInfo.get("reconnect"));
-                    previousRpc = notificationService.getRpcConnection(firstConnectPrivateId);
-                }
-
-                if (!Objects.isNull(previousRpc)) {
-                    reconnect = true;
-                    rpcConnection.setReconnected(true);
-                    rpcConnection.setUserUuid(uuid);
-                    log.info("the account:{} now reconnect after reconnect. first connect id:{} userId:{} sessionId:{}",
-                            uuid, previousRpc.getParticipantPrivateId(), previousRpc.getUserId(), previousRpc.getSessionId());
-                    break;
-                }
-
-                log.warn("RECONNECT AFTER RECONNECT PREVIOUS RPC IS NULL. maybe server is restart, the account:{} now reconnect after reconnect warning.", uuid);
-                errCode = ErrorCodeEnum.SERVER_INTERNAL_ERROR;
-                break;
-            }*/
-
             if (!Objects.isNull(previousRpc)) {
                 log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",
                         rpcConnection.getParticipantPrivateId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
@@ -310,9 +281,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                     if (!Objects.isNull(device))
                         result.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
                     notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), result, errCode);
-                    /*//---------------------
-                    notificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
-                    return;*/
                 } else {
                     assert previousRpc != null;
                     try {
