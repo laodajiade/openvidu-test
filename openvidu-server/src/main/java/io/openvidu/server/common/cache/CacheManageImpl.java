@@ -102,5 +102,8 @@ public class CacheManageImpl implements CacheManage {
         }
     }
 
-
+    @Override
+    public void delUserToken(String uuid) {
+        tokenStringTemplate.delete(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid);
+    }
 }

@@ -488,6 +488,10 @@ public class ProtocolElements {
     public static final String GET_GROUP_INFO_USERID_PARAM = "userId";
 	public static final String GET_GROUP_INFO_DEVICE_STATUS_PARAM = "deviceStatus";
 
+	public static final String MODIFY_PASSWORD_METHOD = "modifyPassword";
+	public static final String ORIGINAL_PASSWORD_PARAM = "originalPassword";
+	public static final String NEW_PASSWORD_PARAM = "newPassword";
+
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
 	public static final String PARTICIPANTJOINED_METHOD = "participantJoined";

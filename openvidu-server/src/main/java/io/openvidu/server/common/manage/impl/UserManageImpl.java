@@ -64,4 +64,18 @@ public class UserManageImpl implements UserManage {
         return roleMapper.selectByPrimaryKey(roleId);
     }
 
+    @Override
+    public User getUserByUserId(Long userId) {
+        return userMapper.selectByPrimaryKey(userId);
+    }
+
+    @Override
+    public int modifyPassword(User user) {
+        User update = new User();
+        update.setId(user.getId());
+        update.setPassword(user.getPassword());
+
+        return userMapper.updateByPrimaryKeySelective(update);
+    }
+
 }

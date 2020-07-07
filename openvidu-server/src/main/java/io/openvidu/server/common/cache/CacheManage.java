@@ -32,4 +32,6 @@ public interface CacheManage {
     void delLivingInfo(String sessionId);
 
     void updateTerminalStatus(String userUuid, UserOnlineStatusEnum offline, String serialNumber, DeviceStatus offline1);
+
+    void delUserToken(String uuid);
 }

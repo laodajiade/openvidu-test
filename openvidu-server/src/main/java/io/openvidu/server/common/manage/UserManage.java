@@ -12,4 +12,8 @@ public interface UserManage {
     boolean isAdmin(String uuid);
 
     Role getUserRoleById(Long roleId);
+
+    User getUserByUserId(Long userId);
+
+    int modifyPassword(User user);
 }

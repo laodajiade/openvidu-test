@@ -248,6 +248,8 @@ public class RpcHandlerFactory {
     @Resource
     private SetSubtitleConfigHandler setSubtitleConfigHandler;
     @Resource SendSubtitleHandler sendSubtitleHandler;
+    @Resource
+    private ModifyPasswordHandler modifyPasswordHandler;
 
 
     @PostConstruct
@@ -330,6 +332,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETMEETINGSRECORDDETAIL_METHOD,                getMeetingRecordDetailHandler);
         handlersMap.put(ProtocolElements.SETSUBTITLECONFIG_METHOD,                      setSubtitleConfigHandler);
         handlersMap.put(ProtocolElements.SENDSUBTITLE_METHOD,                           sendSubtitleHandler);
+        handlersMap.put(ProtocolElements.MODIFY_PASSWORD_METHOD,                        modifyPasswordHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

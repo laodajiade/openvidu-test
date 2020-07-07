@@ -52,6 +52,9 @@ public enum ErrorCodeEnum {
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
+    USER_NOT_EXIST(12005, "用户不存在"),
+    ORIGINAL_PASSWORD_ERROR(12006, "用户原始密码错误"),
+    INCORRECT_FORMAT_PASSWORD(12031, "密码格式错误"),
 
     CONFERENCE_ALREADY_EXIST(13000, "会议已存在"),
     CONFERENCE_NOT_EXIST(13001, "会议不存在"),
