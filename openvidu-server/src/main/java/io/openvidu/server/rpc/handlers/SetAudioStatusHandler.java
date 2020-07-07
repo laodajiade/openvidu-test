@@ -32,8 +32,8 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_ROOM_ID_PARAM);
-        String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
         String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
+        String sourceId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
         List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
         // add params for tourist
         String source = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SOURCE_PARAM);
@@ -68,7 +68,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                         .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part) && part.isStreaming()) {
-                    part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
+                    part.getPublisherMediaOptions().setAudioActive(status.equals(ParticipantMicStatus.on.name()));
                     tsArray.add(t);
                 }
 
@@ -82,14 +82,14 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                         .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part) && part.isStreaming()) {
-                    part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
+                    part.getPublisherMediaOptions().setAudioActive(status.equals(ParticipantMicStatus.on.name()));
                     accountArr.add(account);
                 }
 
             });
         }
 
-        JsonObject params = new JsonObject();
+        /*JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, sourceId);
         params.add(ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM, tsArray);
@@ -98,18 +98,19 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM, source);
             params.add(ProtocolElements.SET_AUDIO_TARGETS_PARAM, accountArr);
         }
-        params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));
+        params.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM));*/
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
-                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
-                this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, params);
+                if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+                    this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, request.getParams());
+                }
 
-                if ((Objects.isNull(targetIds) || targetIds.isEmpty()) &&
+                /*if ((Objects.isNull(targetIds) || targetIds.isEmpty()) &&
                         !sourceId.equals(gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsString())) {
                     KurentoParticipant part = (KurentoParticipant) p;
                     if (part.isStreaming()) part.getPublisherMediaOptions().setAudioActive(!status.equals(ParticipantMicStatus.off.name()));
-                }
+                }*/
             }
         }
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
