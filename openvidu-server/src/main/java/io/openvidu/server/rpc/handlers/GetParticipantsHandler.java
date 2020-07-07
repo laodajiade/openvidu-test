@@ -38,18 +38,6 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         JsonArray jsonArray = new JsonArray();
         List<Long> userIds = new ArrayList<>();
 
-       /* Map<Long, String> onlineUserList = new HashMap<>();
-        for (RpcConnection c : notificationService.getRpcConnections()) {
-            if (Objects.equals(AccessTypeEnum.web, c.getAccessType())) continue;
-            Map userInfo = cacheManage.getUserInfoByUUID(c.getUserUuid());
-            if (Objects.isNull(userInfo)) continue;
-            String status = String.valueOf(userInfo.get("status"));
-            if (Objects.equals(UserOnlineStatusEnum.online.name(), status)) {
-                onlineUserList.put(c.getUserId(), c.getSerialNumber());
-                log.info("Status:{}, privateId:{}, userId:{}, serialNumber:{}", status, c.getParticipantPrivateId(), c.getUserId(), c.getSerialNumber());
-            }
-        }*/
-
         if (Objects.isNull(sessionManager.getParticipants(sessionId))) {
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
             return;
