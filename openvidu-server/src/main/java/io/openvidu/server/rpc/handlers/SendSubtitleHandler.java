@@ -81,7 +81,7 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
 
                     JsonObject notification = notifyParam.deepCopy();
                     notification.add("subtitles", eachSubtitleArr);
-                    notificationService.sendNotification(participant.getParticipantPrivateId(),
+                    notificationService.sendNotificationWithoutLog(participant.getParticipantPrivateId(),
                             ProtocolElements.SENDDISPLAYSUBTITLE_NOTIFY, notification);
                 }
             });
