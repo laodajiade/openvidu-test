@@ -1,5 +1,6 @@
 package io.openvidu.server.common.manage.impl;
 
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.RoleMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.dao.UserRoleMapper;
@@ -16,14 +17,18 @@ import java.util.Objects;
 
 @Service
 public class UserManageImpl implements UserManage {
+
+    @Resource
+    private CacheManage cacheManage;
+
+    @Resource
+    private DepartmentManage departmentManage;
+
     @Resource
     private UserMapper userMapper;
 
     @Resource
     private RoleMapper roleMapper;
-
-    @Resource
-    private DepartmentManage departmentManage;
 
     @Resource
     private UserRoleMapper userRoleMapper;
@@ -76,6 +81,14 @@ public class UserManageImpl implements UserManage {
         update.setPassword(user.getPassword());
 
         return userMapper.updateByPrimaryKeySelective(update);
+    }
+
+    @Override
+    public void updateUserInfo(User update) {
+        String uuid = update.getUuid();
+        update.setUuid(null);
+        userMapper.updateByPrimaryKeySelective(update);
+        cacheManage.updateTokenInfo(uuid, "username", update.getUsername());
     }
 
 }

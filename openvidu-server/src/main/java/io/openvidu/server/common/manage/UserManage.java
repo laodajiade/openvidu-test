@@ -16,4 +16,6 @@ public interface UserManage {
     User getUserByUserId(Long userId);
 
     int modifyPassword(User user);
+
+    void updateUserInfo(User update);
 }
