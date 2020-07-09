@@ -78,18 +78,20 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     UserDevice userDeviceSearch = new UserDevice();
                     userDeviceSearch.setUserId(user.getId());
                     UserDevice result = userDeviceMapper.selectByCondition(userDeviceSearch);
-                    DeviceSearch deviceSearch = new DeviceSearch();
-                    deviceSearch.setSerialNumber(result.getSerialNumber());
-                    Device device = deviceMapper.selectBySearchCondition(deviceSearch);
-                    DeviceDeptSearch ddSearch = new DeviceDeptSearch();
-                    ddSearch.setSerialNumber(result.getSerialNumber());
-                    List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
-                    Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
+                    if (!Objects.isNull(result)) {
+                        DeviceSearch deviceSearch = new DeviceSearch();
+                        deviceSearch.setSerialNumber(result.getSerialNumber());
+                        Device device = deviceMapper.selectBySearchCondition(deviceSearch);
+                        DeviceDeptSearch ddSearch = new DeviceDeptSearch();
+                        ddSearch.setSerialNumber(result.getSerialNumber());
+                        List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
+                        Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
 
-                    userObj.addProperty("deviceName", device.getDeviceName());
-                    userObj.addProperty("deviceOrgName", devDep.getDeptName());
-                    userObj.addProperty("appShowName", device.getDeviceName());
-                    userObj.addProperty("appShowDesc", devDep.getDeptName());
+                        userObj.addProperty("deviceName", device.getDeviceName());
+                        userObj.addProperty("deviceOrgName", devDep.getDeptName());
+                        userObj.addProperty("appShowName", device.getDeviceName());
+                        userObj.addProperty("appShowDesc", devDep.getDeptName());
+                    }
 //                } else {
 //                    userObj.addProperty("appShowName", user.getUsername());
 //                    userObj.addProperty("appShowDesc", userDep.getDeptName());
