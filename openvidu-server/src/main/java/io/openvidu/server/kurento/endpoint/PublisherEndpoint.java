@@ -90,7 +90,11 @@ public class PublisherEndpoint extends MediaEndpoint {
         log.info("Pub EP create passThrough.");
         passThruSubscription = registerElemErrListener(passThru);
 
-        if (((KurentoParticipant) this.getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
+		KurentoSession kurentoSession = ((KurentoParticipant) this.getOwner()).getSession();
+        if (kurentoSession.getConferenceMode().equals(ConferenceModeEnum.MCU)) {
+        	if (Objects.isNull(getCompositeService())) {
+        		setCompositeService(kurentoSession.compositeService);
+			}
             majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
             log.info("Pub EP create majorShareHubPort.");
             majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
