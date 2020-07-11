@@ -7,7 +7,6 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
@@ -25,22 +24,21 @@ public class ModifyPasswordHandler extends RpcAbstractHandler {
         if (Objects.isNull(originalPassword) || Objects.isNull(newPassword)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
                     request.getId(), null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+            return;
         }
 
-        if (!StringUtil.passwordCheck(newPassword)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                    request.getId(), null, ErrorCodeEnum.INCORRECT_FORMAT_PASSWORD);
-        }
         Long userId = rpcConnection.getUserId();
         User user = userManage.getUserByUserId(userId);
         if (Objects.isNull(user)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
                     request.getId(), null, ErrorCodeEnum.USER_NOT_EXIST);
+            return;
         }
 
         if (!StringUtils.equals(originalPassword, user.getPassword())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
                     request.getId(), null, ErrorCodeEnum.ORIGINAL_PASSWORD_ERROR);
+            return;
         }
 
         user.setPassword(newPassword);
