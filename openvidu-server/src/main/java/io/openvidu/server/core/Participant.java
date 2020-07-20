@@ -99,9 +99,9 @@ public class Participant {
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
-		this.micStatus = ParticipantMicStatus.off;
 		this.sharePowerStatus = ParticipantSharePowerStatus.off;
 		this.videoStatus = ParticipantVideoStatus.on;
+		this.micStatus = ParticipantMicStatus.on;
 		this.speakerStatus = ParticipantSpeakerStatus.on;
 		this.shareStatus = ParticipantShareStatus.off;
 		this.joinType = ParticipantJoinType.active;

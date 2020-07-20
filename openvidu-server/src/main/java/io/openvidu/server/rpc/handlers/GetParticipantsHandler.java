@@ -153,6 +153,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         // 获取发布者时存在同步阻塞的状态
         userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
         userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
+        userObj.addProperty("micStatus", part.getMicStatus().name());
+        userObj.addProperty("videoStatus", part.getVideoStatus().name());
         userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(part.getSpeakerStatus()));
 
         if (UserType.register.equals(part.getUserType())) {
