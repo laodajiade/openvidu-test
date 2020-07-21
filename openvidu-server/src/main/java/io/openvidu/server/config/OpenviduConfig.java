@@ -193,7 +193,7 @@ public class OpenviduConfig {
 	private List<CDREventName> webhookEventsList;
 	private Properties externalizedProperties;
 	private static final Gson gson = new GsonBuilder().create();
-	private static Map<String, String> h5PageConfigMap = new HashMap<>();
+	private Map<String, String> h5PageConfigMap = new HashMap<>();
 
 	@PostConstruct
 	public void init() {
@@ -482,8 +482,12 @@ public class OpenviduConfig {
 		return this.externalizedProperties;
 	}
 
-	public static Map<String, String> getH5PageConfigMap() {
+	public Map<String, String> getH5PageConfigMap() {
 		return h5PageConfigMap;
+	}
+
+	public String getH5PagesInfoConfig() {
+		return h5PagesInfoConfig;
 	}
 
 	public void initiateOpenViduWebhookEndpoint(String endpoint) throws Exception {
