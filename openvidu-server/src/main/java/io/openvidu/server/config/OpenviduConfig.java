@@ -17,9 +17,7 @@
 
 package io.openvidu.server.config;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CDREventName;
 import io.openvidu.server.common.manage.KmsRegistrationManage;
@@ -40,9 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Component
 public class OpenviduConfig {
@@ -184,6 +180,9 @@ public class OpenviduConfig {
 	@Value("${conference.record.download.server}")
 	private String recordDownloadServer;
 
+	@Value("${H5.page.infos}")
+	private String h5PagesInfoConfig;
+
 
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
@@ -193,6 +192,8 @@ public class OpenviduConfig {
 	private List<Header> webhookHeadersList;
 	private List<CDREventName> webhookEventsList;
 	private Properties externalizedProperties;
+	private static final Gson gson = new GsonBuilder().create();
+	private static Map<String, String> h5PageConfigMap = new HashMap<>();
 
 	@PostConstruct
 	public void init() {
@@ -256,6 +257,12 @@ public class OpenviduConfig {
 				System.exit(1);
 			}
 		}
+
+		JsonArray pagesArray = gson.fromJson(h5PagesInfoConfig, JsonArray.class);
+		pagesArray.forEach(page -> {
+			JsonObject pageObj = page.getAsJsonObject();
+			h5PageConfigMap.put(pageObj.get("type").getAsString(), pageObj.get("url").getAsString());
+		});
 	}
 
 	public List<String> getKmsUris() {
@@ -473,6 +480,10 @@ public class OpenviduConfig {
 
 	public Properties getExternalizedProperties() {
 		return this.externalizedProperties;
+	}
+
+	public static Map<String, String> getH5PageConfigMap() {
+		return h5PageConfigMap;
 	}
 
 	public void initiateOpenViduWebhookEndpoint(String endpoint) throws Exception {
