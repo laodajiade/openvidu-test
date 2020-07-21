@@ -4,9 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -44,6 +42,8 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
         if (sessionManager.isPublisherInSession(rpcConnection.getSessionId(), participant)) {
             MediaOptions options = sessionManager.generateMediaOptions(request);
+            participant.setVideoStatus(options.isVideoActive() ? ParticipantVideoStatus.on : ParticipantVideoStatus.off);
+            participant.setMicStatus(options.isAudioActive() ? ParticipantMicStatus.on : ParticipantMicStatus.off);
             sessionManager.publishVideo(participant, options, request.getId());
         } else {
             log.error("Error: participant {} is not a publisher", participant.getParticipantPublicId());
