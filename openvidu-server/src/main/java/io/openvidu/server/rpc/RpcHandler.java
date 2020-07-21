@@ -189,7 +189,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
 						JsonObject params = new JsonObject();
 						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, participant.getSessionId());
-						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
+						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, String.valueOf(rpc.getUserId()));
 						this.sessionManager.getParticipants(participant.getSessionId()).forEach(part -> {
 							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
 									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
