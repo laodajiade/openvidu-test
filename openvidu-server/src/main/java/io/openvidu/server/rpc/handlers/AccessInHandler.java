@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -147,7 +148,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                     log.info("not found previous connection belong to the same user:{}, connection id:{}", uuid, s.getParticipantPrivateId());
                     return false;
                 }
-            }).findFirst().orElse(null);
+            }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 
             if (webLogin) {
                 Session session;

@@ -41,6 +41,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -148,8 +149,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				sessionManager.accessOut(rpcConnection);
 				return;
 			}
-			cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
-					rpcConnection.getSerialNumber(), DeviceStatus.offline);
+			RpcConnection previousRpc = notificationService.getRpcConnections().stream().filter(s -> Objects.equals(s.getUserUuid(),
+					rpcConnection.getUserUuid()) && Objects.equals(AccessTypeEnum.terminal, s.getAccessType()))
+					.max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
+			if (Objects.equals(previousRpc, rpcConnection)) {
+				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+						rpcConnection.getSerialNumber(), DeviceStatus.offline);
+			}
 		} else {
 			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
 		}
@@ -241,7 +247,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (rpcSession != null) {
 			RpcConnection rpcConnection;
 			if (Objects.nonNull(rpcConnection = notificationService.getRpcConnection(rpcSession.getSessionId())) &&
-					Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType())) {
+					Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()) && Objects.equals(rpcConnection,
+					notificationService.getRpcConnections().stream().filter(s -> Objects.equals(s.getUserUuid(), rpcConnection.getUserUuid())
+							&& Objects.equals(AccessTypeEnum.terminal, s.getAccessType()))
+							.max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null))) {
 				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
 						rpcConnection.getSerialNumber(), DeviceStatus.offline);
 			}
