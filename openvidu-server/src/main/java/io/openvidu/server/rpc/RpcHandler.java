@@ -185,6 +185,21 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 //					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
 //					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
 
+					// send end roll notify if the offline connection's hand status is speaker
+					if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+						JsonObject params = new JsonObject();
+						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, participant.getSessionId());
+						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
+						this.sessionManager.getParticipants(participant.getSessionId()).forEach(part -> {
+							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
+									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+								this.notificationService.sendNotification(part.getParticipantPrivateId(),
+										ProtocolElements.END_ROLL_CALL_METHOD, params);
+							}
+						});
+						participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+					}
+
 					// release audio composite
 					KurentoParticipant kp = (KurentoParticipant) participant;
 					if (kp.isStreaming() && !Objects.isNull(kp.getPublisher())) {
@@ -214,21 +229,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 										ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params);
 							}
 						});
-					}
-
-					// send end roll notify if the offline connection's hand status is speaker
-					if (Objects.equals(ParticipantHandStatus.speaker, kp.getHandStatus())) {
-						JsonObject params = new JsonObject();
-						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, kp.getSessionId());
-						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, rpc.getUserId());
-						this.sessionManager.getParticipants(kp.getSessionId()).forEach(part -> {
-							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
-									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
-								this.notificationService.sendNotification(part.getParticipantPrivateId(),
-										ProtocolElements.END_ROLL_CALL_METHOD, params);
-							}
-						});
-						kp.setHandStatus(ParticipantHandStatus.endSpeaker);
 					}
 				}
 			}
