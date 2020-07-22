@@ -49,23 +49,23 @@ public class AccessInHandler extends RpcAbstractHandler {
         UserType userType = !StringUtils.isEmpty(userTypeStr) ? UserType.valueOf(userTypeStr) : UserType.register;
         String clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE);
 
+        JsonObject object = new JsonObject();
+        object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
         boolean webLogin = false;
         if (!StringUtils.isEmpty(accessType)) {
             rpcConnection.setAccessType(AccessTypeEnum.valueOf(accessType));
             webLogin = Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web);
             if (!webLogin) {
                 if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
-                    JsonObject errResp = new JsonObject();
-                    errResp.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
                     this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                            request.getId(), errResp, ErrorCodeEnum.REQUEST_EXPIRED);
+                            request.getId(), object, ErrorCodeEnum.REQUEST_EXPIRED);
                     return;
                 }
             }
         }
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
-        JsonObject object = new JsonObject();
+
         Device device = null;
         RpcConnection previousRpc = null;
         boolean reconnect = false;
