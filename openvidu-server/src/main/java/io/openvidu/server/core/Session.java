@@ -23,26 +23,26 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.java.client.Recording;
-import io.openvidu.java.client.RecordingLayout;
-import io.openvidu.java.client.SessionProperties;
+import io.openvidu.java.client.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,10 +55,12 @@ public class Session implements SessionInterface {
 
 	protected OpenviduConfig openviduConfig;
 	protected RecordingManager recordingManager;
+	protected LivingManager livingManager;
 
   //protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
 	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
+	protected String ruid;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
 	// TODO. Maybe we should relate conference in here.
@@ -70,19 +72,34 @@ public class Session implements SessionInterface {
 	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.ONE);
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
+	protected int moderatorIndex = -1;
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean notifyCountdown10Min = false;
 	protected boolean notifyCountdown1Min = false;
+	protected Long startRecordingTime;
+	protected Long stopRecordingTime;
+	protected Long startLivingTime;
+	protected String livingUrl;
+	@Getter
+	@Setter
+	private CorpMcuConfig corpMcuConfig;
 
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
 	protected AtomicInteger activePublishers = new AtomicInteger(0);
-
+	public final AtomicBoolean isRecording = new AtomicBoolean(false);
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
 
-//	protected JsonArray majorMixLinkedArr = new JsonArray(50);
+	public final AtomicBoolean isLiving = new AtomicBoolean(false);
+
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
+
+	private AtomicInteger majorParts = new AtomicInteger(0);
+
+	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
+	private Set<String> languages = new HashSet<>();
+	private JsonObject subtitleExtraConfig = null;
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -90,6 +107,7 @@ public class Session implements SessionInterface {
 		this.sessionProperties = previousSession.getSessionProperties();
 		this.openviduConfig = previousSession.openviduConfig;
 		this.recordingManager = previousSession.recordingManager;
+		this.livingManager = previousSession.livingManager;
 
 		this.conference = previousSession.conference;
 		this.preset = previousSession.preset;
@@ -97,15 +115,19 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = previousSession.getLayoutChangeTypeEnum();
 		this.layoutInfo = previousSession.getLayoutInfo();
 		this.delayConfCnt = previousSession.delayConfCnt;
+		this.subtitleConfig = previousSession.getSubtitleConfig();
+		this.languages = previousSession.getLanguages();
+		this.corpMcuConfig = previousSession.getCorpMcuConfig();
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
-			RecordingManager recordingManager) {
+			RecordingManager recordingManager, LivingManager livingManager) {
 		this.sessionId = sessionId;
 		this.startTime = System.currentTimeMillis();
 		this.sessionProperties = sessionProperties;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
+		this.livingManager = livingManager;
 
 		this.layoutMode = LayoutModeEnum.ONE;
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
@@ -113,11 +135,41 @@ public class Session implements SessionInterface {
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
 	}
 
+	public SubtitleConfigEnum getSubtitleConfig() {
+		return subtitleConfig;
+	}
+
+	public void setSubtitleConfig(SubtitleConfigEnum subtitleConfig, SubtitleLanguageEnum language, JsonObject extraInfo) {
+		this.subtitleConfig = subtitleConfig;
+		languages.add(language.name());
+		setSubtitleExtraConfig(extraInfo);
+	}
+
+	public JsonObject getSubtitleExtraConfig() {
+		return subtitleExtraConfig;
+	}
+
+	public void setSubtitleExtraConfig(JsonObject subtitleExtraConfig) {
+		this.subtitleExtraConfig = subtitleExtraConfig;
+	}
+
+	public Set<String> getLanguages() {
+		return languages;
+	}
+
 	public String getSessionId() {
 		return this.sessionId;
 	}
 
-    public boolean isAutomatically() {
+	public String getRuid() {
+		return ruid;
+	}
+
+	public void setRuid(String ruid) {
+		this.ruid = ruid;
+	}
+
+	public boolean isAutomatically() {
         return automatically;
     }
 
@@ -131,6 +183,61 @@ public class Session implements SessionInterface {
 
 	public Long getStartTime() {
 		return this.startTime;
+	}
+
+	private boolean isRecordingConfigured() {
+		return this.openviduConfig.isRecordingModuleEnabled() && MediaMode.ROUTED.equals(sessionProperties.mediaMode());
+	}
+
+	private boolean isLivingConfigured() {
+		return this.openviduConfig.isLivingModuleEnabled() && MediaMode.ROUTED.equals(sessionProperties.mediaMode());
+	}
+
+	@Override
+	public boolean setIsRecording(boolean flag) {
+		return isRecording.compareAndSet(!flag, flag);
+	}
+
+	@Override
+	public boolean sessionAllowedStartToRecord() {
+		log.info("to start recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
+				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
+		return isRecordingConfigured() && !this.recordingManager.sessionIsBeingRecorded(sessionId)
+				&& isRecording.compareAndSet(false, true);
+	}
+
+	@Override
+	public boolean sessionAllowedToStopRecording() {
+		log.info("to stop recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
+				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
+		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
+				&& isRecording.compareAndSet(true, false);
+	}
+
+	@Override
+	public boolean setIsLiving(boolean flag) {
+		log.info("session {} set isLiving:{}", this.getSessionId(), flag);
+		return isLiving.compareAndSet(!flag, flag);
+	}
+
+	@Override
+	public boolean sessionAllowedStartToLive() {
+		log.info("to start living, isLivingConfigured:{}, sessionsLivings contains {}:{}, session isLiving:{}",
+				isLivingConfigured(), sessionId, this.livingManager.sessionIsBeingLived(sessionId), isLiving.get());
+		return isLivingConfigured() && !this.livingManager.sessionIsBeingLived(sessionId)
+				&& isLiving.compareAndSet(false, true);
+	}
+
+	@Override
+	public boolean sessionAllowedToStopLiving() {
+		log.info("to stop living, isLivingConfigured:{}, sessionsLivings contains {}:{}, session isLiving:{}",
+				isLivingConfigured(), sessionId, this.livingManager.sessionIsBeingLived(sessionId), isLiving.get());
+		return isLivingConfigured() && this.livingManager.sessionIsBeingLived(sessionId)
+				&& isLiving.compareAndSet(true, false);
+	}
+
+	public RecordingManager getRecordingManager() {
+		return recordingManager;
 	}
 
 	public void setConference(Conference conference){ this.conference = conference; }
@@ -181,7 +288,21 @@ public class Session implements SessionInterface {
 		this.layoutInfo = layoutInfo;
 	}
 
-	public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
+    public int getModeratorIndex() {
+        return moderatorIndex;
+    }
+
+    public void setModeratorIndex(String moderatorPublicId) {
+        int length = layoutInfo.size();
+        for (int i = 0; i < length; i++) {
+            if (layoutInfo.get(i).getAsString().equals(moderatorPublicId)) {
+                this.moderatorIndex = i;
+                break;
+            }
+        }
+    }
+
+    public void setDelayConfCnt(int delayConfCnt) { this.delayConfCnt = delayConfCnt; }
 
 	public int incDelayConfCnt() { return this.delayConfCnt++; }
 
@@ -194,6 +315,39 @@ public class Session implements SessionInterface {
 	public void setNotifyCountdown1Min(boolean notifyCountdown1Min) { this.notifyCountdown1Min = notifyCountdown1Min; }
 
 	public boolean getNotifyCountdown1Min() { return this.notifyCountdown1Min; }
+
+
+	public Long getStartRecordingTime() {
+		return startRecordingTime;
+	}
+
+	public void setStartRecordingTime(Long startRecordingTime) {
+		this.startRecordingTime = startRecordingTime;
+	}
+
+	public Long getStopRecordingTime() {
+		return stopRecordingTime;
+	}
+
+	public void setStopRecordingTime(Long stopRecordingTime) {
+		this.stopRecordingTime = stopRecordingTime;
+	}
+
+	public Long getStartLivingTime() {
+		return startLivingTime;
+	}
+
+	public void setStartLivingTime(Long startLivingTime) {
+		this.startLivingTime = startLivingTime;
+	}
+
+	public String getLivingUrl() {
+		return livingUrl;
+	}
+
+	public void setLivingUrl(String livingUrl) {
+		this.livingUrl = livingUrl;
+	}
 
 	public int getConfDelayTime() { return this.delayConfCnt * this.delayTimeUnit; }
 
@@ -249,6 +403,11 @@ public class Session implements SessionInterface {
         return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
     }
 
+	@Override
+	public ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId) {
+		return participants.get(participantPrivateId);
+	}
+
     public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
         checkClosed();
 
@@ -290,6 +449,40 @@ public class Session implements SessionInterface {
 		return null;
 	}
 
+	public Participant getParticipantByUserId(String userId) {
+    	checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(userId, participant.getUserId())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
+	public Participant getParticipantByUUID(String uuid) {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(uuid, participant.getUuid())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
+	public Participant getSpeakerPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
+	public Participant getModeratorPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
+						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
+    public Participant getParticipantByStreamId(String streamId) {
+        checkClosed();
+        return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
+                participant.isStreaming() && streamId.equals(participant.getPublisherStreamId())).findAny().orElse(null);
+    }
+
 	public int getActivePublishers() {
 		return activePublishers.get();
 	}
@@ -300,6 +493,38 @@ public class Session implements SessionInterface {
 
 	public void deregisterPublisher() {
 		this.activePublishers.decrementAndGet();
+	}
+
+	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
+    	int size;
+    	if ((size = majorParts.incrementAndGet()) > openviduConfig.getMcuMajorPartLimit()) {
+    		majorParts.set(openviduConfig.getMcuMajorPartLimit());
+		}
+		log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
+				participant.getParticipantName(), sessionId, size);
+    	return size > openviduConfig.getMcuMajorPartLimit();
+	}
+
+	public void deregisterMajorParticipant(Participant participant) {
+    	if (StreamType.MAJOR.equals(participant.getStreamType())
+                && !OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
+                    participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
+		}
+    }
+
+    public void registerMajorParticipant(Participant participant) {
+        if (StreamType.MAJOR.equals(participant.getStreamType())) {
+			if (majorParts.incrementAndGet() > openviduConfig.getMcuMajorPartLimit()) {
+				majorParts.set(openviduConfig.getMcuMajorPartLimit());
+			}
+            log.info("ParticipantName:{} is going to publish in session:{} and increment majorPart size:{}",
+                    participant.getParticipantName(), sessionId, majorParts.get());
+        }
+    }
+
+    public int getMajorPartSize() {
+    	return majorParts.get();
 	}
 
 	public boolean isClosed() {
@@ -381,13 +606,154 @@ public class Session implements SessionInterface {
 		return false;
 	}
 
+	/**
+	 * send conferenceLayoutChanged notify to clients
+	 * change the role of original part which is publishing from PUBLISHER to SUBSCRIBER
+	 * evict the lastPart according to its role and status(speaker/sharing)
+	 * change the subscriberPart role from SUBSCRIBER to PUBLISHER
+	 * send notifyPartRoleChanged notify to clients
+	 */
+	public ErrorCodeEnum evictPartInCompositeWhenSubToPublish(Participant subscriberPart, SessionManager sessionManager) {
+		// get the last participant in session's majorShareMixLinkedArr
+		JsonObject lastPartObj = majorShareMixLinkedArr.get(majorShareMixLinkedArr.size() - 1).getAsJsonObject();
+		Participant lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
+        if (OpenViduRole.MODERATOR.equals(lastPart.getRole())) {
+            if (majorShareMixLinkedArr.size() == 1) {
+                // moderator can not be replaced in session
+                return ErrorCodeEnum.INVALID_METHOD_CALL;
+            } else {
+                lastPartObj = majorShareMixLinkedArr.get(majorShareMixLinkedArr.size() - 2).getAsJsonObject();
+                lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
+            }
+        }
+        dealUpAndDownTheWall(lastPart, subscriberPart, sessionManager, true);
+
+		return ErrorCodeEnum.SUCCESS;
+	}
+
+	public void dealUpAndDownTheWall(Participant pup2SubPart, Participant sub2PubPart, SessionManager sessionManager, boolean isSub2PubSpeaker) {
+        Set<Participant> participants = getParticipants();
+        Participant otherPart = getPartByPrivateIdAndStreamType(pup2SubPart.getParticipantPrivateId(),
+                StreamType.MAJOR.equals(pup2SubPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
+
+        if (ParticipantHandStatus.speaker.equals(pup2SubPart.getHandStatus())) {
+            // send endRoll notify
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
+            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId());
+            participants.forEach(part -> {
+                if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+                    sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),
+                            ProtocolElements.END_ROLL_CALL_METHOD, params);
+                }
+            });
+            pup2SubPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+        }
+
+        // change lastPart role
+		changeThePartRole(sessionManager, pup2SubPart, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER, false);
+
+        // evict the parts in session and notify KMS layout changed
+        Participant moderatorPart = getModeratorPart();
+        sessionManager.unpublishStream(this, pup2SubPart.getPublisherStreamId(), moderatorPart,
+                null, EndReason.forceUnpublishByUser);
+
+        boolean sendStopShareNotify = false;
+		JsonObject stopShareParams = new JsonObject();
+        if (Objects.nonNull(otherPart)) {
+            sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
+                    null, EndReason.forceUnpublishByUser);
+            sendStopShareNotify = true;
+			stopShareParams.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+					StreamType.SHARING.equals(otherPart.getStreamType()) ?
+							otherPart.getParticipantPublicId() : pup2SubPart.getParticipantPublicId());
+        }
+
+        // send conferenceLayoutChanged notify
+		for (Participant participant : participants) {
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
+				if (!sendStopShareNotify) {
+					continue;
+				}
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, stopShareParams);
+			}
+		}
+
+		// change subscriberPart role
+		changeThePartRole(sessionManager, sub2PubPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, isSub2PubSpeaker);
+    }
+
+	private void changeThePartRole(SessionManager sessionManager, Participant partChanged,
+								   OpenViduRole originalRole, OpenViduRole presentRole, boolean isSub2PubSpeaker) {
+		partChanged.changePartRole(presentRole);
+		JsonObject notifyParam = getPartRoleChangedNotifyParam(partChanged, originalRole, presentRole);
+		if (OpenViduRole.SUBSCRIBER.equals(presentRole)) {
+			deregisterMajorParticipant(partChanged);
+		} else {
+			registerMajorParticipant(partChanged);
+			KurentoParticipant kurentoParticipant = (KurentoParticipant) partChanged;
+			kurentoParticipant.createPublisher();
+			if (isSub2PubSpeaker) {
+				notifyParam.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_HAND_STATUS_PARAM, ParticipantHandStatus.speaker.name());
+			}
+		}
+		getParticipants().forEach(participant -> {
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, notifyParam);
+			}
+		});
+	}
+
+	private JsonObject getPartRoleChangedNotifyParam(Participant participant, OpenViduRole originalRole, OpenViduRole presentRole) {
+		JsonObject param = new JsonObject();
+		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM, participant.getParticipantPublicId());
+		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM, originalRole.name());
+		param.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM, presentRole.name());
+		return param;
+	}
+
+	// TODO record the order when part publish and put the first order part which down the wall
+	// current version put the random participant who down the wall
+	public void putPartOnWallAutomatically(SessionManager sessionManager) {
+		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && getParticipants().size() > openviduConfig.getMcuMajorPartLimit()
+                && majorParts.get() < openviduConfig.getMcuMajorPartLimit()) {
+			List<String> publishedParts = new ArrayList<>(16);
+			for (JsonElement jsonElement : majorShareMixLinkedArr) {
+				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
+			}
+			Set<Participant> participants = getParticipants();
+			Participant automaticOnWallPart = participants.stream().filter(participant ->
+					!publishedParts.contains(participant.getParticipantPublicId()) &&
+							OpenViduRole.SUBSCRIBER.equals(participant.getRole())).findAny().orElse(null);
+			if (Objects.nonNull(automaticOnWallPart)) {
+			    log.info("Put Part:{} On Wall Automatically in session:{}", automaticOnWallPart.getParticipantName(), automaticOnWallPart.getSessionId());
+				changeThePartRole(sessionManager, automaticOnWallPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, false);
+			} else {
+				log.info("Not found the below wall SUBSCRIBER participant.");
+			}
+		} else {
+			log.info("Not above the conditions when put Part On Wall Automatically.");
+		}
+	}
+
 	public JsonArray getMajorShareMixLinkedArr() {
 		return majorShareMixLinkedArr;
 	}
 
-	public synchronized void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant) {
+	public synchronized void dealParticipantDefaultOrder(KurentoParticipant kurentoParticipant, EndpointTypeEnum... typeEnums) {
     	if (majorShareMixLinkedArr.size() == layoutCoordinates.size()) {
-    		if (automatically && layoutMode.ordinal() < (LayoutModeEnum.values().length - 1)) {
+    		boolean notContains = true;
+    		for (JsonElement jsonElement : majorShareMixLinkedArr) {
+    			if (jsonElement.getAsJsonObject().get("connectionId").getAsString().equals(kurentoParticipant.getParticipantPublicId())) {
+    				notContains = false;
+    				break;
+				}
+			}
+    		if (notContains && automatically && layoutMode.ordinal() < (LayoutModeEnum.values().length - 1)) {
 				// switch layout mode automatically
 				switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() + 1]);
 			}
@@ -414,7 +780,7 @@ public class Session implements SessionInterface {
 		}
 
     	log.info("dealParticipantDefaultOrder majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
-    	this.invokeKmsConferenceLayout();
+    	this.invokeKmsConferenceLayout(typeEnums);
 	}
 
 	private static JsonObject getPartOrderInfo(String streamType, String publicId) {
@@ -521,38 +887,48 @@ public class Session implements SessionInterface {
         }
     }
 
-    public synchronized int invokeKmsConferenceLayout() {
-        KurentoSession kurentoSession = (KurentoSession) this;
-        KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
-        try {
-        	kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-					majorShareMixLinkedArr, kurentoClient.getSessionId()));
-        } catch (IOException e) {
-            log.error("Exception:\n", e);
-            return 0;
-        }
+	public synchronized int invokeKmsConferenceLayout(EndpointTypeEnum... typeEnums) {
+		KurentoSession kurentoSession = (KurentoSession) this;
+		KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
+		try {
+			kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
+					majorShareMixLinkedArr, kurentoClient.getSessionId(), typeEnums));
+		} catch (IOException e) {
+			log.error("Exception:\n", e);
+			return 0;
+		}
 
-        return 1;
-    }
+		return 1;
+	}
 
-    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId) {
-        Request<JsonObject> kmsRequest = new Request<>();
-        JsonObject params = new JsonObject();
-        params.addProperty("object", pipelineId);
-        params.addProperty("operation", "setLayout");
-        params.addProperty("sessionId", sessionId);
-        JsonArray layoutInfos = new JsonArray(50);
-        int index = 0;
-        int size = linkedArr.size();
-        for (JsonElement jsonElement : layoutCoordinates) {
-        	if (index < size) {
+
+    private Request<JsonObject> composeLayoutInvokeRequest(String pipelineId, JsonArray linkedArr, String sessionId, EndpointTypeEnum... typeEnums) {
+		Request<JsonObject> kmsRequest = new Request<>();
+		JsonObject params = new JsonObject();
+		params.addProperty("object", pipelineId);
+		params.addProperty("operation", "setLayout");
+		params.addProperty("sessionId", sessionId);
+		JsonArray layoutInfos = new JsonArray(50);
+		int index = 0;
+		int size = linkedArr.size();
+		for (JsonElement jsonElement : layoutCoordinates) {
+			if (index < size) {
 				JsonObject temp = jsonElement.getAsJsonObject().deepCopy();
 				try {
 					KurentoParticipant kurentoParticipant = (KurentoParticipant) this.getParticipantByPublicId(linkedArr
 							.get(index).getAsJsonObject().get("connectionId").getAsString());
 					temp.addProperty("connectionId", "connectionId");
 					temp.addProperty("streamType", "streamType");
-					temp.addProperty("object", kurentoParticipant.getPublisher().getMajorShareHubPort().getId());
+
+					EndpointTypeEnum type;
+					HubPort hubPort = null;
+					if (!kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)
+							&& Objects.nonNull(typeEnums) && typeEnums.length > 0 && Objects.nonNull(type = typeEnums[0])) {
+						hubPort = Objects.equals(type, EndpointTypeEnum.recording) ? kurentoParticipant.getPublisher().getRecordHubPort() : kurentoParticipant.getPublisher().getLiveHubPort();
+					}
+					temp.addProperty("object", kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU) ?
+							kurentoParticipant.getPublisher().getMajorShareHubPort().getId() : hubPort.getId());
+
 					temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
 					temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
 
@@ -564,31 +940,46 @@ public class Session implements SessionInterface {
 
 			} else break;
 		}
-        JsonObject operationParams = new JsonObject();
-        operationParams.add("layoutInfo", layoutInfos);
-        params.add("operationParams", operationParams);
-        kmsRequest.setMethod("invoke");
-        kmsRequest.setParams(params);
-        log.info("send sms setLayout params:{}", params);
+		JsonObject operationParams = new JsonObject();
+		operationParams.add("layoutInfo", layoutInfos);
+		params.add("operationParams", operationParams);
+		kmsRequest.setMethod("invoke");
+		kmsRequest.setParams(params);
+		log.info("send sms setLayout params:{}", params);
 
-        return kmsRequest;
-    }
+		return kmsRequest;
+
+	}
 
 	public synchronized void evictReconnectOldPart(String partPublicId) {
     	if (StringUtils.isEmpty(partPublicId)) return;
-		for (JsonElement element : majorShareMixLinkedArr) {
-			JsonObject jsonObject = element.getAsJsonObject();
-			if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
-				majorShareMixLinkedArr.remove(element);
-				if (Objects.equals(StreamType.SHARING.name(), jsonObject.get("streamType").getAsString()) && automatically
-                        && !Objects.equals(LayoutModeEnum.ONE, layoutMode) && majorShareMixLinkedArr.size() < layoutMode.getMode()) {
-                    switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
-                }
-				break;
+    	if (Objects.equals(ConferenceModeEnum.MCU, getConferenceMode())) {
+			for (JsonElement element : majorShareMixLinkedArr) {
+				JsonObject jsonObject = element.getAsJsonObject();
+				if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
+					majorShareMixLinkedArr.remove(element);
+					if (automatically && !Objects.equals(LayoutModeEnum.ONE, layoutMode)
+							&& majorShareMixLinkedArr.size() < layoutMode.getMode()) {
+						switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
+					}
+					break;
+				}
 			}
-		}
 
-		log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+			log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+		} else {
+			for (JsonElement element : layoutInfo) {
+				if (Objects.equals(element.getAsString(), partPublicId)) {
+                    layoutInfo.remove(element);
+                    break;
+				}
+			}
+			if (!Objects.isNull(layoutInfo) && layoutInfo.size() > 0) {
+				setLayoutMode(LayoutModeEnum.getLayoutMode(layoutInfo.size()));
+			}
+
+			log.info("evictReconnectOldPart layoutInfo:{}", layoutInfo.toString());
+		}
 	}
 
 	public JsonArray getCurrentPartInMcuLayout() {
@@ -620,4 +1011,27 @@ public class Session implements SessionInterface {
         notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
         return notifyResult;
     }
+
+	public boolean getConferenceRecordStatus() {
+		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
+				&& isRecording.get();
+	}
+
+	public boolean getLivingStatus() {
+		return isLivingConfigured() && this.livingManager.sessionIsBeingLived(sessionId)
+				&& isLiving.get();
+	}
+
+	public void stopRecordAndLiving(long kmsDisconnectionTime, EndReason reason) {
+		// Stop recording if session is being recorded
+		if (recordingManager.sessionIsBeingRecorded(sessionId)) {
+			this.recordingManager.forceStopRecording(this, reason, kmsDisconnectionTime);
+		}
+
+		// Stop living if session is being lived
+		if (livingManager.sessionIsBeingLived(sessionId)) {
+			this.livingManager.forceStopLiving(this, reason, kmsDisconnectionTime);
+		}
+	}
+
 }

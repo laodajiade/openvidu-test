@@ -18,6 +18,7 @@
 package io.openvidu.server.core;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.gson.JsonObject;
 
@@ -54,5 +55,19 @@ public interface SessionInterface {
 	JsonObject withStatsToJson();
 
 	Long getStartTime();
+
+    ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId);
+
+	boolean setIsRecording(boolean flag);
+
+	boolean sessionAllowedStartToRecord();
+
+	boolean sessionAllowedToStopRecording();
+
+	boolean setIsLiving(boolean flag);
+
+	boolean sessionAllowedStartToLive();
+
+	boolean sessionAllowedToStopLiving();
 
 }

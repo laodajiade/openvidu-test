@@ -17,16 +17,19 @@
 
 package io.openvidu.server.rpc;
 
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.UserType;
+import lombok.Getter;
+import lombok.Setter;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Object representing client-server WebSocket sessions. Stores information
@@ -45,6 +48,7 @@ public class RpcConnection {
 	private String participantPrivateId;
 	private Long userId;
 	private String userUuid;	// the uuid of user
+	private String project;
 	private String serialNumber;
 	private String macAddr;
 	private boolean isReconnected;
@@ -52,6 +56,18 @@ public class RpcConnection {
 	private Long createTime;
 	private String ability;
 	private JsonObject terminalConfig;
+
+	@Getter
+	@Setter
+	private UserType userType = UserType.register;
+
+	@Getter
+	@Setter
+	private String clientType;
+
+	@Getter
+	@Setter
+	private String username;
 
 	public RpcConnection(Session session) {
 		this.session = session;
@@ -79,6 +95,14 @@ public class RpcConnection {
 	public String getUserUuid() { return this.userUuid; }
 
 	public void setUserUuid(String userUuid) { this.userUuid = userUuid; }
+
+	public String getProject() {
+		return project;
+	}
+
+	public void setProject(String project) {
+		this.project = project;
+	}
 
 	public String getSerialNumber() { return this.serialNumber; }
 

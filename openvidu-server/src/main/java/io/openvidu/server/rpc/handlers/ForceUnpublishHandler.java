@@ -34,8 +34,9 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
             return;
         }
 
-        if (OpenViduRole.MODERATOR_ROLES.contains(participant.getRole())) {
-            String streamId = getStringParam(request, ProtocolElements.FORCEUNPUBLISH_STREAMID_PARAM);
+        String streamId = getStringParam(request, ProtocolElements.FORCEUNPUBLISH_STREAMID_PARAM);
+
+        if (enableToOperate(participant, streamId)) {
             if (sessionManager.unpublishStream(sessionManager.getSession(rpcConnection.getSessionId()), streamId,
                     participant, request.getId(), EndReason.forceUnpublishByUser)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -57,5 +58,12 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
         }
+    }
+
+
+    private boolean enableToOperate(Participant participant, String streamId) {
+        return OpenViduRole.MODERATOR_ROLES.contains(participant.getRole()) || streamId.equals(participant.getPublisherStreamId())
+                || Objects.equals(participant.getParticipantPrivateId(),
+                sessionManager.getParticipantPrivateIdFromStreamId(participant.getSessionId(), streamId));
     }
 }

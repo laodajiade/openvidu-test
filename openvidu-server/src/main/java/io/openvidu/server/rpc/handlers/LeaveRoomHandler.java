@@ -30,7 +30,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         String sessionId = getStringParam(request, ProtocolElements.LEAVEROOM_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.LEAVEROOM_SOURCE_ID_PARAM);
         String streamType = getStringParam(request, ProtocolElements.LEAVEROOM_STREAM_TYPE_PARAM);
-        if (StringUtils.isEmpty(sessionId) || StringUtils.isEmpty(sourceId) || StringUtils.isEmpty(streamType)) {
+        if (StringUtils.isEmpty(sessionId) || (StringUtils.isEmpty(sourceId) && UserType.register.equals(rpcConnection.getUserType()))
+                || StringUtils.isEmpty(streamType)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
@@ -40,6 +41,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         try {
             participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(),
                     StreamType.valueOf(streamType));
+
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                 /*Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
@@ -111,8 +113,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             session.invokeKmsConferenceLayout();
         }
 
-        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
+        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
             participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+        }
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
@@ -128,5 +131,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
+        if (Objects.nonNull(session = sessionManager.getSession(sessionId)) && !session.isClosed()) {
+            session.putPartOnWallAutomatically(sessionManager);
+        }
+        rpcConnection.setReconnected(false);
     }
 }

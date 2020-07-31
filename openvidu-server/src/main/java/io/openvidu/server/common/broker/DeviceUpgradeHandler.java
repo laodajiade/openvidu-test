@@ -38,7 +38,7 @@ public class DeviceUpgradeHandler {
 
     private static final Gson gson = new GsonBuilder().create();
 
-    private static BlockingQueue<String> deviceInfos = new LinkedBlockingDeque<>(200);
+    private static BlockingQueue<String> deviceInfos = new LinkedBlockingDeque<>(100);
 
     @Resource
     private RpcNotificationService rpcNotificationService;

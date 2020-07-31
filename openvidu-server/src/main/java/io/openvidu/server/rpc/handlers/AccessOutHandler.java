@@ -1,13 +1,10 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
-import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * @author geedow
@@ -20,8 +17,8 @@ public class AccessOutHandler extends RpcAbstractHandler {
         if (request != null) {
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         }
-        if (!Objects.isNull(rpcConnection.getSerialNumber()))
-            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());
+       /* if (!Objects.isNull(rpcConnection.getSerialNumber()))
+            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.offline.name());*/
         sessionManager.accessOut(rpcConnection);
     }
 }

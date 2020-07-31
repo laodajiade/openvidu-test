@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,15 @@ public class SwapPartWindowHandler extends RpcAbstractHandler {
                 return;
 
             }
+        }
+
+        // check if both source and target are streaming
+        Participant sourcePart = conferenceSession.getParticipantByPublicId(sourceConnectionId);
+        Participant targetPart = conferenceSession.getParticipantByPublicId(targetConnectionId);
+        if (!sourcePart.isStreaming() || !targetPart.isStreaming()) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.INVALID_METHOD_CALL);
+            return;
         }
 
         // change conference layout

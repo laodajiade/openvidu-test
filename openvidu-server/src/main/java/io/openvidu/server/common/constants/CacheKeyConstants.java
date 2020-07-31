@@ -1,4 +1,4 @@
-package io.openvidu.server.common.contants;
+package io.openvidu.server.common.constants;
 
 import io.openvidu.server.common.enums.StreamType;
 
@@ -23,6 +23,11 @@ public class CacheKeyConstants {
     /** 与会人key前缀 participant:{privateId}:{streamType}*/
     public static final String PARTICIPANT_PREFIX_KEY = "participant:%s:%s";
 
+    /** 会议直播信息前缀 conference:living:info:{sessionId} */
+    public static final String CONFERENCE_LIVING_INFO_KEY = "conference:living:info:";
+    public static final String CONFERENCE_LIVING_INFO_LIVINGURL = "livingUrl";
+
+    public static final long DEFAULT_CONFERENCE_EXPIRE = 86400;
 
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);

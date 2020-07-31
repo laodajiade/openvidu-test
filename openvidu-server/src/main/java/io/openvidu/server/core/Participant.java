@@ -23,6 +23,8 @@ import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.utils.GeoLocation;
+import lombok.Getter;
+import lombok.Setter;
 
 public class Participant {
 
@@ -42,6 +44,14 @@ public class Participant {
 	protected volatile boolean closed;
 
 	private String userId;
+
+	@Getter
+	@Setter
+	private String uuid;
+
+	@Getter
+	@Setter
+	private String username;
 	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
@@ -55,12 +65,24 @@ public class Participant {
 	protected ParticipantShareStatus shareStatus;
 	protected SessionPreset preset;
 	protected ParticipantJoinType joinType;
+	private String ability;
+
+	@Getter
+	@Setter
+	private UserType userType = UserType.register;
+
+	@Getter
+	@Setter
+	private String clientType;
+
+	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
+	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
-					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt) {
+					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
@@ -77,12 +99,20 @@ public class Participant {
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
-		this.micStatus = ParticipantMicStatus.off;
 		this.sharePowerStatus = ParticipantSharePowerStatus.off;
 		this.videoStatus = ParticipantVideoStatus.on;
+		this.micStatus = ParticipantMicStatus.on;
 		this.speakerStatus = ParticipantSpeakerStatus.on;
 		this.shareStatus = ParticipantShareStatus.off;
 		this.joinType = ParticipantJoinType.active;
+		this.ability = ability;
+	}
+
+	public void changePartRole(OpenViduRole role) {
+		setRole(role);
+		JsonObject clientMetadataObj = new Gson().fromJson(clientMetadata, JsonObject.class);
+		clientMetadataObj.addProperty("role", role.name());
+		setClientMetadata(clientMetadataObj.toString());
 	}
 
 	public String getFinalUserId() {
@@ -196,7 +226,15 @@ public class Participant {
 
 	public ParticipantJoinType getJoinType() { return this.joinType; }
 
-	public void setPreset(SessionPreset preset) { this.preset = preset; }
+	public String getAbility() {
+		return ability;
+	}
+
+	public void setAbility(String ability) {
+		this.ability = ability;
+	}
+
+    public void setPreset(SessionPreset preset) { this.preset = preset; }
 
 	public SessionPreset getPreset() { return this.preset; }
 
@@ -226,6 +264,24 @@ public class Participant {
 
 	public void setStreaming(boolean streaming) {
 		this.streaming = streaming;
+	}
+
+	public SubtitleConfigEnum getSubtitleConfig() {
+		return subtitleConfig;
+	}
+
+	public Participant setSubtitleConfig(SubtitleConfigEnum subtitleConfig) {
+		this.subtitleConfig = subtitleConfig;
+		return this;
+	}
+
+	public SubtitleLanguageEnum getSubtitleLanguage() {
+		return subtitleLanguage;
+	}
+
+	public Participant setSubtitleLanguage(SubtitleLanguageEnum subtitleLanguage) {
+		this.subtitleLanguage = subtitleLanguage;
+		return this;
 	}
 
 	public String getPublisherStreamId() {
@@ -306,11 +362,9 @@ public class Participant {
 		json.addProperty("createdAt", this.createdAt);
 		json.addProperty("location", this.location != null ? this.location.toString() : "unknown");
 		json.addProperty("platform", this.platform);
-//		json.addProperty("token", this.token.getToken());
 		json.addProperty("role", this.getRole().name());
 		json.addProperty("serverData", this.serverMetadata);
 		json.addProperty("clientData", this.clientMetadata);
 		return json;
 	}
-
 }

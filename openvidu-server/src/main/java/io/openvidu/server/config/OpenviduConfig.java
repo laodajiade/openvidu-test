@@ -17,33 +17,28 @@
 
 package io.openvidu.server.config;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CDREventName;
+import io.openvidu.server.common.manage.KmsRegistrationManage;
+import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
-import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Component
 public class OpenviduConfig {
@@ -52,12 +47,6 @@ public class OpenviduConfig {
 
 	@Value("#{'${spring.config.additional-location:}'.length() > 0 ? '${spring.config.additional-location:}' : \"\"}")
 	private String springConfigLocation;
-
-//	@Autowired
-//	BuildProperties buildProperties;
-
-	@Value("${kms.uris}")
-	private String kmsUris;
 
 	@Value("${openvidu.publicurl}")
 	private String openviduPublicUrl; // local, docker, [FINAL_URL]
@@ -97,6 +86,24 @@ public class OpenviduConfig {
 
 	@Value("${openvidu.recording.composed-url}")
 	private String openviduRecordingComposedUrl;
+
+	@Value("${openvidu.living}")
+	private boolean openviduLiving;
+
+	@Value("${openvidu.living.path}")
+	private String openviduLivingPath;
+
+	@Value("${openvidu.living.http.port}")
+	private String openviduLivingHttpPort;
+
+	@Value("${openvidu.living.http.url.prefix}")
+	private String openviduLivingHttpUrlPrefix;
+
+	@Value("${openvidu.living.url.prefix}")
+	private String openviduLivingUrlPrefix;
+
+	@Value("${openvidu.living.autostop-timeout}")
+	private int openviduLivingAutostopTimeout;
 
 	@Value("${openvidu.webhook}")
 	private boolean openviduWebhook;
@@ -149,11 +156,44 @@ public class OpenviduConfig {
 	@Value("${voip.delay.maxTime}")
 	private int voipDelayMaxTime;		// unit is hour
 
+	@Getter
+	@Value("${kms.load.limit.switch}")
+	private int kmsLoadLimitSwitch;
+
+	@Getter
+	@Value("${mcu.composite.limit.size}")
+	private int mcuMajorPartLimit;
+
+	@Getter
+	@Value("${conference.record.playback.server}")
+	private String recordPlaybackServer;
+
+	@Getter
+	@Value("${conference.record.thumbnail.server}")
+	private String recordThumbnailServer;
+
+	@Getter
+	@Value("${conference.transcoding.server.request.url}")
+	private String recordTranscodingRequestUrl;
+
+	@Getter
+	@Value("${conference.record.download.server}")
+	private String recordDownloadServer;
+
+	@Value("${H5.page.infos}")
+	private String h5PagesInfoConfig;
+
+
+	@Resource
+	private KmsRegistrationManage kmsRegistrationManage;
+
 	private String finalUrl;
 	private List<String> kmsUrisList;
 	private List<Header> webhookHeadersList;
 	private List<CDREventName> webhookEventsList;
 	private Properties externalizedProperties;
+	private static final Gson gson = new GsonBuilder().create();
+	private Map<String, String> h5PageConfigMap = new HashMap<>();
 
 	@PostConstruct
 	public void init() {
@@ -181,7 +221,7 @@ public class OpenviduConfig {
 		}
 
 		try {
-			this.initiateKmsUris(this.kmsUris);
+			kmsUrisList = kmsRegistrationManage.getAllRegisterKms();
 		} catch (Exception e) {
 			log.error("Error in 'kms.uris' system property: " + e.getMessage());
 			log.error("Shutting down OpenVidu Server");
@@ -217,6 +257,12 @@ public class OpenviduConfig {
 				System.exit(1);
 			}
 		}
+
+		JsonArray pagesArray = gson.fromJson(h5PagesInfoConfig, JsonArray.class);
+		pagesArray.forEach(page -> {
+			JsonObject pageObj = page.getAsJsonObject();
+			h5PageConfigMap.put(pageObj.get("type").getAsString(), pageObj.get("url").getAsString());
+		});
 	}
 
 	public List<String> getKmsUris() {
@@ -278,6 +324,31 @@ public class OpenviduConfig {
 	public boolean openviduRecordingCustomLayoutChanged(String path) {
 		return !"/opt/openvidu/custom-layout".equals(path);
 	}
+
+	public boolean isLivingModuleEnabled() {
+		return this.openviduLiving;
+	}
+
+	public String getOpenViduLivingPath() {
+		return this.openviduLivingPath;
+	}
+
+	public String getOpenviduLivingHttpPort() {
+		return this.openviduLivingHttpPort;
+	}
+
+	public String getOpenviduLivingHttpUrlPrefix() {
+		return openviduLivingHttpUrlPrefix;
+	}
+
+	public String getOpenviduLivingUrlPrefix() {
+		return this.openviduLivingUrlPrefix;
+	}
+
+	public int getOpenviduLivingAutostopTimeout() {
+		return this.openviduLivingAutostopTimeout;
+	}
+
 
 	public String getFinalUrl() {
 		return finalUrl;
@@ -411,19 +482,12 @@ public class OpenviduConfig {
 		return this.externalizedProperties;
 	}
 
-	private void initiateKmsUris(String kmsUris) throws Exception {
-		kmsUris = kmsUris.replaceAll("\\s", ""); // Remove all white spaces
-		kmsUris = kmsUris.replaceAll("\\\\", ""); // Remove previous escapes
-		kmsUris = kmsUris.replaceAll("\"", ""); // Remove previous double quotes
-		kmsUris = kmsUris.replaceFirst("^\\[", "[\\\""); // Escape first char
-		kmsUris = kmsUris.replaceFirst("\\]$", "\\\"]"); // Escape last char
-		kmsUris = kmsUris.replaceAll(",", "\\\",\\\""); // Escape middle uris
-		Gson gson = new Gson();
-		JsonArray kmsUrisArray = gson.fromJson(kmsUris, JsonArray.class);
-		this.kmsUrisList = JsonUtils.toStringList(kmsUrisArray);
-		for (String uri : kmsUrisList) {
-			this.checkWebsocketUri(uri);
-		}
+	public Map<String, String> getH5PageConfigMap() {
+		return h5PageConfigMap;
+	}
+
+	public String getH5PagesInfoConfig() {
+		return h5PagesInfoConfig;
 	}
 
 	public void initiateOpenViduWebhookEndpoint(String endpoint) throws Exception {
@@ -480,15 +544,4 @@ public class OpenviduConfig {
 		}
 		log.info("OpenVidu Webhook events: {}", this.getOpenViduWebhookEvents().toString());
 	}
-
-	public void checkWebsocketUri(String uri) throws MalformedURLException {
-		try {
-			String parsedUri = uri.replaceAll("^ws://", "http://").replaceAll("^wss://", "https://");
-			new URL(parsedUri);
-		} catch (MalformedURLException e) {
-			log.error("URI {} is not a valid WebSocket endpoint", uri);
-			throw e;
-		}
-	}
-
 }

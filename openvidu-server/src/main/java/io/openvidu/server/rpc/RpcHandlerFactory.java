@@ -197,6 +197,66 @@ public class RpcHandlerFactory {
     @Resource
     private UploadShareCastPlayStrategyHandler uploadShareCastPlayStrategyHandler;
 
+    @Resource
+    private GetGroupListHandler getGroupListHandler;
+
+    @Resource
+    private GetGroupInfoHandler getGroupInfoHandler;
+
+    @Resource
+    private UploadTerminalInfoHandler uploadTerminalInfoHandler;
+
+    @Resource
+    private GetSubDevOrUserByDeptIdsHandler getSubDevOrUserByDeptIdsHandler;
+
+    @Resource
+    private ChangePartRoleHandler changePartRoleHandler;
+
+    @Resource
+    private StartConferenceRecordHandler startConferenceRecordHandler;
+
+    @Resource
+    private StopConferenceRecordHandler stopConferenceRecordHandler;
+
+    @Resource
+    private GetConferenceRecordHandler getConferenceRecordHandler;
+
+    @Resource
+    private PlaybackConferenceRecordHandler playbackConferenceRecordHandler;
+
+    @Resource
+    private DownloadConferenceRecordHandler downloadConferenceRecordHandler;
+
+    @Resource
+    private DelConferenceRecordHandler delConferenceRecordHandler;
+
+    @Resource
+    private StartLiveHandler startLiveHandler;
+
+    @Resource
+    private StopLiveHandler stopLiveHandler;
+
+    @Resource
+    private GetLiveStatusHandler getLiveStatusHandler;
+
+    @Resource
+    private GetConferenceRecordStatusHandler getConferenceRecordStatusHandler;
+    @Resource
+    private GetAllRoomsOfCorpHandler getAllRoomsOfCorpHandler;
+    @Resource
+    private GetMeetingRecordDetailHandler getMeetingRecordDetailHandler;
+    @Resource
+    private SetSubtitleConfigHandler setSubtitleConfigHandler;
+    @Resource
+    private SendSubtitleHandler sendSubtitleHandler;
+    @Resource
+    private ModifyPasswordHandler modifyPasswordHandler;
+    @Resource
+    private UpdateUsernameHandler updateUsernameHandler;
+    @Resource
+    private GetH5PagesHandler getH5PagesHandler;
+
+
     @PostConstruct
     public void init() {
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
@@ -258,7 +318,28 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SHARING_CONTROL_METHOD,                        sharingControlHandler);
         handlersMap.put(ProtocolElements.DISTRIBUTESHARECASTPLAYSTRATEGY_METHOD,        distributeShareCastPlayStrategyHandler);
         handlersMap.put(ProtocolElements.UPLOADSHARECASTPLAYSTRATEGY_METHOD,            uploadShareCastPlayStrategyHandler);
-
+        handlersMap.put(ProtocolElements.GET_GROUP_LIST_METHOD,                         getGroupListHandler);
+        handlersMap.put(ProtocolElements.GET_GROUP_INFO_METHOD,                         getGroupInfoHandler);
+        handlersMap.put(ProtocolElements.UPLOADTERMINALINFO_METHOD,                     uploadTerminalInfoHandler);
+        handlersMap.put(ProtocolElements.GETSUBDEVORUSERBYDEPTIDS_METHOD,               getSubDevOrUserByDeptIdsHandler);
+        handlersMap.put(ProtocolElements.CHANGE_PART_ROLE_METHOD,                       changePartRoleHandler);
+        handlersMap.put(ProtocolElements.START_CONF_RECORD_METHOD,                      startConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.STOP_CONF_RECORD_METHOD,                       stopConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.GET_CONF_RECORD_METHOD,                        getConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.PLAYBACK_CONF_RECORD_METHOD,                   playbackConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.DOWNLOAD_CONF_RECORD_METHOD,                   downloadConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.DEL_CONF_RECORD_METHOD,                        delConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.GET_CONF_RECORD_STATUS_METHOD,                 getConferenceRecordStatusHandler);
+        handlersMap.put(ProtocolElements.START_LIVE_METHOD,                             startLiveHandler);
+        handlersMap.put(ProtocolElements.STOP_LIVE_METHOD,                              stopLiveHandler);
+        handlersMap.put(ProtocolElements.GET_LIVE_STATUS_METHOD,                        getLiveStatusHandler);
+        handlersMap.put(ProtocolElements.GETALLROOMSOFCORP_METHOD,                      getAllRoomsOfCorpHandler);
+        handlersMap.put(ProtocolElements.GETMEETINGSRECORDDETAIL_METHOD,                getMeetingRecordDetailHandler);
+        handlersMap.put(ProtocolElements.SETSUBTITLECONFIG_METHOD,                      setSubtitleConfigHandler);
+        handlersMap.put(ProtocolElements.SENDSUBTITLE_METHOD,                           sendSubtitleHandler);
+        handlersMap.put(ProtocolElements.MODIFY_PASSWORD_METHOD,                        modifyPasswordHandler);
+        handlersMap.put(ProtocolElements.UPDATEUSERNAME_METHOD,                         updateUsernameHandler);
+        handlersMap.put(ProtocolElements.GETH5PAGES_METHOD,                             getH5PagesHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

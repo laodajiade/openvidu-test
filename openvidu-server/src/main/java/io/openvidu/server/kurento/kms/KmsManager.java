@@ -17,24 +17,22 @@
 
 package io.openvidu.server.kurento.kms;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-
+import com.google.gson.JsonObject;
+import io.openvidu.server.common.manage.KmsRegistrationManage;
+import io.openvidu.server.config.OpenviduConfig;
 import org.kurento.client.KurentoConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 
-import com.google.gson.JsonObject;
-
-import io.openvidu.server.config.OpenviduConfig;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class KmsManager {
 
@@ -82,6 +80,12 @@ public abstract class KmsManager {
 
 	@Autowired
 	protected LoadManager loadManager;
+
+	@Autowired
+	protected KmsRegistrationManage kmsRegistrationManage;
+
+	@Value("${openvidu.load.kms.interval}")
+	private long loadKmsInterval;
 
 	final protected Map<String, Kms> kmss = new ConcurrentHashMap<>();
 
@@ -185,10 +189,25 @@ public abstract class KmsManager {
 
 	public abstract List<Kms> initializeKurentoClients(List<String> kmsUris) throws Exception;
 
+	public abstract Kms initializeClient(String kmsUri) throws Exception;
+
 	@PostConstruct
 	private void postConstruct() {
 		try {
 			this.initializeKurentoClients(this.openviduConfig.getKmsUris());
+			ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+			service.scheduleAtFixedRate(() -> {
+				List<String> regRecentKms = kmsRegistrationManage.getRecentRegisterKms();
+				if (!CollectionUtils.isEmpty(regRecentKms)) {
+					regRecentKms.forEach(kmsUri -> {
+						try {
+							initializeClient(kmsUri);
+						} catch (Exception e) {
+							log.error("Recent register KMS in {} is not reachable by OpenVidu Server", kmsUri);
+						}
+					});
+				}
+			}, loadKmsInterval, loadKmsInterval, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			// Some KMS wasn't reachable
 			log.error("Shutting down OpenVidu Server");

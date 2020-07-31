@@ -5,10 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.SessionPreset;
-import io.openvidu.server.core.SessionPresetUseIDEnum;
+import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
@@ -32,7 +29,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
-        String role = getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM);
+        OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         String streamType = getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM);
@@ -116,27 +113,36 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
+                JsonObject clientMetadataObj = gson.fromJson(clientMetadata, JsonObject.class);
+                clientMetadataObj.addProperty("account", rpcConnection.getUserUuid());
                 // change participant role if web THOR invite the same user
                 if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
-                    JsonObject clientMetadataObj = gson.fromJson(clientMetadata, JsonObject.class);
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
                     if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsString()) &&
-                            !Objects.equals(OpenViduRole.THOR.name(), role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
-                        role = OpenViduRole.MODERATOR.name();
+                            !Objects.equals(OpenViduRole.THOR, role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
+                        role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
-                        clientMetadata = clientMetadataObj.toString();
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
                     }
+                }
+                clientMetadata = clientMetadataObj.toString();
+
+                // check ever already exits share part
+                Session session;
+                if (StreamType.SHARING.name().equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
+                        && Objects.nonNull(session.getParticipants().stream()
+                        .filter(participant -> StreamType.SHARING.equals(participant.getStreamType())).findAny().orElse(null))) {
+                    errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;
+                    break;
                 }
 
                 Participant participant;
                 if (generateRecorderParticipant) {
-                    participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role, streamType);
+                    participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role.name(), streamType);
                 } else {
                     participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
-                            role, streamType, location, platform,
-                            participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())));
+                            role.name(), streamType, location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility());
                 }
 
                 Long userId = rpcConnection.getUserId();
@@ -145,16 +151,24 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setPreset(preset);
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
                 participant.setParticipantName(participantName);
+                participant.setAbility(rpcConnection.getAbility());
+                participant.setUserType(rpcConnection.getUserType());
+                participant.setClientType(rpcConnection.getClientType());
+                participant.setUuid(rpcConnection.getUserUuid());
+                participant.setUsername(rpcConnection.getUsername());
                 if (StringUtils.isEmpty(serialNumber)) {
-                    User user = userMapper.selectByPrimaryKey(userId);
+                    if (UserType.register.equals(participant.getUserType())) {
+                        User user = userMapper.selectByPrimaryKey(userId);
+                        // User and dept info.
+                        UserDeptSearch udSearch = new UserDeptSearch();
+                        udSearch.setUserId(userId);
+                        UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
+                        Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
 
-                    // User and dept info.
-                    UserDeptSearch udSearch = new UserDeptSearch();
-                    udSearch.setUserId(userId);
-                    UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
-                    Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-
-                    participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
+                        participant.setAppShowInfo(user.getUsername(), "(" + user.getTitle() + ") " + userDep.getDeptName());
+                    } else {
+                        participant.setAppShowInfo(rpcConnection.getUsername(), rpcConnection.getUsername());
+                    }
                 } else {
                     DeviceSearch devSearch = new DeviceSearch();
                     devSearch.setSerialNumber(serialNumber);
@@ -175,6 +189,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
             } while (false);
 
+            rpcConnection.setReconnected(false);
             if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
                 this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
                         null, errCode);

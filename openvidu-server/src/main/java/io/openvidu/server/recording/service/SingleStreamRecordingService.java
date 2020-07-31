@@ -74,7 +74,7 @@ public class SingleStreamRecordingService extends RecordingService {
 	private final String INDIVIDUAL_STREAM_METADATA_FILE = ".stream.";
 
 	public SingleStreamRecordingService(RecordingManager recordingManager, RecordingDownloader recordingDownloader,
-			OpenviduConfig openviduConfig, CallDetailRecord cdr) {
+										OpenviduConfig openviduConfig, CallDetailRecord cdr) {
 		super(recordingManager, recordingDownloader, openviduConfig, cdr);
 	}
 
@@ -161,7 +161,7 @@ public class SingleStreamRecordingService extends RecordingService {
 			log.error("Exception while waiting for state change", e);
 		}
 
-		this.cleanRecordingMaps(recording);
+		this.cleanRecordingMaps(session, recording);
 
 		// TODO: DOWNLOAD FILES IF SCALABILITY MODE
 		final Recording[] finalRecordingArray = new Recording[1];
@@ -196,7 +196,7 @@ public class SingleStreamRecordingService extends RecordingService {
 	}
 
 	public void startRecorderEndpointForPublisherEndpoint(Session session, String recordingId,
-			MediaProfileSpecType profile, Participant participant, CountDownLatch globalStartLatch) {
+														  MediaProfileSpecType profile, Participant participant, CountDownLatch globalStartLatch) {
 		log.info("Starting single stream recorder for stream {} in session {}", participant.getPublisherStreamId(),
 				session.getSessionId());
 
@@ -254,7 +254,7 @@ public class SingleStreamRecordingService extends RecordingService {
 	}
 
 	public void stopRecorderEndpointOfPublisherEndpoint(String sessionId, String streamId,
-			CountDownLatch globalStopLatch, Long kmsDisconnectionTime) {
+														CountDownLatch globalStopLatch, Long kmsDisconnectionTime) {
 		log.info("Stopping single stream recorder for stream {} in session {}", streamId, sessionId);
 		final RecorderEndpointWrapper finalWrapper = activeRecorders.get(sessionId).remove(streamId);
 		if (finalWrapper != null && kmsDisconnectionTime == 0) {
@@ -342,20 +342,20 @@ public class SingleStreamRecordingService extends RecordingService {
 	}
 
 	private void connectAccordingToProfile(PublisherEndpoint publisherEndpoint, RecorderEndpoint recorder,
-			MediaProfileSpecType profile) {
+										   MediaProfileSpecType profile) {
 		switch (profile) {
-		case WEBM:
-			publisherEndpoint.connect(recorder, MediaType.AUDIO);
-			publisherEndpoint.connect(recorder, MediaType.VIDEO);
-			break;
-		case WEBM_AUDIO_ONLY:
-			publisherEndpoint.connect(recorder, MediaType.AUDIO);
-			break;
-		case WEBM_VIDEO_ONLY:
-			publisherEndpoint.connect(recorder, MediaType.VIDEO);
-			break;
-		default:
-			throw new UnsupportedOperationException("Unsupported profile when single stream recording: " + profile);
+			case WEBM:
+				publisherEndpoint.connect(recorder, MediaType.AUDIO);
+				publisherEndpoint.connect(recorder, MediaType.VIDEO);
+				break;
+			case WEBM_AUDIO_ONLY:
+				publisherEndpoint.connect(recorder, MediaType.AUDIO);
+				break;
+			case WEBM_VIDEO_ONLY:
+				publisherEndpoint.connect(recorder, MediaType.VIDEO);
+				break;
+			default:
+				throw new UnsupportedOperationException("Unsupported profile when single stream recording: " + profile);
 		}
 	}
 
@@ -368,7 +368,7 @@ public class SingleStreamRecordingService extends RecordingService {
 	}
 
 	private void commonWriteIndividualMetadataFile(RecorderEndpointWrapper wrapper,
-			BiFunction<String, String, Boolean> writeFunction) {
+												   BiFunction<String, String, Boolean> writeFunction) {
 		String filesPath = this.openviduConfig.getOpenViduRecordingPath() + wrapper.getRecordingId() + "/";
 		File videoFile = new File(filesPath + wrapper.getStreamId() + ".webm");
 		wrapper.setSize(videoFile.length());
@@ -494,3 +494,4 @@ public class SingleStreamRecordingService extends RecordingService {
 	}
 
 }
+

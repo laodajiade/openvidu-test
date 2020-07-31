@@ -17,6 +17,7 @@
 
 package io.openvidu.server.core;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -42,7 +43,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -87,10 +87,10 @@ public class SessionEventsHandler {
 			return;
 		}
 		Session session = sessionManager.getSession(sessionId);
-		int layoutMode = session.getLayoutMode().getMode();
+//		int layoutMode = session.getLayoutMode().getMode();
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
-		int index = 0;
+//		int index = 0;
 		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
 
@@ -145,8 +145,10 @@ public class SessionEventsHandler {
 						UserOnlineStatusEnum.offline.name());
 			} else {
 				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
-				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, Objects.isNull(userInfo) ?
-						UserOnlineStatusEnum.offline.name() : String.valueOf(userInfo.get("status")));
+				String status = Objects.isNull(userInfo) ? UserOnlineStatusEnum.offline.name() :
+						UserOnlineStatusEnum.offline.name().equals(String.valueOf(userInfo.get("status"))) ?
+								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
+				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
 				if (!Objects.isNull(rpc.getTerminalConfig()))
                 	participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
@@ -164,8 +166,6 @@ public class SessionEventsHandler {
 				JsonObject stream = new JsonObject();
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMID_PARAM,
 						existingParticipant.getPublisherStreamId());
-				/*stream.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
-						existingParticipant.getStreamType().name());*/
 				stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 						kParticipant.getPublisher().createdAt());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,
@@ -173,13 +173,13 @@ public class SessionEventsHandler {
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
 						kParticipant.getPublisherMediaOptions().hasVideo);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
-						index < layoutMode);
+						kParticipant.isMixIncluded());
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM,
 						kParticipant.getPublisherMediaOptions().videoActive);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM,
-						kParticipant.getPublisherMediaOptions().audioActive);
+						kParticipant.isStreaming() && kParticipant.getPublisherMediaOptions().audioActive);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM,
-						kParticipant.getPublisherMediaOptions().videoActive);
+						kParticipant.isStreaming() && kParticipant.getPublisherMediaOptions().videoActive);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM,
 						kParticipant.getPublisherMediaOptions().typeOfVideo);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMFRAMERATE_PARAM,
@@ -195,7 +195,7 @@ public class SessionEventsHandler {
 				streamsArray.add(stream);
 				participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
 			}
-			index++;
+//			index++;
 
 			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
 			// openvidu-browser in newly joined participants
@@ -207,12 +207,18 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getPreset().getMicStatusInRoom().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getPreset().getVideoStatusInRoom().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getMicStatus().name());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getVideoStatus().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CONFERENCE_MODE_PARAM, session.getConferenceMode().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
+		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
+		result.addProperty("subtitleConfig", session.getSubtitleConfig().name());
+		result.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
+		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
+			result.add("extraInfo", session.getSubtitleExtraConfig());
+		}
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
@@ -285,7 +291,7 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
-        Session session = sessionManager.getSession(sessionId);
+        /*Session session = sessionManager.getSession(sessionId);
 		JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
         int index = 0;
 		for (JsonElement jsonElement : majorShareMixLinkedArr) {
@@ -294,8 +300,9 @@ public class SessionEventsHandler {
                 break;
             }
             index++;
-        }
+        }*/
 
+        KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 		JsonObject result = new JsonObject();
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM, sdpAnswer);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
@@ -314,7 +321,7 @@ public class SessionEventsHandler {
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, createdAt);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);
-		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM, index < session.getLayoutMode().getMode());
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM, kurentoParticipant.isMixIncluded());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_AUDIOACTIVE_PARAM, mediaOptions.audioActive);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_VIDEOACTIVE_PARAM, mediaOptions.videoActive);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_TYPEOFVIDEO_PARAM, mediaOptions.typeOfVideo);
@@ -700,8 +707,10 @@ public class SessionEventsHandler {
 		// update user online status in cache
 		RpcConnection rpcConnection;
 		if (!Objects.isNull(rpcConnection = rpcNotificationService.getRpcConnection(participantPrivateId))) {
-			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()))
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
+			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType())) {
+				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+						rpcConnection.getSerialNumber(), DeviceStatus.offline);
+			}
 			this.rpcNotificationService.closeRpcSession(participantPrivateId);
 		}
 	}

@@ -40,16 +40,21 @@ public enum ErrorCodeEnum {
     DEVICE_BUSY(13101,"device busy");*/
 
     SUCCESS(0, "成功"),
+    REQUEST_EXPIRED(10002, "request expired"),
     REQUEST_PARAMS_ERROR(10006, "请求参数错误"),
 
     SERVER_UNKNOWN_ERROR(11000, "未知错误"),
-    SERVER_INTERNAL_ERROR(11001, "服务内部错误"),
+    SERVER_INTERNAL_ERROR(11001, "请稍后再试"),
+//    SERVER_INTERNAL_ERROR(11001, "服务内部错误"),
     PERFORMANCE_EXCEED(11002, "服务不给力，请稍后再试"),
     INVALID_METHOD_CALL(11003, "非法调用"),
     UNRECOGNIZED_API(11005, "非法API调用"),
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
+    USER_NOT_EXIST(12005, "用户不存在"),
+    ORIGINAL_PASSWORD_ERROR(12006, "用户原始密码错误"),
+    INCORRECT_FORMAT_PASSWORD(12031, "密码格式错误"),
 
     CONFERENCE_ALREADY_EXIST(13000, "会议已存在"),
     CONFERENCE_NOT_EXIST(13001, "会议不存在"),
@@ -67,8 +72,17 @@ public enum ErrorCodeEnum {
     TERMINAL_MUST_LOGIN_FIRST(13014, "硬终端须先登录"),
     TERMINAL_IS_NOT_MODERATOR(13015, "硬终端不是主持人"),
     WEB_MODERATOR_ALREADY_EXIST(13016, "会议中已存在web会控"),
+    CONFERENCE_RECORD_NOT_EXIST(13025, "会议记录不存在"),
+    CONFERENCE_RECORD_NOT_START(13027, "会议尚未开始录制"),
+    CONFERENCE_IS_RECORDING(13028, "会议正在录制中"),
+    SHARING_ALREADY_EXISTS(13029, "会议中已存在共享"),
+    CONFERENCE_IS_LIVING(13031, "会议正在直播中"),
+    CONFERENCE_LIVE_NOT_START(13032, "会议尚未开始直播"),
+    CONFERENCE_RECORD_FREQUENT_OPERATION(13034, "会议录制操作频繁，请稍后再试"),
+
     DEVICE_NOT_FOUND(13100, "设备不存在"),
-    DEVICE_BUSY(13101,"设备在会议或升级中");
+    DEVICE_BUSY(13101,"设备在会议或升级中"),
+    COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
 
     private int code;
     private String message;

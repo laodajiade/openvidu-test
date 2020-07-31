@@ -29,36 +29,26 @@ public class FixedOneKmsManager extends KmsManager {
 	public List<Kms> initializeKurentoClients(List<String> kmsUris) throws Exception {
 		List<Kms> kmsList = new ArrayList<>(4);
 		for (String kmsUri : kmsUris) {
-			KurentoClient kClient = null;
-			Kms kms = new Kms(kmsUri, loadManager);
-			this.addKms(kms);
-			try {
-				kClient = KurentoClient.create(kmsUri, this.generateKurentoConnectionListener(kms.getId()));
-			} catch (KurentoException e) {
-				log.error("KMS in {} is not reachable by OpenVidu Server", kmsUri);
-				throw new Exception();
-			}
-
-			kms.setKurentoClient(kClient);
-			this.addKms(kms);
-			kmsList.add(kms);
+            kmsList.add(initializeClient(kmsUri));
 		}
-
 		return kmsList;
-		/*final String kmsUri = kmsUris.get(0);
-		KurentoClient kClient = null;
-		Kms kms = new Kms(kmsUri, loadManager);
-		this.addKms(kms);
-		try {
-			kClient = KurentoClient.create(kmsUri, this.generateKurentoConnectionListener(kms.getId()));
-		} catch (KurentoException e) {
-			log.error("KMS in {} is not reachable by OpenVidu Server", kmsUri);
-			throw new Exception();
-		}
+	}
 
-		kms.setKurentoClient(kClient);
+    @Override
+    public Kms initializeClient(String kmsUri) throws Exception {
+        KurentoClient kClient;
+        Kms kms = new Kms(kmsUri, loadManager);
+        this.addKms(kms);
+        try {
+            kClient = KurentoClient.create(kmsUri, this.generateKurentoConnectionListener(kms.getId()));
+        } catch (KurentoException e) {
+            log.error("KMS in {} is not reachable by OpenVidu Server", kmsUri);
+            throw new Exception();
+        }
 
-		return Arrays.asList(kms);*/
+        kms.setKurentoClient(kClient);
+        this.addKms(kms);
+        return kms;
 	}
 
 }

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.ConferenceRecordInfoMapper">
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.ConferenceRecordInfo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="ruid" jdbcType="VARCHAR" property="ruid" />
+    <result column="record_name" jdbcType="VARCHAR" property="recordName" />
+    <result column="record_display_name" jdbcType="VARCHAR" property="recordDisplayName" />
+    <result column="record_size" jdbcType="BIGINT" property="recordSize" />
+    <result column="thumbnail_url" jdbcType="VARCHAR" property="thumbnailUrl" />
+    <result column="record_url" jdbcType="VARCHAR" property="recordUrl" />
+    <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
+    <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="duration" jdbcType="INTEGER" property="duration" />
+    <result column="status" jdbcType="CHAR" property="status" />
+    <result column="is_last" jdbcType="CHAR" property="isLast" />
+    <result column="access_time" jdbcType="TIMESTAMP" property="accessTime" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, ruid, record_name, record_display_name, record_size, thumbnail_url, record_url,
+    start_time, end_time, duration, status, is_last, access_time, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference_record_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sd_conference_record_info
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.ConferenceRecordInfo">
+    insert into sd_conference_record_info (id, ruid, record_name,
+      record_display_name, record_size, thumbnail_url,
+      record_url, start_time, end_time,
+      duration, status, is_last, access_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{recordName,jdbcType=VARCHAR},
+      #{recordDisplayName,jdbcType=VARCHAR}, #{recordSize,jdbcType=BIGINT}, #{thumbnailUrl,jdbcType=VARCHAR},
+      #{recordUrl,jdbcType=VARCHAR}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
+      #{duration,jdbcType=INTEGER}, #{status,jdbcType=CHAR}, #{isLast,jdbcType=CHAR},
+      #{accessTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecordInfo">
+    insert into sd_conference_record_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="ruid != null">
+        ruid,
+      </if>
+      <if test="recordName != null">
+        record_name,
+      </if>
+      <if test="recordDisplayName != null">
+        record_display_name,
+      </if>
+      <if test="recordSize != null">
+        record_size,
+      </if>
+      <if test="thumbnailUrl != null">
+        thumbnail_url,
+      </if>
+      <if test="recordUrl != null">
+        record_url,
+      </if>
+      <if test="startTime != null">
+        start_time,
+      </if>
+      <if test="endTime != null">
+        end_time,
+      </if>
+      <if test="duration != null">
+        duration,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="isLast != null">
+        is_last,
+      </if>
+      <if test="accessTime != null">
+        access_time,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="ruid != null">
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="recordName != null">
+        #{recordName,jdbcType=VARCHAR},
+      </if>
+      <if test="recordDisplayName != null">
+        #{recordDisplayName,jdbcType=VARCHAR},
+      </if>
+      <if test="recordSize != null">
+        #{recordSize,jdbcType=BIGINT},
+      </if>
+      <if test="thumbnailUrl != null">
+        #{thumbnailUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="recordUrl != null">
+        #{recordUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="duration != null">
+        #{duration,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=CHAR},
+      </if>
+      <if test="isLast != null">
+        #{isLast,jdbcType=CHAR},
+      </if>
+      <if test="accessTime != null">
+        #{accessTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecordInfo">
+    update sd_conference_record_info
+    <set>
+      <if test="ruid != null">
+        ruid = #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="recordName != null">
+        record_name = #{recordName,jdbcType=VARCHAR},
+      </if>
+      <if test="recordDisplayName != null">
+        record_display_name = #{recordDisplayName,jdbcType=VARCHAR},
+      </if>
+      <if test="recordSize != null">
+        record_size = #{recordSize,jdbcType=BIGINT},
+      </if>
+      <if test="thumbnailUrl != null">
+        thumbnail_url = #{thumbnailUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="recordUrl != null">
+        record_url = #{recordUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="duration != null">
+        duration = #{duration,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=CHAR},
+      </if>
+      <if test="isLast != null">
+        is_last = #{isLast,jdbcType=CHAR},
+      </if>
+      <if test="accessTime != null">
+        access_time = #{accessTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.ConferenceRecordInfo">
+    update sd_conference_record_info
+    set ruid = #{ruid,jdbcType=VARCHAR},
+      record_name = #{recordName,jdbcType=VARCHAR},
+      record_display_name = #{recordDisplayName,jdbcType=VARCHAR},
+      record_size = #{recordSize,jdbcType=BIGINT},
+      thumbnail_url = #{thumbnailUrl,jdbcType=VARCHAR},
+      record_url = #{recordUrl,jdbcType=VARCHAR},
+      start_time = #{startTime,jdbcType=TIMESTAMP},
+      end_time = #{endTime,jdbcType=TIMESTAMP},
+      duration = #{duration,jdbcType=INTEGER},
+      status = #{status,jdbcType=CHAR},
+      is_last = #{isLast,jdbcType=CHAR},
+      access_time = #{accessTime,jdbcType=TIMESTAMP},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="getPageListBySearch" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference_record_info
+    where ruid in
+    <foreach collection="condition.ruidList" item="item" index="index" separator="," open="(" close=")">
+      #{condition.ruidList[${index}],jdbcType=VARCHAR}
+    </foreach>
+    <if test="condition.recordQueryTimeInterval != null">
+      and DATEDIFF(NOW(), create_time) &lt; #{condition.recordQueryTimeInterval,jdbcType=INTEGER}
+    </if>
+    order by create_time desc
+    limit #{condition.limit,jdbcType=INTEGER} offset #{condition.offset,jdbcType=BIGINT}
+  </select>
+  <select id="selectConfRecordsInfoCountByCondition" resultType="long">
+    select count(id) from sd_conference_record_info where ruid in
+    <foreach collection="condition.ruidList" item="item" index="index" separator="," open="(" close=")">
+      #{condition.ruidList[${index}],jdbcType=VARCHAR}
+    </foreach>
+    <if test="condition.recordQueryTimeInterval != null">
+      and DATEDIFF(NOW(), create_time) &lt; #{condition.recordQueryTimeInterval,jdbcType=INTEGER}
+    </if>
+  </select>
+
+  <select id="selectByRuid" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference_record_info
+    where ruid = #{ruid,jdbcType=VARCHAR}
+  </select>
+</mapper>

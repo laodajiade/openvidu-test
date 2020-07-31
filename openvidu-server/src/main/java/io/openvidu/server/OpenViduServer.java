@@ -17,15 +17,33 @@
 
 package io.openvidu.server;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
-import io.openvidu.server.core.RoomCountdownService;
-import io.openvidu.server.kurento.kms.*;
+import io.openvidu.client.OpenViduException;
+import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.server.cdr.CDRLogger;
+import io.openvidu.server.cdr.CDRLoggerFile;
+import io.openvidu.server.cdr.CallDetailRecord;
+import io.openvidu.server.config.HttpHandshakeInterceptor;
+import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.*;
+import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
+import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
+import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
+import io.openvidu.server.kurento.core.KurentoSessionManager;
+import io.openvidu.server.kurento.kms.FixedOneKmsManager;
+import io.openvidu.server.kurento.kms.KmsManager;
+import io.openvidu.server.kurento.kms.LoadManager;
+import io.openvidu.server.kurento.kms.MaxWebRtcLoadManager;
+import io.openvidu.server.living.service.LivingManager;
+import io.openvidu.server.recording.DummyRecordingDownloader;
+import io.openvidu.server.recording.RecordingDownloader;
+import io.openvidu.server.recording.service.RecordingManager;
+import io.openvidu.server.rpc.RpcHandler;
+import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.utils.CommandExecutor;
+import io.openvidu.server.utils.GeoLocationByIp;
+import io.openvidu.server.utils.GeoLocationByIpDummy;
+import io.openvidu.server.webhook.CDRLoggerWebhook;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -39,32 +57,13 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.server.cdr.CDRLogger;
-import io.openvidu.server.cdr.CDRLoggerFile;
-import io.openvidu.server.cdr.CallDetailRecord;
-import io.openvidu.server.config.HttpHandshakeInterceptor;
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.SessionEventsHandler;
-import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.core.TokenGenerator;
-import io.openvidu.server.core.TokenGeneratorDefault;
-import io.openvidu.server.coturn.CoturnCredentialsService;
-import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
-import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
-import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
-import io.openvidu.server.kurento.core.KurentoSessionManager;
-import io.openvidu.server.recording.DummyRecordingDownloader;
-import io.openvidu.server.recording.RecordingDownloader;
-import io.openvidu.server.recording.service.RecordingManager;
-import io.openvidu.server.rpc.RpcHandler;
-import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.CommandExecutor;
-import io.openvidu.server.utils.GeoLocationByIp;
-import io.openvidu.server.utils.GeoLocationByIpDummy;
-import io.openvidu.server.webhook.CDRLoggerWebhook;
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * OpenVidu Server application
@@ -166,6 +165,12 @@ public class OpenViduServer implements JsonRpcConfigurer {
 
 	@Bean
 	@ConditionalOnMissingBean
+	public LivingManager livingManager() {
+		return new LivingManager();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public RecordingDownloader recordingDownload() {
 		return new DummyRecordingDownloader();
 	}
@@ -180,6 +185,16 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@ConditionalOnMissingBean
 	public GeoLocationByIp geoLocationByIp() {
 		return new GeoLocationByIpDummy();
+	}
+
+	@Bean(name = "reconnectCompensationScheduler")
+	public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+		ThreadPoolTaskScheduler executor = new ThreadPoolTaskScheduler();
+		executor.setPoolSize(20);
+		executor.setThreadNamePrefix("reConnCompensateTaskExecutor-");
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(60);
+		return executor;
 	}
 
 	@Override
@@ -265,6 +280,15 @@ public class OpenViduServer implements JsonRpcConfigurer {
 							+ "\" set with system property \"openvidu.recording.custom-layout\"";
 				}
 				log.error(finalErrorMessage + ". Shutting down OpenVidu Server");
+				System.exit(1);
+			}
+		}
+
+		if(this.openviduConfig.isLivingModuleEnabled()) {
+			try {
+				this.livingManager().initializeLivingManager();
+			} catch (OpenViduException e) {
+				log.error(e.getMessage() + ". Error initializing living, Shutting down OpenVidu Server");
 				System.exit(1);
 			}
 		}

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.UserGroupMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.UserGroup" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="group_id" property="groupId" jdbcType="BIGINT" />
+    <result column="project" property="project" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, group_id, project, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from sd_user_group
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectByProject" parameterType="java.lang.String" resultType="java.lang.Integer">
+      select count(project) from sd_user_group where project = #{project,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByUserId" parameterType="java.lang.Long" resultType="java.lang.Long">
+      select  group_id  from sd_user_group
+      where  user_id=#{userId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from sd_user_group
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByUserId" parameterType="java.lang.Long" >
+      delete from  sd_user_group
+      where user_id=#{userId,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.UserDept" >
+    insert into sd_user_group (id, user_id, group_id, project
+      )
+    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{groupId,jdbcType=BIGINT},
+      #{project,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.UserDept" >
+    insert into sd_user_group
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="groupId != null" >
+        group_id,
+      </if>
+      <if test="project != null" >
+        project,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="groupId != null" >
+        #{groupId,jdbcType=BIGINT},
+      </if>
+      <if test="project != null" >
+        #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.UserGroup" >
+    update sd_user_group
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="groupId != null" >
+        group_id = #{groupId,jdbcType=BIGINT},
+      </if>
+      <if test="project != null" >
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.UserGroup" >
+    update sd_user_group
+    set user_id = #{userId,jdbcType=BIGINT},
+      group_id = #{groupId,jdbcType=BIGINT},
+      project = #{project,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByUserId" parameterType="io.openvidu.server.common.pojo.UserGroup" >
+    update sd_user_group
+    set
+      group_id = #{groupId,jdbcType=BIGINT}
+    where user_id = #{userId,jdbcType=BIGINT}
+  </update>
+
+  <resultMap id="map" type="io.openvidu.server.common.pojo.UserGroup">
+    <result property="groupId" column="groupId"></result>
+    <result property="groupName" column="groupName"></result>
+    <collection property="userList" column="groupId" ofType="io.openvidu.server.common.pojo.User">
+      <result property="userId" column="id"></result>
+      <result property="username" column="username"></result>
+      <result property="phone" column="phone"></result>
+      <result property="uuid" column="uuid"></result>
+      <result property="roleId" column="roleId"></result>
+      <result property="roleName" column="roleName"></result>
+
+    </collection>
+  </resultMap>
+  <select id="selectListByGroupids" parameterType="java.lang.Long" resultType="map">
+      select u.id as userId,u.username,u.phone,u.uuid as account,d.group_id as groupId, p.group_name as groupName ,r.role_id as roleId,e.role_name as roleName FROM  sd_group p
+      LEFT JOIN sd_user_group d ON p.id=d.group_id
+      LEFT JOIN sd_user u ON u.id=d.user_id
+      LEFT JOIN sd_user_role r ON  u.id=r.user_id
+      LEFT JOIN sd_role e ON  e.id=r.role_id
+      WHERE group_id=#{groupId,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectListByGroupid" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select * from sd_user_group where group_id = #{groupId,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectListByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select * from sd_user_group where user_id = #{userId,jdbcType=BIGINT}
+  </select>
+
+  <delete id="deleteByGroupId" parameterType="java.lang.Long">
+        delete from sd_user_group
+        where group_id = #{groupId,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByGroupAndUserId" parameterType="java.lang.Long">
+        delete from sd_user_group
+        where user_id = #{userId,jdbcType=BIGINT} AND group_id = #{groupId,jdbcType=BIGINT}
+  </delete>
+</mapper>

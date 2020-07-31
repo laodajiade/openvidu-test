@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.dao.DepartmentMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -54,13 +55,17 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
         }
 
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
+        deptList = !CollectionUtils.isEmpty(deptList) ? deptList.stream().filter(s -> !Objects.isNull(s.getParentId())
+                && s.getOrgId().compareTo(rootDept.getId()) != 0).collect(Collectors.toList()) : null;
         DepartmentTree rootDeptTree = DepartmentTree.builder().orgId(rootDept.getId()).parentId(rootDept.getParentId())
                 .organizationName(rootDept.getDeptName()).build();
-
-        JsonObject object = !CollectionUtils.isEmpty(deptList) ? gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree),
-                deptList.stream().filter(s -> !Objects.isNull(s.getParentId()) && s.getOrgId().compareTo(rootDept.getId()) != 0).collect(Collectors.toList()))
-                .getTree().get(0)).getAsJsonObject()
-                : gson.toJsonTree(rootDeptTree).getAsJsonObject();
+        JsonObject object;
+        if (CollectionUtils.isEmpty(deptList)) {
+            object = gson.toJsonTree(rootDeptTree).getAsJsonObject();
+            object.add("organizationList", new JsonArray(1));
+        } else {
+            object = gson.toJsonTree(new TreeToolUtils(Collections.singletonList(rootDeptTree), deptList).getTree().get(0)).getAsJsonObject();
+        }
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
 

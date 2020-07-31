@@ -17,37 +17,17 @@
 
 package io.openvidu.server.kurento.core;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.StreamModeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.kurento.client.Continuation;
-import org.kurento.client.ErrorEvent;
-import org.kurento.client.Filter;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.MediaElement;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.MediaType;
-import org.kurento.client.SdpEndpoint;
-import org.kurento.client.internal.server.KurentoServerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.constants.CommonConstants;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
@@ -56,8 +36,22 @@ import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.kurento.client.*;
+import org.kurento.client.internal.server.KurentoServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 public class KurentoParticipant extends Participant {
 
@@ -65,6 +59,7 @@ public class KurentoParticipant extends Participant {
 
 	private OpenviduConfig openviduConfig;
 	private RecordingManager recordingManager;
+	private LivingManager livingManager;
 
 	private boolean webParticipant = true;
 
@@ -81,10 +76,10 @@ public class KurentoParticipant extends Participant {
 
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
-			RecordingManager recordingManager) {
+			RecordingManager recordingManager, LivingManager livingManager) {
 		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
-				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt());
+				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility());
 		setMicStatus(participant.getMicStatus());
 		setVideoStatus(participant.getVideoStatus());
 		setSharePowerStatus(participant.getSharePowerStatus());
@@ -96,10 +91,17 @@ public class KurentoParticipant extends Participant {
 		setPreset(participant.getPreset());
 		setJoinType(participant.getJoinType());
 		setParticipantName(participant.getParticipantName());
+		setUserType(participant.getUserType());
+		setClientType(participant.getClientType());
+		setUuid(participant.getUuid());
+		setUsername(participant.getUsername());
+		setSubtitleConfig(participant.getSubtitleConfig());
+		setSubtitleLanguage(participant.getSubtitleLanguage());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
 		this.recordingManager = recordingManager;
+		this.livingManager = livingManager;
 		this.session = kurentoSession;
 
 		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
@@ -118,6 +120,19 @@ public class KurentoParticipant extends Participant {
 				// or MODERATOR role
 				getNewOrExistingSubscriber(other.getParticipantPublicId());
 			}
+		}
+	}
+
+	public void createPublisher() {
+		log.info("#####create publisher when role changed and id:{}", getParticipantName());
+		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
+                (Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
+			// Initialize a PublisherEndpoint
+			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setSharing(Objects.equals(StreamType.SHARING, getStreamType()));
+			this.publisher.setCompositeService(this.session.compositeService);
 		}
 	}
 
@@ -223,7 +238,14 @@ public class KurentoParticipant extends Participant {
 		// deal part default order in the conference
 		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU) &&
 				!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
-			this.session.dealParticipantDefaultOrder(this);
+			Participant moderatePart = session.getParticipants().stream().filter(participant ->
+					participant.getStreamType().equals(StreamType.MAJOR) && participant.getRole().equals(OpenViduRole.MODERATOR))
+					.findAny().orElse(null);
+			if (!(Objects.equals(getStreamType(), StreamType.SHARING)
+					&& !Objects.isNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
+					&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY))) {
+				this.session.dealParticipantDefaultOrder(this);
+			}
 		}
 
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);
@@ -233,6 +255,11 @@ public class KurentoParticipant extends Participant {
 		if (this.openviduConfig.isRecordingModuleEnabled()
 				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
 			this.recordingManager.startOneIndividualStreamRecording(session, null, null, this);
+		}
+
+		if (this.openviduConfig.isLivingModuleEnabled()
+				&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
+			this.livingManager.startOneIndividualStreamLiving(session, null, null, this);
 		}
 
 		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
@@ -445,6 +472,11 @@ public class KurentoParticipant extends Participant {
 				this.recordingManager.stopOneIndividualStreamRecording(session, this.getPublisherStreamId(),
 						kmsDisconnectionTime);
 			}
+			if (this.openviduConfig.isLivingModuleEnabled()
+					&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
+				this.livingManager.stopOneIndividualStreamLiving(session, this.getPublisherStreamId(),
+						kmsDisconnectionTime);
+			}
 
 			publisher.unregisterErrorListeners();
 			if (publisher.kmsWebrtcStatsThread != null) {
@@ -560,6 +592,18 @@ public class KurentoParticipant extends Participant {
 		json.add("publishers", publisherEnpoints);
 		json.add("subscribers", subscriberEndpoints);
 		return json;
+	}
+
+	public boolean isMixIncluded() {
+		JsonArray mixArr = session.getCurrentPartInMcuLayout();
+		for (JsonElement jsonElement : mixArr) {
+			JsonObject jsonObject;
+			if ((jsonObject = jsonElement.getAsJsonObject()).has("connectionId") &&
+					getParticipantPublicId().equals(jsonObject.get("connectionId").getAsString())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -34,6 +34,8 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import io.openvidu.server.living.Living;
+import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -62,6 +64,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	protected RecordingManager recordingManager;
+
+	@Autowired
+	protected LivingManager livingManager;
 
 	@Autowired
 	protected OpenviduConfig openviduConfig;
@@ -281,6 +286,34 @@ public abstract class SessionManager {
 		return this.getParticipant(participantPrivateId, StreamType.MAJOR);
 	}
 
+	public Participant getSpeakerPart(String sessionId) {
+		Session session = sessions.get(sessionId);
+		if (Objects.nonNull(session)) {
+			return session.getSpeakerPart();
+		}
+
+		return null;
+	}
+
+	public Participant getModeratorPart(String sessionId) {
+		Session session = sessions.get(sessionId);
+		if (Objects.nonNull(session)) {
+			return session.getModeratorPart();
+		}
+
+		return null;
+	}
+
+	public boolean isSubscriberInSession(String sessionId, String userId) {
+		Session session = sessions.get(sessionId);
+		if (Objects.nonNull(session)) {
+			Participant sourcePart = session.getParticipants().stream().filter(participant ->
+					userId.equals(participant.getUserId())).findAny().orElse(null);
+			return Objects.nonNull(sourcePart) && OpenViduRole.SUBSCRIBER.equals(sourcePart.getRole());
+		}
+		return false;
+	}
+
 	public Map<String, FinalUser> getFinalUsers(String sessionId) {
 		return this.sessionidFinalUsers.get(sessionId);
 	}
@@ -302,7 +335,7 @@ public abstract class SessionManager {
 	}
 
 	public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
-		Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager);
+		Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager, livingManager);
 		dealSessionNotActiveStored(sessionId, sessionNotActive);
 		showTokens();
 		return sessionNotActive;
@@ -317,7 +350,7 @@ public abstract class SessionManager {
 
 	public void storeSessionNotActiveWhileRoomCreated(String sessionId) {
 		Session sessionNotActive = new Session(sessionId,
-				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager);
+				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
 		dealSessionNotActiveStored(sessionId, sessionNotActive);
 	}
 
@@ -428,12 +461,12 @@ public abstract class SessionManager {
 
 //	public Participant newParticipant(String sessionId, String participantPrivatetId, Token token,
 	public Participant newParticipant(String sessionId, String participantPrivatetId, String clientMetadata, String role,
-									  String streamType, GeoLocation location, String platform, String finalUserId) {
+									  String streamType, GeoLocation location, String platform, String finalUserId, String ability) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 			String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
 //			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, token,
 			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
-					StreamType.valueOf(streamType), clientMetadata, location, platform, null);
+					StreamType.valueOf(streamType), clientMetadata, location, platform, null, ability);
 			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 					p) != null) {
 				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
@@ -465,7 +498,7 @@ public abstract class SessionManager {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
 			Participant p = new Participant(null, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-					sessionId, OpenViduRole.parseRole(role), StreamType.valueOf(streamType), clientMetadata, null, null, null);
+					sessionId, OpenViduRole.parseRole(role), StreamType.valueOf(streamType), clientMetadata, null, null, null, null);
 			this.sessionidParticipantpublicidParticipant.get(sessionId)
 					.put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
 			return p;
@@ -502,12 +535,10 @@ public abstract class SessionManager {
 	 */
 	@PreDestroy
 	public void close() {
-		log.info("Closing all sessions and update user online status");
-		notificationService.getRpcConnections().forEach(rpcConnection -> {
-			if (!Objects.isNull(rpcConnection.getUserUuid()))
-				cacheManage.updateUserOnlineStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline);
-		});
-
+		log.info("Closing all sessions and update user/device online status");
+		notificationService.getRpcConnections().forEach(rpcConnection ->
+				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
+						rpcConnection.getSerialNumber(), DeviceStatus.offline));
 		for (String sessionId : sessions.keySet()) {
 			try {
 				closeSession(sessionId, EndReason.openviduServerStopped);
@@ -545,6 +576,10 @@ public abstract class SessionManager {
 
 		boolean sessionClosedByLastParticipant = false;
 
+		if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
+			session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
+		}
+
 		for (Participant p : participants) {
 			try {
 				sessionClosedByLastParticipant = this.evictParticipant(p, null, null, reason);
@@ -564,10 +599,10 @@ public abstract class SessionManager {
 
 	public void closeSessionAndEmptyCollections(Session session, EndReason reason) {
 
-		if (openviduConfig.isRecordingModuleEnabled()
-				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
-			recordingManager.stopRecording(session, null, RecordingManager.finalReason(reason));
-		}
+//		if (openviduConfig.isRecordingModuleEnabled()
+//				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
+//			recordingManager.stopRecording(session, null, RecordingManager.finalReason(reason));
+//		}
 
 		if (session.close(reason)) {
 			sessionEventsHandler.onSessionClosed(session.getSessionId(), reason);
@@ -640,10 +675,9 @@ public abstract class SessionManager {
 	}
 
 	public boolean setPresetInfo(String sessionId, SessionPreset preset) {
-	    if (!Objects.isNull(sessionidPreset.get(sessionId))) {
+	    /*if (!Objects.isNull(sessionidPreset.get(sessionId))) {
             log.info("session {} {} replace preset info {}", sessionId, preset, sessionidPreset.get(sessionId));
-        }
-
+        }*/
 	    sessionidPreset.put(sessionId, preset);
         return true;
     }
@@ -741,4 +775,134 @@ public abstract class SessionManager {
             }
         }
 	}
+
+	public void setRollCallInSession(Session conferenceSession, Participant targetPart) {
+		Set<Participant> participants = conferenceSession.getParticipants();
+		Participant moderatorPart = conferenceSession.getModeratorPart();
+		boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
+
+		int raiseHandNum = 0;
+		String sourceConnectionId;
+		String targetConnectionId;
+		Participant existSpeakerPart = null;
+		for (Participant participant : participants) {
+			if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+					existSpeakerPart = participant;
+				}
+
+				if (Objects.equals(participant.getHandStatus(), ParticipantHandStatus.up)) {
+					raiseHandNum++;
+				}
+			}
+		}
+
+		// do nothing when set roll call to the same speaker
+		if (Objects.equals(existSpeakerPart, targetPart)) {
+			return;
+		}
+
+		assert targetPart != null;
+		targetPart.setHandStatus(ParticipantHandStatus.speaker);
+		targetConnectionId = targetPart.getParticipantPublicId();
+		if (Objects.isNull(existSpeakerPart)) {
+			// switch layout with moderator
+			/*assert moderatorPart != null;
+			sourceConnectionId = moderatorPart.getParticipantPublicId();
+			if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
+				JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+				if (!firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+					sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+				} else {
+					sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+				}
+
+			}*/
+			JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+			if (firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+				sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+			} else {
+				sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+			}
+		} else {
+			// switch layout with current speaker participant
+			sourceConnectionId = existSpeakerPart.getParticipantPublicId();
+			// change current speaker part status and send notify
+			existSpeakerPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUserId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUserId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+			sendEndRollCallNotify(participants, params);
+		}
+
+		if (isMcu) {
+			// change conference layout
+			conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+			// json RPC notify KMS layout changed.
+			conferenceSession.invokeKmsConferenceLayout();
+		}
+
+		JsonObject params = new JsonObject();
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUserId());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUserId());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+
+		// broadcast the changes of layout
+		participants.forEach(participant -> {
+			if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				return;
+			}
+			// SetRollCall notify
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
+			if (isMcu) {
+				// broadcast the changes of layout
+				this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+			}
+		});
+	}
+
+	private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params) {
+		participants.forEach(participant -> {
+			if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+				return;
+			}
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
+		});
+	}
+
+	public void setStartRecordingTime(String sessionId, Long startRecordingTime) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		session.setStartRecordingTime(startRecordingTime);
+	}
+
+	public void setStopRecordingTime(String sessionId, Long stopRecordingTime) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		session.setStopRecordingTime(stopRecordingTime);
+	}
+
+	public void setStartLivingTime(String sessionId, Long startLivingTime) {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		session.setStartLivingTime(startLivingTime);
+	}
+
+	public String getLivingUrl(Session session) {
+		if (Objects.isNull(session)) return null;
+		Living living = livingManager.getLiving(session.getSessionId());
+		return Objects.isNull(living) ? null : living.getUrl();
+	}
+
+
 }

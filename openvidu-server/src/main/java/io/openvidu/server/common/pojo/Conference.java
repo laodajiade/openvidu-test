@@ -8,6 +8,8 @@ import java.util.Date;
 public class Conference {
     private Long id;
 
+    private String ruid;
+
     private String roomId;
 
     private String conferenceSubject;
@@ -17,6 +19,8 @@ public class Conference {
     private Integer conferenceMode;
 
     private Long userId;
+
+    private String moderatorUuid;
 
     private Date startTime;
 

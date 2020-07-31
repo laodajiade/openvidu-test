@@ -5,6 +5,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -44,9 +45,14 @@ public class GetNotFinishedRoomHandler extends RpcAbstractHandler {
         }
 
         RpcConnection oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
+        if (Objects.isNull(oldRpcConnection)) {
+            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), params);
+            return;
+        }
         try {
-            KurentoParticipant p = (KurentoParticipant) sessionManager.getParticipant(oldRpcConnection.getParticipantPrivateId());
-            if (!Objects.isNull(p)) {
+            Participant participant = sessionManager.getParticipant(oldRpcConnection.getParticipantPrivateId());
+            if (!Objects.isNull(participant)) {
+                KurentoParticipant p = (KurentoParticipant) participant;
                 // room info
                 params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ID_PARAM, p.getSessionId());
                 params.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, p.getRoomSubject());

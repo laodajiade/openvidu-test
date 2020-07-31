@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.ConferenceRecordMapper">
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.ConferenceRecord">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="ruid" jdbcType="VARCHAR" property="ruid" />
+    <result column="room_id" jdbcType="VARCHAR" property="roomId" />
+    <result column="record_count" jdbcType="INTEGER" property="recordCount" />
+    <result column="total_duration" jdbcType="INTEGER" property="totalDuration" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="recorder_uuid" jdbcType="VARCHAR" property="recorderUuid" />
+    <result column="recorder_name" jdbcType="VARCHAR" property="recorderName" />
+    <result column="project" jdbcType="VARCHAR" property="project" />
+    <result column="access_key" jdbcType="VARCHAR" property="accessKey" />
+    <result column="request_start_time" jdbcType="TIMESTAMP" property="requestStartTime" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, ruid, room_id, record_count, total_duration, status, recorder_uuid, recorder_name,
+    project, access_key, request_start_time, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference_record
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sd_conference_record
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    insert into sd_conference_record (id, ruid, room_id,
+      record_count, total_duration, status,
+      recorder_uuid, recorder_name, project,
+      access_key, request_start_time)
+    values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR},
+      #{recordCount,jdbcType=INTEGER}, #{totalDuration,jdbcType=INTEGER}, #{status,jdbcType=TINYINT},
+      #{recorderUuid,jdbcType=VARCHAR}, #{recorderName,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR},
+      #{accessKey,jdbcType=VARCHAR}, #{requestStartTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    insert into sd_conference_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="ruid != null">
+        ruid,
+      </if>
+      <if test="roomId != null">
+        room_id,
+      </if>
+      <if test="recordCount != null">
+        record_count,
+      </if>
+      <if test="totalDuration != null">
+        total_duration,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="recorderUuid != null">
+        recorder_uuid,
+      </if>
+      <if test="recorderName != null">
+        recorder_name,
+      </if>
+      <if test="project != null">
+        project,
+      </if>
+      <if test="accessKey != null">
+        access_key,
+      </if>
+      <if test="requestStartTime != null">
+        request_start_time,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="ruid != null">
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null">
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="recordCount != null">
+        #{recordCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalDuration != null">
+        #{totalDuration,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="recorderUuid != null">
+        #{recorderUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="recorderName != null">
+        #{recorderName,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null">
+        #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="accessKey != null">
+        #{accessKey,jdbcType=VARCHAR},
+      </if>
+      <if test="requestStartTime != null">
+        #{requestStartTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    update sd_conference_record
+    <set>
+      <if test="ruid != null">
+        ruid = #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null">
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="recordCount != null">
+        record_count = #{recordCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalDuration != null">
+        total_duration = #{totalDuration,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="recorderUuid != null">
+        recorder_uuid = #{recorderUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="recorderName != null">
+        recorder_name = #{recorderName,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null">
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="accessKey != null">
+        access_key = #{accessKey,jdbcType=VARCHAR},
+      </if>
+      <if test="requestStartTime != null">
+        request_start_time = #{requestStartTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateByRuidSelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    update sd_conference_record
+    <set>
+      <if test="roomId != null">
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="recordCount != null">
+        record_count = #{recordCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalDuration != null">
+        total_duration = #{totalDuration,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="recorderUuid != null">
+        recorder_uuid = #{recorderUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="recorderName != null">
+        recorder_name = #{recorderName,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null">
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="accessKey != null">
+        access_key = #{accessKey,jdbcType=VARCHAR},
+      </if>
+      <if test="requestStartTime != null">
+        request_start_time = #{requestStartTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ruid = #{ruid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    update sd_conference_record
+    set ruid = #{ruid,jdbcType=VARCHAR},
+      room_id = #{roomId,jdbcType=VARCHAR},
+      record_count = #{recordCount,jdbcType=INTEGER},
+      total_duration = #{totalDuration,jdbcType=INTEGER},
+      status = #{status,jdbcType=TINYINT},
+      recorder_uuid = #{recorderUuid,jdbcType=VARCHAR},
+      recorder_name = #{recorderName,jdbcType=VARCHAR},
+      project = #{project,jdbcType=VARCHAR},
+      access_key = #{accessKey,jdbcType=VARCHAR},
+      request_start_time = #{requestStartTime,jdbcType=TIMESTAMP},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="getByCondition" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference_record
+    <where>
+      <if test="roomId != null">
+        room_id = #{roomId,jdbcType=VARCHAR}
+      </if>
+      <if test="project != null">
+        and project = #{project,jdbcType=VARCHAR}
+      </if>
+      <if test="accessKey != null">
+        and access_key = #{accessKey,jdbcType=VARCHAR}
+      </if>
+      <if test="status != null">
+        and status = #{status,jdbcType=TINYINT}
+      </if>
+      <if test="ruid != null">
+        and ruid = #{ruid,jdbcType=VARCHAR}
+      </if>
+    </where>
+  </select>
+  <update id="decreaseConferenceRecordCountByRuid">
+    update sd_conference_record set record_count = record_count - 1 where record_count > 0 and ruid = #{ruid,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteUselessRecord">
+    delete from sd_conference_record where record_count <![CDATA[<=]]> 0 and status = 2
+  </delete>
+  <update id="updateByRuid" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    update sd_conference_record
+    set status = #{status,jdbcType=TINYINT},
+    total_duration = #{totalDuration,jdbcType=INTEGER},
+    record_count = record_count + 1
+    where ruid = #{ruid,jdbcType=VARCHAR}
+  </update>
+  <update id="increaseConferenceRecordCountByRuid">
+    update sd_conference_record set record_count = record_count + 1 where ruid = #{ruid,jdbcType=VARCHAR}
+  </update>
+</mapper>

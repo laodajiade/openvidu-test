@@ -17,7 +17,7 @@
         </commentGenerator>
         <!-- 配置数据库连接 -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://172.25.22.101:3306/sd_main"
+                        connectionURL="jdbc:mysql://172.25.15.149:3306/unionman_sd_main"
                         userId="root"
                         password="abcABC123!"/>
 
@@ -41,7 +41,7 @@
 
         <!-- table表生成对应的DoaminObject -->
         <!--<table tableName="sd_user" domainObjectName="User"></table>-->
-        <table tableName="sd_corporation" domainObjectName="Corporation"></table>
+        <table tableName="sd_kms_registration" domainObjectName="KmsRegistration"/>
 
     </context>
 

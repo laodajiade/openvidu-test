@@ -21,4 +21,6 @@ public interface ConferenceMapper {
     List<Conference> selectBySearchCondition(ConferenceSearch search);
 
     List<Conference> selectUnclosedConference(Conference conference);
+
+    Conference selectByRuid(String ruid);
 }

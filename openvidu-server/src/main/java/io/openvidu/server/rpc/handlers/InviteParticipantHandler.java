@@ -60,7 +60,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         }
 
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-        String username = String.valueOf(userInfo.get("username"));
+        Object username = userInfo.get("username");
         String deviceName = userInfo.containsKey("deviceName") ? String.valueOf(userInfo.get("deviceName")) : null;
 
         // find the target rpc connection by targetId list and notify info.
@@ -68,7 +68,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, sourceId);
-        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, username);
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? "" : username.toString());
         if (!StringUtils.isEmpty(deviceName)) {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
         }

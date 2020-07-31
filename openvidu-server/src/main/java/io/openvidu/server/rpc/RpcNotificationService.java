@@ -17,11 +17,8 @@
 
 package io.openvidu.server.rpc;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -29,9 +26,11 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonObject;
-
-import io.openvidu.client.OpenViduException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class RpcNotificationService {
 
@@ -125,6 +124,28 @@ public class RpcNotificationService {
 		}
 	}
 
+	public void sendNotificationWithoutLog(final String participantPrivateId, final String method, final Object params) {
+		Session s;
+		if (Objects.nonNull(s = sanityGetRpcSession(participantPrivateId, method, params))) {
+			try {
+				s.sendNotification(method, params);
+			} catch (IOException e) {
+				log.error("Exception sending notification '{}': {} to participant with private id {}", method, params,
+						participantPrivateId, e);
+			}
+		}
+	}
+
+	private Session sanityGetRpcSession(final String participantPrivateId, final String method, final Object params) {
+		RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
+		if (rpcSession == null || rpcSession.getSession() == null) {
+			log.error("No rpc session found for private id {}, unable to send notification {}: {}",
+					participantPrivateId, method, params);
+			return null;
+		}
+		return rpcSession.getSession();
+	}
+
 	public RpcConnection closeRpcSession(String participantPrivateId) {
 		RpcConnection rpcSession = rpcConnections.remove(participantPrivateId);
 		if (rpcSession == null || rpcSession.getSession() == null) {
@@ -166,4 +187,5 @@ public class RpcNotificationService {
 	public Collection<RpcConnection> getRpcConnections() {
 		return this.rpcConnections.values();
 	}
+
 }

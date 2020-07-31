@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
@@ -91,7 +90,7 @@ public class KurentoSession extends Session {
 			}
 
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
-					this.openviduConfig, this.recordingManager);
+					this.openviduConfig, this.recordingManager, this.livingManager);
 			participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
 				Participant newPart = parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
 				if (newPart != null)
@@ -166,20 +165,17 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
-//		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
-			synchronized (joinOrLeaveLock) {
-				try {
-					leave(p, reason);
-					log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
-							p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
-					Thread.sleep(kurentoEndpointConfig.leaveDelay);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		deregisterMajorParticipant(p);
+		synchronized (joinOrLeaveLock) {
+			try {
+				leave(p, reason);
+				log.info("Session:{} participant publicId:{} leave room sleep {}ms", p.getSessionId(),
+						p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
+				Thread.sleep(kurentoEndpointConfig.leaveDelay);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-//		} else {
-//			leave(p, reason);
-//		}
+		}
 	}
 
 	private void leave(Participant p, EndReason reason) {
@@ -241,10 +237,17 @@ public class KurentoSession extends Session {
 
 		checkClosed();
 
-		Participant p1 = participants.get(participant.getParticipantPrivateId()).remove(participant.getStreamType().name());
+		ConcurrentMap majorOrSharePartsMap = participants.get(participant.getParticipantPrivateId());
+		if (Objects.nonNull(majorOrSharePartsMap)) {
+			majorOrSharePartsMap.remove(participant.getStreamType().name());
+			if (majorOrSharePartsMap.size() == 0) {
+				participants.remove(participant.getParticipantPrivateId());
+			}
+		}
+		/*Participant p1 = participants.get(participant.getParticipantPrivateId()).remove(participant.getStreamType().name());
 		if (participants.get(participant.getParticipantPrivateId()).size() == 0) {
 			participants.remove(participant.getParticipantPrivateId());
-		}
+		}*/
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
