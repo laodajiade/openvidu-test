@@ -20,9 +20,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author geedow
@@ -36,7 +34,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         String sessionId = getStringParam(request, ProtocolElements.GET_PARTICIPANTS_ROOM_ID_PARAM);
         JsonObject respJson = new JsonObject();
         JsonArray jsonArray = new JsonArray();
-        List<Long> userIds = new ArrayList<>();
+        Set<Long> userIds = new HashSet<>();
 
         if (Objects.isNull(sessionManager.getParticipants(sessionId))) {
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
@@ -49,7 +47,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         });
 
         if (!CollectionUtils.isEmpty(userIds)) {
-            List<User> userList = userMapper.selectByPrimaryKeys(userIds);
+            List<User> userList = userMapper.selectByPrimaryKeys(new ArrayList<>(userIds));
             for (User user : userList) {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
                         .compareTo(Long.valueOf(s.getUserId())) == 0 && Objects.equals(StreamType.MAJOR, s.getStreamType()) &&
