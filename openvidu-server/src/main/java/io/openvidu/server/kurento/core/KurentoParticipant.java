@@ -24,7 +24,6 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
@@ -236,16 +235,8 @@ public class KurentoParticipant extends Participant {
 		this.streaming = true;
 
 		// deal part default order in the conference
-		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU) &&
-				!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
-			Participant moderatePart = session.getParticipants().stream().filter(participant ->
-					participant.getStreamType().equals(StreamType.MAJOR) && participant.getRole().equals(OpenViduRole.MODERATOR))
-					.findAny().orElse(null);
-			if (!(Objects.equals(getStreamType(), StreamType.SHARING)
-					&& !Objects.isNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
-					&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY))) {
-				this.session.dealParticipantDefaultOrder(this);
-			}
+		if (isMcuInclude()) {
+			this.session.dealParticipantDefaultOrder(this);
 		}
 
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);
@@ -266,6 +257,13 @@ public class KurentoParticipant extends Participant {
 				publisher.getMediaOptions(), publisher.createdAt());
 
 		return sdpResponse;
+	}
+
+	private boolean isMcuInclude() {
+		return ConferenceModeEnum.MCU.equals(this.session.getConferenceMode())
+				&& !OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())
+				&& getStreamType().isStreamTypeMixInclude()
+				&& !(getStreamType().equals(StreamType.SHARING) && session.isModeratorHasMulticastplay());
 	}
 
 	public void unpublishMedia(EndReason reason, long kmsDisconnectionTime) {

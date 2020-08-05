@@ -9,7 +9,12 @@ public enum StreamType {
     MAJOR,
 
     /** 辅码流*/
-    MINOR,
+    MINOR {
+        @Override
+        public boolean isStreamTypeMixInclude() {
+            return false;
+        }
+    },
 
     /** 分享码流*/
     SHARING {
@@ -20,6 +25,10 @@ public enum StreamType {
     };
 
     public boolean isSelfStream() {
+        return true;
+    }
+
+    public boolean isStreamTypeMixInclude() {
         return true;
     }
 }

@@ -806,18 +806,7 @@ public abstract class SessionManager {
 		targetPart.setHandStatus(ParticipantHandStatus.speaker);
 		targetConnectionId = targetPart.getParticipantPublicId();
 		if (Objects.isNull(existSpeakerPart)) {
-			// switch layout with moderator
-			/*assert moderatorPart != null;
-			sourceConnectionId = moderatorPart.getParticipantPublicId();
-			if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
-				JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
-				if (!firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
-					sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
-				} else {
-					sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
-				}
-
-			}*/
+			// switch layout
 			JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
 			if (firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
 				sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();

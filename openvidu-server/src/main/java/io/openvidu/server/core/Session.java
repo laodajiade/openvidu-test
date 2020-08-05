@@ -24,6 +24,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
@@ -1034,4 +1035,11 @@ public class Session implements SessionInterface {
 		}
 	}
 
+	public boolean isModeratorHasMulticastplay() {
+		Participant moderatePart = getParticipants().stream().filter(participant ->
+				participant.getStreamType().equals(StreamType.MAJOR) && participant.getRole().equals(OpenViduRole.MODERATOR))
+				.findAny().orElse(null);
+		return Objects.nonNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
+				&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY);
+	}
 }
