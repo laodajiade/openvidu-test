@@ -352,6 +352,7 @@ public class Participant {
 		if (participantPublicId != null) {
 			builder.append("participantPublicId=").append(participantPublicId).append(", ");
 		}
+		builder.append("streamType=").append(streamType.name()).append(", ");
 		builder.append("streaming=").append(streaming).append("]");
 		return builder.toString();
 	}

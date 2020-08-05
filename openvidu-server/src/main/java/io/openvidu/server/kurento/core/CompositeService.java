@@ -151,6 +151,8 @@ public class CompositeService {
     }
 
     public void setPipeline(MediaPipeline pipeline) {
-        this.pipeline = pipeline;
+        if (Objects.isNull(this.pipeline)) {
+            this.pipeline = pipeline;
+        }
     }
 }

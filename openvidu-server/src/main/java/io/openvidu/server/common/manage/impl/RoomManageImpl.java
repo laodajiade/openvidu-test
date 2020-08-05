@@ -5,6 +5,7 @@ import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.dao.CorpMcuConfigMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
@@ -46,7 +47,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Override
     public void storePartHistory(Participant participant, Conference conference) {
-        if (OpenViduRole.THOR.equals(participant.getRole())) {
+        // save part history when stream type is MAJOR and role is not THOR
+        if (OpenViduRole.THOR.equals(participant.getRole()) ||
+                !StreamType.MAJOR.equals(participant.getStreamType())) {
             return;
         }
         ConferencePartHistory history = new ConferencePartHistory();

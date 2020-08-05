@@ -87,12 +87,12 @@ public class SessionEventsHandler {
 			return;
 		}
 		Session session = sessionManager.getSession(sessionId);
-//		int layoutMode = session.getLayoutMode().getMode();
 		JsonObject result = new JsonObject();
 		JsonArray resultArray = new JsonArray();
-//		int index = 0;
 		for (Participant existingParticipant : existingParticipants) {
-			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) continue;
+			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
+				continue;
+			}
 
 			// If RECORDER participant has joined do NOT send 'participantJoined'
 			// notification to existing participants. 'recordingStarted' will be sent to all
@@ -150,8 +150,9 @@ public class SessionEventsHandler {
 								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
-				if (!Objects.isNull(rpc.getTerminalConfig()))
-                	participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
+				if (!Objects.isNull(rpc.getTerminalConfig())) {
+					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
+				}
             }
 
 
@@ -195,7 +196,6 @@ public class SessionEventsHandler {
 				streamsArray.add(stream);
 				participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
 			}
-//			index++;
 
 			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
 			// openvidu-browser in newly joined participants
