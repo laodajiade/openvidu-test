@@ -7,8 +7,19 @@ package io.openvidu.server.common.enums;
 public enum StreamType {
     /** 主码流*/
     MAJOR,
+
     /** 辅码流*/
     MINOR,
+
     /** 分享码流*/
-    SHARING
+    SHARING {
+        @Override
+        public boolean isSelfStream() {
+            return false;
+        }
+    };
+
+    public boolean isSelfStream() {
+        return true;
+    }
 }

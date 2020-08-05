@@ -32,7 +32,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
-        String streamType = getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM);
+        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         String password = (request.getParams() != null && request.getParams().has(ProtocolElements.JOINROOM_PASSWORD_PARAM)) ?
                 request.getParams().get(ProtocolElements.JOINROOM_PASSWORD_PARAM).getAsString() : null;
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
@@ -43,7 +43,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
             do {
                 // verify room join type
                 String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
-                if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(StreamType.valueOf(streamType)) &&
+                if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(streamType) &&
                         SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
                     if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
                         log.error("disable participant active join room:{}", sessionId);
@@ -63,7 +63,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // verify conference password
-                if (streamType.equals(StreamType.MAJOR.name()) && !Objects.equals(joinType, ParticipantJoinType.invited.name())
+                if (StreamType.MAJOR.equals(streamType) && !Objects.equals(joinType, ParticipantJoinType.invited.name())
                         && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)) {
                     log.error("invalid room password:{}", password);
                     errCode = ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR;
@@ -86,7 +86,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // verify room capacity limit.
                 if (!Objects.isNull(sessionManager.getSession(sessionId)) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
                     Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
-                    if (Objects.equals(StreamType.MAJOR.name(), streamType) && majorParts.size() >= preset.getRoomCapacity()) {
+                    if (StreamType.MAJOR.equals(streamType) && majorParts.size() >= preset.getRoomCapacity()) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
                         errCode = ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
                         break;
@@ -120,7 +120,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
                     if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsString()) &&
-                            !Objects.equals(OpenViduRole.THOR, role) && !Objects.equals(StreamType.SHARING.name(), streamType)) {
+                            !Objects.equals(OpenViduRole.THOR, role) && streamType.isSelfStream()) {
                         role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
@@ -130,7 +130,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // check ever already exits share part
                 Session session;
-                if (StreamType.SHARING.name().equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
+                if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
                         && Objects.nonNull(session.getParticipants().stream()
                         .filter(participant -> StreamType.SHARING.equals(participant.getStreamType())).findAny().orElse(null))) {
                     errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;
@@ -139,15 +139,15 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 Participant participant;
                 if (generateRecorderParticipant) {
-                    participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role.name(), streamType);
+                    participant = sessionManager.newRecorderParticipant(sessionId, participantPrivatetId, clientMetadata, role.name(), streamType.name());
                 } else {
                     participant = sessionManager.newParticipant(sessionId, participantPrivatetId, clientMetadata,
-                            role.name(), streamType, location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility());
+                            role.name(), streamType.name(), location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility());
                 }
 
                 Long userId = rpcConnection.getUserId();
                 String serialNumber = rpcConnection.getSerialNumber();
-                String participantName = sessionId + "_" + rpcConnection.getUserUuid() + "_" + streamType;
+                String participantName = sessionId + "_" + rpcConnection.getUserUuid() + "_" + streamType.name();
                 participant.setPreset(preset);
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
                 participant.setParticipantName(participantName);
