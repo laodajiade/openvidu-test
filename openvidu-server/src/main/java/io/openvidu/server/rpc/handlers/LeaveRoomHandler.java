@@ -126,7 +126,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             }
         }
 
-        if (!Objects.isNull(rpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+        if (!Objects.isNull(rpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),

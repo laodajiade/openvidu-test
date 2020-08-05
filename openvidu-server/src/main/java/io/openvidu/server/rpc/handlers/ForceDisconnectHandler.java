@@ -92,7 +92,7 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
             }
 
             RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
-            if (!Objects.isNull(evictRpcConnection.getSerialNumber()) && !Objects.equals(StreamType.SHARING, evictPart.getStreamType())) {
+            if (!Objects.isNull(evictRpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(evictPart.getStreamType())) {
                 cacheManage.setDeviceStatus(evictRpcConnection.getSerialNumber(), DeviceStatus.online.name());
             }
 

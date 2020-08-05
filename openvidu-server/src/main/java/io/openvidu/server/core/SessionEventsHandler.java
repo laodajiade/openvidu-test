@@ -340,7 +340,7 @@ public class SessionEventsHandler {
         }
 
         for (Participant p : participants) {
-            if (!Objects.equals(StreamType.SHARING, p.getStreamType())) {
+            if (StreamType.MAJOR.equals(p.getStreamType())) {
                 rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
                         ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 
