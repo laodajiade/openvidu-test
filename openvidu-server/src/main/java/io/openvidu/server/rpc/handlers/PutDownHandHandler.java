@@ -33,7 +33,7 @@ public class PutDownHandHandler extends RpcAbstractHandler {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (controlSpecialTarget && targetId.equals(participant.getUuid())) {
                     participant.setHandStatus(ParticipantHandStatus.down);
-                } else {
+                } else if (!controlSpecialTarget) {
                     participant.setHandStatus(ParticipantHandStatus.down);
                 }
 
