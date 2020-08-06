@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Participant;
@@ -27,15 +28,15 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
 
         Session conferenceSession = sessionManager.getSession(sessionId);
-        boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
+        Participant targetPart = conferenceSession.getParticipantByUUID(targetId);
         // check if target participant is SUBSCRIBER
-        if (sessionManager.isSubscriberInSession(sessionId, targetId) && isMcu) {
+        if (OpenViduRole.SUBSCRIBER.equals(targetPart.getRole())
+                && Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
             ErrorCodeEnum errorCodeEnum;
-            Participant subscriberPart = conferenceSession.getParticipantByUserId(targetId);
 
             // check if the size of major part is up to 12(current)
             if (conferenceSession.getMajorPartSize() == openviduConfig.getMcuMajorPartLimit()) {
-                errorCodeEnum = conferenceSession.evictPartInCompositeWhenSubToPublish(subscriberPart, sessionManager);
+                errorCodeEnum = conferenceSession.evictPartInCompositeWhenSubToPublish(targetPart, sessionManager);
             } else {
                 // invalid rpc call when size of major part is not up to 12
                 log.error("Invalid rpc call when size of major part in session:{} is not up to {}",
@@ -52,7 +53,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             return;
         }
 
-        sessionManager.setRollCallInSession(conferenceSession, conferenceSession.getParticipantByUserId(targetId));
+        sessionManager.setRollCallInSession(conferenceSession, targetPart);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
