@@ -781,7 +781,6 @@ public abstract class SessionManager {
 		Participant moderatorPart = conferenceSession.getModeratorPart();
 		boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
 
-		int raiseHandNum = 0;
 		String sourceConnectionId;
 		String targetConnectionId;
 		Participant existSpeakerPart = null;
@@ -789,10 +788,6 @@ public abstract class SessionManager {
 			if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
 				if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
 					existSpeakerPart = participant;
-				}
-
-				if (Objects.equals(participant.getHandStatus(), ParticipantHandStatus.up)) {
-					raiseHandNum++;
 				}
 			}
 		}
@@ -820,9 +815,8 @@ public abstract class SessionManager {
 			existSpeakerPart.setHandStatus(ParticipantHandStatus.endSpeaker);
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
-			params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUserId());
-			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUserId());
-			params.addProperty(ProtocolElements.END_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+			params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUuid());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUuid());
 			sendEndRollCallNotify(participants, params);
 		}
 
@@ -835,9 +829,8 @@ public abstract class SessionManager {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
-		params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUserId());
-		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUserId());
-		params.addProperty(ProtocolElements.SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM, raiseHandNum);
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUuid());
+		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUuid());
 
 		// broadcast the changes of layout
 		participants.forEach(participant -> {

@@ -261,38 +261,28 @@ public class ProtocolElements {
 	public static final String RAISE_HAND_METHOD = "raiseHand";
 	public static final String RAISE_HAND_ROOM_ID_PARAM = "roomId";
 	public static final String RAISE_HAND_SOURCE_ID_PARAM = "sourceId";
-	public static final String RAISE_HAND_NUMBER_PARAM = "raiseHandNum";
-	public static final String RAISE_HAND_USERNAME_PARAM = "username";
-	public static final String RAISE_HAND_APPSHOW_NAME_PARAM = "appShowName";
 
 	public static final String PUT_DOWN_HAND_METHOD = "putDownHand";
 	public static final String PUT_DOWN_HAND_ROOM_ID_PARAM = "roomId";
 	public static final String PUT_DOWN_HAND_SOURCE_ID_PARAM = "sourceId";
 	public static final String PUT_DOWN_HAND_TARGET_ID_PARAM = "targetId";
-	public static final String PUT_DOWN_HAND_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
-	public static final String PUT_DOWN_USERNAME_PARAM = "username";
-	public static final String PUT_DOWN_APPSHOW_NAME_PARAM = "appShowName";
 
 
 	public static final String SET_ROLL_CALL_METHOD = "setRollCall";
 	public static final String SET_ROLL_CALL_ROOM_ID_PARAM = "roomId";
 	public static final String SET_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
 	public static final String SET_ROLL_CALL_TARGET_ID_PARAM = "targetId";
-	public static final String SET_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String END_ROLL_CALL_METHOD = "endRollCall";
 	public static final String END_ROLL_CALL_ROOM_ID_PARAM = "roomId";
 	public static final String END_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
 	public static final String END_ROLL_CALL_TARGET_ID_PARAM = "targetId";
-	public static final String END_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
-	public static final String END_ROLL_CALL_PARTLINKEDLIST_PARAM = "partLinkedList";
 
 	public static final String REPLACE_ROLL_CALL_METHOD = "replaceRollCall";
 	public static final String REPLACE_ROLL_CALL_ROOM_ID_PARAM = "roomId";
 	public static final String REPLACE_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
 	public static final String REPLACE_ROLL_CALL_END_TARGET_ID_PARAM = "endTargetId";
 	public static final String REPLACE_ROLL_CALL_START_TARGET_ID_PARAM = "startTargetId";
-	public static final String REPLACE_ROLL_CALL_RAISEHAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String CHANGE_PART_ROLE_METHOD = "changePartRole";
     public static final String CHANGE_PART_ROLE_CHANGED_TO_ON_THE_WALL_PARAM = "toOnTheWall";
