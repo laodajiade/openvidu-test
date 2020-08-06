@@ -507,7 +507,6 @@ public class ProtocolElements {
 	public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
 	public static final String PARTICIPANTLEFT_NAME_PARAM = "connectionId";
 	public static final String PARTICIPANTLEFT_REASON_PARAM = "reason";
-	public static final String PARTICIPANTLEFT_RAISE_HAND_NUMBER_PARAM = "raiseHandNum";
 
 	public static final String PARTICIPANTEVICTED_METHOD = "participantEvicted";
 	public static final String PARTICIPANTEVICTED_CONNECTIONID_PARAM = "connectionId";

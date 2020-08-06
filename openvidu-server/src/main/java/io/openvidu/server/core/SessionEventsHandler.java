@@ -252,19 +252,10 @@ public class SessionEventsHandler {
 			return;
 		}
 
-		int raiseHandNum = 0;
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
-		for (Participant p : remainingParticipants) {
-			if (p.getHandStatus() == ParticipantHandStatus.up && Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-				raiseHandNum++;
-			}
-		}
-
-		// Fixme. Android端统计出问题,暂时加上。端上重构后，云端删除该字段
-		params.addProperty(ProtocolElements.PARTICIPANTLEFT_RAISE_HAND_NUMBER_PARAM, raiseHandNum);
 		for (Participant p : remainingParticipants) {
 			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())
 					&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
@@ -291,16 +282,6 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
-        /*Session session = sessionManager.getSession(sessionId);
-		JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
-        int index = 0;
-		for (JsonElement jsonElement : majorShareMixLinkedArr) {
-            if (Objects.equals(jsonElement.getAsJsonObject().get("connectionId").getAsString(),
-                    participant.getParticipantPublicId())) {
-                break;
-            }
-            index++;
-        }*/
 
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 		JsonObject result = new JsonObject();
