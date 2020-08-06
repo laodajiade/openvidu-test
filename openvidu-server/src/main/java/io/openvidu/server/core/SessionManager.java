@@ -119,6 +119,8 @@ public abstract class SessionManager {
 
 	public abstract void unsubscribe(Participant participant, String senderName, Integer transactionId);
 
+	public abstract void switchVoiceMode(Participant participant, VoiceMode operation);
+
 	public abstract void sendMessage(Participant participant, String message, Integer transactionId);
 
 	public abstract void streamPropertyChanged(Participant participant, Integer transactionId, String streamId,

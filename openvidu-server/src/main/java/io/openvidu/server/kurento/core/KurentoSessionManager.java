@@ -491,10 +491,9 @@ public class KurentoSessionManager extends SessionManager {
 
 			KurentoParticipant kParticipant = (KurentoParticipant) participant;
 			session = ((KurentoParticipant) participant).getSession();
-			/*Participant senderParticipant = !Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-					session.getParticipantByPublicId(senderName) : participant;*/
+
 			Participant senderParticipant;
-			if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+			if (StreamModeEnum.SFU_SHARING.equals(streamMode)) {
 				senderParticipant = session.getParticipantByPublicId(senderName);
             } else {
 				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
@@ -521,8 +520,6 @@ public class KurentoSessionManager extends SessionManager {
 						participant.getParticipantPublicId(), senderName, session.getSessionId());
 				sessionEventsHandler.sendSuccessResp(participant.getParticipantPrivateId(), transactionId);
 				return;
-				/*throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-						"User '" + senderName + " not found in session '" + session.getSessionId() + "'");*/
 			}
 			if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
 				log.warn(
@@ -546,6 +543,11 @@ public class KurentoSessionManager extends SessionManager {
 			e.printStackTrace();
 			log.error("Exception:", e);
 		}
+
+		if (Objects.equals(participant.getVoiceMode(), VoiceMode.on)) {
+			switchVoiceModeWithPublicId(participant, participant.getVoiceMode(), senderName);
+		}
+
 		if (sdpAnswer != null) {
 			sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, transactionId, null);
 		}
@@ -556,22 +558,21 @@ public class KurentoSessionManager extends SessionManager {
 		log.debug("Request [UNSUBSCRIBE] remoteParticipant={} ({})", senderName, participant.getParticipantPublicId());
 
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
-		// modify by chosongi to fit the server mcu
-		/*Session session = ((KurentoParticipant) participant).getSession();
-		Participant sender = session.getParticipantByPublicId(senderName);
-
-		if (sender == null) {
-			log.warn(
-					"PARTICIPANT {}: Requesting to unsubscribe from user {} "
-							+ "in session {} but user could not be found",
-					participant.getParticipantPublicId(), senderName, session.getSessionId());
-			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-					"User " + senderName + " not found in session " + session.getSessionId());
-		}*/
-
 		kParticipant.cancelReceivingMedia(senderName, EndReason.unsubscribe);
 
 		sessionEventsHandler.onUnsubscribe(participant, transactionId, null);
+	}
+
+	@Override
+	public void switchVoiceMode(Participant participant, VoiceMode operation) {
+		participant.setVoiceMode(operation);
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		kParticipant.switchVoiceModeInSession(operation, kParticipant.getSubscribers().keySet());
+	}
+
+	private void switchVoiceModeWithPublicId(Participant participant, VoiceMode operation, String senderName) {
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		kParticipant.switchVoiceModeInSession(operation, Collections.singleton(senderName));
 	}
 
 	@Override

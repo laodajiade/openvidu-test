@@ -27,6 +27,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
@@ -42,10 +43,11 @@ import org.kurento.client.*;
 import org.kurento.client.internal.server.KurentoServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -208,8 +210,8 @@ public class KurentoParticipant extends Participant {
 		return this.publisher;
 	}
 
-	public Collection<SubscriberEndpoint> getSubscribers() {
-		return this.subscribers.values();
+	public ConcurrentMap<String, SubscriberEndpoint> getSubscribers() {
+		return this.subscribers;
 	}
 
 	public MediaOptions getPublisherMediaOptions() {
@@ -602,6 +604,31 @@ public class KurentoParticipant extends Participant {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Exclude MCU
+	 * @param operation on,off
+	 * @param publicIds participants' publicId that this participant receive video from
+	 */
+	void switchVoiceModeInSession(VoiceMode operation, Set<String> publicIds) {
+		Set<Participant> participants = getSession().getMajorPartEachConnect();
+		if (!CollectionUtils.isEmpty(participants)) {
+			participants.forEach(participant -> {
+				String subToPartPublicId;
+				if (!Objects.equals(subToPartPublicId = participant.getParticipantPublicId(), this.getParticipantPublicId())
+						&& publicIds.contains(subToPartPublicId)) {
+					log.info("PARTICIPANT {}: Is now {} receiving video from {} in room {}",
+							this.getParticipantPublicId(), Objects.equals(operation, VoiceMode.on) ?
+									"stop" : "start", subToPartPublicId, this.session.getSessionId());
+					KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+					SubscriberEndpoint subscriberEndpoint = subscribers.get(subToPartPublicId);
+					if (Objects.nonNull(subscriberEndpoint)) {
+						subscriberEndpoint.controlMediaTypeLink(kurentoParticipant.getPublisher(), MediaType.VIDEO, operation);
+					}
+				}
+			});
+		}
 	}
 
 }

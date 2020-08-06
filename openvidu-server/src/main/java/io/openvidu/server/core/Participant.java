@@ -75,6 +75,8 @@ public class Participant {
 	@Setter
 	private String clientType;
 
+	private VoiceMode voiceMode = VoiceMode.off;
+
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
 
@@ -282,6 +284,14 @@ public class Participant {
 	public Participant setSubtitleLanguage(SubtitleLanguageEnum subtitleLanguage) {
 		this.subtitleLanguage = subtitleLanguage;
 		return this;
+	}
+
+	public VoiceMode getVoiceMode() {
+		return voiceMode;
+	}
+
+	public void setVoiceMode(VoiceMode voiceMode) {
+		this.voiceMode = voiceMode;
 	}
 
 	public String getPublisherStreamId() {

@@ -20,6 +20,7 @@ package io.openvidu.server.kurento.endpoint;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.StreamModeEnum;
+import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -97,10 +98,6 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		});
 	}
 
-	public boolean isConnectedToPublisher() {
-		return connectedToPublisher.get();
-	}
-
 	public void setConnectedToPublisher(boolean connectedToPublisher) {
 		this.connectedToPublisher.set(connectedToPublisher);
 	}
@@ -128,5 +125,16 @@ public class SubscriberEndpoint extends MediaEndpoint {
 			json.add(entry.getKey(), entry.getValue());
 		}
 		return json;
+	}
+
+	public synchronized void controlMediaTypeLink(PublisherEndpoint publisher, MediaType mediaType, VoiceMode operation) {
+		switch (operation) {
+			case on:
+				publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
+				break;
+			case off:
+				publisher.connect(this.getEndpoint(), mediaType);
+				break;
+		}
 	}
 }

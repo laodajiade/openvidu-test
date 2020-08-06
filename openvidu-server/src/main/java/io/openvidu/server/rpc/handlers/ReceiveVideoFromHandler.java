@@ -31,10 +31,9 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
         } catch (OpenViduException e) {
             return;
         }
-        StreamModeEnum streamMode = null;
-        String streamModeStr = getStringOptionalParam(request, ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM);
-        if (!StringUtils.isEmpty(streamModeStr))
-            streamMode = StreamModeEnum.valueOf(getStringParam(request, ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM));
+        String streamModeStr;
+        StreamModeEnum streamMode = !StringUtils.isEmpty(streamModeStr = getStringOptionalParam(request, ProtocolElements.RECEIVEVIDEO_STREAM_MODE_PARAM))
+                ? StreamModeEnum.valueOf(streamModeStr) : null;
 
         String senderName = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SENDER_PARAM);
         senderName = senderName.substring(0, Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?

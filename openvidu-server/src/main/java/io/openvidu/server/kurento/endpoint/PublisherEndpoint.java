@@ -353,6 +353,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 		internalSinkDisconnect(majorShareHubPort, sink, type);
 	}
 
+	public synchronized void sfuDisconnectFrom(MediaElement sink, MediaType type) {
+		internalSinkDisconnect(passThru, sink, type);
+	}
+
 	public void connectRecordHubPort(HubPort hubPort) {
 		internalSinkConnect(this.getEndpoint(), hubPort);
 	}

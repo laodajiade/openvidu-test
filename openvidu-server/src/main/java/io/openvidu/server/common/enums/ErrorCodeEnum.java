@@ -72,6 +72,7 @@ public enum ErrorCodeEnum {
     TERMINAL_MUST_LOGIN_FIRST(13014, "硬终端须先登录"),
     TERMINAL_IS_NOT_MODERATOR(13015, "硬终端不是主持人"),
     WEB_MODERATOR_ALREADY_EXIST(13016, "会议中已存在web会控"),
+    PARTICIPANT_NOT_FOUND(13017, "与会者已离会"),
     CONFERENCE_RECORD_NOT_EXIST(13025, "会议记录不存在"),
     CONFERENCE_RECORD_NOT_START(13027, "会议尚未开始录制"),
     CONFERENCE_IS_RECORDING(13028, "会议正在录制中"),
