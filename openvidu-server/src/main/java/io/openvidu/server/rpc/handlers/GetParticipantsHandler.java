@@ -5,10 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.ParticipantSpeakerStatus;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -154,6 +151,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("micStatus", part.getMicStatus().name());
         userObj.addProperty("videoStatus", part.getVideoStatus().name());
         userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(part.getSpeakerStatus()));
+        userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 
         if (UserType.register.equals(part.getUserType())) {
             userObj.addProperty("userId", user.getId());
