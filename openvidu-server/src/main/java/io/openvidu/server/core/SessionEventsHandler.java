@@ -154,6 +154,7 @@ public class SessionEventsHandler {
 					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
 				}
             }
+            participantJson.addProperty("isVoiceMode", existingParticipant.getVoiceMode().equals(VoiceMode.on));
 
 
 			// Metadata associated to each existing participant
@@ -225,6 +226,7 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
 		result.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
+        result.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 		result.add("value", resultArray);
 
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
