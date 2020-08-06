@@ -639,6 +639,11 @@ public class ProtocolElements {
 	public static final String GETH5PAGES_METHOD = "getH5Pages";
 	public static final String GETH5PAGES_TYPE_PARAM = "type";
 
+    public static final String SWITCHVOICEMODE_METHOD = "switchVoiceMode";
+    public static final String SWITCHVOICEMODE_OPERATION_PARAM = "operation";
+    public static final String SWITCHVOICEMODE_NOTIFY_METHOD = "switchVoiceModeNotify";
+    public static final String SWITCHVOICEMODE_SENDERCONNECTIONID_PARAM = "senderConnectionId";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,

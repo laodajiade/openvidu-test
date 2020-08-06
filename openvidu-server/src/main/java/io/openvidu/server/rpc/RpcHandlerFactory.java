@@ -255,6 +255,8 @@ public class RpcHandlerFactory {
     private UpdateUsernameHandler updateUsernameHandler;
     @Resource
     private GetH5PagesHandler getH5PagesHandler;
+    @Resource
+    private SwitchVoiceModeHandler switchVoiceModeHandler;
 
 
     @PostConstruct
@@ -340,6 +342,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.MODIFY_PASSWORD_METHOD,                        modifyPasswordHandler);
         handlersMap.put(ProtocolElements.UPDATEUSERNAME_METHOD,                         updateUsernameHandler);
         handlersMap.put(ProtocolElements.GETH5PAGES_METHOD,                             getH5PagesHandler);
+        handlersMap.put(ProtocolElements.SWITCHVOICEMODE_METHOD,                        switchVoiceModeHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
