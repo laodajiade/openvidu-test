@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -29,39 +28,34 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String sourceId = getStringParam(request, ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
 
-        Participant sourcePart = null, targetPart = null;
+        String sourceConnectionId = null;
+        String targetConnectionId = null;
         Session conferenceSession = sessionManager.getSession(sessionId);
         Set<Participant> participants = conferenceSession.getParticipants();
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (targetId.equals(participant.getUuid())) {
                     participant.setHandStatus(ParticipantHandStatus.endSpeaker);
-                    targetPart = participant;
+                    targetConnectionId = participant.getParticipantPublicId();
                 }
 
-                if (Objects.equals(sourceId, participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
-                    sourcePart = participant;
+                if (sourceId.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+                    sourceConnectionId = participant.getParticipantPublicId();
                 }
             }
         }
 
-        if (Objects.isNull(sourcePart) || Objects.isNull(targetPart)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                    request.getId(), null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-            return;
-        }
-
         if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
             // change conference layout
-            conferenceSession.replacePartOrderInConference(sourcePart.getParticipantPublicId(), targetPart.getParticipantPublicId());
+            conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
             // json RPC notify KMS layout changed.
             conferenceSession.invokeKmsConferenceLayout();
         }
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
-        params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourcePart.getUuid());
-        params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUuid());
+        params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
+        params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, targetId);
 
         // broadcast the changes of layout
         participants.forEach(participant -> {
