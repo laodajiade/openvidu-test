@@ -493,7 +493,8 @@ public class KurentoSessionManager extends SessionManager {
 			session = ((KurentoParticipant) participant).getSession();
 
 			Participant senderParticipant;
-			if (!StreamModeEnum.MIX_MAJOR_AND_SHARING.equals(streamMode)) {
+			if (!StreamModeEnum.MIX_MAJOR_AND_SHARING
+                    .equals(streamMode)) {
 				senderParticipant = session.getParticipantByPublicId(senderName);
             } else {
 				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
