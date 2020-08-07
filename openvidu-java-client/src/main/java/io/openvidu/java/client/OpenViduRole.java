@@ -27,7 +27,12 @@ public enum OpenViduRole {
 	/**
 	 * Can subscribe to published Streams of other users
 	 */
-	SUBSCRIBER,
+	SUBSCRIBER {
+		@Override
+		public boolean needToPublish() {
+			return false;
+		}
+	},
 
 	/**
 	 * SUBSCRIBER permissions + can publish their own Streams (call
@@ -50,7 +55,12 @@ public enum OpenViduRole {
 	 * <code>Session.forceUnpublish()</code> and
 	 * <code>Session.forceDisconnect()</code>)
 	 */
-	THOR;
+	THOR {
+		@Override
+		public boolean needToPublish() {
+			return false;
+		}
+	};
 
 	public static final List<OpenViduRole> NON_PUBLISH_ROLES;
 
@@ -74,6 +84,10 @@ public enum OpenViduRole {
 			if (openViduRole.name().equalsIgnoreCase(role)) return openViduRole;
 		}
 		return null;
+	}
+
+	public boolean needToPublish() {
+		return true;
 	}
 
 }

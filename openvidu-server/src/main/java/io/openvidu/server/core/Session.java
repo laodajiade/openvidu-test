@@ -507,8 +507,7 @@ public class Session implements SessionInterface {
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
-    	if (StreamType.MAJOR.equals(participant.getStreamType())
-                && !OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+    	if (StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().needToPublish()) {
 			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
 		}
