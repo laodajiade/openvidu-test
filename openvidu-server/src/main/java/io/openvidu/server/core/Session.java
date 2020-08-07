@@ -727,9 +727,11 @@ public class Session implements SessionInterface {
 				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
 			}
 			Set<Participant> participants = getParticipants();
-			Participant automaticOnWallPart = participants.stream().filter(participant ->
-					!publishedParts.contains(participant.getParticipantPublicId()) &&
-							OpenViduRole.SUBSCRIBER.equals(participant.getRole())).findAny().orElse(null);
+			Participant automaticOnWallPart = participants.stream()
+					.filter(participant -> !publishedParts.contains(participant.getParticipantPublicId())
+							&& OpenViduRole.SUBSCRIBER.equals(participant.getRole())
+							&& StreamType.MAJOR.equals(participant.getStreamType()))
+					.findAny().orElse(null);
 			if (Objects.nonNull(automaticOnWallPart)) {
 			    log.info("Put Part:{} On Wall Automatically in session:{}", automaticOnWallPart.getParticipantName(), automaticOnWallPart.getSessionId());
 				changeThePartRole(sessionManager, automaticOnWallPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, false);
