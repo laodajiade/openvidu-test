@@ -53,12 +53,34 @@
     </foreach>
   </select>
 
+  <select id="queryUserInfoByUserIds" parameterType="java.util.List" resultType="io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo">
+    SELECT
+        u.id AS userId,
+        u.uuid,
+        u.username,
+        ud.id AS deptId,
+        ud.dept_name AS deptName,
+        d.serial_number AS serialNumber,
+        d.device_name AS deviceName
+    FROM
+        sd_user u
+    LEFT JOIN sd_user_dept sud ON u.id = sud.user_id
+    LEFT JOIN sd_department ud ON ud.id = sud.dept_id
+    LEFT JOIN sd_user_dev userdev ON u.id = userdev.user_id
+    LEFT JOIN sd_device d ON d.serial_number = userdev.serial_number
+    WHERE u.id IN
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select 
     <include refid="Base_Column_List" />
     from sd_user
     where id = #{id,jdbcType=BIGINT}
   </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_user
     where id = #{id,jdbcType=BIGINT}
