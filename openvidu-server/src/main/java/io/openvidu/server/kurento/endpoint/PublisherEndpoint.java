@@ -670,13 +670,13 @@ public class PublisherEndpoint extends MediaEndpoint {
 			source.disconnect(sink, type, new Continuation<Void>() {
 				@Override
 				public void onSuccess(Void result) throws Exception {
-					log.debug("EP {}: {} media elements have been disconnected (source {} -> sink {})",
+					log.info("EP {}: {} media elements have been disconnected (source {} -> sink {})",
 							getEndpointName(), type, source.getId(), sink.getId());
 				}
 
 				@Override
 				public void onError(Throwable cause) throws Exception {
-					log.warn("EP {}: Failed to disconnect {} media elements (source {} -> sink {})", getEndpointName(),
+					log.info("EP {}: Failed to disconnect {} media elements (source {} -> sink {})", getEndpointName(),
 							type, source.getId(), sink.getId(), cause);
 				}
 			});
