@@ -8,12 +8,15 @@ import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Role;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
+import io.openvidu.server.core.Participant;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class UserManageImpl implements UserManage {
@@ -89,6 +92,21 @@ public class UserManageImpl implements UserManage {
         update.setUuid(null);
         userMapper.updateByPrimaryKeySelective(update);
         cacheManage.updateTokenInfo(uuid, "username", update.getUsername());
+    }
+
+    @Override
+    public Map<String, UserDeviceDeptInfo> getUserInfoInRoom(Set<Participant> participants) {
+        Map<String, UserDeviceDeptInfo> connectIdPartMap = null;
+        List<UserDeviceDeptInfo> userDeviceDeptInfos = userMapper.queryUserInfoByUserIds(participants.stream()
+                .map(part -> Long.valueOf(part.getUserId())).collect(Collectors.toList()));
+        if (!CollectionUtils.isEmpty(userDeviceDeptInfos)) {
+            Map<Long, UserDeviceDeptInfo> userIdUserInfoMap = userDeviceDeptInfos.stream()
+                    .collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, Function.identity()));
+            connectIdPartMap = participants.stream()
+                    .collect(Collectors.toMap(Participant::getParticipantPublicId,
+                            participant -> userIdUserInfoMap.get(Long.valueOf(participant.getUserId()))));
+        }
+        return connectIdPartMap;
     }
 
 }

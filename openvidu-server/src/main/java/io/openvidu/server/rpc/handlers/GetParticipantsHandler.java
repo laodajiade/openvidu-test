@@ -4,9 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -16,8 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author geedow
@@ -28,137 +33,92 @@ import java.util.*;
 public class GetParticipantsHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String sessionId = getStringParam(request, ProtocolElements.GET_PARTICIPANTS_ROOM_ID_PARAM);
-        JsonObject respJson = new JsonObject();
-        JsonArray jsonArray = new JsonArray();
-        Set<Long> userIds = new HashSet<>();
-
-        if (Objects.isNull(sessionManager.getParticipants(sessionId))) {
-            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+        Session session;
+        if (Objects.isNull(session = sessionManager.getSession(getStringParam(request,
+                ProtocolElements.GET_PARTICIPANTS_ROOM_ID_PARAM)))) {
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
-        sessionManager.getParticipants(sessionId).forEach(s -> {
-            if (!Objects.equals(s.getRole(), OpenViduRole.THOR)) {
-                userIds.add(Long.valueOf(s.getUserId()));
-            }
-        });
 
-        if (!CollectionUtils.isEmpty(userIds)) {
-            List<User> userList = userMapper.selectByPrimaryKeys(new ArrayList<>(userIds));
-            for (User user : userList) {
-                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream().filter(s -> user.getId()
-                        .compareTo(Long.valueOf(s.getUserId())) == 0 && Objects.equals(StreamType.MAJOR, s.getStreamType()) &&
-                        !Objects.equals(OpenViduRole.THOR, s.getRole())).findFirst().orElse(null);
-                if (Objects.isNull(part)) continue;
+        JsonArray jsonArray = new JsonArray();
+        // key:connectionId, value:userDeviceDeptInfo
+        Map<String, UserDeviceDeptInfo> connectIdUserInfoMap;
+        Set<Participant> needReturnParts = session.getMajorPartEachConnect();
+        JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
+        if (!CollectionUtils.isEmpty(needReturnParts)
+                && Objects.nonNull(connectIdUserInfoMap = userManage.getUserInfoInRoom(needReturnParts))
+                && !connectIdUserInfoMap.isEmpty()) {
+            // key:connectionId, value:participant
+            Map<String, Participant> connectIdPartMap = needReturnParts.stream()
+                    .collect(Collectors.toMap(Participant::getParticipantPublicId, Function.identity()));
 
-                // User and dept info.
-                UserDeptSearch udSearch = new UserDeptSearch();
-                udSearch.setUserId(user.getId());
-                UserDept userDeptCom = userDeptMapper.selectBySearchCondition(udSearch);
-                if (Objects.isNull(userDeptCom)) {
-                    log.warn("GetParticipant userDept is null and privateId:{}, userId:{}",
-                            part.getParticipantPrivateId(), user.getId());
-                    continue;
-                }
-                Department userDep = depMapper.selectByPrimaryKey(userDeptCom.getDeptId());
-                JsonObject userObj = getPartInfo(part, user, userDep);
-
-                // get device info if have device.
-//                String serialNumber = onlineUserList.get(user.getId());
-//                if (!StringUtils.isEmpty(serialNumber)) {
-//                    log.info("select userId:{} online key(userId):{} serialNumber:{}", user.getId(),
-//                            onlineUserList.get(user.getId()), serialNumber);
-
-                    // device and dept info.
-                    UserDevice userDeviceSearch = new UserDevice();
-                    userDeviceSearch.setUserId(user.getId());
-                    UserDevice result = userDeviceMapper.selectByCondition(userDeviceSearch);
-                    if (!Objects.isNull(result)) {
-                        DeviceSearch deviceSearch = new DeviceSearch();
-                        deviceSearch.setSerialNumber(result.getSerialNumber());
-                        Device device = deviceMapper.selectBySearchCondition(deviceSearch);
-                        DeviceDeptSearch ddSearch = new DeviceDeptSearch();
-                        ddSearch.setSerialNumber(result.getSerialNumber());
-                        List<DeviceDept> devDeptCom = deviceDeptMapper.selectBySearchCondition(ddSearch);
-                        Department devDep = depMapper.selectByPrimaryKey(devDeptCom.get(0).getDeptId());
-
-                        userObj.addProperty("deviceName", device.getDeviceName());
-                        userObj.addProperty("deviceOrgName", devDep.getDeptName());
-                        userObj.addProperty("appShowName", device.getDeviceName());
-                        userObj.addProperty("appShowDesc", devDep.getDeptName());
-                    }
-//                } else {
-//                    userObj.addProperty("appShowName", user.getUsername());
-//                    userObj.addProperty("appShowDesc", userDep.getDeptName());
-//                }
-
-                jsonArray.add(userObj);
-            }
-            // add tourist participant
-            for (Participant participant : sessionManager.getParticipants(sessionId)) {
-                if (StreamType.MAJOR.equals(participant.getStreamType()) && UserType.tourist.equals(participant.getUserType())) {
-                    jsonArray.add(getPartInfo(participant, null, null));
-                }
-            }
-        }
-
-        // return the composite order according to session majorShareMixLinkedArr and exclude sharing
-        Session session = sessionManager.getSession(sessionId);
-        if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-            JsonArray majorShareMixLinkedArr = sessionManager.getSession(sessionId).getMajorShareMixLinkedArr();
-            JsonArray orderPartArr = new JsonArray(64);
-            JsonArray disorderPartArr = new JsonArray(50);
-            List<String> list = new ArrayList<>(16);
+            // add participant info one by one according to mcu mix order
             for (JsonElement jsonElement : majorShareMixLinkedArr) {
-                JsonObject partObj = jsonElement.getAsJsonObject();
-                list.add(partObj.get("connectionId").getAsString());
-                for (JsonElement je : jsonArray) {
-                    String partConnectId = je.getAsJsonObject().get("connectionId").getAsString();
-                    if (partObj.get("connectionId").getAsString().equals(partConnectId)) {
-                        orderPartArr.add(je);
-                        break;
+                Participant participant;
+                JsonObject connectIdStreamTypeObj = jsonElement.getAsJsonObject();
+                if (StreamType.MAJOR.name().equals(connectIdStreamTypeObj.get("streamType").getAsString())
+                        && Objects.nonNull(participant = connectIdPartMap.remove(connectIdStreamTypeObj.get("connectionId").getAsString()))) {
+                    JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                    if (Objects.nonNull(userObj)) {
+                        jsonArray.add(userObj);
                     }
                 }
             }
 
-            for (JsonElement je : jsonArray) {
-                String partConnectId = je.getAsJsonObject().get("connectionId").getAsString();
-                if (!list.contains(partConnectId)) {
-                    disorderPartArr.add(je);
+            // add left participant in return info
+            if (!connectIdPartMap.isEmpty()) {
+                Collection<Participant> remainParts = connectIdPartMap.values();
+                for (Participant participant : remainParts) {
+                    JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                    if (Objects.nonNull(userObj)) {
+                        jsonArray.add(userObj);
+                    }
                 }
             }
-
-            orderPartArr.addAll(disorderPartArr);
-            jsonArray = orderPartArr;
         }
 
+        JsonObject respJson = new JsonObject();
         respJson.add("participantList", jsonArray);
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
 
-    private static JsonObject getPartInfo(Participant participant, User user, Department department) {
+    private static JsonObject getPartInfo(Participant participant, Map<String, UserDeviceDeptInfo> connectIdUserInfoMap) {
         JsonObject userObj = new JsonObject();
-        KurentoParticipant part = (KurentoParticipant) participant;
-        userObj.addProperty("connectionId", part.getParticipantPublicId());
-        userObj.addProperty("role", part.getRole().name());
-        userObj.addProperty("userType", part.getUserType().name());
-        userObj.addProperty("terminalType", part.getClientType());
-        userObj.addProperty("shareStatus", part.getShareStatus().name());
-        userObj.addProperty("handStatus", part.getHandStatus().name());
-        // 获取发布者时存在同步阻塞的状态
-        userObj.addProperty("audioActive", part.isStreaming() && part.getPublisherMediaOptions().isAudioActive());
-        userObj.addProperty("videoActive", part.isStreaming() && part.getPublisherMediaOptions().isVideoActive());
-        userObj.addProperty("micStatus", part.getMicStatus().name());
-        userObj.addProperty("videoStatus", part.getVideoStatus().name());
-        userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(part.getSpeakerStatus()));
+        KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+        userObj.addProperty("connectionId", kurentoParticipant.getParticipantPublicId());
+        userObj.addProperty("role", kurentoParticipant.getRole().name());
+        userObj.addProperty("userType", kurentoParticipant.getUserType().name());
+        userObj.addProperty("terminalType", kurentoParticipant.getClientType());
+        userObj.addProperty("shareStatus", kurentoParticipant.getShareStatus().name());
+        userObj.addProperty("handStatus", kurentoParticipant.getHandStatus().name());
+        userObj.addProperty("audioActive",
+                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isAudioActive());
+        userObj.addProperty("videoActive",
+                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
+        userObj.addProperty("micStatus", kurentoParticipant.getMicStatus().name());
+        userObj.addProperty("videoStatus", kurentoParticipant.getVideoStatus().name());
+        userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(kurentoParticipant.getSpeakerStatus()));
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 
-        if (UserType.register.equals(part.getUserType())) {
-            userObj.addProperty("userId", user.getId());
-            userObj.addProperty("account", user.getUuid());
-            userObj.addProperty("username", user.getUsername());
-            userObj.addProperty("userOrgName", department.getDeptName());
-        } else {
+        if (UserType.register.equals(kurentoParticipant.getUserType())) {
+            // get user&dept&device from connectIdUserInfoMap
+            UserDeviceDeptInfo userDeviceDeptInfo;
+            if (Objects.nonNull(userDeviceDeptInfo = connectIdUserInfoMap.get(kurentoParticipant.getParticipantPublicId()))) {
+                userObj.addProperty("userId", userDeviceDeptInfo.getUserId());
+                userObj.addProperty("account", userDeviceDeptInfo.getUuid());
+                userObj.addProperty("username", userDeviceDeptInfo.getUsername());
+                userObj.addProperty("userOrgName", userDeviceDeptInfo.getDeptName());
+                if (!StringUtils.isEmpty(userDeviceDeptInfo.getSerialNumber())) {
+                    userObj.addProperty("deviceName", userDeviceDeptInfo.getDeviceName());
+                    userObj.addProperty("deviceOrgName", userDeviceDeptInfo.getDeptName());
+                    userObj.addProperty("appShowName", userDeviceDeptInfo.getDeviceName());
+                    userObj.addProperty("appShowDesc", userDeviceDeptInfo.getDeptName());
+                }
+            } else {
+                return null;
+            }
+        } else {    //  tourist
             userObj.addProperty("account", participant.getUuid());
             userObj.addProperty("username", participant.getUsername());
             userObj.addProperty("userId", 0L);
@@ -168,4 +128,5 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         return userObj;
     }
+
 }

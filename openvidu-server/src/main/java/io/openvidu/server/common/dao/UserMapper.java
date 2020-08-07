@@ -1,6 +1,7 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 
 import java.util.List;
 
@@ -25,4 +26,6 @@ public interface UserMapper {
     List<Long> selectUserIdsByDeptIds(List<Long> subDeptIds);
 
     List<User> getUsersByUserIdsList(List<Long> userIds);
+
+    List<UserDeviceDeptInfo> queryUserInfoByUserIds(List<Long> userIds);
 }

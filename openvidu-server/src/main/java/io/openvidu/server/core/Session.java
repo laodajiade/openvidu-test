@@ -389,6 +389,14 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
+    public Set<Participant> getMajorAndOnWallParts() {
+        checkClosed();
+        return this.participants.values().stream()
+                .map(v -> v.get(StreamType.MAJOR.name()))
+                .filter(participant -> participant.getRole().needToPublish())
+                .collect(Collectors.toSet());
+	}
+
     /*public Participant getParticipantByPrivateId(String participantPrivateId) {
         checkClosed();
         return participants.get(participantPrivateId);
@@ -1043,4 +1051,5 @@ public class Session implements SessionInterface {
 		return Objects.nonNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 				&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY);
 	}
+
 }
