@@ -106,7 +106,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
 
         Session session = sessionManager.getSession(sessionId);
-        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)
+                && participant.getStreamType().isStreamTypeMixInclude()) {
             session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ?
                     speakerId : moderatePublicId);
             // json RPC notify KMS layout changed.
