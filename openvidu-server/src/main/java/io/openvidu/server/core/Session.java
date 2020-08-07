@@ -389,6 +389,15 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
+	public Set<Participant> getMajorAndMinorPartEachConnect() {
+		checkClosed();
+		return this.participants.values().stream()
+				.flatMap(v -> v.values().stream())
+				.filter(participant -> !OpenViduRole.THOR.equals(participant.getRole())
+						&& participant.getStreamType().isSelfStream())
+				.collect(Collectors.toSet());
+	}
+
     public Set<Participant> getMajorAndOnWallParts() {
         checkClosed();
         return this.participants.values().stream()

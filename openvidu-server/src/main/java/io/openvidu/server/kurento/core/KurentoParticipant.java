@@ -612,7 +612,7 @@ public class KurentoParticipant extends Participant {
 	 * @param publicIds participants' publicId that this participant receive video from
 	 */
 	void switchVoiceModeInSession(VoiceMode operation, Set<String> publicIds) {
-		Set<Participant> participants = getSession().getMajorPartEachConnect();
+		Set<Participant> participants = getSession().getMajorAndMinorPartEachConnect();
 		if (!CollectionUtils.isEmpty(participants)) {
 			participants.forEach(participant -> {
 				String subToPartPublicId;
