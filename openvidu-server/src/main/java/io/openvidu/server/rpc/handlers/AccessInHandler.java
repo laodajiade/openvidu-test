@@ -222,7 +222,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name()))
                     && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
                 reconnect = true;
-                rpcConnection.setReconnected(true);
+//                rpcConnection.setReconnected(true);
 //                cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
                 if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
                     Session session = sessionManager.getSession(previousRpc.getSessionId());
@@ -244,7 +244,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 if (Objects.equals(previousRpc.getMacAddr(), deviceMac) &&
                         !Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name())) {
                     log.info("the account:{} now reconnect.", uuid);
-                    rpcConnection.setReconnected(true);
+//                    rpcConnection.setReconnected(true);
                     reconnect = true;
                     if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
                         Session session = sessionManager.getSession(previousRpc.getSessionId());

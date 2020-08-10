@@ -33,11 +33,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
-        String password = (request.getParams() != null && request.getParams().has(ProtocolElements.JOINROOM_PASSWORD_PARAM)) ?
-                request.getParams().get(ProtocolElements.JOINROOM_PASSWORD_PARAM).getAsString() : null;
+        String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
+        boolean isReconnected = getBooleanParam(request, ProtocolElements.JOINROOM_ISRECONNECTED_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
+
+        rpcConnection.setReconnected(isReconnected);
 
         try {
             do {
