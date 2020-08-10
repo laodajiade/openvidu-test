@@ -72,7 +72,7 @@ public class RoomManageImpl implements RoomManage {
         conferencePartHistoryMapper.insert(history);
 
         // save part info in cache
-        /*Map<String, Object> partInfo = new HashMap<>();
+        Map<String, Object> partInfo = new HashMap<>();
         partInfo.put("userId", participant.getUserId());
         partInfo.put("ruid", conference.getRuid());
         partInfo.put("roomId", participant.getSessionId());
@@ -81,7 +81,7 @@ public class RoomManageImpl implements RoomManage {
         partInfo.put("shareStatus", participant.getShareStatus().name());
         partInfo.put("speakerStatus", participant.getSpeakerStatus().name());
         partInfo.put("handStatus", participant.getHandStatus().name());
-        cacheManage.savePartInfo(participant.getUuid(), partInfo);*/
+        cacheManage.savePartInfo(participant.getUuid(), partInfo);
     }
 
     @Override
