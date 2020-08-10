@@ -24,4 +24,6 @@ public interface RoomManage {
     Conference getConferenceByRuid(String ruid);
 
     CorpMcuConfig getCorpMcuConfig(String project);
+
+    int createMeetingRoom(Conference conference);
 }

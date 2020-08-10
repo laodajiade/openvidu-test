@@ -36,4 +36,12 @@ public interface CacheManage {
     void delUserToken(String uuid);
 
     void updateTokenInfo(String uuid, String key, String value);
+
+    void saveRoomInfo(String roomId, Map<String, Object> roomInfo);
+
+    void savePartInfo(String uuid, Map<String, Object> partInfo);
+
+    void delPartInfo(String uuid);
+
+    void delRoomInfo(String sessionId);
 }

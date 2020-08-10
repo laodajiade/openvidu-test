@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
@@ -103,7 +104,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
             rpcConnection.setUserId(accessInUserId);
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
-            rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : null);
+            rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT);
 
             // verify device valid & TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
             if (!StringUtils.isEmpty(deviceSerialNumber)) {

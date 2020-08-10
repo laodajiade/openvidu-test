@@ -1,6 +1,7 @@
 package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.dao.CorpMcuConfigMapper;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author chosongi
@@ -33,6 +36,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Resource
     private CorpMcuConfigMapper corpMcuConfigMapper;
+
+    @Resource
+    private CacheManage cacheManage;
 
 
     @Override
@@ -100,5 +106,24 @@ public class RoomManageImpl implements RoomManage {
     @Override
     public CorpMcuConfig getCorpMcuConfig(String project) {
         return corpMcuConfigMapper.selectByProject(project);
+    }
+
+    @Override
+    public int createMeetingRoom(Conference conference) {
+        int result = conferenceMapper.insert(conference);
+        if (result > 0) {
+            // save in cache
+            Map<String, Object> roomInfo = new HashMap<>();
+            roomInfo.put("ruid", conference.getRuid());
+            roomInfo.put("startTime", conference.getStartTime().getTime());
+            roomInfo.put("roomCapacity", conference.getRoomCapacity());
+            roomInfo.put("password", conference.getPassword());
+            roomInfo.put("conferenceSubject", conference.getConferenceSubject());
+            roomInfo.put("creatorId", conference.getUserId());
+
+            cacheManage.saveRoomInfo(conference.getRoomId(), roomInfo);
+        }
+
+        return result;
     }
 }

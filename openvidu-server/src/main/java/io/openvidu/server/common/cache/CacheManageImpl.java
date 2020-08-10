@@ -4,6 +4,7 @@ import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,6 +24,9 @@ public class CacheManageImpl implements CacheManage {
 
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
+
+    @Resource(name = "roomRedisTemplate")
+    private RedisTemplate<String, Object> roomRedisTemplate;
 
 
     @Override
@@ -110,5 +114,29 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public void updateTokenInfo(String uuid, String key, String value) {
         tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid, key, value);
+    }
+
+    @Override
+    public void saveRoomInfo(String roomId, Map<String, Object> roomInfo) {
+        String key = CacheKeyConstants.getConferencesKey(roomId);
+        roomRedisTemplate.opsForHash().putAll(key, roomInfo);
+        roomRedisTemplate.expire(key, CacheKeyConstants.DEFAULT_CONFERENCE_EXPIRE, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void savePartInfo(String uuid, Map<String, Object> partInfo) {
+        String key = CacheKeyConstants.getParticipantKey(uuid);
+        roomRedisTemplate.opsForHash().putAll(key, partInfo);
+        roomRedisTemplate.expire(key, CacheKeyConstants.DEFAULT_CONFERENCE_EXPIRE, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void delPartInfo(String uuid) {
+        roomRedisTemplate.delete(CacheKeyConstants.getParticipantKey(uuid));
+    }
+
+    @Override
+    public void delRoomInfo(String sessionId) {
+        roomRedisTemplate.delete(CacheKeyConstants.getConferencesKey(sessionId));
     }
 }
