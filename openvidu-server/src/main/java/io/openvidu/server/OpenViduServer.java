@@ -79,9 +79,6 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Autowired
 	OpenviduConfig openviduConfig;
 
-	@Autowired
-	RoomCountdownService roomCountdownService;
-
 	public static final String KMSS_URIS_PROPERTY = "kms.uris";
 
 	public static String wsUrl;
@@ -120,9 +117,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public RpcHandler rpcHandler() {
-		RpcHandler handler = new RpcHandler();
-		roomCountdownService.setHandler(handler);
-		return handler;
+		return new RpcHandler();
 	}
 
 	@Bean
