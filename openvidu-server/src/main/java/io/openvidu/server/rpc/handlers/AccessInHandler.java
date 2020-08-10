@@ -374,7 +374,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceId);
                 endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, previousRpc.getUserId());
 
-                preMajorPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+                preMajorPart.changeHandStatus(ParticipantHandStatus.endSpeaker);
             }
 
             this.sessionManager.getParticipants(conferenceId).forEach(participant -> {

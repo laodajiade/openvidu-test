@@ -59,7 +59,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
                         .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
-                    part.setVideoStatus(videoStatus);
+                    part.changeVideoStatus(videoStatus);
                     tsArray.add(t);
                 }
             });
@@ -72,7 +72,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
                         .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
-                    part.setVideoStatus(videoStatus);
+                    part.changeVideoStatus(videoStatus);
                     accountArr.add(account);
                 }
             });

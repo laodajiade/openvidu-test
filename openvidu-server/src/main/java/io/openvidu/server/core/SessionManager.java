@@ -751,7 +751,7 @@ public abstract class SessionManager {
         }
 
 		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
-			participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+			participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
 		leaveRoom(participant, requestId, EndReason.disconnect, closeWebSocket);
 
         Session session = getSession(sessionId);
@@ -790,7 +790,7 @@ public abstract class SessionManager {
 		}
 
 		assert targetPart != null;
-		targetPart.setHandStatus(ParticipantHandStatus.speaker);
+		targetPart.changeHandStatus(ParticipantHandStatus.speaker);
 		targetConnectionId = targetPart.getParticipantPublicId();
 		if (Objects.isNull(existSpeakerPart)) {
 			// switch layout
@@ -804,7 +804,7 @@ public abstract class SessionManager {
 			// switch layout with current speaker participant
 			sourceConnectionId = existSpeakerPart.getParticipantPublicId();
 			// change current speaker part status and send notify
-			existSpeakerPart.setHandStatus(ParticipantHandStatus.endSpeaker);
+			existSpeakerPart.changeHandStatus(ParticipantHandStatus.endSpeaker);
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
 			params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUuid());

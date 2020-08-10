@@ -61,7 +61,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                         .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
-                    part.setMicStatus(micStatus);
+                    part.changeMicStatus(micStatus);
                     tsArray.add(t);
                 }
 
@@ -75,7 +75,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                         .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
-                    part.setMicStatus(micStatus);
+                    part.changeMicStatus(micStatus);
                     accountArr.add(account);
                 }
 

@@ -39,7 +39,7 @@ public class SharingControlHandler extends RpcAbstractHandler {
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
                 if (targetId.equals(p.getUserId())) {
-                    p.setShareStatus(shareStatus);
+                    p.changeShareStatus(shareStatus);
                 }
                 if (Objects.equals(StreamType.MAJOR, p.getStreamType()))
                     this.notificationService.sendNotification(p.getParticipantPrivateId(),

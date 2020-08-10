@@ -32,9 +32,9 @@ public class PutDownHandHandler extends RpcAbstractHandler {
         participants.forEach(participant -> {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (controlSpecialTarget && targetId.equals(participant.getUuid())) {
-                    participant.setHandStatus(ParticipantHandStatus.down);
+                    participant.changeHandStatus(ParticipantHandStatus.down);
                 } else if (!controlSpecialTarget) {
-                    participant.setHandStatus(ParticipantHandStatus.down);
+                    participant.changeHandStatus(ParticipantHandStatus.down);
                 }
 
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(),

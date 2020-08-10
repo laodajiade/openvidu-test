@@ -115,7 +115,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
 
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-            participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+            participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
         }
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 

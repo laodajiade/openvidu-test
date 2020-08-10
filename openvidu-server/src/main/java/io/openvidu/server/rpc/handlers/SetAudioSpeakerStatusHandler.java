@@ -51,14 +51,14 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
         if (CollectionUtils.isEmpty(accountTargets)) {
             session.getParticipants().forEach(participant -> {
                 if (Objects.equals(StreamType.MAJOR, participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-                    participant.setSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
+                    participant.changeSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
                 }
             });
         } else {
             session.getParticipants().forEach(participant -> {
                 if (Objects.equals(StreamType.MAJOR, participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())
                         && accountTargets.contains(participant.getUuid())) {
-                    participant.setSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
+                    participant.changeSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
                 }
             });
         }

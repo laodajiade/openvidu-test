@@ -28,11 +28,11 @@ public class ReplaceRollCallHandler extends RpcAbstractHandler {
         participants.forEach(participant -> {
             if (StreamType.MAJOR.equals(participant.getStreamType())) {
                 if (endTargetId.equals(participant.getUuid())) {
-                    participant.setHandStatus(ParticipantHandStatus.down);
+                    participant.changeHandStatus(ParticipantHandStatus.down);
                 }
 
                 if (startTargetId.equals(participant.getUuid())) {
-                    participant.setHandStatus(ParticipantHandStatus.speaker);
+                    participant.changeHandStatus(ParticipantHandStatus.speaker);
                 }
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(),
                         ProtocolElements.REPLACE_ROLL_CALL_METHOD, request.getParams());

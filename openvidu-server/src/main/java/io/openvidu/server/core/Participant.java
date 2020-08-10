@@ -191,27 +191,39 @@ public class Participant {
 		return handStatus;
 	}
 
+    public void changeHandStatus(ParticipantHandStatus handStatus) {
+        this.handStatus = handStatus;
+        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+                .uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build());
+    }
+
 	public void setHandStatus(ParticipantHandStatus handStatus) {
 		this.handStatus = handStatus;
-		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-				.uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build());
 	}
 
 	public ParticipantMicStatus getMicStatus() { return micStatus; }
 
+    public void changeMicStatus(ParticipantMicStatus micStatus) {
+        this.micStatus = micStatus;
+        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+                .uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build());
+    }
+
 	public void setMicStatus(ParticipantMicStatus micStatus) {
 		this.micStatus = micStatus;
-		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-				.uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build());
 	}
 
 	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }
 
-	public void setVideoStatus(ParticipantVideoStatus status) {
+	public void changeVideoStatus(ParticipantVideoStatus status) {
 		this.videoStatus = status;
 		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
 				.uuid(uuid).field("videoStatus").updateStatus(status.name()).build());
 	}
+
+    public void setVideoStatus(ParticipantVideoStatus status) {
+        this.videoStatus = status;
+    }
 
 	public ParticipantSharePowerStatus getSharePowerStatus() { return sharePowerStatus; }
 
@@ -231,18 +243,26 @@ public class Participant {
 
 	public void setAppShowInfo(String appShowName, String appShowDesc) { setAppShowName(appShowName); setAppShowDesc(appShowDesc);}
 
+    public void changeSpeakerStatus(ParticipantSpeakerStatus status) {
+        this.speakerStatus = status;
+        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+                .uuid(uuid).field("speakerStatus").updateStatus(status.name()).build());
+    }
+
 	public void setSpeakerStatus(ParticipantSpeakerStatus status) {
 		this.speakerStatus = status;
-		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-				.uuid(uuid).field("speakerStatus").updateStatus(status.name()).build());
 	}
 
 	public ParticipantSpeakerStatus getSpeakerStatus() { return this.speakerStatus; }
 
+    public void changeShareStatus(ParticipantShareStatus status) {
+        this.shareStatus = status;
+        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+                .uuid(uuid).field("shareStatus").updateStatus(status.name()).build());
+    }
+
 	public void setShareStatus(ParticipantShareStatus status) {
 		this.shareStatus = status;
-		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-				.uuid(uuid).field("shareStatus").updateStatus(status.name()).build());
 	}
 
 	public ParticipantShareStatus getShareStatus() {

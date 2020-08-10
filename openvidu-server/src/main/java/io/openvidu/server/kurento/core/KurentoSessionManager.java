@@ -138,13 +138,13 @@ public class KurentoSessionManager extends SessionManager {
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
 				if (existingParticipants.isEmpty()) {
-					participant.setMicStatus(ParticipantMicStatus.on);
-					participant.setVideoStatus(ParticipantVideoStatus.on);
+					participant.changeMicStatus(ParticipantMicStatus.on);
+					participant.changeVideoStatus(ParticipantVideoStatus.on);
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
 				} else {
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
-					participant.setMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
-					participant.setVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
+					participant.changeMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
+					participant.changeVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
 				}
 				participant.setRoomSubject(preset.getRoomSubject());
 			}
@@ -164,7 +164,7 @@ public class KurentoSessionManager extends SessionManager {
 			if (StreamType.SHARING.equals(participant.getStreamType())) {
 				participant.setShareStatus(ParticipantShareStatus.on);
 				Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
-				majorPart.setShareStatus(ParticipantShareStatus.on);
+				majorPart.changeShareStatus(ParticipantShareStatus.on);
 			}
 
 			// save part info
@@ -300,8 +300,9 @@ public class KurentoSessionManager extends SessionManager {
 		// record share status.
 		participant.setShareStatus(ParticipantShareStatus.off);
 		Participant majorPart = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.MAJOR);
-		if (!Objects.isNull(majorPart))
-			majorPart.setShareStatus(ParticipantShareStatus.off);
+		if (!Objects.isNull(majorPart)) {
+            majorPart.changeShareStatus(ParticipantShareStatus.off);
+        }
 	}
 
 	@Override

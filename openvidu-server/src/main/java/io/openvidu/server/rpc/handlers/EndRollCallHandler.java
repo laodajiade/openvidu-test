@@ -35,7 +35,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (targetId.equals(participant.getUuid())) {
-                    participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+                    participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
                     targetConnectionId = participant.getParticipantPublicId();
                 }
 

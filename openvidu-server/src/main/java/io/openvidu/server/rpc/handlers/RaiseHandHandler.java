@@ -27,7 +27,7 @@ public class RaiseHandHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.RAISE_HAND_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM);
-        sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).setHandStatus(ParticipantHandStatus.up);
+        sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).changeHandStatus(ParticipantHandStatus.up);
 
         List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
                 .stream().filter(participant -> Objects.equals(StreamType.MAJOR, participant.getStreamType()))

@@ -196,7 +196,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 										ProtocolElements.END_ROLL_CALL_METHOD, params);
 							}
 						});
-						participant.setHandStatus(ParticipantHandStatus.endSpeaker);
+						participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
 					}
 
 					// release audio composite
