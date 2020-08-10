@@ -139,4 +139,14 @@ public class CacheManageImpl implements CacheManage {
     public void delRoomInfo(String sessionId) {
         roomRedisTemplate.delete(CacheKeyConstants.getConferencesKey(sessionId));
     }
+
+    @Override
+    public Map getPartInfo(String userUuid) {
+        return roomRedisTemplate.opsForHash().entries(CacheKeyConstants.getParticipantKey(userUuid));
+    }
+
+    @Override
+    public Map getRoomInfo(String roomId) {
+        return roomRedisTemplate.opsForHash().entries(CacheKeyConstants.getConferencesKey(roomId));
+    }
 }

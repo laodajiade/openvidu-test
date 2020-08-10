@@ -44,4 +44,8 @@ public interface CacheManage {
     void delPartInfo(String uuid);
 
     void delRoomInfo(String sessionId);
+
+    Map getPartInfo(String userUuid);
+
+    Map getRoomInfo(String roomId);
 }
