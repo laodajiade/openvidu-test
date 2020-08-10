@@ -149,4 +149,9 @@ public class CacheManageImpl implements CacheManage {
     public Map getRoomInfo(String roomId) {
         return roomRedisTemplate.opsForHash().entries(CacheKeyConstants.getConferencesKey(roomId));
     }
+
+    @Override
+    public void updatePartInfo(String uuid, String key, Object updateInfo) {
+        roomRedisTemplate.opsForHash().put(CacheKeyConstants.getParticipantKey(uuid), key, updateInfo);
+    }
 }

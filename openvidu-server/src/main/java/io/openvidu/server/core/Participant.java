@@ -22,9 +22,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 
 public class Participant {
 
@@ -79,6 +81,9 @@ public class Participant {
 
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
+
+	@Setter
+	private ApplicationContext applicationContext;
 
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
@@ -188,15 +193,25 @@ public class Participant {
 
 	public void setHandStatus(ParticipantHandStatus handStatus) {
 		this.handStatus = handStatus;
+		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+				.uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build());
 	}
 
 	public ParticipantMicStatus getMicStatus() { return micStatus; }
 
-	public void setMicStatus(ParticipantMicStatus micStatus) { this.micStatus = micStatus; }
+	public void setMicStatus(ParticipantMicStatus micStatus) {
+		this.micStatus = micStatus;
+		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+				.uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build());
+	}
 
 	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }
 
-	public void setVideoStatus(ParticipantVideoStatus status) { this.videoStatus = status; }
+	public void setVideoStatus(ParticipantVideoStatus status) {
+		this.videoStatus = status;
+		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+				.uuid(uuid).field("videoStatus").updateStatus(status.name()).build());
+	}
 
 	public ParticipantSharePowerStatus getSharePowerStatus() { return sharePowerStatus; }
 
@@ -216,13 +231,23 @@ public class Participant {
 
 	public void setAppShowInfo(String appShowName, String appShowDesc) { setAppShowName(appShowName); setAppShowDesc(appShowDesc);}
 
-	public void setSpeakerStatus(ParticipantSpeakerStatus status) { this.speakerStatus = status; }
+	public void setSpeakerStatus(ParticipantSpeakerStatus status) {
+		this.speakerStatus = status;
+		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+				.uuid(uuid).field("speakerStatus").updateStatus(status.name()).build());
+	}
 
 	public ParticipantSpeakerStatus getSpeakerStatus() { return this.speakerStatus; }
 
-	public void setShareStatus(ParticipantShareStatus status) { this.shareStatus = status; }
+	public void setShareStatus(ParticipantShareStatus status) {
+		this.shareStatus = status;
+		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
+				.uuid(uuid).field("shareStatus").updateStatus(status.name()).build());
+	}
 
-	public ParticipantShareStatus getShareStatus() { return this.shareStatus; }
+	public ParticipantShareStatus getShareStatus() {
+		return this.shareStatus;
+	}
 
 	public void setJoinType(ParticipantJoinType joinType) { this.joinType = joinType; }
 

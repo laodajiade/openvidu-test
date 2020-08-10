@@ -48,7 +48,9 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 public class KurentoSessionManager extends SessionManager {
@@ -72,6 +74,9 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Autowired
 	private RoomManage roomManage;
+
+	@Resource
+	private ApplicationContext applicationContext;
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -151,6 +156,7 @@ public class KurentoSessionManager extends SessionManager {
 			}
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
+			participant.setApplicationContext(applicationContext);
 
 			kSession.join(participant);
 

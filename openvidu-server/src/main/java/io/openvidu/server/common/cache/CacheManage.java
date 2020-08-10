@@ -48,4 +48,6 @@ public interface CacheManage {
     Map getPartInfo(String userUuid);
 
     Map getRoomInfo(String roomId);
+
+    void updatePartInfo(String uuid, String key, Object updateInfo);
 }
