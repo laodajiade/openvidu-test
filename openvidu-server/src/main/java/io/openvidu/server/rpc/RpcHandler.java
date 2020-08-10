@@ -85,9 +85,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		log.info("WebSocket request session #{} - Request: {}", participantPrivateId, request);
 
-		RpcConnection rpcConnection = null;
 		if (ProtocolElements.ACCESS_IN_METHOD.equals(request.getMethod())) {
-			rpcConnection = notificationService.newRpcConnection(transaction, request);
+			notificationService.newRpcConnection(transaction, request);
 		} else if (notificationService.getRpcConnection(participantPrivateId) == null) {
 			// Throw exception if any method is called before 'joinRoom'
 			log.warn(
@@ -99,14 +98,14 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		// Authorization Check
-//        if (authorizationManage.checkIfOperationPermitted(request.getMethod(), rpcConnection)) {
-//            assert rpcConnection != null;
-//            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-//                    null, ErrorCodeEnum.PERMISSION_LIMITED);
-//            return;
-//        }
+        /*if (authorizationManage.checkIfOperationPermitted(request.getMethod(), rpcConnection)) {
+            assert rpcConnection != null;
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }*/
 
-		rpcConnection = notificationService.addTransaction(transaction, request);
+		RpcConnection rpcConnection = notificationService.addTransaction(transaction, request);
 		request.setSessionId(rpcConnection.getParticipantPrivateId());
 
 		String sessionId = rpcConnection.getSessionId();
