@@ -96,6 +96,8 @@ public class RoomManageImpl implements RoomManage {
         int duration = (int) ((endTime.getTime() - createdAt) / 60000);
         update.setDuration(duration == 0 ? 1 : duration);
         conferencePartHistoryMapper.updatePartHistroy(update);
+
+        cacheManage.delPartInfo(uuid);
     }
 
     @Override
