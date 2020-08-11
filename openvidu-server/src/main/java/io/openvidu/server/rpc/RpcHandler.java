@@ -23,12 +23,8 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.manage.AuthorizationManage;
-import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.core.TempCompensateForReconnect;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -60,9 +56,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
     @Autowired
     AuthorizationManage authorizationManage;
-
-    @Resource
-    TempCompensateForReconnect compensateForReconnect;
 
 
 	@Override
@@ -163,102 +156,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			RpcConnection rpcConnection = sessionManager.accessOut(this.notificationService.getRpcConnection(rpcSession.getSessionId()));
 			sessionManager.evictParticipantWhenDisconnect(rpcConnection.getUserUuid());
 		}
-
-		/*log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
-		String rpcSessionId = rpcSession.getSessionId();
-		String message = "";
-		Participant p = null;
-		RpcConnection rpcConnection;
-
-		// update user online status in cache
-		if ((rpcConnection = notificationService.getRpcConnection(rpcSessionId)) != null) {
-			if (Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
-				sessionManager.accessOut(rpcConnection);
-				return;
-			}
-			RpcConnection previousRpc = notificationService.getRpcConnections().stream().filter(s -> Objects.equals(s.getUserUuid(),
-					rpcConnection.getUserUuid()) && Objects.equals(AccessTypeEnum.terminal, s.getAccessType()))
-					.max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
-			if (Objects.equals(previousRpc, rpcConnection)) {
-				cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline);
-			}
-		} else {
-			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
-		}
-		if ("Close for not receive ping from client".equals(status)) {
-			message = "Evicting participant with private id {} because of a network disconnection";
-		} else if ("Connection reset by peer".equals(status)) {
-			message = "Evicting participant with private id {} because of connection reset by peer";
-		} else if (status == null) { // && this.webSocketBrokenPipeTransportError.remove(rpcSessionId) != null)) {
-			try {
-				p = sessionManager.getParticipant(rpcSession.getSessionId());
-				if (p != null) {
-					message = "Evicting participant with private id {} because its websocket unexpectedly closed in the client side";
-				}
-			} catch (OpenViduException ex) {
-				log.error("Exception:\n", ex);
-			}
-		}
-
-		if (!message.isEmpty()) {
-//			RpcConnection rpc = this.notificationService.closeRpcSession(rpcSessionId);
-			RpcConnection rpc = this.notificationService.getRpcConnection(rpcSessionId);
-			if (rpc != null && rpc.getSessionId() != null) {
-				io.openvidu.server.core.Session session = this.sessionManager.getSession(rpc.getSessionId());
-				Participant participant;
-				if (session != null && (participant = session.getParticipantByPrivateId(rpc.getParticipantPrivateId())) != null) {
-					log.info(message, rpc.getParticipantPrivateId());
-//					leaveRoomAfterConnClosed(rpc.getParticipantPrivateId(), EndReason.networkDisconnect);
-//					cacheManage.updateUserOnlineStatus(rpc.getUserUuid(), UserOnlineStatusEnum.offline);
-
-					// send end roll notify if the offline connection's hand status is speaker
-					if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-						JsonObject params = new JsonObject();
-						params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, participant.getSessionId());
-						params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, String.valueOf(rpc.getUserId()));
-						this.sessionManager.getParticipants(participant.getSessionId()).forEach(part -> {
-							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
-									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
-								this.notificationService.sendNotification(part.getParticipantPrivateId(),
-										ProtocolElements.END_ROLL_CALL_METHOD, params);
-							}
-						});
-						participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
-					}
-
-					// release audio composite
-					KurentoParticipant kp = (KurentoParticipant) participant;
-					if (kp.isStreaming() && !Objects.isNull(kp.getPublisher())) {
-						kp.getPublisher().closeAudioComposite();
-					}
-					notifyUserBreakLine(session.getSessionId(), participant.getParticipantPublicId());
-                    compensateForReconnect.addReconnectCheck(session, participant);
-
-					// notify if exists share part
-					Participant sharePart = session.getPartByPrivateIdAndStreamType(rpc.getParticipantPrivateId(), StreamType.SHARING);
-					if (Objects.nonNull(sharePart)) {
-						KurentoSession kurentoSession = (KurentoSession) session;
-						if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId()) &&
-								kurentoSession.compositeService.getShareStreamId().contains(sharePart.getParticipantPublicId())) {
-							kurentoSession.compositeService.setExistSharing(false);
-							kurentoSession.compositeService.setShareStreamId(null);
-						}
-						notifyUserBreakLine(session.getSessionId(), sharePart.getParticipantPublicId());
-                        compensateForReconnect.addReconnectCheck(session, sharePart);
-						JsonObject params = new JsonObject();
-						params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-								sharePart.getParticipantPublicId());
-						this.sessionManager.getParticipants(kp.getSessionId()).forEach(part -> {
-							if (!Objects.equals(rpcSessionId, part.getParticipantPrivateId())
-									&& Objects.equals(StreamType.MAJOR, part.getStreamType())) {
-								this.notificationService.sendNotification(part.getParticipantPrivateId(),
-										ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params);
-							}
-						});
-					}
-				}
-			}
-		}*/
 	}
 
 	@Override
@@ -289,45 +186,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	public SessionManager getSessionManager() { return this.sessionManager; }
 
-	public void notifyRoomCountdown(String sessionId, long remainTime) {
-		JsonObject params = new JsonObject();
-
-		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_INFO_ID_PARAM, sessionId);
-		params.addProperty(ProtocolElements.ROOM_COUNTDOWN_TIME_PARAM, remainTime);
-		sessionManager.getParticipants(sessionId).forEach(p -> {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
-			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_COUNTDOWN_METHOD, params);});
-	}
-
-
-	private void notifyUserBreakLine(String sessionId, String publicId) {
-		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, publicId);
-
-		sessionManager.getParticipants(sessionId).forEach(p -> {
-			if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-				RpcConnection rpc = notificationService.getRpcConnection(p.getParticipantPrivateId());
-				if (rpc != null) {
-					if (!Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"), UserOnlineStatusEnum.offline.name())) {
-						notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.USER_BREAK_LINE_METHOD, params);
-					}
-				}
-			}
-		});
-	}
-
-	public void cleanSession(String sessionId, EndReason reason) {
-		if (Objects.isNull(sessionManager.getSession(sessionId)) || sessionManager.getSession(sessionId).isClosed()) {
-			return;
-		}
-		// 1. notify all participant stop publish and receive stream.
-		// 2. close session but can not disconnect the connection.
-		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
-			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());});
-		this.sessionManager.unpublishAllStream(sessionId, reason);
-		this.sessionManager.closeSession(sessionId, reason);
-	}
 
 	public RpcNotificationService getNotificationService() {
 		return notificationService;
