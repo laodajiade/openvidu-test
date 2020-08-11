@@ -6,7 +6,9 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
@@ -15,9 +17,7 @@ import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.utils.HttpUtil;
@@ -28,7 +28,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author geedow
@@ -300,8 +303,12 @@ public abstract class RpcAbstractHandler {
        return OpenViduRole.MODERATOR_ROLES.contains(role);
     }
 
-    protected boolean updateReconnectInfo(RpcConnection rpcConnection) {
-        RpcConnection oldRpcConnection = null;
+    protected void updateReconnectInfo(RpcConnection rpcConnection) {
+        Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
+        if (!partInfo.isEmpty()) {
+            sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), rpcConnection.getUserUuid());
+        }
+        /*RpcConnection oldRpcConnection = null;
         String oldPrivateId = null;
         try {
             Session session;
@@ -365,7 +372,7 @@ public abstract class RpcAbstractHandler {
             return false;
         }
 
-        return true;
+        return true;*/
     }
 
     protected Participant sanityCheckOfSession(RpcConnection rpcConnection, StreamType streamType) throws OpenViduException {
