@@ -29,7 +29,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.LEAVEROOM_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.LEAVEROOM_SOURCE_ID_PARAM);
-        String streamType = getStringParam(request, ProtocolElements.LEAVEROOM_STREAM_TYPE_PARAM);
+        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.LEAVEROOM_STREAM_TYPE_PARAM));
         if (StringUtils.isEmpty(sessionId) || (StringUtils.isEmpty(sourceId) && UserType.register.equals(rpcConnection.getUserType()))
                 || StringUtils.isEmpty(streamType)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -39,12 +39,13 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
         Participant participant;
         try {
-            participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(),
-                    StreamType.valueOf(streamType));
+            participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), streamType);
 
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
-                updateReconnectInfo(rpcConnection);
+                if (StreamType.MAJOR.equals(streamType)) {
+                    updateReconnectInfo(rpcConnection);
+                }
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                 // json RPC notify KMS layout changed.
                 Session conferenceSession = sessionManager.getSession(sessionId);
