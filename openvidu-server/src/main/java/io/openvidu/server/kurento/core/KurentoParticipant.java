@@ -98,6 +98,7 @@ public class KurentoParticipant extends Participant {
 		setUsername(participant.getUsername());
 		setSubtitleConfig(participant.getSubtitleConfig());
 		setSubtitleLanguage(participant.getSubtitleLanguage());
+		setApplicationContext(participant.getApplicationContext());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;

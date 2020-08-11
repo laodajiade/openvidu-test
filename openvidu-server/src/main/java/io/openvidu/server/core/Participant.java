@@ -83,6 +83,7 @@ public class Participant {
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
 
+	@Getter
 	@Setter
 	private ApplicationContext applicationContext;
 
@@ -193,9 +194,11 @@ public class Participant {
 	}
 
     public void changeHandStatus(ParticipantHandStatus handStatus) {
-        this.handStatus = handStatus;
-        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-				.uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
+        setHandStatus(handStatus);
+        if (StreamType.MAJOR.equals(streamType)) {
+			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+					.uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
+		}
     }
 
 	public void setHandStatus(ParticipantHandStatus handStatus) {
@@ -205,9 +208,11 @@ public class Participant {
 	public ParticipantMicStatus getMicStatus() { return micStatus; }
 
     public void changeMicStatus(ParticipantMicStatus micStatus) {
-        this.micStatus = micStatus;
-        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-                .uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
+        setMicStatus(micStatus);
+		if (StreamType.MAJOR.equals(streamType)) {
+			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+					.uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
+		}
     }
 
 	public void setMicStatus(ParticipantMicStatus micStatus) {
@@ -217,9 +222,11 @@ public class Participant {
 	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }
 
 	public void changeVideoStatus(ParticipantVideoStatus status) {
-		this.videoStatus = status;
-		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-				.uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
+		setVideoStatus(status);
+		if (StreamType.MAJOR.equals(streamType)) {
+			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+					.uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
+		}
 	}
 
     public void setVideoStatus(ParticipantVideoStatus status) {
@@ -245,9 +252,11 @@ public class Participant {
 	public void setAppShowInfo(String appShowName, String appShowDesc) { setAppShowName(appShowName); setAppShowDesc(appShowDesc);}
 
     public void changeSpeakerStatus(ParticipantSpeakerStatus status) {
-        this.speakerStatus = status;
-        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-                .uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
+        setSpeakerStatus(status);
+		if (StreamType.MAJOR.equals(streamType)) {
+			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+					.uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
+		}
     }
 
 	public void setSpeakerStatus(ParticipantSpeakerStatus status) {
@@ -257,9 +266,11 @@ public class Participant {
 	public ParticipantSpeakerStatus getSpeakerStatus() { return this.speakerStatus; }
 
     public void changeShareStatus(ParticipantShareStatus status) {
-        this.shareStatus = status;
-        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-                .uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
+        setShareStatus(status);
+		if (StreamType.MAJOR.equals(streamType)) {
+			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+					.uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
+		}
     }
 
 	public void setShareStatus(ParticipantShareStatus status) {
