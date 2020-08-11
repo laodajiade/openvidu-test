@@ -44,12 +44,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
-                /*Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-                participant = sessionManager.getParticipant(sessionId, String.valueOf(userInfo.get("reconnect")));
-                if (Objects.isNull(participant)) {
-                    notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-                    return;
-                }*/
                 updateReconnectInfo(rpcConnection);
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                 // json RPC notify KMS layout changed.
@@ -72,10 +66,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
             }
         } catch (OpenViduException e) {
-            if (updateReconnectInfo(rpcConnection)) {
-                log.info("close previous participant info.");
-                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-            }
+            log.info("close previous participant info exception:{}", e);
             return;
         }
 
