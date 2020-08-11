@@ -17,14 +17,12 @@
 
 package io.openvidu.server.core;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-
 import com.google.gson.JsonObject;
-
 import io.openvidu.java.client.SessionProperties;
 
-import javax.servlet.http.Part;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 public interface SessionInterface {
 
@@ -48,6 +46,8 @@ public interface SessionInterface {
 
 	Participant getParticipantByPublicId(String participantPublicId);
 
+	Map<String, Participant> getSameAccountParticipants(String userUuid);
+
 	int getActivePublishers();
 
 	JsonObject toJson();
@@ -70,4 +70,5 @@ public interface SessionInterface {
 
 	boolean sessionAllowedToStopLiving();
 
+	Map<String, String> getLayoutRelativePartId();
 }

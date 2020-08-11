@@ -320,8 +320,7 @@ public abstract class RpcAbstractHandler {
                 }
 
                 oldRpcConnection = notificationService.getRpcConnection(oldPrivateId);
-                cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.online,
-                        rpcConnection.getSerialNumber(), DeviceStatus.online);
+                cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.online);
                 cacheManage.updateReconnectInfo(rpcConnection.getUserUuid(), "");
                 if (StringUtils.isEmpty(rpcConnection.getSessionId()) || Objects.isNull(session =
                         this.sessionManager.getSession(rpcConnection.getSessionId()))) {

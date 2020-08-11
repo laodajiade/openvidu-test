@@ -1,7 +1,8 @@
 package io.openvidu.server.common.cache;
 
-import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.rpc.RpcConnection;
 
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public interface CacheManage {
 
     void delLivingInfo(String sessionId);
 
-    void updateTerminalStatus(String userUuid, UserOnlineStatusEnum offline, String serialNumber, DeviceStatus offline1);
+    void updateTerminalStatus(RpcConnection rpcConnection, TerminalStatus status);
 
     void delUserToken(String uuid);
 

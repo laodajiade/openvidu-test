@@ -237,6 +237,23 @@ public class Session implements SessionInterface {
 				&& isLiving.compareAndSet(true, false);
 	}
 
+	@Override
+	public Map<String, String> getLayoutRelativePartId() {
+		checkClosed();
+		Map<String, String> relativePartIdMap = new HashMap<>();
+		this.participants.values().stream()
+				.map(v -> v.get(StreamType.MAJOR.name()))
+				.forEach(participant -> {
+					if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+						relativePartIdMap.put("moderatorId", participant.getParticipantPublicId());
+					}
+					if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
+						relativePartIdMap.put("speakerId", participant.getParticipantPublicId());
+					}
+				});
+		return relativePartIdMap;
+	}
+
 	public RecordingManager getRecordingManager() {
 		return recordingManager;
 	}
@@ -465,6 +482,16 @@ public class Session implements SessionInterface {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Map<String, Participant> getSameAccountParticipants(String userUuid) {
+		checkClosed();
+		return this.participants.values().stream()
+				.flatMap(v -> v.values().stream())
+				.filter(participant -> userUuid.equals(participant.getUuid())
+						&& !OpenViduRole.THOR.equals(participant.getRole()))
+				.collect(Collectors.toMap(v -> v.getStreamType().name(), Function.identity()));
 	}
 
 	public Participant getParticipantByUserId(String userId) {

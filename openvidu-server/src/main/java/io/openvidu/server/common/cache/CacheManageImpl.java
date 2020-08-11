@@ -1,8 +1,10 @@
 package io.openvidu.server.common.cache;
 
 import io.openvidu.server.common.constants.CacheKeyConstants;
-import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
+import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -94,15 +96,19 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
-    public void updateTerminalStatus(String userUuid, UserOnlineStatusEnum userOnlineStatus, String serialNumber, DeviceStatus deviceStatus) {
-        if (!StringUtils.isEmpty(userUuid)) {
-            log.info("Update user online status in cache. uuid:{}, updateStatus:{}", userUuid, userOnlineStatus.name());
-            tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "status", userOnlineStatus.name());
+    public void updateTerminalStatus(RpcConnection rpcConnection, TerminalStatus terminalStatus) {
+        if (Objects.equals(AccessTypeEnum.web, rpcConnection.getAccessType())) {
+            return;
         }
 
-        if (!StringUtils.isEmpty(serialNumber)) {
-            log.info("Update device online status in cache. serialNumber:{}, updateStatus:{}", serialNumber, deviceStatus.name());
-            tokenStringTemplate.opsForValue().set(CacheKeyConstants.DEV_PREFIX_KEY + serialNumber, deviceStatus.name());
+        if (!StringUtils.isEmpty(rpcConnection.getUserUuid())) {
+            tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + rpcConnection.getUserUuid(), "status", terminalStatus.name());
+            log.info("Update user online status in cache. uuid:{}, updateStatus:{}", rpcConnection.getUserUuid(), terminalStatus.name());
+        }
+
+        if (!StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
+            tokenStringTemplate.opsForValue().set(CacheKeyConstants.DEV_PREFIX_KEY + rpcConnection.getSerialNumber(), terminalStatus.name());
+            log.info("Update device online status in cache. serialNumber:{}, updateStatus:{}", rpcConnection.getSerialNumber(), terminalStatus.name());
         }
     }
 

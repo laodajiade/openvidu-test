@@ -22,14 +22,13 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.core.TempCompensateForReconnect;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-import io.openvidu.server.kurento.core.KurentoSession;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -37,15 +36,11 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
@@ -69,11 +64,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     @Resource
     TempCompensateForReconnect compensateForReconnect;
 
-	private ConcurrentMap<String, Boolean> webSocketEOFTransportError = new ConcurrentHashMap<>();
-
 
 	@Override
-	public void handleRequest(Transaction transaction, Request<JsonObject> request) throws Exception {
+	public void handleRequest(Transaction transaction, Request<JsonObject> request) {
 
 		String participantPrivateId;
 		try {
@@ -90,8 +83,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		} else if (notificationService.getRpcConnection(participantPrivateId) == null) {
 			// Throw exception if any method is called before 'joinRoom'
 			log.warn(
-					"No connection found for participant with privateId {} when trying to execute method '{}'. Method 'Session.connect()' must be the first operation called in any session",
-					participantPrivateId, request.getMethod());
+					"No connection found for participant with privateId {} when trying to execute method '{}'. " +
+							"Method 'Session.connect()' must be the first operation called in any session", participantPrivateId, request.getMethod());
 			throw new OpenViduException(Code.TRANSPORT_ERROR_CODE,
 					"No connection found for participant with privateId " + participantPrivateId
 							+ ". Method 'Session.connect()' must be the first operation called in any session");
@@ -111,8 +104,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sessionId = rpcConnection.getSessionId();
 		if (sessionId == null && !ProtocolElements.FILTERS.contains(request.getMethod())) {
 			log.warn(
-					"No session information found for participant with privateId {} when trying to execute method '{}'. Method 'Session.connect()' must be the first operation called in any session",
-					participantPrivateId, request.getMethod());
+					"No session information found for participant with privateId {} when trying to execute method '{}'. " +
+							"Method 'Session.connect()' must be the first operation called in any session", participantPrivateId, request.getMethod());
 			throw new OpenViduException(Code.TRANSPORT_ERROR_CODE,
 					"No session information found for participant with privateId " + participantPrivateId
 							+ ". Method 'Session.connect()' must be the first operation called in any session");
@@ -135,8 +128,43 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	}
 
 	@Override
-	public void afterConnectionClosed(Session rpcSession, String status) throws Exception {
+	public void afterConnectionClosed(Session rpcSession, String status) {
+		RpcConnection rpc;
+		if (Objects.isNull(rpcSession) ||
+				Objects.isNull(rpc = this.notificationService.getRpcConnection(rpcSession.getSessionId()))) {
+			log.info("The connection already cleaned up when event 'afterConnectionClosed' callback.");
+			return;
+		}
+
+		boolean everEvictUser = false;
 		log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
+		if (!Objects.isNull(status)) {
+			String message;
+			switch (status) {
+				case "Close for not receive ping from client":
+					everEvictUser = true;
+					message = "Evicting participant with private id {} because of a network disconnection";
+					break;
+				case "Connection reset by peer":
+					message = "Evicting participant with private id {} because of connection reset by peer";
+					break;
+				default:
+					message = "Evicting participant with private id {} because its websocket unexpectedly closed in the client side";
+					break;
+			}
+			log.error(message, rpc.getParticipantPrivateId());
+		} else {
+			log.info("afterConnectionClosed and the status is null, private id : {}", rpcSession.getSessionId());
+			everEvictUser = true;
+		}
+
+		if (everEvictUser) {
+			// clear the rpc connection and change the terminal status
+			RpcConnection rpcConnection = sessionManager.accessOut(this.notificationService.getRpcConnection(rpcSession.getSessionId()));
+			sessionManager.evictParticipantWhenDisconnect(rpcConnection.getUserUuid());
+		}
+
+		/*log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
 		String rpcSessionId = rpcSession.getSessionId();
 		String message = "";
 		Participant p = null;
@@ -152,8 +180,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					rpcConnection.getUserUuid()) && Objects.equals(AccessTypeEnum.terminal, s.getAccessType()))
 					.max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 			if (Objects.equals(previousRpc, rpcConnection)) {
-				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
-						rpcConnection.getSerialNumber(), DeviceStatus.offline);
+				cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline);
 			}
 		} else {
 			log.info("=====>can not find this rpc connection:{} in notificationService maps.", rpcSessionId);
@@ -231,49 +258,32 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					}
 				}
 			}
-		}
-
-		if (this.webSocketEOFTransportError.remove(rpcSessionId) != null) {
-			log.warn(
-					"Evicting participant with private id {} because a transport error took place and its web socket connection is now closed",
-					rpcSession.getSessionId());
-		}
+		}*/
 	}
 
 	@Override
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
-		// update user online status in cache
 		if (rpcSession != null) {
-			RpcConnection rpcConnection;
-			if (Objects.nonNull(rpcConnection = notificationService.getRpcConnection(rpcSession.getSessionId())) &&
-					Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType()) && Objects.equals(rpcConnection,
-					notificationService.getRpcConnections().stream().filter(s -> Objects.equals(s.getUserUuid(), rpcConnection.getUserUuid())
-							&& Objects.equals(AccessTypeEnum.terminal, s.getAccessType()))
-							.max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null))) {
-				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
-						rpcConnection.getSerialNumber(), DeviceStatus.offline);
-			}
 			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
 					exception.getMessage());
-			if ("IOException".equals(exception.getClass().getSimpleName())) {
-				log.warn("Parcipant with private id {} unexpectedly closed the websocket", rpcSession.getSessionId());
-			}
-			if ("EOFException".equals(exception.getClass().getSimpleName())) {
-				// Store WebSocket connection interrupted exception for this web socket to
-				// automatically evict the participant on "afterConnectionClosed" event
-				this.webSocketEOFTransportError.put(rpcSession.getSessionId(), true);
-			}
+		} else {
+			log.warn("Transport exception for WebSocket session occurred.");
 		}
 	}
 
 	@Override
 	public void handleUncaughtException(Session rpcSession, Exception exception) {
-		log.error("Uncaught exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(), exception);
+		if (rpcSession != null) {
+			log.error("Uncaught exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
+					exception.getMessage());
+		} else {
+			log.warn("Uncaught exception for WebSocket session occurred.");
+		}
 	}
 
 	@Override
 	public List<String> allowedOrigins() {
-		return Arrays.asList("*");
+		return Collections.singletonList("*");
 	}
 
 

@@ -46,7 +46,7 @@ public class TokenRedis extends RedisCommonConfig {
 
 
     @Bean(name={"tokenRedisTemplate"})
-    public RedisTemplate<Object, Object> tokenRedisTemplate
+    public RedisTemplate<String, Object> tokenRedisTemplate
             (@Qualifier("tokenRedisConnectionFactory") RedisConnectionFactory tokenRedisConnectionFactory) {
         return getRedisTemplate(tokenRedisConnectionFactory);
     }

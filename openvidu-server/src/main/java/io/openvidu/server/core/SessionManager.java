@@ -107,7 +107,7 @@ public abstract class SessionManager {
 
 	public abstract void changeSharingStatusInConference(KurentoSession session, Participant participant);
 
-	public abstract void accessOut(RpcConnection rpcConnection);
+	public abstract RpcConnection accessOut(RpcConnection rpcConnection);
 
 	public abstract void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId);
 
@@ -152,6 +152,10 @@ public abstract class SessionManager {
 
 	public abstract String getParticipantPrivateIdFromStreamId(String sessionId, String streamId)
 			throws OpenViduException;
+
+	public abstract void evictParticipantWhenDisconnect(String userUuid);
+
+	public abstract void evictParticipantByPrivateId(String sessionId, String privateId);
 
 	/**
 	 * Returns a Session given its id
@@ -529,8 +533,7 @@ public abstract class SessionManager {
 	public void close() {
 		log.info("Closing all sessions and update user/device online status");
 		notificationService.getRpcConnections().forEach(rpcConnection ->
-				cacheManage.updateTerminalStatus(rpcConnection.getUserUuid(), UserOnlineStatusEnum.offline,
-						rpcConnection.getSerialNumber(), DeviceStatus.offline));
+				cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline));
 		for (String sessionId : sessions.keySet()) {
 			try {
 				closeSession(sessionId, EndReason.openviduServerStopped);
@@ -877,6 +880,5 @@ public abstract class SessionManager {
 		Living living = livingManager.getLiving(session.getSessionId());
 		return Objects.isNull(living) ? null : living.getUrl();
 	}
-
 
 }

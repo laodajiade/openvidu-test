@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
+import io.openvidu.server.common.events.StatusEvent;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.Getter;
 import lombok.Setter;
@@ -193,8 +194,8 @@ public class Participant {
 
     public void changeHandStatus(ParticipantHandStatus handStatus) {
         this.handStatus = handStatus;
-        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-                .uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build());
+        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
     }
 
 	public void setHandStatus(ParticipantHandStatus handStatus) {
@@ -205,8 +206,8 @@ public class Participant {
 
     public void changeMicStatus(ParticipantMicStatus micStatus) {
         this.micStatus = micStatus;
-        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-                .uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build());
+        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+                .uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
     }
 
 	public void setMicStatus(ParticipantMicStatus micStatus) {
@@ -217,8 +218,8 @@ public class Participant {
 
 	public void changeVideoStatus(ParticipantVideoStatus status) {
 		this.videoStatus = status;
-		applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-				.uuid(uuid).field("videoStatus").updateStatus(status.name()).build());
+		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
 	}
 
     public void setVideoStatus(ParticipantVideoStatus status) {
@@ -245,8 +246,8 @@ public class Participant {
 
     public void changeSpeakerStatus(ParticipantSpeakerStatus status) {
         this.speakerStatus = status;
-        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-                .uuid(uuid).field("speakerStatus").updateStatus(status.name()).build());
+        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+                .uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
     }
 
 	public void setSpeakerStatus(ParticipantSpeakerStatus status) {
@@ -257,8 +258,8 @@ public class Participant {
 
     public void changeShareStatus(ParticipantShareStatus status) {
         this.shareStatus = status;
-        applicationContext.publishEvent(ParticipantStatusChangeEvent.builder()
-                .uuid(uuid).field("shareStatus").updateStatus(status.name()).build());
+        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+                .uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
     }
 
 	public void setShareStatus(ParticipantShareStatus status) {

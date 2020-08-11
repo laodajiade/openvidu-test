@@ -306,13 +306,12 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
-	public void accessOut(RpcConnection rpcConnection) {
-		if (Objects.nonNull(rpcConnection)) {
-			if (Objects.equals(AccessTypeEnum.terminal, rpcConnection.getAccessType())) {
-				cacheManage.updateDeviceName(rpcConnection.getUserUuid(), "");
-			}
+	public RpcConnection accessOut(RpcConnection rpcConnection) {
+		if (!Objects.isNull(rpcConnection)) {
 			sessionEventsHandler.closeRpcSession(rpcConnection.getParticipantPrivateId());
+			cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline);
 		}
+		return rpcConnection;
 	}
 
 	/**
@@ -705,6 +704,110 @@ public class KurentoSessionManager extends SessionManager {
 		}
 
 		return sessionClosedByLastParticipant;
+	}
+
+	@Override
+	public void evictParticipantWhenDisconnect(String userUuid) {
+		Session session;
+		Map partInfo = cacheManage.getPartInfo(userUuid);
+		if (partInfo != null && !partInfo.isEmpty() && Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
+			Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(userUuid);
+			if (samePrivateIdParts == null || samePrivateIdParts.isEmpty()) {
+				return;
+			}
+
+			// construct break line notify params
+			List<JsonObject> breakLineNotifyParams = new ArrayList<>();
+			samePrivateIdParts.values().forEach(participant -> {
+				JsonObject singleNotifyParam = new JsonObject();
+				singleNotifyParam.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, participant.getParticipantPublicId());
+				breakLineNotifyParams.add(singleNotifyParam);
+			});
+
+			// send user break line
+			session.getMajorPartEachConnect().forEach(participant ->
+					breakLineNotifyParams.forEach(jsonObject ->
+							rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+									ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
+
+			// evict same privateId parts
+			evictParticipantWithSamePrivateId(samePrivateIdParts);
+		}
+	}
+
+    @Override
+    public void evictParticipantByPrivateId(String sessionId, String privateId) {
+        Session session;
+        if (Objects.nonNull(session = getSession(sessionId))) {
+            Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(privateId);
+            if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
+                // evict same privateId parts
+                evictParticipantWithSamePrivateId(samePrivateIdParts);
+            }
+        }
+    }
+
+    private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts) {
+		// check if include moderator
+		Session session;
+		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
+		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachConnect();
+		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())) {	// close the room
+			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
+		} else {
+			// check if MAJOR is speaker
+			if (ParticipantHandStatus.speaker.equals(majorPart.getHandStatus())) {
+				JsonObject params = new JsonObject();
+				params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, majorPart.getSessionId());
+				params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, majorPart.getUuid());
+
+				// send end roll call
+				participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.END_ROLL_CALL_METHOD, params));
+			}
+			// check if exists SHARING
+			Participant sharePart;
+			if (Objects.nonNull(sharePart = samePrivateIdParts.get(StreamType.SHARING.name()))) {
+				JsonObject params = new JsonObject();
+				params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+						sharePart.getParticipantPublicId());
+
+				// send stop SHARING
+				participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
+				// change session share status
+				if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+					KurentoSession kurentoSession = (KurentoSession) session;
+					kurentoSession.compositeService.setExistSharing(false);
+					kurentoSession.compositeService.setShareStreamId(null);
+				}
+
+			}
+
+			// change the layout if mode is MCU
+            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
+                samePrivateIdParts.values().forEach(participant ->
+                        session.leaveRoomSetLayout(participant, !Objects.equals(layoutRelativePartIdMap.get("speakerId"), participant.getParticipantPublicId()) ?
+                        layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId")));
+
+                // notify kms change the layout of MCU
+                session.invokeKmsConferenceLayout();
+
+                // notify client the change of layout
+                JsonObject params = session.getLayoutNotifyInfo();
+                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+            }
+
+			// evict participants
+            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
+                    null, EndReason.sessionClosedByServer));
+
+		}
+
+		// clear the rpc connection
+		rpcNotificationService.closeRpcSession(majorPart.getParticipantPrivateId());
 	}
 
 	@Override
