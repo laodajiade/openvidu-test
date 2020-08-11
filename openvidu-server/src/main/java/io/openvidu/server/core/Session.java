@@ -406,6 +406,14 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
+	public Set<Participant> getMajorPartEachInclueThorConnect() {
+		checkClosed();
+		return this.participants.values().stream()
+				.map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+	}
+
 	public Set<Participant> getMajorAndMinorPartEachConnect() {
 		checkClosed();
 		return this.participants.values().stream()

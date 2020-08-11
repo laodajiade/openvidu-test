@@ -725,7 +725,7 @@ public class KurentoSessionManager extends SessionManager {
 			});
 
 			// send user break line
-			session.getMajorPartEachConnect().forEach(participant ->
+			session.getMajorPartEachInclueThorConnect().forEach(participant ->
 					breakLineNotifyParams.forEach(jsonObject ->
 							rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
 									ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
@@ -763,7 +763,7 @@ public class KurentoSessionManager extends SessionManager {
 		// check if include moderator
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
-		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachConnect();
+		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachInclueThorConnect();
 		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())) {	// close the room
 			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
 		} else {
