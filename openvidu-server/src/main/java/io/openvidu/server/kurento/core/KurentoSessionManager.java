@@ -263,10 +263,6 @@ public class KurentoSessionManager extends SessionManager {
 					log.info("Last participant left. Stop living of session {}", sessionId);
 					livingManager.stopLiving(session, null, EndReason.automaticStop);
 				}
-
-				// clean the room info in cache when last participant left.
-				cacheManage.delRoomInfo(sessionId);
-
 			} /*else if (remainingParticipants.size() == 1 && openviduConfig.isRecordingModuleEnabled()
 					&& MediaMode.ROUTED.equals(session.getSessionProperties().mediaMode())
 					&& this.recordingManager.sessionIsBeingRecorded(sessionId)

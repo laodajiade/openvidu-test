@@ -612,6 +612,9 @@ public abstract class SessionManager {
 	}
 
 	protected void cleanCollections(String sessionId) {
+		// clean the room info in cache
+		cacheManage.delRoomInfo(sessionId);
+
 		cleanCacheCollections(sessionId);
 		sessions.remove(sessionId);
 		sessionsNotActive.remove(sessionId);
