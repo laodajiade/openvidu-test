@@ -747,6 +747,18 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
+    @Override
+    public void evictParticipantByUUID(String sessionId, String uuid) {
+        Session session;
+        if (Objects.nonNull(session = getSession(sessionId))) {
+            Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(uuid);
+            if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
+                // evict same privateId parts
+                evictParticipantWithSamePrivateId(samePrivateIdParts);
+            }
+        }
+    }
+
     private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts) {
 		// check if include moderator
 		Session session;

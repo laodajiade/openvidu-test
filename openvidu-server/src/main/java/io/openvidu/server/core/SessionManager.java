@@ -157,6 +157,8 @@ public abstract class SessionManager {
 
 	public abstract void evictParticipantByPrivateId(String sessionId, String privateId);
 
+    public abstract void evictParticipantByUUID(String sessionId, String uuid);
+
 	/**
 	 * Returns a Session given its id
 	 *
