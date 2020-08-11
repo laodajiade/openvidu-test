@@ -137,6 +137,13 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsBoolean();
     }
 
+    public static boolean getBooleanOptionalParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null) {
+            return false;
+        }
+        return request.getParams().get(key).getAsBoolean();
+    }
+
     protected static long getLongParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()

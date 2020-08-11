@@ -81,7 +81,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // remove previous participant if reconnect
-                updateReconnectInfo(rpcConnection);
+                if (isReconnected && StreamType.MAJOR.equals(streamType)) {
+                    updateReconnectInfo(rpcConnection);
+                }
                 GeoLocation location = null;
                 boolean recorder = false;
 
