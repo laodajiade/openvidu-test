@@ -134,17 +134,18 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			existingParticipants = getParticipants(sessionId);
+			participant.setApplicationContext(applicationContext);
 			// 第一个入会者是主持人，所有权限都打开
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
 				if (existingParticipants.isEmpty()) {
-					participant.changeMicStatus(ParticipantMicStatus.on);
-					participant.changeVideoStatus(ParticipantVideoStatus.on);
+					participant.setMicStatus(ParticipantMicStatus.on);
+					participant.setVideoStatus(ParticipantVideoStatus.on);
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
 				} else {
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
-					participant.changeMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
-					participant.changeVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
+					participant.setMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
+					participant.setVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
 				}
 				participant.setRoomSubject(preset.getRoomSubject());
 			}
@@ -156,7 +157,6 @@ public class KurentoSessionManager extends SessionManager {
 			}
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
-			participant.setApplicationContext(applicationContext);
 
 			kSession.join(participant);
 

@@ -1,10 +1,8 @@
 package io.openvidu.server.common.events.listener;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
+import io.openvidu.server.common.events.StatusEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -25,15 +23,12 @@ public class EventListenerImpl {
     @Resource
     private CacheManage cacheManage;
 
-    private static final Gson gson = new GsonBuilder().create();
-
     @EventListener
     @Async
     public void updateParticipantStatus(ParticipantStatusChangeEvent event) {
-        log.info("update participant status:", event.getSource());
-        JsonObject jsonObject = gson.fromJson(event.getSource().toString(), JsonObject.class);
-        cacheManage.updatePartInfo(jsonObject.get("uuid").getAsString(),
-                jsonObject.get("field").getAsString(), jsonObject.get("status").getAsString());
+        StatusEvent statusEvent = (StatusEvent) event.getSource();
+        log.info("update participant status:", statusEvent.toString());
+        cacheManage.updatePartInfo(statusEvent.getUuid(), statusEvent.getField(), statusEvent.getUpdateStatus());
     }
 
 }
