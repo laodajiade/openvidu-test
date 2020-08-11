@@ -46,7 +46,12 @@ public enum OpenViduRole {
 	 * <code>Session.forceUnpublish()</code> and
 	 * <code>Session.forceDisconnect()</code>)
 	 */
-	MODERATOR,
+	MODERATOR {
+		@Override
+		public boolean isController() {
+			return true;
+		}
+	},
 
 	/**
 	 * For Web Conference Controller
@@ -59,6 +64,11 @@ public enum OpenViduRole {
 		@Override
 		public boolean needToPublish() {
 			return false;
+		}
+
+		@Override
+		public boolean isController() {
+			return true;
 		}
 	};
 
@@ -88,6 +98,10 @@ public enum OpenViduRole {
 
 	public boolean needToPublish() {
 		return true;
+	}
+
+	public boolean isController() {
+		return false;
 	}
 
 }
