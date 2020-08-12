@@ -766,15 +766,8 @@ public abstract class SessionManager {
 
         Session session = getSession(sessionId);
         if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
-            session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
-            // json RPC notify KMS layout changed.
-            session.invokeKmsConferenceLayout();
-
-            for (Participant participant1 : participants) {
-                if (!Objects.equals(participant, participant1) && Objects.equals(StreamType.MAJOR, participant1.getStreamType()))
-                    notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
-            }
+            setLayoutAndNotifyWhenLeaveRoom(sessionId, participant,
+                    !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
         }
 	}
 

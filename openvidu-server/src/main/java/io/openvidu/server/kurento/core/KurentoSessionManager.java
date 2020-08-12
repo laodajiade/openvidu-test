@@ -758,7 +758,7 @@ public class KurentoSessionManager extends SessionManager {
     @Override
     public void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId) {
         Session session;
-        if (Objects.nonNull(session = getSession(sessionId))) {
+        if (Objects.nonNull(session = getSession(sessionId)) && ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
             if (session.leaveRoomSetLayout(participant, moderatePublicId)) {
                 // notify kms mcu layout changed
                 session.invokeKmsConferenceLayout();
