@@ -755,6 +755,22 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
+    @Override
+    public void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId) {
+        Session session;
+        if (Objects.nonNull(session = getSession(sessionId))) {
+            if (session.leaveRoomSetLayout(participant, moderatePublicId)) {
+                // notify kms mcu layout changed
+                session.invokeKmsConferenceLayout();
+
+                // notify clients mcu layout changed
+                JsonObject notifyParam = session.getLayoutNotifyInfo();
+                session.getMajorPartEachConnect().forEach(part ->
+                        rpcNotificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
+            }
+        }
+    }
+
     private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts) {
 		// check if include moderator
 		Session session;

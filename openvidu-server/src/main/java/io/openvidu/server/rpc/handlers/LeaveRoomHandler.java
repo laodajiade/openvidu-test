@@ -100,24 +100,14 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         Session session = sessionManager.getSession(sessionId);
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)
                 && participant.getStreamType().isStreamTypeMixInclude()) {
-            session.leaveRoomSetLayout(participant, !Objects.equals(speakerId, participant.getParticipantPublicId()) ?
-                    speakerId : moderatePublicId);
-            // json RPC notify KMS layout changed.
-            session.invokeKmsConferenceLayout();
+            sessionManager.setLayoutAndNotifyWhenLeaveRoom(sessionId, participant,
+                    !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
         }
 
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
             participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
         }
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
-
-        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            for (Participant participant1 : participants) {
-                if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
-                notificationService.sendNotification(participant1.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, session.getLayoutNotifyInfo());
-            }
-        }
 
         if (!Objects.isNull(rpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());

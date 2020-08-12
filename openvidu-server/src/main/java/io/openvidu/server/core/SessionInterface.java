@@ -71,4 +71,5 @@ public interface SessionInterface {
 	boolean sessionAllowedToStopLiving();
 
 	Map<String, String> getLayoutRelativePartId();
+
 }

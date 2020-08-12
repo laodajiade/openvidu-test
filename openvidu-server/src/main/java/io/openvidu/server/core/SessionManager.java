@@ -159,6 +159,8 @@ public abstract class SessionManager {
 
     public abstract void evictParticipantByUUID(String sessionId, String uuid);
 
+    public abstract void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId);
+
 	/**
 	 * Returns a Session given its id
 	 *
