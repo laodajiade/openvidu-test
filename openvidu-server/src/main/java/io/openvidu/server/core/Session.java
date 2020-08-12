@@ -880,13 +880,20 @@ public class Session implements SessionInterface {
 		majorShareMixLinkedArr = result;
 	}
 
-	public synchronized void leaveRoomSetLayout(Participant participant, String moderatePublicId) {
+	public synchronized boolean leaveRoomSetLayout(Participant participant, String moderatePublicId) {
+		boolean changed = false;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
 			if (Objects.equals(jsonObject.get("connectionId").getAsString(), participant.getParticipantPublicId())) {
-				majorShareMixLinkedArr.remove(element);
+				changed = majorShareMixLinkedArr.remove(element);
 				break;
 			}
+		}
+
+		if (!changed) {
+			log.info("leaveRoomSetLayout not changed, cause publicId:{} not in majorShareMixLinkedArr:{}",
+					participant.getParticipantPublicId(), majorShareMixLinkedArr.toString());
+			return false;
 		}
 
 		// switch layout mode automatically
@@ -901,6 +908,7 @@ public class Session implements SessionInterface {
 		}
 
 		log.info("leaveRoomSetLayout majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+		return true;
 	}
 
     public synchronized void switchLayoutMode(LayoutModeEnum layoutModeEnum) {
