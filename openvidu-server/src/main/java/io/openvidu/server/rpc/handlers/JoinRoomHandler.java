@@ -81,7 +81,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // check ever joinRoom duplicately
-                if (sessionManager.joinRoomDuplicately(sessionId, rpcConnection.getUserUuid())) {
+                if (sessionManager.joinRoomDuplicately(sessionId, rpcConnection.getUserUuid(), streamType)) {
                     errCode = ErrorCodeEnum.JOIN_ROOM_DUPLICATELY;
                     break;
                 }

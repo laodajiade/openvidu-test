@@ -881,8 +881,9 @@ public abstract class SessionManager {
 		return Objects.isNull(living) ? null : living.getUrl();
 	}
 
-	public boolean joinRoomDuplicately(String sessionId, String userUuid) {
+	public boolean joinRoomDuplicately(String sessionId, String userUuid, StreamType streamType) {
 		Session session;
-		return Objects.nonNull(session = getSession(sessionId)) && Objects.nonNull(session.getParticipantByUUID(userUuid));
+		return StreamType.MAJOR.equals(streamType) && Objects.nonNull(session = getSession(sessionId))
+				&& Objects.nonNull(session.getParticipantByUUID(userUuid));
 	}
 }
