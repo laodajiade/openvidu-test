@@ -244,11 +244,15 @@ public class Session implements SessionInterface {
 		this.participants.values().stream()
 				.map(v -> v.get(StreamType.MAJOR.name()))
 				.forEach(participant -> {
-					if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-						relativePartIdMap.put("moderatorId", participant.getParticipantPublicId());
-					}
-					if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
-						relativePartIdMap.put("speakerId", participant.getParticipantPublicId());
+					if (Objects.nonNull(participant)) {
+						if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+							relativePartIdMap.put("moderatorId", participant.getParticipantPublicId());
+						}
+						if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
+							relativePartIdMap.put("speakerId", participant.getParticipantPublicId());
+						}
+					} else {
+						log.info("participants:{}", participants.toString());
 					}
 				});
 		return relativePartIdMap;

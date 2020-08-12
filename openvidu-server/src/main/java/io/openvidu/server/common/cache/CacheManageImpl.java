@@ -146,7 +146,7 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void delRoomInfo(String sessionId) {
-        log.info("del part info:{}", sessionId);
+        log.info("del room info:{}", sessionId);
         roomRedisTemplate.delete(CacheKeyConstants.getConferencesKey(sessionId));
     }
 
