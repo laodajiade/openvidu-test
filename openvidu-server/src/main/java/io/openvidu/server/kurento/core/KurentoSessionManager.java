@@ -727,30 +727,30 @@ public class KurentoSessionManager extends SessionManager {
 									ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
 
 			// evict same privateId parts
-			evictParticipantWithSamePrivateId(samePrivateIdParts);
+			evictParticipantWithSamePrivateId(samePrivateIdParts, true);
 		}
 	}
 
     @Override
-    public void evictParticipantByPrivateId(String sessionId, String privateId) {
+    public void evictParticipantByPrivateId(String sessionId, String privateId, boolean closeRoom) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(privateId);
             if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
                 // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts);
+                evictParticipantWithSamePrivateId(samePrivateIdParts, closeRoom);
             }
         }
     }
 
     @Override
-    public void evictParticipantByUUID(String sessionId, String uuid) {
+    public void evictParticipantByUUID(String sessionId, String uuid, boolean closeRoom) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(uuid);
             if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
                 // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts);
+                evictParticipantWithSamePrivateId(samePrivateIdParts, closeRoom);
             }
         }
     }
@@ -771,12 +771,12 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts) {
+    private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, boolean closeRoomIfModerator) {
 		// check if include moderator
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
 		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachInclueThorConnect();
-		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())) {	// close the room
+		if (closeRoomIfModerator && OpenViduRole.MODERATOR.equals(majorPart.getRole())) {	// close the room
 			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
 		} else {
 			// check if MAJOR is speaker

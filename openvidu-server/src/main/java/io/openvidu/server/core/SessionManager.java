@@ -155,9 +155,9 @@ public abstract class SessionManager {
 
 	public abstract void evictParticipantWhenDisconnect(String userUuid);
 
-	public abstract void evictParticipantByPrivateId(String sessionId, String privateId);
+	public abstract void evictParticipantByPrivateId(String sessionId, String privateId, boolean closeRoom);
 
-    public abstract void evictParticipantByUUID(String sessionId, String uuid);
+    public abstract void evictParticipantByUUID(String sessionId, String uuid, boolean closeRoom);
 
     public abstract void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId);
 

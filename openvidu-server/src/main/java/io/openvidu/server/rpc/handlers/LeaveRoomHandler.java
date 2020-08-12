@@ -44,27 +44,11 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                 if (StreamType.MAJOR.equals(streamType)) {
-                    updateReconnectInfo(rpcConnection);
+                    updateReconnectInfo(rpcConnection, true);
                 }
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-                // json RPC notify KMS layout changed.
-                Session conferenceSession = sessionManager.getSession(sessionId);
-                if (!Objects.isNull(conferenceSession)) {
-                    conferenceSession.invokeKmsConferenceLayout();
-                    // broadcast the changes of layout
-                    JsonObject notifyResult = new JsonObject();
-                    notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, conferenceSession.getLayoutMode().getMode());
-                    notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, conferenceSession.getCurrentPartInMcuLayout());
-                    notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, conferenceSession.isAutomatically());
 
-                    conferenceSession.getParticipants().forEach(part -> {
-                        if (!Objects.equals(StreamType.MAJOR, part.getStreamType())) return;
-                        // broadcast the changes of layout
-                        this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyResult);
-                    });
-                }
                 return;
-
             }
         } catch (OpenViduException e) {
             log.info("close previous participant info exception:{}", e);

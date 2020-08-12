@@ -310,10 +310,10 @@ public abstract class RpcAbstractHandler {
        return OpenViduRole.MODERATOR_ROLES.contains(role);
     }
 
-    protected void updateReconnectInfo(RpcConnection rpcConnection) {
+    protected void updateReconnectInfo(RpcConnection rpcConnection, boolean closeRoomIfModerator) {
         Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
         if (!partInfo.isEmpty()) {
-            sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), rpcConnection.getUserUuid());
+            sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), rpcConnection.getUserUuid(), closeRoomIfModerator);
         }
     }
 
