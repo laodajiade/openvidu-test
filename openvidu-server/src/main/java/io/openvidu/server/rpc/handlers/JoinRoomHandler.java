@@ -80,10 +80,17 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
+                // check ever joinRoom duplicately
+                if (sessionManager.joinRoomDuplicately(sessionId, rpcConnection.getUserUuid())) {
+                    errCode = ErrorCodeEnum.JOIN_ROOM_DUPLICATELY;
+                    break;
+                }
+
                 // remove previous participant if reconnect
                 if (isReconnected && StreamType.MAJOR.equals(streamType)) {
                     updateReconnectInfo(rpcConnection, false);
                 }
+
                 GeoLocation location = null;
                 boolean recorder = false;
 
