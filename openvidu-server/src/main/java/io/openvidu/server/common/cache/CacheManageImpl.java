@@ -162,6 +162,7 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void updatePartInfo(String uuid, String key, Object updateInfo) {
+        log.info("update part info:{} and key:{}, status:{}", uuid, key, updateInfo.toString());
         roomRedisTemplate.opsForHash().put(CacheKeyConstants.getParticipantKey(uuid), key, updateInfo);
     }
 }

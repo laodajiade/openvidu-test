@@ -202,7 +202,9 @@ public class KurentoSessionManager extends SessionManager {
 		session.leaveRoom(participant, reason);
 
 		//update partInfo
-		roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
+		if (StreamType.MAJOR.equals(participant.getStreamType())) {
+			roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
+		}
 
 		// Update control data structures
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
