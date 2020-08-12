@@ -706,7 +706,7 @@ public class KurentoSessionManager extends SessionManager {
 	public void evictParticipantWhenDisconnect(String userUuid) {
 		Session session;
 		Map partInfo = cacheManage.getPartInfo(userUuid);
-		if (partInfo != null && !partInfo.isEmpty() && Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
+		if (partInfo != null && !partInfo.isEmpty() && partInfo.containsKey("roomId") && Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
 			Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(userUuid);
 			if (samePrivateIdParts == null || samePrivateIdParts.isEmpty()) {
 				return;

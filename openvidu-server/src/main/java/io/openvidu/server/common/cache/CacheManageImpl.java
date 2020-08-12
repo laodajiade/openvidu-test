@@ -124,6 +124,7 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void saveRoomInfo(String roomId, Map<String, Object> roomInfo) {
+        log.info("save room info:{} and partInfo:{}", roomId, roomInfo.toString());
         String key = CacheKeyConstants.getConferencesKey(roomId);
         roomRedisTemplate.opsForHash().putAll(key, roomInfo);
         roomRedisTemplate.expire(key, CacheKeyConstants.DEFAULT_CONFERENCE_EXPIRE, TimeUnit.SECONDS);
@@ -131,6 +132,7 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void savePartInfo(String uuid, Map<String, Object> partInfo) {
+        log.info("save part info:{} and partInfo:{}", uuid, partInfo.toString());
         String key = CacheKeyConstants.getParticipantKey(uuid);
         roomRedisTemplate.opsForHash().putAll(key, partInfo);
         roomRedisTemplate.expire(key, CacheKeyConstants.DEFAULT_CONFERENCE_EXPIRE, TimeUnit.SECONDS);
@@ -138,11 +140,13 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void delPartInfo(String uuid) {
+        log.info("del part info:{}", uuid);
         roomRedisTemplate.delete(CacheKeyConstants.getParticipantKey(uuid));
     }
 
     @Override
     public void delRoomInfo(String sessionId) {
+        log.info("del part info:{}", sessionId);
         roomRedisTemplate.delete(CacheKeyConstants.getConferencesKey(sessionId));
     }
 
