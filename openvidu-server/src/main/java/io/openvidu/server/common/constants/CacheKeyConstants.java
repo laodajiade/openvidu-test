@@ -27,6 +27,8 @@ public class CacheKeyConstants {
     public static final String CONFERENCE_LIVING_INFO_KEY = "conference:living:info:";
     public static final String CONFERENCE_LIVING_INFO_LIVINGURL = "livingUrl";
 
+    public static final String SUBSCRIBER_SET_ROLL_CALL_KEY = "subscriber:setRollCall:%s:%s:%s";
+
     public static final long DEFAULT_CONFERENCE_EXPIRE = 86400;
 
     /**
@@ -45,5 +47,8 @@ public class CacheKeyConstants {
     public static String getMaxConcurrentStatisticKey(String project, Date date) {
         return String.format(STATISTICS_MAX_DAY_CONCURRENT_PREFIX_KEY,
                 DateUtil.getDateFormat(Objects.isNull(date) ? new Date() : date, DateUtil.FORMAT_YEAR_MONTH_DAY), project);
+    }
+    public static String getSubscriberSetRollCallKey(String sessionId, Long startTime, String uuid) {
+        return String.format(SUBSCRIBER_SET_ROLL_CALL_KEY, sessionId, startTime, uuid);
     }
 }

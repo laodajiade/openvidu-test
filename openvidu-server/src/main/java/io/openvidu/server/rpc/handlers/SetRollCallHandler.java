@@ -46,6 +46,8 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 
             if (Objects.equals(ErrorCodeEnum.SUCCESS, errorCodeEnum)) {
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+                cacheManage.recordSubscriberSetRollCall(conferenceSession.getSessionId(), conferenceSession.getStartTime(), targetPart.getUuid());
             } else {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, errorCodeEnum);

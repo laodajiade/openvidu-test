@@ -56,4 +56,8 @@ public interface CacheManage {
     boolean existsConferenceRelativeInfo(String key);
 
     Long getMaxConcurrentOfDayAndDel(String project, Date queryEndTime);
+
+    void recordSubscriberSetRollCall(String sessionId, Long startTime, String uuid);
+
+    void delConferenceRelativeKey(String key);
 }
