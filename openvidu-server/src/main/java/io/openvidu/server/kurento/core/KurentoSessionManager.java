@@ -773,7 +773,20 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, boolean closeRoomIfModerator) {
+	@Override
+	public void updateRoomAndPartInfoAfterKMSDisconnect(String sessionId) {
+		Session session;
+		if (Objects.nonNull(session = getSession(sessionId))) {
+			// del part info in cache
+			session.getMajorPartEachConnect().forEach(participant -> cacheManage.delPartInfo(participant.getUuid()));
+			// del room info in cache
+			cacheManage.delRoomInfo(sessionId);
+			// update conference status in DB
+			updateConferenceInfo(sessionId);
+		}
+	}
+
+	private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, boolean closeRoomIfModerator) {
 		// check if include moderator
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());

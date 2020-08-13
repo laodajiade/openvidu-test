@@ -20,6 +20,7 @@ package io.openvidu.server.kurento.kms;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.manage.KmsRegistrationManage;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.SessionManager;
 import org.kurento.client.KurentoConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,9 @@ public abstract class KmsManager {
 
 	@Autowired
 	protected KmsRegistrationManage kmsRegistrationManage;
+
+	@Autowired
+	private SessionManager sessionManager;
 
 	@Value("${openvidu.load.kms.interval}")
 	private long loadKmsInterval;
@@ -168,6 +172,9 @@ public abstract class KmsManager {
 				kms.setKurentoClientConnected(false);
 				kms.setTimeOfKurentoClientDisconnection(System.currentTimeMillis());
 				log.warn("Kurento Client disconnected from KMS {} with uri {}", kmsId, kms.getUri());
+
+				kms.getKurentoSessions().forEach(kSession ->
+						sessionManager.updateRoomAndPartInfoAfterKMSDisconnect(kSession.getSessionId()));
 			}
 
 			@Override

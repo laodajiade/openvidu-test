@@ -162,6 +162,8 @@ public abstract class SessionManager {
 
     public abstract void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId);
 
+	public abstract void updateRoomAndPartInfoAfterKMSDisconnect(String sessionId);
+
 	/**
 	 * Returns a Session given its id
 	 *
@@ -888,4 +890,5 @@ public abstract class SessionManager {
 				&& Objects.nonNull(session.getParticipantByUUID(userUuid));*/
 		return cacheManage.existsConferenceRelativeInfo(CacheKeyConstants.getParticipantKey(uuid));
 	}
+
 }
