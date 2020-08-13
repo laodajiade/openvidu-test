@@ -32,6 +32,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -154,7 +155,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (everEvictUser) {
 			// clear the rpc connection and change the terminal status
 			RpcConnection rpcConnection = sessionManager.accessOut(this.notificationService.getRpcConnection(rpcSession.getSessionId()));
-			sessionManager.evictParticipantWhenDisconnect(rpcConnection.getUserUuid());
+			if (!StringUtils.isEmpty(rpcConnection.getSessionId())) {
+                sessionManager.evictParticipantWhenDisconnect(rpcConnection.getUserUuid());
+            }
 		}
 	}
 
