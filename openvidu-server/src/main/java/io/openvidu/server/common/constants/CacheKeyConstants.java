@@ -22,6 +22,8 @@ public class CacheKeyConstants {
     public static final String CONFERENCE_LIVING_INFO_KEY = "conference:living:info:";
     public static final String CONFERENCE_LIVING_INFO_LIVINGURL = "livingUrl";
 
+    public static final String SUBSCRIBER_SET_ROLL_CALL_KEY = "subscriber:setRollCall:%s:%s:%s";
+
     public static final long DEFAULT_CONFERENCE_EXPIRE = 86400;
 
     public static String getConferencesKey(String sessionId) {
@@ -30,5 +32,9 @@ public class CacheKeyConstants {
 
     public static String getParticipantKey(String uuid) {
         return String.format(PARTICIPANT_PREFIX_KEY, uuid);
+    }
+
+    public static String getSubscriberSetRollCallKey(String sessionId, Long startTime, String uuid) {
+        return String.format(SUBSCRIBER_SET_ROLL_CALL_KEY, sessionId, startTime, uuid);
     }
 }

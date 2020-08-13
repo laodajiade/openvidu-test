@@ -53,4 +53,8 @@ public interface CacheManage {
     void updatePartInfo(String uuid, String key, Object updateInfo);
 
     boolean existsConferenceRelativeInfo(String key);
+
+    void recordSubscriberSetRollCall(String sessionId, Long startTime, String uuid);
+
+    void delConferenceRelativeKey(String key);
 }

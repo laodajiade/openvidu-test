@@ -170,4 +170,18 @@ public class CacheManageImpl implements CacheManage {
     public boolean existsConferenceRelativeInfo(String key) {
         return roomRedisTemplate.hasKey(key);
     }
+
+    @Override
+    public void recordSubscriberSetRollCall(String sessionId, Long startTime, String uuid) {
+        log.info("record down wall part:{} set roll call in session:{} and session start time:{}", uuid, sessionId, startTime);
+        String key;
+        roomRedisTemplate.opsForValue().increment(key = CacheKeyConstants.getSubscriberSetRollCallKey(sessionId, startTime, uuid));
+        roomRedisTemplate.expire(key, 30, TimeUnit.SECONDS);
+
+    }
+
+    @Override
+    public void delConferenceRelativeKey(String key) {
+        roomRedisTemplate.delete(key);
+    }
 }

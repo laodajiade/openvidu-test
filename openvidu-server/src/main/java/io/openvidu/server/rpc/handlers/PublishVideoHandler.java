@@ -4,9 +4,14 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantMicStatus;
+import io.openvidu.server.common.enums.ParticipantVideoStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -52,9 +57,15 @@ public class PublishVideoHandler extends RpcAbstractHandler {
         }
 
         // deal participant that role changed
-        if (Objects.equals(ParticipantHandStatus.speaker.name(), handStatus)
-                && StreamType.MAJOR.name().equals(streamType)) {
+        String key;
+        Session session;
+        if (Objects.nonNull(session = sessionManager.getSession(participant.getSessionId()))
+                && StreamType.MAJOR.name().equals(streamType)
+                && cacheManage.existsConferenceRelativeInfo(key = CacheKeyConstants.getSubscriberSetRollCallKey(session.getSessionId(),
+                    session.getStartTime(), participant.getUuid()))) {
             sessionManager.setRollCallInSession(sessionManager.getSession(rpcConnection.getSessionId()), participant);
+
+            cacheManage.delConferenceRelativeKey(key);
         }
     }
 }
