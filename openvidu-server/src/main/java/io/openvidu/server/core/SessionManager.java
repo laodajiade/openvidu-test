@@ -26,6 +26,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
@@ -881,9 +882,10 @@ public abstract class SessionManager {
 		return Objects.isNull(living) ? null : living.getUrl();
 	}
 
-	public boolean joinRoomDuplicately(String sessionId, String userUuid, StreamType streamType) {
-		Session session;
+	public boolean joinRoomDuplicately(String uuid) {
+		/*Session session;
 		return StreamType.MAJOR.equals(streamType) && Objects.nonNull(session = getSession(sessionId))
-				&& Objects.nonNull(session.getParticipantByUUID(userUuid));
+				&& Objects.nonNull(session.getParticipantByUUID(userUuid));*/
+		return cacheManage.existsConferenceRelativeInfo(CacheKeyConstants.getParticipantKey(uuid));
 	}
 }

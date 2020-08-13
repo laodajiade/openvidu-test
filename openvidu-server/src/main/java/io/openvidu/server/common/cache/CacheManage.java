@@ -51,4 +51,6 @@ public interface CacheManage {
     Map getRoomInfo(String roomId);
 
     void updatePartInfo(String uuid, String key, Object updateInfo);
+
+    boolean existsConferenceRelativeInfo(String key);
 }

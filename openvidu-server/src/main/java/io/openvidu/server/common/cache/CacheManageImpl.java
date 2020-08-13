@@ -165,4 +165,9 @@ public class CacheManageImpl implements CacheManage {
         log.info("update part info:{} and key:{}, status:{}", uuid, key, updateInfo.toString());
         roomRedisTemplate.opsForHash().put(CacheKeyConstants.getParticipantKey(uuid), key, updateInfo);
     }
+
+    @Override
+    public boolean existsConferenceRelativeInfo(String key) {
+        return roomRedisTemplate.hasKey(key);
+    }
 }
