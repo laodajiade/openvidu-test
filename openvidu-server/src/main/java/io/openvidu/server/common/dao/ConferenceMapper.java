@@ -1,5 +1,6 @@
 package io.openvidu.server.common.dao;
 
+import io.openvidu.server.common.pojo.ConfStatisticSearch;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 
@@ -23,4 +24,6 @@ public interface ConferenceMapper {
     List<Conference> selectUnclosedConference(Conference conference);
 
     Conference selectByRuid(String ruid);
+
+    List<Conference> queryConferenceByTimeRange(ConfStatisticSearch confStatisticSearch);
 }

@@ -54,7 +54,7 @@
     </where>
   </select>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_conference
     where id = #{id,jdbcType=BIGINT}
@@ -239,5 +239,15 @@
   <select id="selectByRuid" parameterType="java.lang.String" resultMap="BaseResultMap">
     select <include refid="Base_Column_List" />
     from sd_conference where ruid = #{ruid,jdbcType=VARCHAR}
+  </select>
+
+  <select id="queryConferenceByTimeRange" parameterType="io.openvidu.server.common.pojo.ConfStatisticSearch" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference
+    where project = #{project,jdbcType=VARCHAR}
+    and start_time &gt;= #{startTime,jdbcType=TIMESTAMP}
+    and start_time &lt;= #{endTime,jdbcType=TIMESTAMP}
+    and status = #{status,jdbcType=TINYINT}
   </select>
 </mapper>

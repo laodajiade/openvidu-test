@@ -20,4 +20,6 @@ public interface ConferencePartHistoryMapper {
     List<ConferencePartHistory> selectByCondition(ConferencePartHistory search);
 
     void updatePartHistroy(ConferencePartHistory update);
+
+    List<ConferencePartHistory> selectConfPartHistoryByRuids(List<String> ruids);
 }

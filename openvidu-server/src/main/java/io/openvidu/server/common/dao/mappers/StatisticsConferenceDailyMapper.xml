@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.StatisticsConferenceDailyMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.StatisticsConferenceDaily" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="conf_count" property="confCount" jdbcType="BIGINT" />
+    <result column="total_duration" property="totalDuration" jdbcType="BIGINT" />
+    <result column="total_participants" property="totalParticipants" jdbcType="BIGINT" />
+    <result column="max_concurrent" property="maxConcurrent" jdbcType="BIGINT" />
+    <result column="statistic_time" property="statisticTime" jdbcType="TIMESTAMP" />
+    <result column="access_key" property="accessKey" jdbcType="VARCHAR" />
+    <result column="project" property="project" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, conf_count, total_duration, total_participants, max_concurrent, statistic_time,
+    access_key, project, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_statistics_conference_daily
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectCorporations" resultType="io.openvidu.server.common.pojo.Corporation">
+    select corp_name as corpName, project
+    from sd_corporation
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from sd_statistics_conference_daily
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.StatisticsConferenceDaily" >
+    insert into sd_statistics_conference_daily (id, conf_count, total_duration,
+      total_participants, max_concurrent, statistic_time,
+      project)
+    values (#{id,jdbcType=BIGINT}, #{confCount,jdbcType=BIGINT}, #{totalDuration,jdbcType=BIGINT},
+      #{totalParticipants,jdbcType=BIGINT}, #{maxConcurrent,jdbcType=BIGINT}, #{statisticTime,jdbcType=TIMESTAMP},
+      #{project,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.StatisticsConferenceDaily" >
+    insert into sd_statistics_conference_daily
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="confCount != null" >
+        conf_count,
+      </if>
+      <if test="totalDuration != null" >
+        total_duration,
+      </if>
+      <if test="totalParticipants != null" >
+        total_participants,
+      </if>
+      <if test="maxConcurrent != null" >
+        max_concurrent,
+      </if>
+      <if test="statisticTime != null" >
+        statistic_time,
+      </if>
+      <if test="project != null" >
+        project,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="confCount != null" >
+        #{confCount,jdbcType=BIGINT},
+      </if>
+      <if test="totalDuration != null" >
+        #{totalDuration,jdbcType=BIGINT},
+      </if>
+      <if test="totalParticipants != null" >
+        #{totalParticipants,jdbcType=BIGINT},
+      </if>
+      <if test="maxConcurrent != null" >
+        #{maxConcurrent,jdbcType=BIGINT},
+      </if>
+      <if test="statisticTime != null" >
+        #{statisticTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="project != null" >
+        #{project,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.StatisticsConferenceDaily" >
+    update sd_statistics_conference_daily
+    <set >
+      <if test="confCount != null" >
+        conf_count = #{confCount,jdbcType=BIGINT},
+      </if>
+      <if test="totalDuration != null" >
+        total_duration = #{totalDuration,jdbcType=BIGINT},
+      </if>
+      <if test="totalParticipants != null" >
+        total_participants = #{totalParticipants,jdbcType=BIGINT},
+      </if>
+      <if test="maxConcurrent != null" >
+        max_concurrent = #{maxConcurrent,jdbcType=BIGINT},
+      </if>
+      <if test="statisticTime != null" >
+        statistic_time = #{statisticTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="accessKey != null" >
+        access_key = #{accessKey,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null" >
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.StatisticsConferenceDaily" >
+    update sd_statistics_conference_daily
+    set conf_count = #{confCount,jdbcType=BIGINT},
+      total_duration = #{totalDuration,jdbcType=BIGINT},
+      total_participants = #{totalParticipants,jdbcType=BIGINT},
+      max_concurrent = #{maxConcurrent,jdbcType=BIGINT},
+      statistic_time = #{statisticTime,jdbcType=TIMESTAMP},
+      project = #{project,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

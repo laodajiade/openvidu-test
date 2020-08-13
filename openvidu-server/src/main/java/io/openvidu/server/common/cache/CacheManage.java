@@ -4,6 +4,7 @@ import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.rpc.RpcConnection;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -53,4 +54,6 @@ public interface CacheManage {
     void updatePartInfo(String uuid, String key, Object updateInfo);
 
     boolean existsConferenceRelativeInfo(String key);
+
+    Long getMaxConcurrentOfDayAndDel(String project, Date queryEndTime);
 }

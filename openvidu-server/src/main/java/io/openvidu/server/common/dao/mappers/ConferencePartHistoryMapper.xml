@@ -23,7 +23,7 @@
     update_time
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_conf_part_history
     where id = #{id,jdbcType=BIGINT}
@@ -33,9 +33,9 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.ConferencePartHistory" >
-    insert into sd_conf_part_history (id, ruid, user_id, 
+    insert into sd_conf_part_history (id, ruid, user_id,
       uuid, username, user_type, terminal_type, status, start_time, end_time, access_key, project)
-    values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, 
+    values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT},
       #{uuid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, #{userType,jdbcType=INTEGER}, #{terminalType,jdbcType=VARCHAR},
       #{status,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
       #{accessKey,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR})
@@ -243,5 +243,15 @@
       </if>
     </where>
   </update>
+
+  <select id="selectConfPartHistoryByRuids" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conf_part_history
+    where ruid in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
+    </foreach>
+  </select>
 
 </mapper>

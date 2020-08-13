@@ -1,5 +1,10 @@
 package io.openvidu.server.common.constants;
 
+import io.openvidu.server.utils.DateUtil;
+
+import java.util.Date;
+import java.util.Objects;
+
 /**
  * @author geedow
  * @date 2019/9/12 15:17
@@ -24,11 +29,21 @@ public class CacheKeyConstants {
 
     public static final long DEFAULT_CONFERENCE_EXPIRE = 86400;
 
+    /**
+     * 单日最大并发方数缓存key前缀
+     */
+    public static final String STATISTICS_MAX_DAY_CONCURRENT_PREFIX_KEY = "statistics:max:concurrent:%s:%s";
+
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
     }
 
     public static String getParticipantKey(String uuid) {
         return String.format(PARTICIPANT_PREFIX_KEY, uuid);
+    }
+
+    public static String getMaxConcurrentStatisticKey(String project, Date date) {
+        return String.format(STATISTICS_MAX_DAY_CONCURRENT_PREFIX_KEY,
+                DateUtil.getDateFormat(Objects.isNull(date) ? new Date() : date, DateUtil.FORMAT_YEAR_MONTH_DAY), project);
     }
 }

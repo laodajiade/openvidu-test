@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -169,5 +170,17 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public boolean existsConferenceRelativeInfo(String key) {
         return roomRedisTemplate.hasKey(key);
+    }
+
+    @Override
+    public Long getMaxConcurrentOfDayAndDel(String project, Date queryEndTime) {
+        Boolean exists;
+        String key = CacheKeyConstants.getMaxConcurrentStatisticKey(project, queryEndTime);
+        if (Objects.nonNull(exists = roomRedisTemplate.hasKey(key)) && exists) {
+            Long result = Long.valueOf(String.valueOf(roomRedisTemplate.opsForValue().get(key)));
+            roomRedisTemplate.delete(key);
+            return result;
+        }
+        return 0L;
     }
 }
