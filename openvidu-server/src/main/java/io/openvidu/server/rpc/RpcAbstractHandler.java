@@ -310,13 +310,6 @@ public abstract class RpcAbstractHandler {
        return OpenViduRole.MODERATOR_ROLES.contains(role);
     }
 
-    protected void updateReconnectInfo(RpcConnection rpcConnection, boolean closeRoomIfModerator) {
-        Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-        if (!partInfo.isEmpty()) {
-            sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), rpcConnection.getUserUuid(), closeRoomIfModerator);
-        }
-    }
-
     protected Participant sanityCheckOfSession(RpcConnection rpcConnection, StreamType streamType) throws OpenViduException {
         Participant participant = sessionManager.getParticipant(rpcConnection.getSessionId(),
                 rpcConnection.getParticipantPrivateId(), streamType);

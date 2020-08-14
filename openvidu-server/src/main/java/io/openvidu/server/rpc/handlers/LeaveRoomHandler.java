@@ -50,7 +50,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                         sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(),
                                 rpcConnection.getUserUuid(), true);
                     }
-//                    updateReconnectInfo(rpcConnection, true);
                 }
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 

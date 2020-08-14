@@ -89,7 +89,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         sessionManager.evictParticipantByUUID(roomId = partInfo.get("roomId").toString(),
                                 rpcConnection.getUserUuid(), !sessionId.equals(roomId));
                     }
-//                    updateReconnectInfo(rpcConnection, false);
                 }
 
                 // check ever joinRoom duplicately
