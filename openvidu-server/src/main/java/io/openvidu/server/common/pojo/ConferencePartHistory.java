@@ -35,4 +35,6 @@ public class ConferencePartHistory {
     private Date createTime;
 
     private Date updateTime;
+
+    private String mixParam;
 }
