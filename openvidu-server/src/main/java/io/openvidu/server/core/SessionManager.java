@@ -154,7 +154,7 @@ public abstract class SessionManager {
 	public abstract String getParticipantPrivateIdFromStreamId(String sessionId, String streamId)
 			throws OpenViduException;
 
-	public abstract void evictParticipantWhenDisconnect(String userUuid);
+	public abstract void evictParticipantWhenDisconnect(RpcConnection rpcConnection);
 
 	public abstract void evictParticipantByPrivateId(String sessionId, String privateId, boolean closeRoom);
 

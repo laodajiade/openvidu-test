@@ -15,6 +15,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -44,7 +45,12 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             if (Objects.isNull(participant)) {
                 log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                 if (StreamType.MAJOR.equals(streamType)) {
-                    updateReconnectInfo(rpcConnection, true);
+                    Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
+                    if (!partInfo.isEmpty()) {
+                        sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(),
+                                rpcConnection.getUserUuid(), true);
+                    }
+//                    updateReconnectInfo(rpcConnection, true);
                 }
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -81,16 +82,22 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // remove previous participant if reconnect
-                if (isReconnected && StreamType.MAJOR.equals(streamType)) {
-                    updateReconnectInfo(rpcConnection, false);
+                if (StreamType.MAJOR.equals(streamType)) {
+                    Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
+                    if (!partInfo.isEmpty()) {
+                        String roomId;
+                        sessionManager.evictParticipantByUUID(roomId = partInfo.get("roomId").toString(),
+                                rpcConnection.getUserUuid(), !sessionId.equals(roomId));
+                    }
+//                    updateReconnectInfo(rpcConnection, false);
                 }
 
                 // check ever joinRoom duplicately
-                if (!isReconnected && StreamType.MAJOR.equals(streamType) && sessionManager.joinRoomDuplicately(rpcConnection.getUserUuid())) {
+                /*if (!isReconnected && StreamType.MAJOR.equals(streamType) && sessionManager.joinRoomDuplicately(rpcConnection.getUserUuid())) {
 //                if (!isReconnected  && sessionManager.joinRoomDuplicately(sessionId, rpcConnection.getUserUuid(), streamType)) {
                     errCode = ErrorCodeEnum.JOIN_ROOM_DUPLICATELY;
                     break;
-                }
+                }*/
 
                 GeoLocation location = null;
                 boolean recorder = false;

@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -705,11 +706,16 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
-	public void evictParticipantWhenDisconnect(String userUuid) {
+	public void evictParticipantWhenDisconnect(RpcConnection rpcConnection) {
+		if (StringUtils.isEmpty(rpcConnection.getSessionId())) {
+			return;
+		}
 		Session session;
-		Map partInfo = cacheManage.getPartInfo(userUuid);
-		if (partInfo != null && !partInfo.isEmpty() && partInfo.containsKey("roomId") && Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
-			Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(userUuid);
+		Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
+		if (partInfo != null && !partInfo.isEmpty() && partInfo.containsKey("roomId")
+				&& rpcConnection.getSessionId().equals(partInfo.get("roomId").toString())
+				&& Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
+			Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(rpcConnection.getUserUuid());
 			if (samePrivateIdParts == null || samePrivateIdParts.isEmpty()) {
 				return;
 			}

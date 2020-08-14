@@ -48,7 +48,8 @@
 	<properties>
 		<!-- Main class -->
 		<start-class>io.openvidu.server.OpenViduServer</start-class>
-		<version.com.geedow.kurento-jsonrpc-server>1.0.3</version.com.geedow.kurento-jsonrpc-server>
+		<version.com.sensedigit.kurento-jsonrpc-server>1.0.0</version.com.sensedigit.kurento-jsonrpc-server>
+		<!--<version.com.geedow.kurento-jsonrpc-server>1.0.3</version.com.geedow.kurento-jsonrpc-server>-->
 		<version.kurento-client>6.11.0</version.kurento-client>
 		<version.kms-api-filters>6.11.0</version.kms-api-filters>
 		<version.com.sensedigit.xxl-job-core>2.1.3</version.com.sensedigit.xxl-job-core>
@@ -200,9 +201,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.geedow</groupId>
+			<!--<groupId>com.geedow</groupId>-->
+			<groupId>com.sensedigit</groupId>
 			<artifactId>kurento-jsonrpc-server</artifactId>
-			<version>${version.com.geedow.kurento-jsonrpc-server}</version>
+			<!--<version>${version.com.geedow.kurento-jsonrpc-server}</version>-->
+			<version>${version.com.sensedigit.kurento-jsonrpc-server}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
