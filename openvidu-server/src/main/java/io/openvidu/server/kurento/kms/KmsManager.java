@@ -173,8 +173,9 @@ public abstract class KmsManager {
 				kms.setTimeOfKurentoClientDisconnection(System.currentTimeMillis());
 				log.warn("Kurento Client disconnected from KMS {} with uri {}", kmsId, kms.getUri());
 
-				kms.getKurentoSessions().forEach(kSession ->
-						sessionManager.updateRoomAndPartInfoAfterKMSDisconnect(kSession.getSessionId()));
+				// TODO 重构KMS的重连，排查disconnected原因
+				/*kms.getKurentoSessions().forEach(kSession ->
+						sessionManager.updateRoomAndPartInfoAfterKMSDisconnect(kSession.getSessionId()));*/
 			}
 
 			@Override
