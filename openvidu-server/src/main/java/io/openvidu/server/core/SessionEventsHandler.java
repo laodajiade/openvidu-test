@@ -272,9 +272,9 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, params);
 		}
 
-		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+		/*if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 			CDR.recordParticipantLeft(participant, sessionId, reason);
-		}
+		}*/
 	}
 
 	public void onPublishMedia(Participant participant, String streamId, Long createdAt, String sessionId,
