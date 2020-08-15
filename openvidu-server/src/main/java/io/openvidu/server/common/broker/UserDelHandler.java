@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -87,11 +86,7 @@ public class UserDelHandler {
                                     sessionManager.dealSessionClose(participant.getSessionId(), EndReason.closeSessionByModerator);
                                 } else {
                                     // evict participant from conference and change the layout
-                                    Participant shareParticipant = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.SHARING);
-                                    if (Objects.nonNull(shareParticipant)) {
-                                        sessionManager.dealParticipantLeaveRoom(shareParticipant, false, null);
-                                    }
-                                    sessionManager.dealParticipantLeaveRoom(participant, false, null);
+                                    sessionManager.evictParticipantByUUID(session.getSessionId(), participant.getUuid(), false);
                                 }
                             } else {
                                 // access out the delUserRpcConnection directly
