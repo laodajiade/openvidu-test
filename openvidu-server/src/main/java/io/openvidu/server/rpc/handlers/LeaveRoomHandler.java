@@ -103,7 +103,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
-        if (Objects.nonNull(session = sessionManager.getSession(sessionId)) && !session.isClosed()) {
+        if (Objects.nonNull(session = sessionManager.getSession(sessionId)) && !session.isClosed()
+                && StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().needToPublish()) {
             session.putPartOnWallAutomatically(sessionManager);
         }
         rpcConnection.setReconnected(false);

@@ -847,6 +847,8 @@ public class KurentoSessionManager extends SessionManager {
             samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
                     null, EndReason.sessionClosedByServer));
 
+            session.putPartOnWallAutomatically(this);
+
 		}
 
 		// clear the rpc connection
