@@ -616,9 +616,11 @@ public class ProtocolElements {
 	public static final String GET_LIVE_STATUS_ROOMID_PARAM = "roomId";
 
 	public static final String GETALLROOMSOFCORP_METHOD = "getAllRoomsOfCorp";
+	public static final String GETALLROOMSOFCORP_ROOM_ID = "roomId";
 
 	public static final String GETMEETINGSRECORDDETAIL_METHOD = "getMeetingRecordDetail";
 	public static final String GETMEETINGSRECORDDETAIL_RUID_PARAM = "ruid";
+	public static final String GETMEETINGSRECORDDETAIL_MIX_PARAM = "mixParam";
 
 	public static final String SETSUBTITLECONFIG_METHOD = "setSubtitleConfig";
 	public static final String SETSUBTITLECONFIG_ROOMID_PARAM = "roomId";

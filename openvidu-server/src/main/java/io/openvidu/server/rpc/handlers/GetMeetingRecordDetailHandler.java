@@ -10,6 +10,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,10 +35,13 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
         respObj.addProperty("roomId", conference.getRoomId());
         respObj.addProperty("createAt", conference.getStartTime().getTime());
 
-
+        String mixParam = getStringParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_MIX_PARAM);
         ConferencePartHistory search = new ConferencePartHistory();
         search.setRuid(ruid);
         search.setStatus(ParticipantStatusEnum.PROCESS.getStatus());
+        if (StringUtils.isNotEmpty(mixParam)) {
+            search.setMixParam(mixParam);
+        }
         List<ConferencePartHistory> confPartHistoryList = roomManage.getConfHistoryRecordsByCondition(search);
         if (!CollectionUtils.isEmpty(confPartHistoryList)) {
             confPartHistoryList.forEach(conferencePartHistory -> {
@@ -48,6 +52,8 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
                         UserType.register.name() : UserType.tourist.name());
                 partRecObj.addProperty("startTime", conferencePartHistory.getStartTime().getTime());
                 partRecObj.addProperty("terminalType", conferencePartHistory.getTerminalType());
+                partRecObj.addProperty("host",
+                        Objects.equals(conferencePartHistory.getUserId(), conference.getUserId()));
                 parts.add(partRecObj);
             });
         }

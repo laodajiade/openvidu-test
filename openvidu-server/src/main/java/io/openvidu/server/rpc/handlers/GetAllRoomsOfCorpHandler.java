@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -15,6 +16,7 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,6 +30,7 @@ import java.util.Objects;
 public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        String roomId = getStringOptionalParam(request, ProtocolElements.GETALLROOMSOFCORP_ROOM_ID);
         JsonArray jsonArray = new JsonArray();
         JsonObject respObj = new JsonObject();
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
@@ -43,7 +46,9 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
         ConferenceSearch allRoomsOfCropSearch = new ConferenceSearch();
         allRoomsOfCropSearch.setStatus(ConferenceStatus.PROCESS.getStatus());
         allRoomsOfCropSearch.setProject(String.valueOf(userInfo.get("project")));
-
+        if (StringUtils.isNotEmpty(roomId)) {
+            allRoomsOfCropSearch.setRoomId(roomId);
+        }
         List<Conference> list = roomManage.getAllRoomsOfCorp(allRoomsOfCropSearch);
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(conference -> {

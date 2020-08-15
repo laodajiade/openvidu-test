@@ -43,7 +43,7 @@ public class RoomManageImpl implements RoomManage {
 
     @Override
     public List<Conference> getAllRoomsOfCorp(ConferenceSearch conferenceSearch) {
-        return conferenceMapper.selectBySearchCondition(conferenceSearch);
+        return conferenceMapper.selectBySearchParam(conferenceSearch);
     }
 
     @Override

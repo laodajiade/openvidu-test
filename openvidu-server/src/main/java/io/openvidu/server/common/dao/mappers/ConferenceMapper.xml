@@ -40,6 +40,23 @@
         </if>
       </where>
   </select>
+
+  <select id="selectBySearchParam" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference
+    <where>
+      <if test="roomId != null">
+        room_id like CONCAT('%',#{roomId},'%')
+      </if>
+      <if test="status != null">
+        and status = #{status,jdbcType=TINYINT}
+      </if>
+      <if test="project != null">
+        and project = #{project,jdbcType=VARCHAR}
+      </if>
+    </where>
+  </select>
   <select id="selectUnclosedConference" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.Conference">
     select
     <include refid="Base_Column_List" />

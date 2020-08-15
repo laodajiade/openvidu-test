@@ -215,6 +215,9 @@
       <if test="status != null" >
         and status = #{status,jdbcType=TINYINT}
       </if>
+      <if test="mixParam != null" >
+        and (username like CONCAT('%',#{mixParam},'%') or uuid like CONCAT('%',#{mixParam},'%'))
+      </if>
     </where>
   </select>
 
