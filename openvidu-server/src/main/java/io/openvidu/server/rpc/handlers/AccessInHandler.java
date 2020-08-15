@@ -43,7 +43,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
-        String accessType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM);
+        AccessTypeEnum accessType = AccessTypeEnum.valueOf(getStringParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM));
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         String userTypeStr = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_USERTYPE_PARAM);
@@ -51,19 +51,15 @@ public class AccessInHandler extends RpcAbstractHandler {
         String clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE);
 
         JsonObject object = new JsonObject();
-        object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
-        boolean webLogin = false;
-        if (!StringUtils.isEmpty(accessType)) {
-            rpcConnection.setAccessType(AccessTypeEnum.valueOf(accessType));
-            webLogin = Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web);
-            if (!webLogin) {
-                if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
-                    this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                            request.getId(), object, ErrorCodeEnum.REQUEST_EXPIRED);
-                    return;
-                }
-            }
+        rpcConnection.setAccessType(accessType);
+        boolean webLogin = AccessTypeEnum.web.equals(accessType);
+        if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
+            object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
+                    request.getId(), object, ErrorCodeEnum.REQUEST_EXPIRED);
+            return;
         }
+
         boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
