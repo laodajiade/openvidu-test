@@ -831,17 +831,16 @@ public class KurentoSessionManager extends SessionManager {
 			// change the layout if mode is MCU
             if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
                 Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
-                samePrivateIdParts.values().forEach(participant ->
-                        session.leaveRoomSetLayout(participant, !Objects.equals(layoutRelativePartIdMap.get("speakerId"), participant.getParticipantPublicId()) ?
-                        layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId")));
+                if (session.leaveRoomSetLayout(majorPart, !Objects.equals(layoutRelativePartIdMap.get("speakerId"), majorPart.getParticipantPublicId()) ?
+						layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"))) {
+					// notify kms change the layout of MCU
+					session.invokeKmsConferenceLayout();
 
-                // notify kms change the layout of MCU
-                session.invokeKmsConferenceLayout();
-
-                // notify client the change of layout
-                JsonObject params = session.getLayoutNotifyInfo();
-                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+					// notify client the change of layout
+					JsonObject params = session.getLayoutNotifyInfo();
+					participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+				}
             }
 
 			// evict participants
