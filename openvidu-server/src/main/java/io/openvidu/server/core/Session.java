@@ -553,17 +553,19 @@ public class Session implements SessionInterface {
 	}
 
 	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
-    	int size;
-    	if ((size = majorParts.incrementAndGet()) > openviduConfig.getMcuMajorPartLimit()) {
-    		majorParts.set(openviduConfig.getMcuMajorPartLimit());
+		int size;
+    	if (StreamType.MAJOR.equals(participant.getStreamType())) {
+			size = majorParts.incrementAndGet();
+			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
+					participant.getParticipantName(), sessionId, size);
+			return size > openviduConfig.getMcuMajorPartLimit();
 		}
-		log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
-				participant.getParticipantName(), sessionId, size);
-    	return size > openviduConfig.getMcuMajorPartLimit();
+
+    	return false;
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
-    	if (StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().needToPublish()) {
+    	if (StreamType.MAJOR.equals(participant.getStreamType())) {
 			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
 		}
@@ -571,11 +573,8 @@ public class Session implements SessionInterface {
 
     public void registerMajorParticipant(Participant participant) {
         if (StreamType.MAJOR.equals(participant.getStreamType())) {
-			if (majorParts.incrementAndGet() > openviduConfig.getMcuMajorPartLimit()) {
-				majorParts.set(openviduConfig.getMcuMajorPartLimit());
-			}
             log.info("ParticipantName:{} is going to publish in session:{} and increment majorPart size:{}",
-                    participant.getParticipantName(), sessionId, majorParts.get());
+                    participant.getParticipantName(), sessionId, majorParts.incrementAndGet());
         }
     }
 
@@ -746,10 +745,7 @@ public class Session implements SessionInterface {
 								   OpenViduRole originalRole, OpenViduRole presentRole, boolean isSub2PubSpeaker) {
 		partChanged.changePartRole(presentRole);
 		JsonObject notifyParam = getPartRoleChangedNotifyParam(partChanged, originalRole, presentRole);
-		if (OpenViduRole.SUBSCRIBER.equals(presentRole)) {
-			deregisterMajorParticipant(partChanged);
-		} else {
-			registerMajorParticipant(partChanged);
+		if (OpenViduRole.PUBLISHER.equals(presentRole)) {
 			KurentoParticipant kurentoParticipant = (KurentoParticipant) partChanged;
 			kurentoParticipant.createPublisher();
 			if (isSub2PubSpeaker) {

@@ -151,9 +151,8 @@ public class KurentoSessionManager extends SessionManager {
 				participant.setRoomSubject(preset.getRoomSubject());
 			}
 
-			// change the part role according to the mcu limit when the role is PUBLISHER/MODERATOR
-			if (StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().needToPublish()
-					&& kSession.needToChangePartRoleAccordingToLimit(participant)) {
+			// change the part role according to the mcu limit
+			if (kSession.needToChangePartRoleAccordingToLimit(participant)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			// deal the default subtitle config
