@@ -831,24 +831,32 @@ public class KurentoSessionManager extends SessionManager {
 			// change the layout if mode is MCU
             if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
                 Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
-                if (session.leaveRoomSetLayout(majorPart, !Objects.equals(layoutRelativePartIdMap.get("speakerId"), majorPart.getParticipantPublicId()) ?
-						layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"))) {
-					// notify kms change the layout of MCU
-					session.invokeKmsConferenceLayout();
+                boolean layoutChanged = false;
+                for (Participant part : samePrivateIdParts.values()) {
+                    if (part.getStreamType().isStreamTypeMixInclude()) {
+                        layoutChanged |= session.leaveRoomSetLayout(part,
+                                !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
+                                        ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
+                    }
+                }
 
-					// notify client the change of layout
-					JsonObject params = session.getLayoutNotifyInfo();
-					participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
-				}
+                if (layoutChanged) {
+                    // notify kms change the layout of MCU
+                    session.invokeKmsConferenceLayout();
+
+                    // notify client the change of layout
+                    JsonObject params = session.getLayoutNotifyInfo();
+                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+                }
             }
 
 			// evict participants
             samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
                     null, EndReason.sessionClosedByServer));
 
+            // deal auto on wall
             session.putPartOnWallAutomatically(this);
-
 		}
 
 		// clear the rpc connection
