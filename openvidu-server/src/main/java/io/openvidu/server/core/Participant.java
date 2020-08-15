@@ -76,7 +76,7 @@ public class Participant {
 
 	@Getter
 	@Setter
-	private String clientType;
+	private TerminalTypeEnum terminalType;
 
 	private VoiceMode voiceMode = VoiceMode.off;
 

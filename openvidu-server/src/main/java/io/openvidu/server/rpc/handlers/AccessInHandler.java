@@ -48,11 +48,15 @@ public class AccessInHandler extends RpcAbstractHandler {
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         String userTypeStr = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_USERTYPE_PARAM);
         UserType userType = !StringUtils.isEmpty(userTypeStr) ? UserType.valueOf(userTypeStr) : UserType.register;
-        String clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE);
+        String clientType;
+        TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType =
+                getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
+                    ? TerminalTypeEnum.valueOf(clientType) : null;
 
         JsonObject object = new JsonObject();
         rpcConnection.setAccessType(accessType);
         boolean webLogin = AccessTypeEnum.web.equals(accessType);
+        // check if request expired
         if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
             object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
@@ -74,7 +78,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 break;
             }
             rpcConnection.setUserType(userType);
-            rpcConnection.setClientType(clientType);
+            rpcConnection.setTerminalType(terminalType);
             rpcConnection.setMacAddr(deviceMac);
             rpcConnection.setUserUuid(uuid);
 

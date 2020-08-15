@@ -93,7 +93,7 @@ public class KurentoParticipant extends Participant {
 		setJoinType(participant.getJoinType());
 		setParticipantName(participant.getParticipantName());
 		setUserType(participant.getUserType());
-		setClientType(participant.getClientType());
+		setTerminalType(participant.getTerminalType());
 		setUuid(participant.getUuid());
 		setUsername(participant.getUsername());
 		setSubtitleConfig(participant.getSubtitleConfig());

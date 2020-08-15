@@ -64,7 +64,7 @@ public class RoomManageImpl implements RoomManage {
         history.setUuid(participant.getUuid());
         history.setUsername(participant.getUsername());
         history.setUserType(participant.getUserType().getType());
-        history.setTerminalType(participant.getClientType());
+        history.setTerminalType(participant.getTerminalType().getDesc());
         history.setStatus(ParticipantStatusEnum.PROCESS.getStatus());
         history.setStartTime(new Date());
         history.setAccessKey(conference.getProject());

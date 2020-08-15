@@ -19,6 +19,7 @@ package io.openvidu.server.rpc;
 
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.common.enums.UserType;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,7 +64,7 @@ public class RpcConnection {
 
 	@Getter
 	@Setter
-	private String clientType;
+	private TerminalTypeEnum terminalType;
 
 	@Getter
 	@Setter

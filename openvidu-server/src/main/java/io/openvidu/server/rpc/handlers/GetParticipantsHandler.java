@@ -89,7 +89,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("connectionId", kurentoParticipant.getParticipantPublicId());
         userObj.addProperty("role", kurentoParticipant.getRole().name());
         userObj.addProperty("userType", kurentoParticipant.getUserType().name());
-        userObj.addProperty("terminalType", kurentoParticipant.getClientType());
+        userObj.addProperty("terminalType", kurentoParticipant.getTerminalType().name());
         userObj.addProperty("shareStatus", kurentoParticipant.getShareStatus().name());
         userObj.addProperty("handStatus", kurentoParticipant.getHandStatus().name());
         userObj.addProperty("audioActive",
