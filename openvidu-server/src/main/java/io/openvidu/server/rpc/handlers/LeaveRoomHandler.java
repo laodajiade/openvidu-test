@@ -64,7 +64,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             return;
         }
 
-//        this.sessionManager.dealParticipantLeaveRoom(participant, false, request.getId());
         String moderatePublicId = null;
         String speakerId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);

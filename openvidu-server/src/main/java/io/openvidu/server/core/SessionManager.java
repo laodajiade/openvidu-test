@@ -735,45 +735,6 @@ public abstract class SessionManager {
 		this.closeSession(sessionId, endReason);
 	}
 
-	public void dealParticipantLeaveRoom(Participant participant, boolean closeWebSocket, Integer requestId) {
-		RpcConnection rpcConnection = notificationService.getRpcConnection(participant.getParticipantPrivateId());
-		String sessionId = participant.getSessionId();
-		String moderatePublicId = null;
-		String speakerId = null;
-		Set<Participant> participants = getParticipants(sessionId);
-		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-			JsonObject params = new JsonObject();
-			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
-			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, participant.getUserId().toString());
-
-			for (Participant participant1 : participants) {
-				if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
-				if (participant1.getRole().equals(OpenViduRole.MODERATOR))
-					moderatePublicId = participant1.getParticipantPublicId();
-				if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
-					speakerId = participant1.getParticipantPublicId();
-				this.notificationService.sendNotification(participant1.getParticipantPrivateId(),
-						ProtocolElements.END_ROLL_CALL_METHOD, params);
-			}
-		}
-
-        if (!Objects.isNull(rpcConnection) && !Objects.isNull(rpcConnection.getSerialNumber())) {
-            cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
-            log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
-                    rpcConnection.getSessionId());
-        }
-
-		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()))
-			participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
-		leaveRoom(participant, requestId, EndReason.disconnect, closeWebSocket);
-
-        Session session = getSession(sessionId);
-        if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
-            setLayoutAndNotifyWhenLeaveRoom(sessionId, participant,
-                    !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
-        }
-	}
-
 	public void setRollCallInSession(Session conferenceSession, Participant targetPart) {
 		Set<Participant> participants = conferenceSession.getParticipants();
 		Participant moderatorPart = conferenceSession.getModeratorPart();
