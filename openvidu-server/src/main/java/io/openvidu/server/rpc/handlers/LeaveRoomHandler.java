@@ -15,9 +15,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author geedow
@@ -48,7 +46,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     if (!partInfo.isEmpty()) {
                         sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(),
-                                rpcConnection.getUserUuid(), true);
+                                rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
                     }
                 }
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

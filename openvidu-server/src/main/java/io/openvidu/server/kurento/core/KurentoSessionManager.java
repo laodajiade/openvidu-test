@@ -705,7 +705,7 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
-	public void evictParticipantWhenDisconnect(RpcConnection rpcConnection) {
+	public void evictParticipantWhenDisconnect(RpcConnection rpcConnection, List<EvictParticipantStrategy> evictStrategies) {
 		if (StringUtils.isEmpty(rpcConnection.getSessionId())) {
 			return;
 		}
@@ -734,30 +734,30 @@ public class KurentoSessionManager extends SessionManager {
 									ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
 
 			// evict same privateId parts
-			evictParticipantWithSamePrivateId(samePrivateIdParts, true);
+			evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies);
 		}
 	}
 
     @Override
-    public void evictParticipantByPrivateId(String sessionId, String privateId, boolean closeRoom) {
+    public void evictParticipantByPrivateId(String sessionId, String privateId, List<EvictParticipantStrategy> evictStrategies) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(privateId);
             if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
                 // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts, closeRoom);
+                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies);
             }
         }
     }
 
     @Override
-    public void evictParticipantByUUID(String sessionId, String uuid, boolean closeRoom) {
+    public void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(uuid);
             if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
                 // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts, closeRoom);
+                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies);
             }
         }
     }
@@ -772,8 +772,8 @@ public class KurentoSessionManager extends SessionManager {
 
                 // notify clients mcu layout changed
                 JsonObject notifyParam = session.getLayoutNotifyInfo();
-                session.getMajorPartEachConnect().forEach(part ->
-                        rpcNotificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
+                session.getMajorPartEachConnect().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
+                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
             }
         }
     }
@@ -791,12 +791,13 @@ public class KurentoSessionManager extends SessionManager {
 		}
 	}
 
-	private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, boolean closeRoomIfModerator) {
+	private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies) {
 		// check if include moderator
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
 		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachInclueThorConnect();
-		if (closeRoomIfModerator && OpenViduRole.MODERATOR.equals(majorPart.getRole())) {	// close the room
+		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
+                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
 			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
 		} else {
 			// check if MAJOR is speaker
@@ -859,8 +860,10 @@ public class KurentoSessionManager extends SessionManager {
             session.putPartOnWallAutomatically(this);
 		}
 
-		// clear the rpc connection
-		rpcNotificationService.closeRpcSession(majorPart.getParticipantPrivateId());
+		// clear the rpc connection if necessary
+        if (evictStrategies.contains(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)) {
+            rpcNotificationService.closeRpcSession(majorPart.getParticipantPrivateId());
+        }
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.EvictParticipantStrategy;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
@@ -86,7 +88,8 @@ public class UserDelHandler {
                                     sessionManager.dealSessionClose(participant.getSessionId(), EndReason.closeSessionByModerator);
                                 } else {
                                     // evict participant from conference and change the layout
-                                    sessionManager.evictParticipantByUUID(session.getSessionId(), participant.getUuid(), false);
+                                    sessionManager.evictParticipantByUUID(session.getSessionId(), participant.getUuid(),
+                                            Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
                                 }
                             } else {
                                 // access out the delUserRpcConnection directly

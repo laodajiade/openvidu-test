@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -42,7 +43,7 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
             }
 
             RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
-            sessionManager.evictParticipantByUUID(evictPart.getSessionId(), evictPart.getUuid(), false);
+            sessionManager.evictParticipantByUUID(evictPart.getSessionId(), evictPart.getUuid(), Collections.emptyList());
 
             if (!Objects.isNull(evictRpcConnection.getSerialNumber())) {
                 cacheManage.updateTerminalStatus(evictRpcConnection, TerminalStatus.online);

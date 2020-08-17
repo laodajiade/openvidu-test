@@ -23,6 +23,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.EvictParticipantStrategy;
 import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.core.SessionManager;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -154,7 +156,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (everEvictUser) {
 			// clear the rpc connection and change the terminal status
 			RpcConnection rpcConnection = sessionManager.accessOut(this.notificationService.getRpcConnection(rpcSession.getSessionId()));
-			sessionManager.evictParticipantWhenDisconnect(rpcConnection);
+			sessionManager.evictParticipantWhenDisconnect(rpcConnection, Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR,
+					EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
 		}
 	}
 

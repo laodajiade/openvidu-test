@@ -14,10 +14,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author geedow
@@ -87,7 +84,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     if (!partInfo.isEmpty()) {
                         String roomId;
                         sessionManager.evictParticipantByUUID(roomId = partInfo.get("roomId").toString(),
-                                rpcConnection.getUserUuid(), !sessionId.equals(roomId));
+                                rpcConnection.getUserUuid(), !sessionId.equals(roomId) ?
+                                        Collections.singletonList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR) : Collections.emptyList());
                     }
                 }
 
