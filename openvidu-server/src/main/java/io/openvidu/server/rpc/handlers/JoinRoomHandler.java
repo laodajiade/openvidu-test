@@ -135,7 +135,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
-                    if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsString()) &&
+                    if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsLong()) &&
                             !Objects.equals(OpenViduRole.THOR, role) && streamType.isSelfStream()) {
                         role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());

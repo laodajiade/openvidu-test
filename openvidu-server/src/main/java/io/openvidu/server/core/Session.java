@@ -506,10 +506,10 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toMap(v -> v.getStreamType().name(), Function.identity()));
 	}
 
-	public Participant getParticipantByUserId(String userId) {
+	public Participant getParticipantByUserId(Long userId) {
     	checkClosed();
 		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && Objects.equals(userId, participant.getUserId())
+				.filter(participant -> Objects.nonNull(participant) && userId.equals(participant.getUserId())
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
@@ -695,7 +695,7 @@ public class Session implements SessionInterface {
             // send endRoll notify
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
-            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId());
+            params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId().toString());
             participants.forEach(part -> {
                 if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
                     sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),

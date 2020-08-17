@@ -744,7 +744,7 @@ public abstract class SessionManager {
 		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
 			JsonObject params = new JsonObject();
 			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
-			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, participant.getUserId());
+			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, participant.getUserId().toString());
 
 			for (Participant participant1 : participants) {
 				if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;

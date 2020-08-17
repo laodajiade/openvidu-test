@@ -98,13 +98,13 @@ public class UserManageImpl implements UserManage {
     public Map<String, UserDeviceDeptInfo> getUserInfoInRoom(Set<Participant> participants) {
         Map<String, UserDeviceDeptInfo> connectIdPartMap = null;
         List<UserDeviceDeptInfo> userDeviceDeptInfos = userMapper.queryUserInfoByUserIds(participants.stream()
-                .map(part -> Long.valueOf(part.getUserId())).collect(Collectors.toList()));
+                .map(Participant::getUserId).collect(Collectors.toList()));
         if (!CollectionUtils.isEmpty(userDeviceDeptInfos)) {
             Map<Long, UserDeviceDeptInfo> userIdUserInfoMap = userDeviceDeptInfos.stream()
                     .collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, Function.identity()));
             connectIdPartMap = participants.stream()
                     .collect(Collectors.toMap(Participant::getParticipantPublicId,
-                            participant -> userIdUserInfoMap.get(Long.valueOf(participant.getUserId()))));
+                            participant -> userIdUserInfoMap.get(participant.getUserId())));
         }
         return connectIdPartMap;
     }

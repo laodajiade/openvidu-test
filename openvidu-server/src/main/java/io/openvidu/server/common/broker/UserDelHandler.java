@@ -80,7 +80,7 @@ public class UserDelHandler {
                             Participant participant;
                             if (!StringUtils.isEmpty(sessionId = delUserRpcConnection.getSessionId())
                                     && Objects.nonNull(session = sessionManager.getSession(sessionId))
-                                    && Objects.nonNull(participant = session.getParticipantByUserId(userId.toString()))) {
+                                    && Objects.nonNull(participant = session.getParticipantByUserId(userId))) {
                                 log.info("Evict participant:{} from session: {} and access out the user:{} websocket.", participant.getUuid(), sessionId, userId);
                                 if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
                                     // close the session

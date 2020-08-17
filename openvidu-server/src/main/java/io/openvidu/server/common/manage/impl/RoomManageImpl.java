@@ -60,7 +60,7 @@ public class RoomManageImpl implements RoomManage {
         }
         ConferencePartHistory history = new ConferencePartHistory();
         history.setRuid(conference.getRuid());
-        history.setUserId(Long.valueOf(participant.getUserId()));
+        history.setUserId(participant.getUserId());
         history.setUuid(participant.getUuid());
         history.setUsername(participant.getUsername());
         history.setUserType(participant.getUserType().getType());

@@ -38,7 +38,7 @@ public class SharingControlHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
-                if (targetId.equals(p.getUserId())) {
+                if (targetId.equals(p.getUserId().toString())) {
                     p.changeShareStatus(shareStatus);
                 }
                 if (Objects.equals(StreamType.MAJOR, p.getStreamType()))

@@ -46,7 +46,7 @@ public class Participant {
 	protected boolean streaming = false;
 	protected volatile boolean closed;
 
-	private String userId;
+	private Long userId;
 
 	@Getter
 	@Setter
@@ -102,7 +102,7 @@ public class Participant {
 			this.createdAt = System.currentTimeMillis();
 		}
 		this.clientMetadata = clientMetadata;
-		this.userId = new Gson().fromJson(clientMetadata, JsonObject.class).get("clientData").getAsString();
+		this.userId = new Gson().fromJson(clientMetadata, JsonObject.class).get("clientData").getAsLong();
 		this.role = role;
 		this.streamType = streamType;
 		this.location = location;
@@ -148,7 +148,7 @@ public class Participant {
 		return sessionId;
 	}
 
-	public String getUserId() {
+	public Long getUserId() {
 		return userId;
 	}
 

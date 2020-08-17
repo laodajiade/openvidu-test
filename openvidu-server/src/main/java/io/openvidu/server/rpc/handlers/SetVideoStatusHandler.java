@@ -44,7 +44,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         if (!StringUtils.isEmpty(source)) {
             sourcePart = session.getParticipantByUUID(source);
         } else {
-            sourcePart = session.getParticipantByUserId(sourceId);
+            sourcePart = session.getParticipantByUserId(Long.valueOf(sourceId));
         }
         if (Objects.isNull(sourcePart) || OpenViduRole.SUBSCRIBER.equals(sourcePart.getRole())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -56,7 +56,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(t, s.getUserId()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                        .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
