@@ -160,7 +160,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         if (Objects.nonNull(session)) {     // HDC terminal in room
             // return errorCode if HDC in room is not a moderator
             Participant hdcPart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
-            if (Objects.nonNull(hdcPart) && OpenViduRole.MODERATOR.equals(hdcPart.getRole())) {
+            if (Objects.nonNull(hdcPart) && !OpenViduRole.MODERATOR.equals(hdcPart.getRole())) {
                 return ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
             }
 
