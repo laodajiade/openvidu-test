@@ -66,6 +66,8 @@ public class AccessInHandler extends RpcAbstractHandler {
                     ErrorCodeEnum.TOKEN_INVALID : (!Objects.equals(token, userInfo.get("token")) ? ErrorCodeEnum.TOKEN_ERROR : errCode))) {
                 log.error("request token:{}, cache token info:{}", token, userInfo);
                 break;
+            } else if (isAdmin(uuid)) {
+                break;
             }
 
             // check HDC required parameter
@@ -113,8 +115,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                     && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection))) {
                 break;
             }
-
-
         } while (false);
 
         if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
