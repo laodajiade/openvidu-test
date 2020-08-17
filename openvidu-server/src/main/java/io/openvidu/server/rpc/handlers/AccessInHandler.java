@@ -127,6 +127,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setUserType(userType);
         rpcConnection.setAccessType(accessType);
         rpcConnection.setTerminalType(terminalType);
+        rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
         rpcConnection.setUserId(Long.valueOf(String.valueOf(userInfo.get("userId"))));
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
@@ -144,8 +145,6 @@ public class AccessInHandler extends RpcAbstractHandler {
 
 
     private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection) {
-        ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
-
         // check HDC terminal ever online
         String deviceStatus;
         if (Objects.isNull(previousRpc) || !TerminalTypeEnum.HDC.equals(previousRpc.getTerminalType())
@@ -167,7 +166,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             // check ever exists web THOR
             Participant thorPart = session.getParticipants().stream().filter(participant ->
                     OpenViduRole.THOR.equals(participant.getRole())).findAny().orElse(null);
-            if (!Objects.isNull(thorPart)) {
+            if (Objects.nonNull(thorPart)) {
                 if (forceLogin) {
                     // send remote login notify to current terminal
                     notificationService.sendNotification(thorPart.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
@@ -187,7 +186,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                             && Objects.equals(uuid, rpcConn.getUserUuid()))
                     .findAny().orElse(null);
 
-            if (!Objects.isNull(preLoginThorConnect)) {
+            if (Objects.nonNull(preLoginThorConnect)) {
                 if (forceLogin) {
                     notificationService.sendNotification(preLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
                     leaveRoomAfterConnClosed(preLoginThorConnect.getParticipantPrivateId(), EndReason.sessionClosedByServer);
@@ -200,7 +199,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
         }
 
-        return errCode;
+        return ErrorCodeEnum.SUCCESS;
     }
 
     private void evictPreLoginPart(RpcConnection previousRpc) {
@@ -230,7 +229,6 @@ public class AccessInHandler extends RpcAbstractHandler {
             deviceMapper.updateBySerialNumberSelective(dev);
         }
 
-        rpcConnection.setDeviceSerailNumber(device.getSerialNumber());
         rpcConnection.setUsername(device.getDeviceName());
         rpcConnection.setAbility(ability);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
