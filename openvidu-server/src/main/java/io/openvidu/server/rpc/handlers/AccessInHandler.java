@@ -11,7 +11,6 @@ import io.openvidu.server.common.pojo.DeviceSearch;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -40,368 +39,202 @@ public class AccessInHandler extends RpcAbstractHandler {
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
-        String deviceMac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
-        String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
-        String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         AccessTypeEnum accessType = AccessTypeEnum.valueOf(getStringParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM));
-        String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
-        JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         String userTypeStr = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_USERTYPE_PARAM);
         UserType userType = !StringUtils.isEmpty(userTypeStr) ? UserType.valueOf(userTypeStr) : UserType.register;
         String clientType;
-        TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType =
-                getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
-                    ? TerminalTypeEnum.valueOf(clientType) : null;
+        TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
+                ? TerminalTypeEnum.valueOf(clientType) : null;
 
+        Map userInfo;
         JsonObject object = new JsonObject();
-        rpcConnection.setAccessType(accessType);
-        boolean webLogin = AccessTypeEnum.web.equals(accessType);
-        // check if request expired
-        if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
-            object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                    request.getId(), object, ErrorCodeEnum.REQUEST_EXPIRED);
-            return;
-        }
-
-        boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
-        Device device = null;
-        RpcConnection previousRpc = null;
-        boolean reconnect = false;
-        Long accessInUserId = null;
         do {
-            // verify parameters
-            if (StringUtils.isEmpty(uuid) || StringUtils.isEmpty(token)) {
-                errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
-                break;
-            }
-            rpcConnection.setUserType(userType);
-            rpcConnection.setTerminalType(terminalType);
-            rpcConnection.setMacAddr(deviceMac);
-            rpcConnection.setUserUuid(uuid);
-
-            // verify access token
-            Map userInfo = cacheManage.getUserInfoByUUID(uuid);
-            if (Objects.isNull(userInfo) || !Objects.equals(token, userInfo.get("token"))) {
-                log.warn("local token:{} userInfo:{}", token, userInfo);
-                errCode = ErrorCodeEnum.TOKEN_INVALID;
-                break;
-            } else {
-                if (isAdmin(uuid)) {
-                    break;
-                }
+            // check if request expired
+            if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
+                object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
+                        request.getId(), object, ErrorCodeEnum.REQUEST_EXPIRED);
+                return;
             }
 
-            if (!webLogin && userInfo.containsKey("serialNumber") && !Objects.equals(deviceSerialNumber, userInfo.get("serialNumber"))) {
-                log.error("account:{} related device:{} and SN in request params is :{}", uuid,
-                        userInfo.get("serialNumber"), deviceSerialNumber);
-                errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
+            // check if token valid
+            userInfo = cacheManage.getUserInfoByUUID(uuid);
+            if (!ErrorCodeEnum.SUCCESS.equals(errCode  = userInfo.isEmpty() ?
+                    ErrorCodeEnum.TOKEN_INVALID : (!Objects.equals(token, userInfo.get("token")) ? ErrorCodeEnum.TOKEN_ERROR : errCode))) {
+                log.error("request token:{}, cache token info:{}", token, userInfo);
                 break;
             }
 
-            accessInUserId = Long.valueOf(String.valueOf(userInfo.get("userId")));
-            rpcConnection.setUserId(accessInUserId);
-            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
-            rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT);
-
-            // verify device valid & TODO. check user org and dev org. the dev org must lower than user org. whether refuse and disconnect it.
-            if (!StringUtils.isEmpty(deviceSerialNumber)) {
-                DeviceSearch search = new DeviceSearch();
-                search.setSerialNumber(deviceSerialNumber);
-                if (Objects.isNull(deviceVersion)) {
+            // check HDC required parameter
+            if (TerminalTypeEnum.HDC.equals(terminalType)) {
+                if (StringUtils.isEmpty(deviceSerialNumber) || !Objects.equals(deviceSerialNumber, userInfo.get("serialNumber"))) {
+                    log.error("account:{} related device:{} and SN in request params is :{}", uuid, userInfo.get("serialNumber"), deviceSerialNumber);
                     errCode = ErrorCodeEnum.REQUEST_PARAMS_ERROR;
                     break;
                 }
+
+                Device device;
+                DeviceSearch search = new DeviceSearch();
+                search.setSerialNumber(deviceSerialNumber);
                 if (Objects.isNull(device = deviceMapper.selectBySearchCondition(search))) {
                     errCode = ErrorCodeEnum.DEVICE_NOT_FOUND;
                     break;
-                } else {
-                    if (!Objects.equals(String.valueOf(userInfo.get("project")), device.getProject())) {
-                        errCode = ErrorCodeEnum.PERMISSION_LIMITED;
-                        break;
-                    }
                 }
-                if (!Objects.equals(deviceVersion, device.getVersion()) || !Objects.equals(ability, device.getAbility())
-                        || !Objects.equals(deviceModel, device.getDeviceModel())) {
-                    Device dev = new Device();
-                    dev.setSerialNumber(deviceSerialNumber);
-                    dev.setVersion(deviceVersion);
-                    dev.setAbility(ability);
-                    dev.setDeviceModel(deviceModel);
-                    deviceMapper.updateBySerialNumberSelective(dev);
-                }
-                rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
-                rpcConnection.setUsername(device.getDeviceName());
-                rpcConnection.setAbility(ability);
-                rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
+
+                // update device info if necessary
+                checkDeviceInfoAndUpdate(device, request, rpcConnection);
+
+                // add deviceName into resp info
                 object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
             }
 
-            previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid) &&
-                        Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
+            // find account already login before
+            RpcConnection previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
+                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)
+                        && Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
                     log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
-                    log.info("previous connection userUuid:{}, macAddr:{}, userId:{}", s.getUserUuid(), s.getMacAddr(), s.getUserId());
                     return true;
-                } else {
-                    log.info("not found previous connection belong to the same user:{}, connection id:{}", uuid, s.getParticipantPrivateId());
-                    return false;
                 }
+                return false;
             }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 
-            if (webLogin) {
-                Session session;
-                rpcConnection.setUserUuid(uuid);
-                if (Objects.isNull(previousRpc) || StringUtils.isEmpty(previousRpc.getSerialNumber())) {
-                    errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
-                    break;
-                } else {
-                    String deviceStatus = cacheManage.getDeviceStatus(previousRpc.getSerialNumber());
-                    if (!Objects.equals(DeviceStatus.online.name(), deviceStatus) && !Objects.equals(DeviceStatus.meeting.name(), deviceStatus)) {
-                        log.error("Device:{} is offline or upgrading.", previousRpc.getSerialNumber());
-                        errCode = ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
-                        break;
-                    }
-                }
-
-                if (!StringUtils.isEmpty(previousRpc.getSessionId()) && (session = sessionManager.getSession(previousRpc.getSessionId())) != null &&
-                        !Objects.isNull(sessionManager.getSession(previousRpc.getSessionId()).getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR))) {
-                    if (!sessionManager.getSession(previousRpc.getSessionId()).getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(),
-                            StreamType.MAJOR).getRole().equals(OpenViduRole.MODERATOR)) {
-                        errCode = ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
-                    } else {
-                        Participant thorPart = session.getParticipants().stream().filter(participant ->
-                                Objects.equals(OpenViduRole.THOR, participant.getRole())).findAny().orElse(null);
-                        if (!Objects.isNull(thorPart)) {
-                            if (!forceLogin) {
-                                log.info("1####thorPart privateId:{}, role:{}, userId:{}", thorPart.getParticipantPrivateId(), thorPart.getRole().name(), thorPart.getUserId());
-                                errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
-                            } else {
-                                // send remote login notify to current terminal
-                                notificationService.sendNotification(thorPart.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
-                                leaveRoomAfterConnClosed(thorPart.getParticipantPrivateId(), EndReason.sessionClosedByServer);
-                                notificationService.closeRpcSession(thorPart.getParticipantPrivateId());
-                            }
-                        }
-                    }
-                    break;
-                } else {
-                    RpcConnection currLoginThorConnect = notificationService.getRpcConnections().stream()
-                            .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection) && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
-                                    && Objects.equals(uuid, rpcConn.getUserUuid())).findAny().orElse(null);
-                    if (!Objects.isNull(currLoginThorConnect)) {
-                        if (!forceLogin) {
-                            log.info("2####currLoginThorConnect privateId:{}, uuid:{}, accessType:{}", currLoginThorConnect.getParticipantPrivateId(), currLoginThorConnect.getUserUuid(), currLoginThorConnect.getAccessType().name());
-                            errCode = ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
-                        } else {
-                            notificationService.sendNotification(currLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
-                            leaveRoomAfterConnClosed(currLoginThorConnect.getParticipantPrivateId(), EndReason.sessionClosedByServer);
-                            notificationService.closeRpcSession(currLoginThorConnect.getParticipantPrivateId());
-                        }
-                    }
-                    break;
-                }
+            // check if single login
+            if (AccessTypeEnum.terminal.equals(accessType) && Objects.nonNull(previousRpc)) {
+                log.error("SINGLE LOGIN ==> User:{} already login and privateId:{}", userInfo.get("userUuid"), previousRpc.getParticipantPrivateId());
+                // check previous rpc connection ever in the room
+                evictPreLoginPart(previousRpc);
             }
 
-            // SINGLE LOGIN
-            if (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.online.name())) {
-				/*previousRpc = notificationService.getRpcConnections().stream().filter(s -> !Objects.equals(rpcConnection, s)
-						&& Objects.equals(s.getUserUuid(), uuid)).findFirst().orElse(null);*/
-                if (!Objects.isNull(previousRpc) && !Objects.equals(previousRpc.getParticipantPrivateId(),
-                        rpcConnection.getParticipantPrivateId()) && !Objects.equals(deviceMac, previousRpc.getMacAddr())) {
-                    log.warn("SINGLE LOGIN ==> User:{} already online.", userInfo.get("userUuid"));
-                    errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
-                    rpcConnection.setUserUuid(uuid);
-                    break;
-                }
-            }
-
-            // OFFLINE RECONNECT
-            if (!Objects.isNull(previousRpc) && (Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name()))
-                    && Objects.equals(previousRpc.getMacAddr(), deviceMac)) {
-                reconnect = true;
-//                rpcConnection.setReconnected(true);
-//                cacheManage.updateReconnectInfo(uuid, previousRpc.getParticipantPrivateId());
-                if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
-                    Session session = sessionManager.getSession(previousRpc.getSessionId());
-                    Participant participant;
-                    if (Objects.nonNull(session) && Objects.nonNull(previousRpc.getUserId())
-                            && Objects.nonNull(participant = session.getParticipantByUserId(String.valueOf(previousRpc.getUserId())))) {
-                        cacheManage.updateReconnectInfo(uuid, participant.getParticipantPrivateId());
-                    }
-                }
-                rpcConnection.setUserUuid(uuid);
-                previousRpc.setUserUuid(null);
-                log.info("the account:{} now reconnect.", uuid);
+            // deal web thor login
+            if (AccessTypeEnum.web.equals(accessType)
+                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection))) {
                 break;
             }
 
-            if (!Objects.isNull(previousRpc)) {
-                log.warn("NOT MATCH SINGLE LOGIN either RECONNECT and connection id:{}, userUuid:{}, macAddr:{}, userId:{}",
-                        rpcConnection.getParticipantPrivateId(), uuid, rpcConnection.getMacAddr(), rpcConnection.getUserId());
-                if (Objects.equals(previousRpc.getMacAddr(), deviceMac) &&
-                        !Objects.equals(userInfo.get("status"), UserOnlineStatusEnum.offline.name())) {
-                    log.info("the account:{} now reconnect.", uuid);
-//                    rpcConnection.setReconnected(true);
-                    reconnect = true;
-                    if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
-                        Session session = sessionManager.getSession(previousRpc.getSessionId());
-                        Participant participant;
-                        if (Objects.nonNull(session) && Objects.nonNull(previousRpc.getUserId())
-                                && Objects.nonNull(participant = session.getParticipantByUserId(String.valueOf(previousRpc.getUserId())))) {
-                            cacheManage.updateReconnectInfo(uuid, participant.getParticipantPrivateId());
-                        }
-                    }
-                    rpcConnection.setUserUuid(uuid);
-                    previousRpc.setUserUuid(null);
-                    break;
-                }
-                errCode = ErrorCodeEnum.USER_ALREADY_ONLINE;
-                rpcConnection.setUserUuid(uuid);
-                break;
-            }
 
-            rpcConnection.setUserUuid(uuid);
-            log.info("NORMAL METHOD CALL ==> rpcConnection userUuid:{}, macAddr:{}, userId:{}",
-                    rpcConnection.getUserUuid(), rpcConnection.getMacAddr(), rpcConnection.getUserId());
         } while (false);
 
         if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
-            log.warn("AccessIn Warning. privateId:{}, errCode:{}", rpcConnection.getParticipantPrivateId(), errCode.name());
-            if (!Objects.equals(errCode, ErrorCodeEnum.USER_ALREADY_ONLINE)) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, errCode);
-                if (!Objects.equals(errCode, ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST)) {
-                    sessionManager.accessOut(rpcConnection);
-                }
-                return;
-            } else {
-                if (!forceLogin) {
-                    JsonObject result = new JsonObject();
-                    result.addProperty(ProtocolElements.ACCESS_IN_MAC_PARAM, !StringUtils.isEmpty(deviceMac) ? deviceMac : "");
-                    if (!Objects.isNull(device))
-                        result.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
-                    notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), result, errCode);
-                } else {
-                    assert previousRpc != null;
-                    try {
-                        // send remote login notify to current terminal
-                        previousRpc.setUserUuid(null);
-                        notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
-                    } catch (Exception e) {
-                        log.error("Exception when send remoteLoginNotify.", e);
-                    }
-
-                    if (!StringUtils.isEmpty(previousRpc.getSessionId())) {
-                        // leave room
-                        Session session = this.sessionManager.getSession(previousRpc.getSessionId());
-                        if (!Objects.isNull(session)) {
-                            Participant prePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
-                            if (!Objects.isNull(prePart)) {
-                                if (Objects.equals(OpenViduRole.MODERATOR, prePart.getRole())) {    // close room
-                                    this.sessionManager.dealSessionClose(previousRpc.getSessionId(), EndReason.closeSessionByModerator);
-                                } else {    // leave room
-                                    if (Objects.equals(ParticipantShareStatus.on, prePart.getShareStatus())) {
-                                        Participant preSharePart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.SHARING);
-                                        if (!Objects.isNull(preSharePart)) {
-                                            this.sessionManager.dealParticipantLeaveRoom(preSharePart, false, null);
-                                        }
-                                    }
-                                    this.sessionManager.dealParticipantLeaveRoom(prePart, true, null);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
+                    request.getId(), object, errCode);
+            return;
         }
+
+        // set necessary into rpc connection
+        rpcConnection.setUserUuid(uuid);
+        rpcConnection.setUserType(userType);
+        rpcConnection.setAccessType(accessType);
+        rpcConnection.setTerminalType(terminalType);
+        rpcConnection.setUserId(Long.valueOf(String.valueOf(userInfo.get("userId"))));
+        if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
+            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
+        }
+        rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT);
+
         // update user online status in cache
-        if (!webLogin) {
-            cacheManage.updateDeviceName(uuid, Objects.isNull(device) ? "" : device.getDeviceName());
+        if (AccessTypeEnum.terminal.equals(accessType)) {
             cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.online);
-
         }
-        log.info("accessIn rpcConnection userUuid:{}", rpcConnection.getUserUuid());
+
+        // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
-
-        if (reconnect) {
-            String conferenceId = previousRpc.getSessionId();
-            String previousRpcConnectId = previousRpc.getParticipantPrivateId();
-            rpcConnection.setSessionId(conferenceId);
-            if (StringUtils.isEmpty(conferenceId)) {
-                log.info("the account:{} previous rpc connect id:{} not in conference when reconnect", uuid, previousRpcConnectId);
-                notificationService.closeRpcSession(previousRpcConnectId);
-                return;
-            }
-
-            // Send user break line notify
-            JsonObject params = new JsonObject();
-            Participant part = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.MAJOR);
-            if (part == null) {
-                // maybe can not find participant,because of server is restart
-                log.warn("CAN NOT FIND THE PARTICIPANT, the account:{} previous rpc connect id:{} userId:{} in conferenceId:{} " +
-                        "when reconnect and then close it.", uuid, previousRpcConnectId, previousRpc.getUserId(), conferenceId);
-                notificationService.closeRpcSession(previousRpcConnectId);
-                return;
-            } else {
-                params.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM,
-                        part.getParticipantPublicId());
-            }
+    }
 
 
-            Participant preSharingPart = this.sessionManager.getParticipant(previousRpcConnectId, StreamType.SHARING);
-            JsonObject notifyObj = new JsonObject();
-            boolean endShareNotify = !Objects.isNull(preSharingPart);
-            if (endShareNotify) {
-                // Send reconnected participant stop publish previous sharing if exists
-                notifyObj.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-                        preSharingPart.getParticipantPublicId());
-                KurentoSession kurentoSession = (KurentoSession) sessionManager.getSession(conferenceId);
-                if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId()) &&
-                        kurentoSession.compositeService.getShareStreamId().contains(preSharingPart.getParticipantPublicId())) {
-                    kurentoSession.compositeService.setExistSharing(false);
-                    kurentoSession.compositeService.setShareStreamId(null);
-                }
-            }
+    private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection) {
+        ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
-            Participant preMajorPart = this.sessionManager.getParticipant(conferenceId, previousRpcConnectId, StreamType.MAJOR);
-            boolean endRollNotify = !Objects.isNull(preMajorPart) && Objects.equals(ParticipantHandStatus.speaker,
-                    preMajorPart.getHandStatus());
-            JsonObject endRollNotifyObj = new JsonObject();
-            if (endRollNotify) {
-                endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceId);
-                endRollNotifyObj.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, previousRpc.getUserId());
-
-                preMajorPart.changeHandStatus(ParticipantHandStatus.endSpeaker);
-            }
-
-            this.sessionManager.getParticipants(conferenceId).forEach(participant -> {
-                if (!Objects.equals(previousRpcConnectId, participant.getParticipantPrivateId())
-                        && Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                    RpcConnection rpc = notificationService.getRpcConnection(participant.getParticipantPrivateId());
-                    if (!Objects.isNull(rpc)) {
-                        if (Objects.equals(cacheManage.getUserInfoByUUID(rpc.getUserUuid()).get("status"),
-                                UserOnlineStatusEnum.online.name())) {
-                            if (endShareNotify) {
-                                notificationService.sendNotification(participant.getParticipantPrivateId(),
-                                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, notifyObj);
-                            }
-
-                            if (params.size() > 0) {
-                                notificationService.sendNotification(participant.getParticipantPrivateId(),
-                                        ProtocolElements.USER_BREAK_LINE_METHOD, params);
-                            }
-
-                            if (endRollNotify) {
-                                notificationService.sendNotification(participant.getParticipantPrivateId(),
-                                        ProtocolElements.END_ROLL_CALL_METHOD, endRollNotifyObj);
-                            }
-                        }
-                    }
-                }
-            });
+        // check HDC terminal ever online
+        String deviceStatus;
+        if (Objects.isNull(previousRpc) || !TerminalTypeEnum.HDC.equals(previousRpc.getTerminalType())
+                || Objects.equals(DeviceStatus.offline.name(), deviceStatus = cacheManage.getDeviceStatus(previousRpc.getSerialNumber()))
+                || Objects.equals(DeviceStatus.upgrading.name(), deviceStatus)) {
+            return ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
         }
+
+        // check HDC terminal necessary conditions
+        boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
+        Session session = !StringUtils.isEmpty(previousRpc.getSessionId()) ? sessionManager.getSession(previousRpc.getSessionId()) : null;
+        if (Objects.nonNull(session)) {     // HDC terminal in room
+            // return errorCode if HDC in room is not a moderator
+            Participant hdcPart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
+            if (Objects.nonNull(hdcPart) && OpenViduRole.MODERATOR.equals(hdcPart.getRole())) {
+                return ErrorCodeEnum.TERMINAL_IS_NOT_MODERATOR;
+            }
+
+            // check ever exists web THOR
+            Participant thorPart = session.getParticipants().stream().filter(participant ->
+                    OpenViduRole.THOR.equals(participant.getRole())).findAny().orElse(null);
+            if (!Objects.isNull(thorPart)) {
+                if (forceLogin) {
+                    // send remote login notify to current terminal
+                    notificationService.sendNotification(thorPart.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                    leaveRoomAfterConnClosed(thorPart.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+                    notificationService.closeRpcSession(thorPart.getParticipantPrivateId());
+                } else {
+                    log.info("thorPart privateId:{}, role:{}, userId:{} already exists.",
+                            thorPart.getParticipantPrivateId(), thorPart.getRole().name(), thorPart.getUserId());
+                    return ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                }
+            }
+        } else {    // HDC terminal not in room
+            String uuid = previousRpc.getUserUuid();
+            RpcConnection preLoginThorConnect = notificationService.getRpcConnections().stream()
+                    .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection)
+                            && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
+                            && Objects.equals(uuid, rpcConn.getUserUuid()))
+                    .findAny().orElse(null);
+
+            if (!Objects.isNull(preLoginThorConnect)) {
+                if (forceLogin) {
+                    notificationService.sendNotification(preLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                    leaveRoomAfterConnClosed(preLoginThorConnect.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+                    notificationService.closeRpcSession(preLoginThorConnect.getParticipantPrivateId());
+                } else {
+                    log.info("preLoginThorConnect privateId:{}, uuid:{}, accessType:{}",
+                            preLoginThorConnect.getParticipantPrivateId(), preLoginThorConnect.getUserUuid(), preLoginThorConnect.getAccessType().name());
+                    return ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                }
+            }
+        }
+
+        return errCode;
+    }
+
+    private void evictPreLoginPart(RpcConnection previousRpc) {
+        Map partInfo = cacheManage.getPartInfo(previousRpc.getUserUuid());
+        if (partInfo != null && !partInfo.isEmpty()) {
+            sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), previousRpc.getUserUuid(), true);
+        }
+
+        if (Objects.nonNull(notificationService.getRpcConnection(previousRpc.getParticipantPrivateId()))) {
+            notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+        }
+    }
+
+    private void checkDeviceInfoAndUpdate(Device device, Request<JsonObject> request, RpcConnection rpcConnection) {
+        String deviceVersion, ability = null, deviceModel = null, mac = null;
+        if (!Objects.equals(deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM), device.getVersion())
+                || !Objects.equals(ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM), device.getAbility())
+                || !Objects.equals(deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM), device.getDeviceModel())
+                || !Objects.equals(mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM), device.getDeviceMac())) {
+            Device dev = new Device();
+            dev.setSerialNumber(device.getSerialNumber());
+            dev.setVersion(deviceVersion);
+            dev.setAbility(ability);
+            dev.setDeviceModel(deviceModel);
+            dev.setDeviceMac(mac);
+
+            deviceMapper.updateBySerialNumberSelective(dev);
+        }
+
+        rpcConnection.setDeviceSerailNumber(device.getSerialNumber());
+        rpcConnection.setUsername(device.getDeviceName());
+        rpcConnection.setAbility(ability);
+        JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
     }
 
 }
