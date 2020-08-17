@@ -3,8 +3,8 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -41,11 +41,11 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
                 return;
             }
 
+            RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
             sessionManager.evictParticipantByUUID(evictPart.getSessionId(), evictPart.getUuid(), false);
 
-            RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
             if (!Objects.isNull(evictRpcConnection.getSerialNumber())) {
-                cacheManage.setDeviceStatus(evictRpcConnection.getSerialNumber(), DeviceStatus.online.name());
+                cacheManage.updateTerminalStatus(evictRpcConnection, TerminalStatus.online);
             }
         } else {
             log.error("Error: participant {} is not a moderator", participant.getParticipantPublicId());
