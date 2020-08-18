@@ -780,6 +780,7 @@ public class Session implements SessionInterface {
 	public void putPartOnWallAutomatically(SessionManager sessionManager) {
 		if (closing) {
 			log.info("session:{} is closing, no need to putPartOnWallAutomatically.", sessionId);
+			return;
 		}
 		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() > openviduConfig.getMcuMajorPartLimit()) {
 			List<String> publishedParts = new ArrayList<>(16);
@@ -866,6 +867,7 @@ public class Session implements SessionInterface {
 	public synchronized void reorder(String moderatorPublicId) {
 		if (closing) {
 			log.info("session:{} is closing, no need to reorder mcu layout.", sessionId);
+			return;
 		}
     	JsonArray result = new JsonArray(50);
     	JsonArray partExcludeShareAndModerator = new JsonArray(50);
@@ -895,6 +897,7 @@ public class Session implements SessionInterface {
 	public synchronized boolean leaveRoomSetLayout(Participant participant, String moderatePublicId) {
 		if (closing) {
 			log.info("session:{} is closing, no need to leaveRoomSetLayout mcu layout.", sessionId);
+			return false;
 		}
 		boolean changed = false;
 		for (JsonElement element : majorShareMixLinkedArr) {
@@ -978,7 +981,6 @@ public class Session implements SessionInterface {
 		} else {
 			log.info("session:{} is closing, no need to invokeKmsConferenceLayout mcu layout.", sessionId);
 		}
-
 
 		return 1;
 	}
