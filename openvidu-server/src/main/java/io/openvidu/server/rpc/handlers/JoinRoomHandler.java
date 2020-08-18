@@ -82,10 +82,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (StreamType.MAJOR.equals(streamType)) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     if (!partInfo.isEmpty()) {
-                        String roomId;
-                        sessionManager.evictParticipantByUUID(roomId = partInfo.get("roomId").toString(),
-                                rpcConnection.getUserUuid(), !sessionId.equals(roomId) ?
-                                        Collections.singletonList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR) : Collections.emptyList());
+                        String roomId = partInfo.get("roomId").toString();
+                        sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
+                                !sessionId.equals(roomId) ? Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)
+                                        : Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
                     }
                 }
 
