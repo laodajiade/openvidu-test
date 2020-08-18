@@ -86,6 +86,8 @@ public class Session implements SessionInterface {
 	@Setter
 	private CorpMcuConfig corpMcuConfig;
 
+	// 状态：会议关闭中(屏蔽布局等操作)
+	protected volatile boolean closing = false;
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
 	protected AtomicInteger activePublishers = new AtomicInteger(0);
@@ -592,6 +594,11 @@ public class Session implements SessionInterface {
 		}
 	}
 
+	public void setClosing(boolean closing) {
+    	log.info("set session:{} status ===> closing", sessionId);
+		this.closing = closing;
+	}
+
 	public boolean isLocking() {
 		return locking;
 	}
@@ -771,6 +778,9 @@ public class Session implements SessionInterface {
 	// TODO record the order when part publish and put the first order part which down the wall
 	// current version put the random participant who down the wall
 	public void putPartOnWallAutomatically(SessionManager sessionManager) {
+		if (closing) {
+			log.info("session:{} is closing, no need to putPartOnWallAutomatically.", sessionId);
+		}
 		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() > openviduConfig.getMcuMajorPartLimit()) {
 			List<String> publishedParts = new ArrayList<>(16);
 			for (JsonElement jsonElement : majorShareMixLinkedArr) {
@@ -854,6 +864,9 @@ public class Session implements SessionInterface {
 	}
 
 	public synchronized void reorder(String moderatorPublicId) {
+		if (closing) {
+			log.info("session:{} is closing, no need to reorder mcu layout.", sessionId);
+		}
     	JsonArray result = new JsonArray(50);
     	JsonArray partExcludeShareAndModerator = new JsonArray(50);
     	JsonObject moderatorObj = null, shareObj = null;
@@ -880,6 +893,9 @@ public class Session implements SessionInterface {
 	}
 
 	public synchronized boolean leaveRoomSetLayout(Participant participant, String moderatePublicId) {
+		if (closing) {
+			log.info("session:{} is closing, no need to leaveRoomSetLayout mcu layout.", sessionId);
+		}
 		boolean changed = false;
 		for (JsonElement element : majorShareMixLinkedArr) {
 			JsonObject jsonObject = element.getAsJsonObject();
@@ -949,15 +965,20 @@ public class Session implements SessionInterface {
     }
 
 	public synchronized int invokeKmsConferenceLayout(EndpointTypeEnum... typeEnums) {
-		KurentoSession kurentoSession = (KurentoSession) this;
-		KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
-		try {
-			kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
-					majorShareMixLinkedArr, kurentoClient.getSessionId(), typeEnums));
-		} catch (IOException e) {
-			log.error("Exception:\n", e);
-			return 0;
+		if (!closing) {
+			KurentoSession kurentoSession = (KurentoSession) this;
+			KurentoClient kurentoClient = kurentoSession.getKms().getKurentoClient();
+			try {
+				kurentoClient.sendJsonRpcRequest(composeLayoutInvokeRequest(kurentoSession.getPipeline().getId(),
+						majorShareMixLinkedArr, kurentoClient.getSessionId(), typeEnums));
+			} catch (IOException e) {
+				log.error("Exception:\n", e);
+				return 0;
+			}
+		} else {
+			log.info("session:{} is closing, no need to invokeKmsConferenceLayout mcu layout.", sessionId);
 		}
+
 
 		return 1;
 	}

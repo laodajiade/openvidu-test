@@ -576,8 +576,9 @@ public abstract class SessionManager {
 		}
 		Set<Participant> participants = getParticipants(sessionId);
 
+		// set session status: closing
+        session.setClosing(true);
 		boolean sessionClosedByLastParticipant = false;
-
 		if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
 			session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
 		}
