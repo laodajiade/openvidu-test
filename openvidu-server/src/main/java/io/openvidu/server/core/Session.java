@@ -782,7 +782,7 @@ public class Session implements SessionInterface {
 			log.info("session:{} is closing, no need to putPartOnWallAutomatically.", sessionId);
 			return;
 		}
-		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() > openviduConfig.getMcuMajorPartLimit()) {
+		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() >= openviduConfig.getMcuMajorPartLimit()) {
 			List<String> publishedParts = new ArrayList<>(16);
 			for (JsonElement jsonElement : majorShareMixLinkedArr) {
 				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
