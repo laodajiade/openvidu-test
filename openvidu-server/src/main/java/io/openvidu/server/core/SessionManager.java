@@ -585,9 +585,7 @@ public abstract class SessionManager {
 
 		for (Participant p : participants) {
 			try {
-				if (!p.isClosed()) {
-					sessionClosedByLastParticipant = this.evictParticipant(p, null, null, reason);
-				}
+                sessionClosedByLastParticipant = this.evictParticipant(p, null, null, reason);
 			} catch (OpenViduException e) {
 				log.warn("Error evicting participant '{}' from session '{}'", p.getParticipantPublicId(), sessionId, e);
 			}
