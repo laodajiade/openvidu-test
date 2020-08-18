@@ -151,6 +151,7 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_METHOD = "accessIn";
 	public static final String ACCESS_IN_UUID_PARAM = "account";
 	public static final String ACCESS_IN_TOKEN_PARAM = "token";
+	public static final String ACCESS_IN_UDID_PARAM = "udid";
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";
     public static final String ACCESS_IN_FORCE_LOGIN_PARAM = "forceLogin";

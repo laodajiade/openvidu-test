@@ -39,6 +39,7 @@ public class AccessInHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
         String token = getStringParam(request, ProtocolElements.ACCESS_IN_TOKEN_PARAM);
+        String udid = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_UDID_PARAM);   // Unique Device Identifier
         String deviceSerialNumber = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_SERIAL_NUMBER_PARAM);
         AccessTypeEnum accessType = AccessTypeEnum.valueOf(getStringParam(request, ProtocolElements.ACCESS_IN_ACCESSTYPE_PARAM));
         String userTypeStr = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_USERTYPE_PARAM);
@@ -104,8 +105,9 @@ public class AccessInHandler extends RpcAbstractHandler {
             }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 
             // check if single login
-            if (AccessTypeEnum.terminal.equals(accessType) && Objects.nonNull(previousRpc)) {
-                log.error("SINGLE LOGIN ==> User:{} already login and privateId:{}", userInfo.get("userUuid"), previousRpc.getParticipantPrivateId());
+            if (AccessTypeEnum.terminal.equals(accessType) && Objects.nonNull(previousRpc) && !Objects.equals(previousRpc.getUdid(), udid)) {
+                log.error("SINGLE LOGIN ==> User:{} already login and pre privateId:{}. current udid:{}, previous udid:{}",
+                        userInfo.get("userUuid"), previousRpc.getParticipantPrivateId(), udid, previousRpc.getUdid());
                 // check previous rpc connection ever in the room
                 evictPreLoginPart(previousRpc);
             }
@@ -125,6 +127,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
         // set necessary into rpc connection
         rpcConnection.setUserUuid(uuid);
+        rpcConnection.setUdid(udid);
         rpcConnection.setUserType(userType);
         rpcConnection.setAccessType(accessType);
         rpcConnection.setTerminalType(terminalType);
@@ -143,7 +146,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }
-
 
     private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection) {
         // check HDC terminal ever online

@@ -52,6 +52,7 @@ public class RpcConnection {
 	private String project;
 	private String serialNumber;
 	private String macAddr;
+	private String udid;
 	private boolean isReconnected;
 	private AccessTypeEnum accessType;
 	private Long createTime;
@@ -108,6 +109,14 @@ public class RpcConnection {
 	public String getSerialNumber() { return this.serialNumber; }
 
 	public void setDeviceSerailNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+	public String getUdid() {
+		return udid;
+	}
+
+	public void setUdid(String udid) {
+		this.udid = udid;
+	}
 
 	public String getMacAddr() {
 		return macAddr;
