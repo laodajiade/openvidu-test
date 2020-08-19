@@ -208,8 +208,10 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
-    public void recordWsExceptionLink(RpcConnection rpc) {
-        roomRedisTemplate.opsForValue().set(String.format(BrokerChannelConstans.CLIENT_WS_EXCEPTION_KEY, rpc.getSessionId(), rpc.getParticipantPrivateId()), 1,
-                (TerminalTypeEnum.HDC.equals(rpc.getTerminalType()) ? hdcRetainInRoomInterval : otherTerminalRetainInRoomInterval), TimeUnit.SECONDS);
+    public void recordWsExceptionLink(RpcConnection rpc, boolean overKeepAlive) {
+        long expireTime = TerminalTypeEnum.HDC.equals(rpc.getTerminalType()) ? hdcRetainInRoomInterval : otherTerminalRetainInRoomInterval;
+        expireTime = overKeepAlive ? expireTime -20 : expireTime;
+        roomRedisTemplate.opsForValue().set(String.format(BrokerChannelConstans.CLIENT_WS_EXCEPTION_KEY, rpc.getSessionId(), rpc.getParticipantPrivateId()),
+                1, expireTime, TimeUnit.SECONDS);
     }
 }

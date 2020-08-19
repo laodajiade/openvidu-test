@@ -131,13 +131,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		boolean everEvictUser = false;
+		boolean overKeepAlive = false;
 		log.info("After connection closed for WebSocket session: {} - Status: {}", rpcSession.getSessionId(), status);
 		if (!Objects.isNull(status)) {
 			String message;
 			switch (status) {
 				case "Close for not receive ping from client":
-					everEvictUser = true;
+					overKeepAlive = true;
 					message = "Evicting participant with private id {} because of a network disconnection";
 					break;
 				case "Connection reset by peer":
@@ -150,10 +150,10 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			log.error(message, rpc.getParticipantPrivateId());
 		} else {
 			log.info("afterConnectionClosed and the status is null, private id : {}", rpcSession.getSessionId());
-			everEvictUser = true;
+//			everEvictUser = true;
 		}
 
-		if (everEvictUser) {
+//		if (everEvictUser) {
 			// clear the rpc connection and change the terminal status
 //			RpcConnection rpcConnection = sessionManager.accessOut(rpc);
 //			sessionManager.evictParticipantWhenDisconnect(rpcConnection, Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR,
@@ -161,11 +161,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			cacheManage.updateTerminalStatus(rpc, TerminalStatus.offline);
 			if (AccessTypeEnum.terminal.equals(rpc.getAccessType()) && Objects.nonNull(rpc.getTerminalType())
 					&& Objects.nonNull(rpc.getUserUuid()) && Objects.nonNull(rpc.getSessionId())) {
-				cacheManage.recordWsExceptionLink(rpc);
+				cacheManage.recordWsExceptionLink(rpc, overKeepAlive);
 			} else {
 				notificationService.closeRpcSession(rpcSession.getSessionId());
 			}
-		}
+//		}
 	}
 
 	@Override

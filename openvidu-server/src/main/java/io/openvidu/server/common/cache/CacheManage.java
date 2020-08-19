@@ -61,5 +61,5 @@ public interface CacheManage {
 
     void delConferenceRelativeKey(String key);
 
-    void recordWsExceptionLink(RpcConnection rpc);
+    void recordWsExceptionLink(RpcConnection rpc, boolean overKeepAlive);
 }
