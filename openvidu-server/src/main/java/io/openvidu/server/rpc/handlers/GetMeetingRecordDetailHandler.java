@@ -35,7 +35,7 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
         respObj.addProperty("roomId", conference.getRoomId());
         respObj.addProperty("createAt", conference.getStartTime().getTime());
 
-        String mixParam = getStringParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_MIX_PARAM);
+        String mixParam = getStringOptionalParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_MIX_PARAM);
         ConferencePartHistory search = new ConferencePartHistory();
         search.setRuid(ruid);
         search.setStatus(ParticipantStatusEnum.PROCESS.getStatus());
