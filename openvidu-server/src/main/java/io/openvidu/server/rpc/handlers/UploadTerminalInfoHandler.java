@@ -2,7 +2,6 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -24,15 +23,8 @@ import java.util.concurrent.ConcurrentMap;
 public class UploadTerminalInfoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String ability = getStringOptionalParam(request, ProtocolElements.UPLOADTERMINALINFO_ABILITY_PARAM);
-
-        if (StringUtils.isEmpty(ability)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-            return;
-        }
-
-        rpcConnection.setAbility(ability);
+        String ability;
+        rpcConnection.setAbility(ability = getStringOptionalParam(request, ProtocolElements.UPLOADTERMINALINFO_ABILITY_PARAM));
 
         Session session;
         if (!StringUtils.isEmpty(rpcConnection.getSessionId()) &&
