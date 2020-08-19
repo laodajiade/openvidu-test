@@ -2,6 +2,7 @@ package io.openvidu.server.utils;
 
 import java.util.Objects;
 import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringUtil {
@@ -37,6 +38,15 @@ public class StringUtil {
     public static boolean passwordCheck(String password) {
         if (Objects.isNull(password)) return false;
         return Pattern.compile(passwordRegs).matcher(password).matches();
+    }
+
+    public static void main(String[] args) {
+        String temp = "ws:link:exception:80100201111:q7vs5c61tskvvesghg98cvpvcu";
+        Pattern pattern = Pattern.compile("^ws:link:exception:(\\d+):(\\w{32})$");
+        Matcher matcher;
+        System.out.println((matcher = pattern.matcher(temp)).matches());
+
+        System.out.println("end");
     }
 
 }

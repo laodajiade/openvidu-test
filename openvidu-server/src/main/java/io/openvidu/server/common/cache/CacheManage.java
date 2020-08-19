@@ -60,4 +60,6 @@ public interface CacheManage {
     void recordSubscriberSetRollCall(String sessionId, Long startTime, String uuid);
 
     void delConferenceRelativeKey(String key);
+
+    void recordWsExceptionLink(RpcConnection rpc);
 }

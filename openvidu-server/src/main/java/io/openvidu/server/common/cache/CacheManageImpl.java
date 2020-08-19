@@ -1,11 +1,14 @@
 package io.openvidu.server.common.cache;
 
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -24,6 +27,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class CacheManageImpl implements CacheManage {
+
+    @Value("${hdc.retain.in.room.interval}")
+    private long hdcRetainInRoomInterval;
+
+    @Value("${other.terminal.retain.in.room.interval}")
+    private long otherTerminalRetainInRoomInterval;
 
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
@@ -196,5 +205,11 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public void delConferenceRelativeKey(String key) {
         roomRedisTemplate.delete(key);
+    }
+
+    @Override
+    public void recordWsExceptionLink(RpcConnection rpc) {
+        roomRedisTemplate.opsForValue().set(String.format(BrokerChannelConstans.CLIENT_WS_EXCEPTION_KEY, rpc.getSessionId(), rpc.getParticipantPrivateId()), 1,
+                (TerminalTypeEnum.HDC.equals(rpc.getTerminalType()) ? hdcRetainInRoomInterval : otherTerminalRetainInRoomInterval), TimeUnit.SECONDS);
     }
 }

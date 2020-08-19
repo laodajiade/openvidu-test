@@ -707,6 +707,7 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public void evictParticipantWhenDisconnect(RpcConnection rpcConnection, List<EvictParticipantStrategy> evictStrategies) {
 		if (StringUtils.isEmpty(rpcConnection.getSessionId())) {
+			rpcNotificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
 			return;
 		}
 		Session session;
@@ -716,6 +717,7 @@ public class KurentoSessionManager extends SessionManager {
 				&& Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
 			Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(rpcConnection.getUserUuid());
 			if (samePrivateIdParts == null || samePrivateIdParts.isEmpty()) {
+				rpcNotificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
 				return;
 			}
 
