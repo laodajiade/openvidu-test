@@ -307,7 +307,7 @@ public class KurentoSessionManager extends SessionManager {
 	public RpcConnection accessOut(RpcConnection rpcConnection) {
 		if (!Objects.isNull(rpcConnection)) {
 			sessionEventsHandler.closeRpcSession(rpcConnection.getParticipantPrivateId());
-			cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline);
+//			cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline);
 		}
 		return rpcConnection;
 	}
