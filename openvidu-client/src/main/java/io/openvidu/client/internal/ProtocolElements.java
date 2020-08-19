@@ -411,6 +411,7 @@ public class ProtocolElements {
 	public static final String GET_SUB_DEVORUSER_METHOD = "getSubDevOrUser";
 	public static final String GET_SUB_DEVORUSER_ORG_ID = "orgId";
 	public static final String GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM  = "serialNumber";
+	public static final String GET_SUB_DEVORUSER_DEVICE_NAME_PARAM  = "deviceName";
 	public static final String GET_SUB_DEVORUSER_USER_NAME_PARAM  = "username";
 
 	public static final String GET_SUB_DEVORUSER_ACCOUNT_PARAM  = "account";

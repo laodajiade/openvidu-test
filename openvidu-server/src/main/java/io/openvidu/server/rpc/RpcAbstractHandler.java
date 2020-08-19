@@ -274,8 +274,9 @@ public abstract class RpcAbstractHandler {
         for (DeviceDept device : devices) {
             JsonObject jsonDevice = new JsonObject();
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
-            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USER_NAME_PARAM, device.getDeviceName());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, device.getUuid());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, device.getUserId());
             String status = cacheManage.getDeviceStatus(device.getSerialNumber());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM,
                     !StringUtils.isEmpty(status) ? status : DeviceStatus.offline.name());
