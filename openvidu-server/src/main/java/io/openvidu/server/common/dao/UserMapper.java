@@ -1,5 +1,6 @@
 package io.openvidu.server.common.dao;
 
+import io.openvidu.server.common.pojo.SoftUser;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 
@@ -28,4 +29,6 @@ public interface UserMapper {
     List<User> getUsersByUserIdsList(List<Long> userIds);
 
     List<UserDeviceDeptInfo> queryUserInfoByUserIds(List<Long> userIds);
+
+    List<SoftUser> selectSoftUserByDeptId(Long deptId);
 }

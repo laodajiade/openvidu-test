@@ -13,6 +13,7 @@ import io.openvidu.server.common.manage.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.DeviceDept;
+import io.openvidu.server.common.pojo.SoftUser;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
@@ -25,6 +26,7 @@ import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -272,9 +274,8 @@ public abstract class RpcAbstractHandler {
         for (DeviceDept device : devices) {
             JsonObject jsonDevice = new JsonObject();
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
-            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICE_NAME_PARAM, device.getDeviceName());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USER_NAME_PARAM, device.getDeviceName());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, device.getUuid());
-            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USERID_PARAM, device.getUserId());
             String status = cacheManage.getDeviceStatus(device.getSerialNumber());
             jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM,
                     !StringUtils.isEmpty(status) ? status : DeviceStatus.offline.name());
@@ -282,6 +283,35 @@ public abstract class RpcAbstractHandler {
             DeviceList.add(jsonDevice);
         }
         return  DeviceList;
+
+    }
+
+    protected JsonArray accountList(List<DeviceDept> devices, List<SoftUser> softUsers) {
+        JsonArray accountList = new JsonArray();
+        for (DeviceDept device : devices) {
+            JsonObject jsonDevice = new JsonObject();
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, device.getSerialNumber());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USER_NAME_PARAM, device.getDeviceName());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, device.getUuid());
+            String status = cacheManage.getDeviceStatus(device.getSerialNumber());
+            jsonDevice.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM,
+                    !StringUtils.isEmpty(status) ? status : DeviceStatus.offline.name());
+
+            accountList.add(jsonDevice);
+        }
+        if (!CollectionUtils.isEmpty(softUsers)) {
+            softUsers.stream().forEach(softUser -> {
+                JsonObject softUserJson = new JsonObject();
+                softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, "");
+                softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USER_NAME_PARAM, softUser.getUsername());
+                softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, softUser.getUuid());
+                String status = cacheManage.getDeviceStatus(String.valueOf(softUser.getUuid()));
+                softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM,
+                        !StringUtils.isEmpty(status) ? status : DeviceStatus.offline.name());
+                accountList.add(softUserJson);
+            });
+        }
+        return  accountList;
 
     }
 
