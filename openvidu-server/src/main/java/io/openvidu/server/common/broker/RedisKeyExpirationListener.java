@@ -40,7 +40,7 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
         String expiredKey = message.toString();
         if (expiredKey.startsWith("ws:link:exception")) {
 //        if ((matcher = keyPattern.matcher(expiredKey)).matches()) {
-            log.info("receive expire ws link key:" + expiredKey);
+            log.info("receive expire ws link key ===> " + expiredKey);
 //            String sessionId = matcher.group(1);
 //            String privateId = matcher.group(2);
             String privateId = expiredKey.split(":")[4];
