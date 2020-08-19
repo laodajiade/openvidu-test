@@ -728,7 +728,7 @@ public class KurentoSessionManager extends SessionManager {
 			});
 
 			// send user break line
-			session.getMajorPartEachInclueThorConnect().forEach(participant ->
+			session.getMajorPartEachIncludeThorConnect().forEach(participant ->
 					breakLineNotifyParams.forEach(jsonObject ->
 							rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
 									ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
@@ -772,7 +772,7 @@ public class KurentoSessionManager extends SessionManager {
 
                 // notify clients mcu layout changed
                 JsonObject notifyParam = session.getLayoutNotifyInfo();
-                session.getMajorPartEachConnect().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
+                session.getMajorPartEachIncludeThorConnect().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
             }
         }
@@ -795,7 +795,7 @@ public class KurentoSessionManager extends SessionManager {
 		// check if include moderator
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
-		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachInclueThorConnect();
+		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachIncludeThorConnect();
 		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
                 && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
 			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);

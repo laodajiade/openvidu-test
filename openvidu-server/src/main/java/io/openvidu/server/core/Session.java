@@ -412,7 +412,7 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
-	public Set<Participant> getMajorPartEachInclueThorConnect() {
+	public Set<Participant> getMajorPartEachIncludeThorConnect() {
 		checkClosed();
 		return this.participants.values().stream()
 				.map(v -> v.get(StreamType.MAJOR.name()))
