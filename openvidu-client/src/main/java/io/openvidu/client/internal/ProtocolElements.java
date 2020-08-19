@@ -354,9 +354,10 @@ public class ProtocolElements {
 
 	public static final String SET_AUDIO_SPEAKER_STATUS_METHOD = "setAudioSpeakerStatus";
 	public static final String SET_AUDIO_SPEAKER_ID_PARAM = "roomId";
-	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "source";
-	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targets";
+	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targetIds";
 	public static final String SET_AUDIO_SPEAKER_STATUS_PARAM = "status";
+	public static final String SET_AUDIO_SPEAKER_USERNAME_PARAM = "username";
 
 	public static final String SET_SHARE_POWER_METHOD = "setSharePower";
 	public static final String SET_SHARE_POWER_ID_PARAM = "roomId";
@@ -410,12 +411,14 @@ public class ProtocolElements {
 	public static final String GET_SUB_DEVORUSER_METHOD = "getSubDevOrUser";
 	public static final String GET_SUB_DEVORUSER_ORG_ID = "orgId";
 	public static final String GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM  = "serialNumber";
-	public static final String GET_SUB_DEVORUSER_DEVICE_NAME_PARAM  = "deviceName";
+	public static final String GET_SUB_DEVORUSER_USER_NAME_PARAM  = "username";
+
 	public static final String GET_SUB_DEVORUSER_ACCOUNT_PARAM  = "account";
 	public static final String GET_SUB_DEVORUSER_USERID_PARAM  = "userId";
     public static final String GET_SUB_DEVORUSER_DEVICESTATUS_PARAM  = "deviceStatus";
 
 	public static final String GET_SUB_DEVORUSER_DEVICE_LIST_PARAM  = "deviceList";
+	public static final String GET_SUB_DEVORUSER_ACCOUNT_LIST_PARAM  = "accountList";
 
 	public static  final  String START_PTZ_CONTROL_METHOD = "startPtzControl";
 	public static  final  String START_PTZ_CONTROL_SERIAL_NUMBER_PARM = "serialNumber";
@@ -646,6 +649,17 @@ public class ProtocolElements {
     public static final String SWITCHVOICEMODE_OPERATION_PARAM = "operation";
     public static final String SWITCHVOICEMODE_NOTIFY_METHOD = "switchVoiceModeNotify";
     public static final String SWITCHVOICEMODE_SENDERCONNECTIONID_PARAM = "senderConnectionId";
+
+	public static final String SET_PART_OPER_SPEAKER_METHOD = "setPartOperSpeaker";
+    public static final String SET_PART_OPER_SPEAKER_ID_PARAM = "roomId";
+	public static final String SET_PART_OPER_SPEAKER_SOURCE_PARAM = "source";
+	public static final String SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM = "allowPartOperSpeaker";
+
+	public static final String APPLY_OPEN_SPEAKER_STATUS_METHOD = "applyOpenSpeakerStatus";
+	public static final String APPLY_OPEN_SPEAKER_STATUS_ID_PARAM = "roomId";
+	public static final String APPLY_OPEN_SPEAKER_STATUS_SOURCE_ID_PARAM = "sourceId";
+	public static final String APPLY_OPEN_SPEAKER_STATUS_TARGET_ID_PARAM = "targetId";
+	public static final String APPLY_OPEN_SPEAKER_STATUS_USERNAME_PARAM = "username";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,

@@ -24,6 +24,8 @@ public class SessionPreset {
 
     private SessionPresetEnum allowPartOperShare;
 
+    private SessionPresetEnum allowPartOperSpeaker;
+
     public void setMicStatusInRoom(SessionPresetEnum micStatusInRoom) { this.micStatusInRoom = micStatusInRoom; }
 
     public SessionPresetEnum getMicStatusInRoom() { return this.micStatusInRoom; }
@@ -60,6 +62,14 @@ public class SessionPreset {
 
     public SessionPresetEnum getAllowPartOperShare() { return this.allowPartOperShare; }
 
+    public SessionPresetEnum getAllowPartOperSpeaker() {
+        return allowPartOperSpeaker;
+    }
+
+    public void setAllowPartOperSpeaker(SessionPresetEnum allowPartOperSpeaker) {
+        this.allowPartOperSpeaker = allowPartOperSpeaker;
+    }
+
     public SessionPreset() {
         this.micStatusInRoom = SessionPresetEnum.off;
         this.videoStatusInRoom = SessionPresetEnum.on;
@@ -70,6 +80,7 @@ public class SessionPreset {
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
         this.allowPartOperMic = SessionPresetEnum.off;
         this.allowPartOperShare = SessionPresetEnum.off;
+        this.allowPartOperSpeaker = SessionPresetEnum.on;
     }
 
     public SessionPreset(String micStatusInRoom,
@@ -90,6 +101,7 @@ public class SessionPreset {
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
         this.allowPartOperMic = SessionPresetEnum.off;
         this.allowPartOperShare = SessionPresetEnum.off;
+        this.allowPartOperSpeaker = SessionPresetEnum.on;
 
         if (!StringUtils.isEmpty(micStatusInRoom)) {
             this.micStatusInRoom = SessionPresetEnum.valueOf(micStatusInRoom);

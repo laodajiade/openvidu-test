@@ -8,6 +8,8 @@ import io.openvidu.server.common.enums.ParticipantSpeakerStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.core.SessionPreset;
+import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +31,8 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM);
-        String source = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM);
-        List<String> accountTargets = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGETS_PARAM);
+        String sourceId = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM);
+        List<String> accountTargets = getStringListParam(request, ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM);
         String status = getStringParam(request, ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM);
 
         Session session = sessionManager.getSession(sessionId);
@@ -41,11 +43,19 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
             return;
         }
         // verify request parameters
-        Participant moderator = session.getModeratorPart();
-        if (CollectionUtils.isEmpty(accountTargets) && !source.equals(moderator.getUuid())) {
+        Participant moderator = session.getPartByPrivateIdAndStreamType(rpcConnection.getParticipantPrivateId(), StreamType.MAJOR);
+        if (CollectionUtils.isEmpty(accountTargets) && !moderator.getRole().isController()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
+        }
+        if (!moderator.getRole().isController()) {
+            SessionPreset preset = session.getPresetInfo();
+            if (preset.getAllowPartOperSpeaker().equals(SessionPresetEnum.off)) {
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.MODERATOR_PROHIBIT_ON_SPEAKER);
+                return;
+            }
         }
 
         if (CollectionUtils.isEmpty(accountTargets)) {
@@ -63,7 +73,8 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
             });
         }
 
-
+        JsonObject notifyObj = request.getParams().deepCopy();
+        notifyObj.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_USERNAME_PARAM,session.getParticipantByUUID(sourceId).getUsername());
         Set<Participant> participants = session.getParticipants();
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {

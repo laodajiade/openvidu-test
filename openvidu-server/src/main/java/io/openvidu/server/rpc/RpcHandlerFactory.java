@@ -257,6 +257,10 @@ public class RpcHandlerFactory {
     private GetH5PagesHandler getH5PagesHandler;
     @Resource
     private SwitchVoiceModeHandler switchVoiceModeHandler;
+    @Resource
+    private SetPartOperSpeakerHandler setPartOperSpeakerHandler;
+    @Resource
+    private ApplyOpenSpeakerStatusHandler applyOpenSpeakerStatusHandler;
 
 
     @PostConstruct
@@ -343,6 +347,9 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.UPDATEUSERNAME_METHOD,                         updateUsernameHandler);
         handlersMap.put(ProtocolElements.GETH5PAGES_METHOD,                             getH5PagesHandler);
         handlersMap.put(ProtocolElements.SWITCHVOICEMODE_METHOD,                        switchVoiceModeHandler);
+        handlersMap.put(ProtocolElements.SET_PART_OPER_SPEAKER_METHOD,                  setPartOperSpeakerHandler);
+        handlersMap.put(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD,              applyOpenSpeakerStatusHandler);
+
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

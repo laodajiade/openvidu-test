@@ -74,8 +74,18 @@
     </foreach>
   </select>
 
+  <select id="selectSoftUserByDeptId" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.SoftUser">
+    select
+    su.uuid,
+    su.username
+    from sd_user_dept sud
+    inner join sd_user su on sud.user_id = su.id
+    where su.type = 0
+    and sud.dept_id  = #{deptId,jdbcType=BIGINT}
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_user
     where id = #{id,jdbcType=BIGINT}
@@ -86,11 +96,11 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.User" >
-    insert into sd_user (id, uuid, username, 
+    insert into sd_user (id, uuid, username,
       phone, email, password, title,
       project, create_time, update_time
       )
-    values (#{id,jdbcType=BIGINT}, #{uuid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=BIGINT}, #{uuid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR},
       #{phone,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR},
       #{project,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
       )
