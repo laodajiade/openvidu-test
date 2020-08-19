@@ -715,7 +715,7 @@ public class KurentoSessionManager extends SessionManager {
 		if (partInfo != null && !partInfo.isEmpty() && partInfo.containsKey("roomId")
 				&& rpcConnection.getSessionId().equals(partInfo.get("roomId").toString())
 				&& Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
-			Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(rpcConnection.getUserUuid());
+			Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(rpcConnection.getParticipantPrivateId());
 			if (samePrivateIdParts == null || samePrivateIdParts.isEmpty()) {
 				rpcNotificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
 				return;
