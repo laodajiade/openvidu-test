@@ -81,7 +81,7 @@ public enum ErrorCodeEnum {
     CONFERENCE_LIVE_NOT_START(13032, "会议尚未开始直播"),
     CONFERENCE_RECORD_FREQUENT_OPERATION(13034, "会议录制操作频繁，请稍后再试"),
     JOIN_ROOM_DUPLICATELY(13035, "重复入会"),
-    MODERATOR_PROHIBIT_ON_SPEAKER(130034,"主持人禁止开启扬声器"),
+    MODERATOR_PROHIBIT_ON_SPEAKER(13039,"主持人禁止开启扬声器"),
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中"),
     COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
