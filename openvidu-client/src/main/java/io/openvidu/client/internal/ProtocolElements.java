@@ -354,8 +354,8 @@ public class ProtocolElements {
 
 	public static final String SET_AUDIO_SPEAKER_STATUS_METHOD = "setAudioSpeakerStatus";
 	public static final String SET_AUDIO_SPEAKER_ID_PARAM = "roomId";
-	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "sourceId";
-	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targetIds";
+	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "source";
+	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targets";
 	public static final String SET_AUDIO_SPEAKER_STATUS_PARAM = "status";
 	public static final String SET_AUDIO_SPEAKER_USERNAME_PARAM = "username";
 
