@@ -95,7 +95,7 @@ public class CacheManageImpl implements CacheManage {
                     tokenStringTemplate.boundHashOps(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + rpcConnection.getUserUuid());
 
             Object preUpdateTime = boundHashOperations.get("updateTime");
-            if (Objects.isNull(preUpdateTime) || rpcConnection.getCreateTime().compareTo(Long.valueOf(preUpdateTime.toString())) > 0) {
+            if (Objects.isNull(preUpdateTime) || rpcConnection.getCreateTime().compareTo(Long.valueOf(preUpdateTime.toString())) >= 0) {
                 boundHashOperations.put("status", terminalStatus.name());
                 boundHashOperations.put("updateTime", String.valueOf(rpcConnection.getCreateTime()));
                 log.info("Update user online status in cache. uuid:{}, updateStatus:{}, updateTime:{}",
