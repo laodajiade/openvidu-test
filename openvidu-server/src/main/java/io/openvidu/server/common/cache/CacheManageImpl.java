@@ -8,6 +8,7 @@ import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -88,12 +89,26 @@ public class CacheManageImpl implements CacheManage {
             return;
         }
 
+        boolean updateDevStatus = false;
         if (!StringUtils.isEmpty(rpcConnection.getUserUuid())) {
-            tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + rpcConnection.getUserUuid(), "status", terminalStatus.name());
-            log.info("Update user online status in cache. uuid:{}, updateStatus:{}", rpcConnection.getUserUuid(), terminalStatus.name());
+            BoundHashOperations<String, String, Object> boundHashOperations =
+                    tokenStringTemplate.boundHashOps(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + rpcConnection.getUserUuid());
+
+            Object preUpdateTime = boundHashOperations.get("updateTime");
+            if (Objects.isNull(preUpdateTime) || rpcConnection.getCreateTime().compareTo(Long.valueOf(preUpdateTime.toString())) > 0) {
+                boundHashOperations.put("status", terminalStatus.name());
+                boundHashOperations.put("updateTime", String.valueOf(rpcConnection.getCreateTime()));
+                log.info("Update user online status in cache. uuid:{}, updateStatus:{}, updateTime:{}",
+                        rpcConnection.getUserUuid(), terminalStatus.name(), rpcConnection.getCreateTime());
+
+                updateDevStatus = true;
+            } else {
+                log.info("RpcConnection:{} is not the latest, its createTime:{} and preCreateTime:{}",
+                        rpcConnection.getParticipantPrivateId(), rpcConnection.getCreateTime(), preUpdateTime);
+            }
         }
 
-        if (!StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
+        if (!StringUtils.isEmpty(rpcConnection.getSerialNumber()) && updateDevStatus) {
             tokenStringTemplate.opsForValue().set(CacheKeyConstants.DEV_PREFIX_KEY + rpcConnection.getSerialNumber(), terminalStatus.name());
             log.info("Update device online status in cache. serialNumber:{}, updateStatus:{}", rpcConnection.getSerialNumber(), terminalStatus.name());
         }
