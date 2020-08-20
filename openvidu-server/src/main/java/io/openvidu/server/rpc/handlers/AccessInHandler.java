@@ -187,7 +187,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection)
                             && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
                             && Objects.equals(uuid, rpcConn.getUserUuid()))
-                    .findAny().orElse(null);
+                    .max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 
             if (Objects.nonNull(preLoginThorConnect)) {
                 if (forceLogin) {

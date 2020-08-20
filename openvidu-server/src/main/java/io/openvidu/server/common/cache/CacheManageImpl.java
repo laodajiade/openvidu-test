@@ -5,10 +5,10 @@ import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -58,28 +58,6 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
-    public void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum) {
-        if (StringUtils.isEmpty(uuid)) {
-            log.info("###########uuid is null");
-            return;
-        }
-        log.info("Update user online status in cache. uuid:{}, updateStatus:{}", uuid, onlineStatusEnum.name());
-        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + uuid, "status", onlineStatusEnum.name());
-    }
-
-    @Override
-    public void updateReconnectInfo(String userUuid, String privateId) {
-        if (StringUtils.isEmpty(userUuid)) return;
-        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "reconnect", privateId);
-    }
-
-    @Override
-    public void updateDeviceName(String userUuid, String deviceName) {
-        if (StringUtils.isEmpty(userUuid)) return;
-        tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + userUuid, "deviceName", deviceName);
-    }
-
-    @Override
     public void setDeviceStatus(String serialNumber, String version) {
         String key = CacheKeyConstants.DEV_PREFIX_KEY + serialNumber;
         tokenStringTemplate.opsForValue().set(key, version);
@@ -111,12 +89,26 @@ public class CacheManageImpl implements CacheManage {
             return;
         }
 
+        boolean updateDevStatus = false;
         if (!StringUtils.isEmpty(rpcConnection.getUserUuid())) {
-            tokenStringTemplate.opsForHash().put(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + rpcConnection.getUserUuid(), "status", terminalStatus.name());
-            log.info("Update user online status in cache. uuid:{}, updateStatus:{}", rpcConnection.getUserUuid(), terminalStatus.name());
+            BoundHashOperations<String, String, Object> boundHashOperations =
+                    tokenStringTemplate.boundHashOps(CacheKeyConstants.APP_TOKEN_PREFIX_KEY + rpcConnection.getUserUuid());
+
+            Object preUpdateTime = boundHashOperations.get("updateTime");
+            if (Objects.isNull(preUpdateTime) || rpcConnection.getCreateTime().compareTo(Long.valueOf(preUpdateTime.toString())) >= 0) {
+                boundHashOperations.put("status", terminalStatus.name());
+                boundHashOperations.put("updateTime", String.valueOf(rpcConnection.getCreateTime()));
+                log.info("Update user online status in cache. uuid:{}, updateStatus:{}, updateTime:{}",
+                        rpcConnection.getUserUuid(), terminalStatus.name(), rpcConnection.getCreateTime());
+
+                updateDevStatus = true;
+            } else {
+                log.info("RpcConnection:{} is not the latest, its createTime:{} and preCreateTime:{}",
+                        rpcConnection.getParticipantPrivateId(), rpcConnection.getCreateTime(), preUpdateTime);
+            }
         }
 
-        if (!StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
+        if (!StringUtils.isEmpty(rpcConnection.getSerialNumber()) && updateDevStatus) {
             tokenStringTemplate.opsForValue().set(CacheKeyConstants.DEV_PREFIX_KEY + rpcConnection.getSerialNumber(), terminalStatus.name());
             log.info("Update device online status in cache. serialNumber:{}, updateStatus:{}", rpcConnection.getSerialNumber(), terminalStatus.name());
         }

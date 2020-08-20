@@ -1,7 +1,6 @@
 package io.openvidu.server.common.cache;
 
 import io.openvidu.server.common.enums.TerminalStatus;
-import io.openvidu.server.common.enums.UserOnlineStatusEnum;
 import io.openvidu.server.rpc.RpcConnection;
 
 import java.util.Date;
@@ -16,12 +15,6 @@ public interface CacheManage {
     Map getUserInfoByUUID(String userId);
 
     String getUserAuthorization(String userId);
-
-    void updateUserOnlineStatus(String uuid, UserOnlineStatusEnum onlineStatusEnum);
-
-    void updateReconnectInfo(String userUuid, String privateId);
-
-    void updateDeviceName(String userUuid, String deviceName);
 
     void setDeviceStatus(String key, String version);
 
@@ -61,7 +54,11 @@ public interface CacheManage {
 
     void delConferenceRelativeKey(String key);
 
-    void recordWsExceptionLink(RpcConnection rpc, boolean overKeepAlive);
-
     String getTerminalStatus(String uuid);
+    /**
+     * set expire key that record the ws exception link
+     * @param rpcConnection ws link
+     * @param overKeepAlive judge the error link ever not receive ping from client
+     */
+    void recordWsExceptionLink(RpcConnection rpcConnection, boolean overKeepAlive);
 }

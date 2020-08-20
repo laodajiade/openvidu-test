@@ -28,7 +28,7 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
     @Autowired
     private RpcNotificationService notificationService;
 
-    private static final Pattern keyPattern = Pattern.compile("^ws:link:exception:(\\d+):(\\w{32})$");
+    private static final Pattern NEEDED_EXPIRE_KEY_PATTERN = Pattern.compile("^ws:link:exception:(\\d+):(\\w+)$");
 
     public RedisKeyExpirationListener(RedisMessageListenerContainer listenerContainer) {
         super(listenerContainer);
@@ -38,12 +38,9 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
     public void onMessage(Message message, byte[] pattern) {
         Matcher matcher;
         String expiredKey = message.toString();
-        if (expiredKey.startsWith("ws:link:exception")) {
-//        if ((matcher = keyPattern.matcher(expiredKey)).matches()) {
+        if ((matcher = NEEDED_EXPIRE_KEY_PATTERN.matcher(expiredKey)).matches()) {
             log.info("receive expire ws link key ===> " + expiredKey);
-//            String sessionId = matcher.group(1);
-//            String privateId = matcher.group(2);
-            String privateId = expiredKey.split(":")[4];
+            String privateId = matcher.group(2);
             RpcConnection rpcConnection = notificationService.getRpcConnection(privateId);
             if (Objects.nonNull(rpcConnection)) {
                 sessionManager.evictParticipantWhenDisconnect(rpcConnection,

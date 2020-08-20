@@ -150,22 +150,18 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			log.error(message, rpc.getParticipantPrivateId());
 		} else {
 			log.info("afterConnectionClosed and the status is null, private id : {}", rpcSession.getSessionId());
-//			everEvictUser = true;
 		}
 
-//		if (everEvictUser) {
-			// clear the rpc connection and change the terminal status
-//			RpcConnection rpcConnection = sessionManager.accessOut(rpc);
-//			sessionManager.evictParticipantWhenDisconnect(rpcConnection, Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR,
-//					EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
-			cacheManage.updateTerminalStatus(rpc, TerminalStatus.offline);
-			if (AccessTypeEnum.terminal.equals(rpc.getAccessType()) && Objects.nonNull(rpc.getTerminalType())
-					&& Objects.nonNull(rpc.getUserUuid()) && Objects.nonNull(rpc.getSessionId())) {
-				cacheManage.recordWsExceptionLink(rpc, overKeepAlive);
-			} else {
-				notificationService.closeRpcSession(rpcSession.getSessionId());
-			}
-//		}
+		// change the terminal status if the ws link accessIn succeeded
+        cacheManage.updateTerminalStatus(rpc, TerminalStatus.offline);
+        if (AccessTypeEnum.terminal.equals(rpc.getAccessType()) && Objects.nonNull(rpc.getTerminalType())
+                && Objects.nonNull(rpc.getUserUuid()) && Objects.nonNull(rpc.getSessionId())) {
+            // record ws exception link that in room before
+            cacheManage.recordWsExceptionLink(rpc, overKeepAlive);
+        } else {
+            // clear the exception ws link directly
+            notificationService.closeRpcSession(rpcSession.getSessionId());
+        }
 	}
 
 	@Override
