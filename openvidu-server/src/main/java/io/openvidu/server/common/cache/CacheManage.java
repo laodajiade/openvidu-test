@@ -62,4 +62,6 @@ public interface CacheManage {
     void delConferenceRelativeKey(String key);
 
     void recordWsExceptionLink(RpcConnection rpc, boolean overKeepAlive);
+
+    String getTerminalStatus(String uuid);
 }

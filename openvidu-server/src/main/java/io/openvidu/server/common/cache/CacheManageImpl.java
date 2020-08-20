@@ -214,4 +214,12 @@ public class CacheManageImpl implements CacheManage {
         roomRedisTemplate.opsForValue().set(String.format(BrokerChannelConstans.CLIENT_WS_EXCEPTION_KEY, rpc.getSessionId(), rpc.getParticipantPrivateId()),
                 1, expireTime, TimeUnit.SECONDS);
     }
+
+    @Override
+    public String getTerminalStatus(String uuid) {
+        Map tokenInfo = getUserInfoByUUID(uuid);
+        Object status;
+        return !tokenInfo.isEmpty() && !Objects.isNull(status = tokenInfo.get("status")) ?
+                String.valueOf(status) : TerminalStatus.offline.name();
+    }
 }
