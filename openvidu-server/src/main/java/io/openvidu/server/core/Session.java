@@ -556,7 +556,7 @@ public class Session implements SessionInterface {
 
 	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
 		int size;
-    	if (StreamType.MAJOR.equals(participant.getStreamType())) {
+    	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			size = majorParts.incrementAndGet();
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
 					participant.getParticipantName(), sessionId, size);
@@ -567,7 +567,7 @@ public class Session implements SessionInterface {
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
-    	if (StreamType.MAJOR.equals(participant.getStreamType())) {
+    	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
 		}
