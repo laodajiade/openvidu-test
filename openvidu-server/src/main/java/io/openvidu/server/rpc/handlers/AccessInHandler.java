@@ -205,8 +205,13 @@ public class AccessInHandler extends RpcAbstractHandler {
     }
 
     private void evictPreLoginPart(RpcConnection previousRpc) {
+        // send remote login notify to previous terminal connection
+        notificationService.sendNotification(previousRpc.getParticipantPrivateId(),
+                ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+
         Map partInfo = cacheManage.getPartInfo(previousRpc.getUserUuid());
         if (partInfo != null && !partInfo.isEmpty()) {
+            // evict the previous parts in room
             sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), previousRpc.getUserUuid(),
                     Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
         }
