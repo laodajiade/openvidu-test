@@ -48,17 +48,16 @@ public class AccessInHandler extends RpcAbstractHandler {
         TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
                 ? TerminalTypeEnum.valueOf(clientType) : null;
 
-        Map userInfo;
+        Map userInfo = null;
         JsonObject object = new JsonObject();
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
         do {
             // check if request expired
+            object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
             if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
-                object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
-                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
-                        request.getId(), object, ErrorCodeEnum.REQUEST_EXPIRED);
-                return;
+                errCode = ErrorCodeEnum.REQUEST_EXPIRED;
+                break;
             }
 
             // check if token valid
