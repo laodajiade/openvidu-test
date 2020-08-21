@@ -219,6 +219,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (!Objects.isNull(rpcConnection.getSerialNumber()) ) {
                     cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
                 }
+
             }
         } catch (Exception e) {
             log.error("Unknown error e:{}", e);

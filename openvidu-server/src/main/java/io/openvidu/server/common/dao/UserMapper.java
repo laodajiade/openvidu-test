@@ -32,5 +32,7 @@ public interface UserMapper {
 
     List<SoftUser> selectSoftUserByDeptId(Long deptId);
 
+    List<SoftUser> selectSoftUserByDeptIds(List<Long> userIds);
+
     List<User> selectUserByUuidList(List<String> uuids);
 }
