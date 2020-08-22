@@ -29,7 +29,7 @@ public class SetPartOperSpeakerHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.SET_PART_OPER_SPEAKER_ID_PARAM);
-        String source = getStringParam(request, ProtocolElements.SET_PART_OPER_SPEAKER_SOURCE_PARAM);
+        String sourceId = getStringParam(request, ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_SOURCE_ID_PARAM);
         String allowPartOperSpeaker = getStringParam(request, ProtocolElements.SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM);
 
         Session session = sessionManager.getSession(sessionId);
