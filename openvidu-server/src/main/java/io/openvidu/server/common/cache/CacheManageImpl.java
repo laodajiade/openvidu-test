@@ -186,6 +186,21 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
+    public void updateMaxConcurrentOfDay(int partSize, String project) {
+        Boolean exists;
+        String key = CacheKeyConstants.getMaxConcurrentStatisticKey(project, null);
+        if (Objects.nonNull(exists = roomRedisTemplate.hasKey(key)) && exists) {
+            // compare the original value and set the new value if necessary
+            if (Integer.parseInt(String.valueOf(roomRedisTemplate.opsForValue().get(key))) < partSize) {
+                roomRedisTemplate.opsForValue().set(key, partSize);
+            }
+        } else {
+            // set the initial value of today
+            roomRedisTemplate.opsForValue().set(key, partSize,172800,TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
     public void recordSubscriberSetRollCall(String sessionId, Long startTime, String uuid) {
         log.info("record down wall part:{} set roll call in session:{} and session start time:{}", uuid, sessionId, startTime);
         String key;
