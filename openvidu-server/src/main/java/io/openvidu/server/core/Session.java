@@ -424,8 +424,7 @@ public class Session implements SessionInterface {
 		checkClosed();
 		return this.participants.values().stream()
 				.flatMap(v -> v.values().stream())
-				.filter(participant -> !OpenViduRole.THOR.equals(participant.getRole())
-						&& participant.getStreamType().isSelfStream())
+				.filter(participant -> !OpenViduRole.THOR.equals(participant.getRole()))
 				.collect(Collectors.toSet());
 	}
 
