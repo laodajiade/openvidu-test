@@ -112,7 +112,6 @@ public class KurentoParticipant extends Participant {
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
 
-			this.publisher.setSharing(Objects.equals(StreamType.SHARING, participant.getStreamType()));
 			this.publisher.setCompositeService(this.session.compositeService);
 		}
 
@@ -134,7 +133,6 @@ public class KurentoParticipant extends Participant {
 			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
 
-			this.publisher.setSharing(Objects.equals(StreamType.SHARING, getStreamType()));
 			this.publisher.setCompositeService(this.session.compositeService);
 		}
 	}
@@ -561,7 +559,6 @@ public class KurentoParticipant extends Participant {
             this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
                     this.session.getPipeline(), this.openviduConfig);
 
-            this.publisher.setSharing(Objects.equals(StreamType.SHARING, this.getStreamType()));
             this.publisher.setCompositeService(this.session.compositeService);
         }
 	}
