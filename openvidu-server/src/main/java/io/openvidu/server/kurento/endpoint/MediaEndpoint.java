@@ -54,8 +54,7 @@ public abstract class MediaEndpoint {
 	private static Logger log;
 	private OpenviduConfig openviduConfig;
 
-	private boolean web = false;
-	private boolean isSharing = false;
+	private boolean web;
 
 	private WebRtcEndpoint webEndpoint = null;
 	private RtpEndpoint endpoint = null;
@@ -126,14 +125,6 @@ public abstract class MediaEndpoint {
 
 	public boolean isWeb() {
 		return web;
-	}
-
-	public void setSharing(boolean sharing) {
-		isSharing = sharing;
-	}
-
-	public boolean isSharing() {
-		return isSharing;
 	}
 
 	/**
