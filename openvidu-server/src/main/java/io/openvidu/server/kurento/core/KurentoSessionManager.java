@@ -288,9 +288,6 @@ public class KurentoSessionManager extends SessionManager {
     @Override
     public void changeSharingStatusInConference(KurentoSession session, Participant participant) {
 		// change composite and sharing publisher share status
-		KurentoParticipant kParticipant = (KurentoParticipant) participant;
-		if (!Objects.isNull(kParticipant.getPublisher()))
-			kParticipant.getPublisher().setSharing(false);
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
             session.compositeService.setExistSharing(false);
             session.compositeService.setShareStreamId(null);
