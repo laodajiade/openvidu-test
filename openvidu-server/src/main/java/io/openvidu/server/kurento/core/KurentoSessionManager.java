@@ -449,6 +449,10 @@ public class KurentoSessionManager extends SessionManager {
 		kSession.newPublisher(participant);
 
 		participants = kParticipant.getSession().getParticipants();
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType())
+				&& ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
+			kSession.compositeService.setExistSharing(true);
+		}
 
 		if (sdpAnswer != null) {
 			sessionEventsHandler.onPublishMedia(participant, participant.getPublisherStreamId(),
