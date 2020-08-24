@@ -35,13 +35,11 @@ public class ApplyOpenSpeakerStatusHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
         }
-        SessionPreset preset = session.getPresetInfo();
-        if (preset.getAllowPartOperSpeaker().equals(SessionPresetEnum.off)) {
-            JsonObject notifyObj = request.getParams().deepCopy();
-            notifyObj.addProperty(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_USERNAME_PARAM,session.getParticipantByUUID(sourceId).getUsername());
-            this.notificationService.sendNotification(targetId,
-                    ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD, request.getParams());
-        }
+
+        JsonObject notifyObj = request.getParams().deepCopy();
+        notifyObj.addProperty(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_USERNAME_PARAM,session.getParticipantByUUID(sourceId).getUsername());
+        this.notificationService.sendNotification(session.getModeratorPart().getParticipantPrivateId(),
+                ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD, notifyObj);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

@@ -52,7 +52,7 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
 
         if (!moderator.getRole().isController()) {
             SessionPreset preset = session.getPresetInfo();
-            if (preset.getAllowPartOperSpeaker().equals(SessionPresetEnum.off)) {
+            if (preset.getAllowPartOperSpeaker().equals(SessionPresetEnum.off) && status.equals(ParticipantSpeakerStatus.on.name())) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.MODERATOR_PROHIBIT_ON_SPEAKER);
                 return;
