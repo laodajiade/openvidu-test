@@ -358,24 +358,6 @@ public class KurentoSessionManager extends SessionManager {
 		 * kurentoParticipant.getPublisher().apply(elem); }
 		 */
 
-//		KurentoTokenOptions kurentoTokenOptions = participant.getToken().getKurentoTokenOptions();
-		KurentoTokenOptions kurentoTokenOptions = null;
-		if (kurentoOptions.getFilter() != null && kurentoTokenOptions != null) {
-			if (kurentoTokenOptions.isFilterAllowed(kurentoOptions.getFilter().getType())) {
-				this.applyFilterInPublisher(kParticipant, kurentoOptions.getFilter());
-			} else {
-				OpenViduException e = new OpenViduException(Code.FILTER_NOT_APPLIED_ERROR_CODE,
-						"Error applying filter for publishing user " + participant.getParticipantPublicId()
-								+ ". The token has no permissions to apply filter "
-								+ kurentoOptions.getFilter().getType());
-				log.error("PARTICIPANT {}: Error applying filter. The token has no permissions to apply filter {}",
-						participant.getParticipantPublicId(), kurentoOptions.getFilter().getType(), e);
-				sessionEventsHandler.onPublishMedia(participant, null, System.currentTimeMillis(),
-						kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
-				throw e;
-			}
-		}
-
 		sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
 				kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType);
 
