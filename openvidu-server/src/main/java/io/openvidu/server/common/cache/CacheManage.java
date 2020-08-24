@@ -50,6 +50,8 @@ public interface CacheManage {
 
     Long getMaxConcurrentOfDayAndDel(String project, Date queryEndTime);
 
+    void updateMaxConcurrentOfDay(int partSize, String project);
+
     void recordSubscriberSetRollCall(String sessionId, Long startTime, String uuid);
 
     void delConferenceRelativeKey(String key);

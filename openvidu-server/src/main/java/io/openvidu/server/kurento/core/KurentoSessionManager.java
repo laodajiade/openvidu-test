@@ -169,6 +169,8 @@ public class KurentoSessionManager extends SessionManager {
 
 			// save part info
 			roomManage.storePartHistory(participant, conference);
+			// save max concurrent statistics
+			cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
@@ -650,7 +652,7 @@ public class KurentoSessionManager extends SessionManager {
 	/**
 	 * Creates a session with the already existing not-active session in the
 	 * indicated KMS, if it doesn't already exist
-	 * 
+	 *
 	 * @throws OpenViduException in case of error while creating the session
 	 */
 	public KurentoSession createSession(Session sessionNotActive, Kms kms) throws OpenViduException {
