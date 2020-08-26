@@ -261,6 +261,10 @@ public class RpcHandlerFactory {
     private SetPartOperSpeakerHandler setPartOperSpeakerHandler;
     @Resource
     private ApplyOpenSpeakerStatusHandler applyOpenSpeakerStatusHandler;
+    @Resource
+    private RingRingHandler ringRingHandler;
+    @Resource
+    private CanceInviteHandler canceInviteHandler;
 
 
     @PostConstruct
@@ -349,6 +353,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SWITCHVOICEMODE_METHOD,                        switchVoiceModeHandler);
         handlersMap.put(ProtocolElements.SET_PART_OPER_SPEAKER_METHOD,                  setPartOperSpeakerHandler);
         handlersMap.put(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD,              applyOpenSpeakerStatusHandler);
+        handlersMap.put(ProtocolElements.RINGRING_METHOD,                               ringRingHandler);
+        handlersMap.put(ProtocolElements.CANCELINVITE_METHOD,                           canceInviteHandler);
 
     }
 
