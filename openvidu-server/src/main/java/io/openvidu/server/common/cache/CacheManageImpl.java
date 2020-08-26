@@ -196,7 +196,7 @@ public class CacheManageImpl implements CacheManage {
             }
         } else {
             // set the initial value of today
-            roomRedisTemplate.opsForValue().set(key, partSize,172800,TimeUnit.SECONDS);
+            roomRedisTemplate.opsForValue().set(key, partSize,172800, TimeUnit.SECONDS);
         }
     }
 

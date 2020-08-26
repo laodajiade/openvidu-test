@@ -102,7 +102,7 @@ public class UserManageImpl implements UserManage {
         if (!CollectionUtils.isEmpty(userDeviceDeptInfos)) {
             Map<Long, UserDeviceDeptInfo> userIdUserInfoMap = userDeviceDeptInfos.stream()
                     .collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, Function.identity()));
-            connectIdPartMap = participants.stream()
+            connectIdPartMap = participants.stream().filter(participant -> userIdUserInfoMap.containsKey(participant.getUserId()))
                     .collect(Collectors.toMap(Participant::getParticipantPublicId,
                             participant -> userIdUserInfoMap.get(participant.getUserId())));
         }
