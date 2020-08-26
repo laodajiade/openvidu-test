@@ -176,12 +176,8 @@ public class SessionEventsHandler {
 						kParticipant.getPublisherMediaOptions().hasVideo);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
 						kParticipant.isMixIncluded());
-				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM,
-						kParticipant.getPublisherMediaOptions().videoActive);
-				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM,
-						kParticipant.isStreaming() && kParticipant.getPublisherMediaOptions().audioActive);
-				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM,
-						kParticipant.isStreaming() && kParticipant.getPublisherMediaOptions().videoActive);
+				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM, ParticipantVideoStatus.on.equals(kParticipant.getVideoStatus()));
+				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM, ParticipantMicStatus.on.equals(kParticipant.getMicStatus()));
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM,
 						kParticipant.getPublisherMediaOptions().typeOfVideo);
 				stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMFRAMERATE_PARAM,
