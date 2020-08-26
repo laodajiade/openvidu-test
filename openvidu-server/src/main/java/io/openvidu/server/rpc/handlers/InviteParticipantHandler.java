@@ -60,11 +60,10 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         String deviceName = userInfo.containsKey("deviceName") ? String.valueOf(userInfo.get("deviceName")) : null;
         String userIcon = userInfo.containsKey("userIcon") ? String.valueOf(userInfo.get("userIcon")) : "";
         // find the target rpc connection by targetId list and notify info.
-        int i = 1;
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, sourceId);
-        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? "" : username.toString());
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? deviceName : username.toString());
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERICON_PARAM, userIcon);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, expireTime);
         if (!StringUtils.isEmpty(deviceName)) {
