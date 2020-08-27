@@ -31,4 +31,8 @@ public interface UserMapper {
     List<UserDeviceDeptInfo> queryUserInfoByUserIds(List<Long> userIds);
 
     List<SoftUser> selectSoftUserByDeptId(Long deptId);
+
+    List<SoftUser> selectSoftUserByDeptIds(List<Long> userIds);
+
+    List<User> selectUserByUuidList(List<String> uuids);
 }

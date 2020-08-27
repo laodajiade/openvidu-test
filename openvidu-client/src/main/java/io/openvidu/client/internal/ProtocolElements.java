@@ -319,10 +319,21 @@ public class ProtocolElements {
 	public static final String INVITE_PARTICIPANT_TARGET_ID_PARAM = "targetId";
 	public static final String INVITE_PARTICIPANT_USERNAME_PARAM = "username";
 	public static final String INVITE_PARTICIPANT_DEVICE_NAME_PARAM = "deviceName";
+	public static final String INVITE_PARTICIPANT_EXPIRETIME_PARAM = "expireTime";
+	public static final String INVITE_PARTICIPANT_USERICON_PARAM = "userIcon";
 
 	public static final String REFUSE_INVITE_METHOD = "refuseInvite";
 	public static final String REFUSE_INVITE_ID_PARAM = "roomId";
 	public static final String REFUSE_INVITE_SOURCE_ID_PARAM = "sourceId";
+	public static final String REFUSE_INVITE_TARGET_ID_PARAM = "targetId";
+	public static final String REFUSE_INVITE_REASON_PARAM = "reason";
+
+	public static final String CANCELINVITE_METHOD = "canceInvite";
+	public static final String CANCELINVITE_ROOMID_PARAM = "roomId";
+	public static final String CANCELINVITE_SOURCEID_PARAM = "sourceId";
+	public static final String CANCELINVITE_TARGETIDS_PARAM = "targetIds";
+
+	public static final String CANCELINVITE_NOTIFY_METHOD = "canceInviteNotify";
 
 	public static final String GET_ORG_METHOD = "getOrgList";
 	public static final String GET_ORG_NAME_PARAM = "organizationName";
@@ -354,8 +365,8 @@ public class ProtocolElements {
 
 	public static final String SET_AUDIO_SPEAKER_STATUS_METHOD = "setAudioSpeakerStatus";
 	public static final String SET_AUDIO_SPEAKER_ID_PARAM = "roomId";
-	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "source";
-	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targets";
+	public static final String SET_AUDIO_SPEAKER_SOURCE_ID_PARAM = "sourceId";
+	public static final String SET_AUDIO_SPEAKER_TARGET_ID_PARAM = "targetIds";
 	public static final String SET_AUDIO_SPEAKER_STATUS_PARAM = "status";
 	public static final String SET_AUDIO_SPEAKER_USERNAME_PARAM = "username";
 
@@ -661,6 +672,11 @@ public class ProtocolElements {
 	public static final String APPLY_OPEN_SPEAKER_STATUS_SOURCE_ID_PARAM = "sourceId";
 	public static final String APPLY_OPEN_SPEAKER_STATUS_TARGET_ID_PARAM = "targetId";
 	public static final String APPLY_OPEN_SPEAKER_STATUS_USERNAME_PARAM = "username";
+
+	public static final String RINGRING_METHOD = "ringring";
+	public static final String RINGRING_SOURCE_ID_PARAM = "sourceId";
+	public static final String RINGRING_TARGET_ID_PARAM = "targetId";
+	public static final String RINGRINGNOTIFY_METHOD = "ringringNotify";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,

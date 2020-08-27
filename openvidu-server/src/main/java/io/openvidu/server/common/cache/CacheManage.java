@@ -56,6 +56,7 @@ public interface CacheManage {
 
     void delConferenceRelativeKey(String key);
 
+    String getTerminalStatus(String uuid);
     /**
      * set expire key that record the ws exception link
      * @param rpcConnection ws link

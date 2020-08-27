@@ -84,6 +84,29 @@
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
   </select>
 
+  <select id="selectSoftUserByDeptIds" parameterType="java.util.List" resultType="io.openvidu.server.common.pojo.SoftUser">
+    select
+    su.uuid,
+    su.username
+    from sd_user_dept sud
+    inner join sd_user su on sud.user_id = su.id
+    where su.type = 0
+    and sud.dept_id  in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+  <select id="selectUserByUuidList" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_user
+    where uuid in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
+    </foreach>
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select
     <include refid="Base_Column_List" />
