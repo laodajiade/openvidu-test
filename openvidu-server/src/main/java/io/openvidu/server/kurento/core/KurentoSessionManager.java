@@ -204,7 +204,7 @@ public class KurentoSessionManager extends SessionManager {
 		session.leaveRoom(participant, reason);
 
 		//update partInfo
-		if (StreamType.MAJOR.equals(participant.getStreamType())) {
+		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
 		}
 
