@@ -4,12 +4,9 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionPreset;
-import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +32,9 @@ public class ApplyOpenSpeakerStatusHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
         }
-
         JsonObject notifyObj = request.getParams().deepCopy();
         notifyObj.addProperty(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_USERNAME_PARAM,session.getParticipantByUUID(sourceId).getUsername());
-        this.notificationService.sendNotification(session.getModeratorPart().getParticipantPrivateId(),
+        this.notificationService.sendNotification(session.getModeratorOrThorPart().getParticipantPrivateId(),
                 ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD, notifyObj);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

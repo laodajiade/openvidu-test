@@ -535,6 +535,12 @@ public class Session implements SessionInterface {
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
+	public Participant getModeratorOrThorPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && participant.getRole().isController()).findAny().orElse(null);
+	}
+
     public Participant getParticipantByStreamId(String streamId) {
         checkClosed();
         return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
