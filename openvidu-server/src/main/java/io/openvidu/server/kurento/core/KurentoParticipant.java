@@ -616,7 +616,7 @@ public class KurentoParticipant extends Participant {
 			participants.forEach(participant -> {
 				String subToPartPublicId;
 				if (!Objects.equals(subToPartPublicId = participant.getParticipantPublicId(), this.getParticipantPublicId())
-						&& publicIds.contains(subToPartPublicId)) {
+						&& publicIds.contains(subToPartPublicId) && participant.isStreaming()) {
 					log.info("PARTICIPANT {}: Is now {} receiving video from {} in room {}",
 							this.getParticipantPublicId(), Objects.equals(operation, VoiceMode.on) ?
 									"stop" : "start", subToPartPublicId, this.session.getSessionId());
