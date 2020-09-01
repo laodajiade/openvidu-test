@@ -52,7 +52,7 @@ public class SetPartOperSpeakerHandler extends RpcAbstractHandler {
         Set<Participant> participants = session.getParticipants();
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
-                if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+                if (Objects.equals(StreamType.MAJOR, p.getStreamType()) || operatePart.getRole().isController()) {
                     this.notificationService.sendNotification(p.getParticipantPrivateId(),
                             ProtocolElements.SET_PART_OPER_SPEAKER_METHOD, request.getParams());
                 }
