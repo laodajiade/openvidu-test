@@ -583,7 +583,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 		internalSinkConnect(current, passThru);
 		if (((KurentoParticipant) getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-			internalSinkConnect(current, majorShareHubPort);
+			internalSinkConnect(current, majorShareHubPort, MediaType.VIDEO);
 		}
 
 		connected = true;
