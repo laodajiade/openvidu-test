@@ -39,18 +39,17 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         Participant participant;
         try {
             participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), streamType);
-
             if (Objects.isNull(participant)) {
-                log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
-                if (StreamType.MAJOR.equals(streamType)) {
+                if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
+                    log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     if (!partInfo.isEmpty()) {
                         sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(),
                                 rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
                     }
                 }
-                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
+                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                 return;
             }
         } catch (OpenViduException e) {
