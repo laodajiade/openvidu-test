@@ -243,6 +243,7 @@ public class ProtocolElements {
 
 	public static final String GET_PARTICIPANTS_METHOD = "getParticipants";
 	public static final String GET_PARTICIPANTS_ROOM_ID_PARAM = "roomId";
+	public static final String GET_PARTICIPANTS_TARGETID_PARAM = "targetId";
 
 	public static final String SET_AUDIO_STATUS_METHOD = "setAudioStatus";
 	public static final String SET_AUDIO_ROOM_ID_PARAM = "roomId";

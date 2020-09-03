@@ -412,6 +412,19 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
+	public Set<Participant> getMajorPartAllOrSpecificConnect(String userUuid) {
+		checkClosed();
+		return org.apache.commons.lang.StringUtils.isEmpty(userUuid) ? this.participants.values().stream()
+				.map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant)
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
+				.collect(Collectors.toSet()) : this.participants.values().stream()
+				.map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && userUuid.equals(participant.getUuid())
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
+				.collect(Collectors.toSet());
+	}
+
 	public Set<Participant> getMajorPartEachIncludeThorConnect() {
 		checkClosed();
 		return this.participants.values().stream()

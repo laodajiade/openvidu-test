@@ -40,11 +40,11 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
-
+        String targetId = getStringOptionalParam(request,ProtocolElements.GET_PARTICIPANTS_TARGETID_PARAM);
         JsonArray jsonArray = new JsonArray();
         // key:connectionId, value:userDeviceDeptInfo
         Map<String, UserDeviceDeptInfo> connectIdUserInfoMap;
-        Set<Participant> needReturnParts = session.getMajorPartEachConnect();
+        Set<Participant> needReturnParts = session.getMajorPartAllOrSpecificConnect(targetId);
         JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
         if (!CollectionUtils.isEmpty(needReturnParts)
                 && Objects.nonNull(connectIdUserInfoMap = userManage.getUserInfoInRoom(needReturnParts))
