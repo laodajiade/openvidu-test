@@ -81,6 +81,7 @@
     from sd_user_dept sud
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
+    and su.title is null
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
   </select>
 
