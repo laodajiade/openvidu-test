@@ -30,11 +30,10 @@ public class PublishVideoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
-        String handStatus = getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_HAND_STATUS_PARAM);
         Participant participant;
-        try {
-            participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType));
-        } catch (OpenViduException e) {
+        if (Objects.isNull(participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType)))) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.UNRECOGNIZED_API);
             return;
         }
 
