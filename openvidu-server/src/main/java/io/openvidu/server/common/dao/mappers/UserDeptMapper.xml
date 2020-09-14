@@ -13,7 +13,7 @@
     id, user_id, dept_id, project, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_user_dept
     where id = #{id,jdbcType=BIGINT}
@@ -32,10 +32,10 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.UserDept" >
-    insert into sd_user_dept (id, user_id, dept_id, 
+    insert into sd_user_dept (id, user_id, dept_id,
       project, create_time, update_time
       )
-    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{deptId,jdbcType=BIGINT}, 
+    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{deptId,jdbcType=BIGINT},
       #{project,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}
       )
   </insert>
@@ -112,4 +112,13 @@
       update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
+  <select id="selectRootDeptByUuid" resultType="io.openvidu.server.common.pojo.RootDept" parameterType="java.lang.String" >
+    select d.id,d.dept_name deptName,d.parent_id parentId,d.corp_id corpId
+    from sd_user_dept sud
+    left join sd_user su on sud.user_id = su.id
+    left join sd_department d on sud.dept_id = d.id
+    where su.uuid = #{uuid,jdbcType=VARCHAR}
+    limit 1
+  </select>
 </mapper>

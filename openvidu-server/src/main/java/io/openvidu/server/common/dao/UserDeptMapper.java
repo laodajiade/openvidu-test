@@ -1,5 +1,6 @@
 package io.openvidu.server.common.dao;
 
+import io.openvidu.server.common.pojo.RootDept;
 import io.openvidu.server.common.pojo.UserDept;
 import io.openvidu.server.common.pojo.UserDeptSearch;
 
@@ -20,4 +21,6 @@ public interface UserDeptMapper {
     int updateByPrimaryKey(UserDept record);
 
     UserDept selectBySearchCondition(UserDeptSearch search);
+
+    RootDept selectRootDeptByUuid(String uuid);
 }

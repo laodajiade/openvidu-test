@@ -13,14 +13,17 @@
     id, user_id, serial_number, project, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_user_dev
     where id = #{id,jdbcType=BIGINT}
   </select>
   <select id="selectByCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.UserDevice">
     select
-    <include refid="Base_Column_List" />
+    sud.id,sud.user_id userId,sud.serial_number serialNumber,sud.project,sud.create_time createTime,
+    sud.update_time updateTime,sd.device_name deviceName
+    from sd_user_dev sud
+    left join sd_device sd on sud.serial_number = sd.serial_number
     from sd_user_dev
     <where>
       <if test="userId != null" >
@@ -36,10 +39,10 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.UserDevice" >
-    insert into sd_user_dev (id, user_id, serial_number, 
+    insert into sd_user_dev (id, user_id, serial_number,
       project, create_time
       )
-    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{serialNumber,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{serialNumber,jdbcType=VARCHAR},
       #{project,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
       )
   </insert>

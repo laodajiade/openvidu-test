@@ -265,6 +265,8 @@ public class RpcHandlerFactory {
     private RingRingHandler ringRingHandler;
     @Resource
     private CanceInviteHandler canceInviteHandler;
+    @Resource
+    private GetUploadTokenHandler getUploadTokenHandler;
 
 
     @PostConstruct
@@ -355,6 +357,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD,              applyOpenSpeakerStatusHandler);
         handlersMap.put(ProtocolElements.RINGRING_METHOD,                               ringRingHandler);
         handlersMap.put(ProtocolElements.CANCELINVITE_METHOD,                           canceInviteHandler);
+        handlersMap.put(ProtocolElements.GET_UPLOAD_TOKEN_METHOD,                       getUploadTokenHandler);
 
     }
 

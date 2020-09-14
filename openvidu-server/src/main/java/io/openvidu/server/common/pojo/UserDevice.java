@@ -17,4 +17,6 @@ public class UserDevice {
     private Date createTime;
 
     private Date updateTime;
+
+    private String deviceName;
 }

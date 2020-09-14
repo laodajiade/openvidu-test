@@ -487,7 +487,9 @@ public class ProtocolElements {
 	public static final String GET_GROUP_LIST_GROUPNAME_PARAM = "groupName";
 
 	public static final String GET_GROUP_INFO_METHOD = "getGroupInfo";
-	public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupId";
+	public static final String GET_GROUP_INFO_TOTAL = "total";
+	public static final String GET_GROUP_INFO_ACCOUNT_LIST = "accountList";
+	public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupIds";
 	public static final String GET_GROUP_INFO_GROUPINFO_PARAM = "groupInfo";
 	public static final String GET_GROUP_INFO_DEVIDE_NAME_PARAM = "deviceName";
     public static final String GET_GROUP_INFO_SERIAL_NUMBER_PARAM = "serialNumber";
@@ -679,6 +681,14 @@ public class ProtocolElements {
 	public static final String RINGRING_TARGET_ID_PARAM = "targetId";
 	public static final String RINGRINGNOTIFY_METHOD = "ringringNotify";
 
+	public static final String UPLOADDEVICELOG_NOTIFY = "uploadDeviceLog";
+
+	public static final String GET_UPLOAD_TOKEN_METHOD = "getUploadToken";
+	public static final String GET_UPLOAD_TOKEN_TYPE_PARAM = "type";
+
+	public static final String PAGENUM = "pageNum";
+	public static final String PAGESIZE = "pageSize";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,
@@ -687,6 +697,6 @@ public class ProtocolElements {
             UPLOADTERMINALINFO_METHOD, GETSUBDEVORUSERBYDEPTIDS_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_METHOD,
 			PLAYBACK_CONF_RECORD_METHOD, DOWNLOAD_CONF_RECORD_METHOD, DEL_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
 			GET_LIVE_STATUS_METHOD, GETALLROOMSOFCORP_METHOD, GETMEETINGSRECORDDETAIL_METHOD, UPDATEUSERNAME_METHOD,
-			MODIFY_PASSWORD_METHOD, GETH5PAGES_METHOD, RINGRING_METHOD, REFUSE_INVITE_METHOD
+			MODIFY_PASSWORD_METHOD, GETH5PAGES_METHOD, RINGRING_METHOD, REFUSE_INVITE_METHOD,GET_UPLOAD_TOKEN_METHOD
 	);
 }

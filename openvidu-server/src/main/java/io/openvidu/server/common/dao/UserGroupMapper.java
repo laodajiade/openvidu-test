@@ -1,6 +1,8 @@
 package io.openvidu.server.common.dao;
 
+import io.openvidu.server.common.pojo.Group;
 import io.openvidu.server.common.pojo.UserGroup;
+import io.openvidu.server.common.pojo.UserGroupVo;
 
 import java.util.List;
 
@@ -10,7 +12,7 @@ public interface UserGroupMapper {
 
     int deleteByPrimaryKey(Long id);
 
-    List<UserGroup> selectListByGroupid(Long orgId);
+    List<UserGroupVo> selectListByGroupid(List<Long> groupIds);
 
     List<UserGroup> selectListByUserId(Long userId);
 
@@ -37,4 +39,6 @@ public interface UserGroupMapper {
     int updateByPrimaryKeySelective(UserGroup record);
 
     int updateByPrimaryKey(UserGroup record);
+
+    List<Group> selectByCorpIds(Long corpId);
 }

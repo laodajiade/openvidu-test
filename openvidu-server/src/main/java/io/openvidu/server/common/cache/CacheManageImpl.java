@@ -229,4 +229,12 @@ public class CacheManageImpl implements CacheManage {
         return !tokenInfo.isEmpty() && !Objects.isNull(status = tokenInfo.get("status")) ?
                 String.valueOf(status) : TerminalStatus.offline.name();
     }
+
+    @Override
+    public void setLogUploadToken(String uuid, String uploadToken) {
+        String key;
+        tokenStringTemplate.opsForValue().set((key = CacheKeyConstants.LOG_UPLOAD_TOKEN_PREFIX_KEY + uuid), uploadToken);
+        // set expired time
+        tokenStringTemplate.expire(key, 900, TimeUnit.SECONDS);
+    }
 }

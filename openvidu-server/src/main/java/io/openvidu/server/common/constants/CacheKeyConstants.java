@@ -36,6 +36,9 @@ public class CacheKeyConstants {
      */
     public static final String STATISTICS_MAX_DAY_CONCURRENT_PREFIX_KEY = "statistics:max:concurrent:%s:%s";
 
+    /** 设备日志上传token缓存key前缀 */
+    public static final String LOG_UPLOAD_TOKEN_PREFIX_KEY = "log:upload:token:";
+
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
     }

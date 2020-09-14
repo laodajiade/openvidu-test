@@ -3,6 +3,7 @@ package io.openvidu.server.common.cache;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.rpc.RpcConnection;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
 
@@ -63,4 +64,6 @@ public interface CacheManage {
      * @param overKeepAlive judge the error link ever not receive ping from client
      */
     void recordWsExceptionLink(RpcConnection rpcConnection, boolean overKeepAlive);
+
+    void setLogUploadToken(@NotNull String uuid, @NotNull String uploadToken);
 }

@@ -183,6 +183,9 @@ public class OpenviduConfig {
 	@Value("${H5.page.infos}")
 	private String h5PagesInfoConfig;
 
+	@Getter
+	@Value("${device.upload.url}")
+	private String devUploadUrl;
 
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;

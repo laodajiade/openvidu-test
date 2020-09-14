@@ -54,6 +54,7 @@
 		<version.kms-api-filters>6.11.0</version.kms-api-filters>
 		<version.com.sensedigit.xxl-job-core>2.1.3</version.com.sensedigit.xxl-job-core>
 		<version.com.sensedigit.cock-crow>1.0.0</version.com.sensedigit.cock-crow>
+		<version.com.grithub.pagehelper>1.2.10</version.com.grithub.pagehelper>
 	</properties>
 
 	<profiles>
@@ -391,6 +392,11 @@
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper-spring-boot-starter</artifactId>
+			<version>${version.com.grithub.pagehelper}</version>
 		</dependency>
 
 	</dependencies>

@@ -218,7 +218,8 @@ public abstract class RpcAbstractHandler {
 
     public static int getIntParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
-            throw new RuntimeException("RMBER");
+            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
+                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
         }
         return request.getParams().get(key).getAsInt();
     }

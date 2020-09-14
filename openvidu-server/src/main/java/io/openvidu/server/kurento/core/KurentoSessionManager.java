@@ -146,6 +146,9 @@ public class KurentoSessionManager extends SessionManager {
 				} else {
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
 					participant.setMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
+					if (existingParticipants.size() > 6 && preset.getMicStatusInRoom().equals(SessionPresetEnum.smart)) {
+						participant.setMicStatus(ParticipantMicStatus.off);
+					}
 					participant.setVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
 				}
 				participant.setRoomSubject(preset.getRoomSubject());
