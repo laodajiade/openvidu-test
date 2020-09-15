@@ -1217,7 +1217,7 @@ public class Session implements SessionInterface {
 					layoutInfos.add(temp);
 					index++;
 				} catch (Exception e) {
-					log.error("Exception when compose layout invoke request:{}", temp.toString(), e);
+					log.error("Exception when compose layout invoke request:{}, exception:{}", temp.toString(), e);
 				}
 
 			} else break;

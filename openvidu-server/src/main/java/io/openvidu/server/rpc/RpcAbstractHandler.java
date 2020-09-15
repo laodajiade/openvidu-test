@@ -354,13 +354,7 @@ public abstract class RpcAbstractHandler {
     }
 
     protected Participant sanityCheckOfSession(RpcConnection rpcConnection, StreamType streamType) throws OpenViduException {
-        Participant participant = sessionManager.getParticipant(rpcConnection.getSessionId(),
-                rpcConnection.getParticipantPrivateId(), streamType);
-        if (participant == null) {
-            leaveRoomAfterConnClosed(rpcConnection.getParticipantPrivateId(), null);
-            throw new OpenViduException(OpenViduException.Code.GENERIC_ERROR_CODE, "Participant not exists.");
-        }
-        return participant;
+        return sessionManager.getParticipant(rpcConnection.getSessionId(), rpcConnection.getParticipantPrivateId(), streamType);
     }
 
     protected Participant sanityCheckOfSession(RpcConnection rpcConnection, String methodName) throws OpenViduException {
