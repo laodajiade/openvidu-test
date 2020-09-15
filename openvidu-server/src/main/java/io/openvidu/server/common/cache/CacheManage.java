@@ -66,4 +66,6 @@ public interface CacheManage {
     void recordWsExceptionLink(RpcConnection rpcConnection, boolean overKeepAlive);
 
     void setLogUploadToken(@NotNull String uuid, @NotNull String uploadToken);
+
+    void batchUpdatePartInfo(String uuid, Map<String, Object> updateMap);
 }

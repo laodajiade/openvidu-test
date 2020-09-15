@@ -51,6 +51,9 @@ public class Participant {
 	@Getter
 	@Setter
 	private String uuid;
+	@Getter
+	@Setter
+	protected int order;
 
 	@Getter
 	@Setter
@@ -90,7 +93,7 @@ public class Participant {
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
 
-	public Participant(String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
+	public Participant(Long userId, String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
 					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
@@ -102,7 +105,7 @@ public class Participant {
 			this.createdAt = System.currentTimeMillis();
 		}
 		this.clientMetadata = clientMetadata;
-		this.userId = new Gson().fromJson(clientMetadata, JsonObject.class).get("clientData").getAsLong();
+		this.userId = userId;
 		this.role = role;
 		this.streamType = streamType;
 		this.location = location;

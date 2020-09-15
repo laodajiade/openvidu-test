@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -45,6 +46,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         // key:connectionId, value:userDeviceDeptInfo
         Map<String, UserDeviceDeptInfo> connectIdUserInfoMap;
         Set<Participant> needReturnParts = session.getMajorPartAllOrSpecificConnect(targetId);
+
         JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
         if (!CollectionUtils.isEmpty(needReturnParts)
                 && Objects.nonNull(connectIdUserInfoMap = userManage.getUserInfoInRoom(needReturnParts))
@@ -53,28 +55,36 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             Map<String, Participant> connectIdPartMap = needReturnParts.stream()
                     .collect(Collectors.toMap(Participant::getParticipantPublicId, Function.identity()));
 
-            // add participant info one by one according to mcu mix order
-            for (JsonElement jsonElement : majorShareMixLinkedArr) {
-                Participant participant;
-                JsonObject connectIdStreamTypeObj = jsonElement.getAsJsonObject();
-                if (StreamType.MAJOR.name().equals(connectIdStreamTypeObj.get("streamType").getAsString())
-                        && Objects.nonNull(participant = connectIdPartMap.remove(connectIdStreamTypeObj.get("connectionId").getAsString()))) {
+            if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+                // add participant info one by one according to mcu mix order
+                for (JsonElement jsonElement : majorShareMixLinkedArr) {
+                    Participant participant;
+                    JsonObject connectIdStreamTypeObj = jsonElement.getAsJsonObject();
+                    if (StreamType.MAJOR.name().equals(connectIdStreamTypeObj.get("streamType").getAsString())
+                            && Objects.nonNull(participant = connectIdPartMap.remove(connectIdStreamTypeObj.get("connectionId").getAsString()))) {
+                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                        if (Objects.nonNull(userObj)) {
+                            jsonArray.add(userObj);
+                        }
+                    }
+                }
+                // add left participant in return info
+                if (!connectIdPartMap.isEmpty()) {
+                    Collection<Participant> remainParts = connectIdPartMap.values();
+                    for (Participant participant : remainParts) {
+                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                        if (Objects.nonNull(userObj)) {
+                            jsonArray.add(userObj);
+                        }
+                    }
+                }
+            } else {
+                needReturnParts.stream().sorted(Comparator.comparing(Participant::getOrder).reversed()).forEach(participant -> {
                     JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
                     if (Objects.nonNull(userObj)) {
                         jsonArray.add(userObj);
                     }
-                }
-            }
-
-            // add left participant in return info
-            if (!connectIdPartMap.isEmpty()) {
-                Collection<Participant> remainParts = connectIdPartMap.values();
-                for (Participant participant : remainParts) {
-                    JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
-                    if (Objects.nonNull(userObj)) {
-                        jsonArray.add(userObj);
-                    }
-                }
+                });
             }
         }
 
@@ -100,6 +110,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("videoStatus", kurentoParticipant.getVideoStatus().name());
         userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(kurentoParticipant.getSpeakerStatus()));
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
+        userObj.addProperty("order",participant.getOrder());
 
         if (UserType.register.equals(kurentoParticipant.getUserType())) {
             // get user&dept&device from connectIdUserInfoMap

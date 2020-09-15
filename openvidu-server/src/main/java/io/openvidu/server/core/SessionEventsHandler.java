@@ -108,6 +108,9 @@ public class SessionEventsHandler {
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
                 notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
+				if (StreamType.MAJOR.equals(participant.getStreamType())) {
+					notifParams.addProperty("order", participant.getOrder());
+				}
                 if (!Objects.isNull(rpcConnection.getTerminalConfig()))
                 	notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
 
@@ -155,7 +158,7 @@ public class SessionEventsHandler {
 				}
             }
             participantJson.addProperty("isVoiceMode", existingParticipant.getVoiceMode().equals(VoiceMode.on));
-
+			participantJson.addProperty("order",existingParticipant.getOrder());
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
@@ -212,6 +215,7 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
 		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		result.addProperty("subtitleConfig", session.getSubtitleConfig().name());
+		result.addProperty("order",participant.getOrder());
 		result.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
 		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
 			result.add("extraInfo", session.getSubtitleExtraConfig());
@@ -224,14 +228,16 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
 		result.addProperty(ProtocolElements.SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM,participant.getPreset().getAllowPartOperSpeaker().name());
         result.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
+        result.addProperty("automatically", session.isAutomatically());
+        if (!session.isAutomatically()) {
+			result.addProperty("mode", session.getLayoutMode().getMode());
+		}
 		result.add("value", resultArray);
 
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
             result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 
             JsonObject layoutInfoObj = new JsonObject();
-            layoutInfoObj.addProperty("automatically", session.isAutomatically());
-            layoutInfoObj.addProperty("mode", session.getLayoutMode().getMode());
             layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
             result.add("layoutInfo", layoutInfoObj);
         }

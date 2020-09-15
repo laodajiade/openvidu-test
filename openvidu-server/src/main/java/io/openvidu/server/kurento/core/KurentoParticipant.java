@@ -78,7 +78,7 @@ public class KurentoParticipant extends Participant {
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager, LivingManager livingManager) {
-		super(participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
+		super(participant.getUserId(),participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility());
 		setMicStatus(participant.getMicStatus());
@@ -100,6 +100,7 @@ public class KurentoParticipant extends Participant {
 		setSubtitleConfig(participant.getSubtitleConfig());
 		setSubtitleLanguage(participant.getSubtitleLanguage());
 		setApplicationContext(participant.getApplicationContext());
+		setOrder(participant.getOrder());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;

@@ -20,12 +20,15 @@ package io.openvidu.server.config;
 import com.google.gson.*;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CDREventName;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.manage.KmsRegistrationManage;
+import io.openvidu.server.core.SessionManager;
 import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -165,6 +168,10 @@ public class OpenviduConfig {
 	private int mcuMajorPartLimit;
 
 	@Getter
+	@Value("${sfu.session.publisher.limit.size}")
+	private int sfuPublisherSizeLimit;
+
+	@Getter
 	@Value("${conference.record.playback.server}")
 	private String recordPlaybackServer;
 
@@ -189,6 +196,14 @@ public class OpenviduConfig {
 
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
+
+	@Getter
+	@Resource
+	protected SessionManager sessionManager;
+
+	@Getter
+	@Resource
+	public CacheManage cacheManage;
 
 	private String finalUrl;
 	private List<String> kmsUrisList;

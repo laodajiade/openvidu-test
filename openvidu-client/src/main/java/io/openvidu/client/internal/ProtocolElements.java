@@ -689,6 +689,9 @@ public class ProtocolElements {
 	public static final String PAGENUM = "pageNum";
 	public static final String PAGESIZE = "pageSize";
 
+	public static final String UPDATE_PARTICIPANTS_ORDER_METHOD = "updateParticipantsOrder";
+	public static final String UPDATE_PARTICIPANTS_ORDER_ORDEREDPARTS_PARAM="orderedParts";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,

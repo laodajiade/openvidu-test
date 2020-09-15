@@ -237,4 +237,13 @@ public class CacheManageImpl implements CacheManage {
         // set expired time
         tokenStringTemplate.expire(key, 900, TimeUnit.SECONDS);
     }
+
+    @Override
+    public void batchUpdatePartInfo(String uuid, Map<String, Object> updateMap) {
+        if (Objects.nonNull(updateMap) && !updateMap.isEmpty()) {
+            BoundHashOperations<String, String, Object> boundHashOperations =
+                    roomRedisTemplate.boundHashOps(CacheKeyConstants.getParticipantKey(uuid));
+            updateMap.forEach(boundHashOperations::put);
+        }
+    }
 }
