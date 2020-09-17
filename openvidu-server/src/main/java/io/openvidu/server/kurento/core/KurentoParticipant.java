@@ -25,6 +25,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.OperationMode;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.VoiceMode;
@@ -625,6 +626,32 @@ public class KurentoParticipant extends Participant {
 					SubscriberEndpoint subscriberEndpoint = subscribers.get(subToPartPublicId);
 					if (Objects.nonNull(subscriberEndpoint)) {
 						subscriberEndpoint.controlMediaTypeLink(kurentoParticipant.getPublisher(), MediaType.VIDEO, operation);
+					}
+				}
+			});
+		}
+	}
+
+	/**
+	 * pause or resume stream
+	 * @param operation on,off
+	 * @param mediaType video,audio
+	 * @param publicIds participants' publicId that this participant receive video or audio from
+	 */
+	void pauseAndResumeStreamInSession(OperationMode operation, String mediaType, Set<String> publicIds) {
+		Set<Participant> participants = getSession().getMajorAndMinorPartEachConnect();
+		if (!CollectionUtils.isEmpty(participants)) {
+			participants.forEach(participant -> {
+				String subToPartPublicId;
+				if (!Objects.equals(subToPartPublicId = participant.getParticipantPublicId(), this.getParticipantPublicId())
+						&& publicIds.contains(subToPartPublicId) && participant.isStreaming()) {
+					log.info("PARTICIPANT {}: Is now {} receiving {} from {} in room {}",
+							this.getParticipantPublicId(), Objects.equals(operation, OperationMode.on) ?
+									"resume" : "pause", mediaType,subToPartPublicId, this.session.getSessionId());
+					KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+					SubscriberEndpoint subscriberEndpoint = subscribers.get(subToPartPublicId);
+					if (Objects.nonNull(subscriberEndpoint)) {
+						subscriberEndpoint.controlMediaTypeLink(kurentoParticipant.getPublisher(), MediaType.valueOf(mediaType.toUpperCase()), Objects.equals(operation,OperationMode.on) ? VoiceMode.off : VoiceMode.on);
 					}
 				}
 			});

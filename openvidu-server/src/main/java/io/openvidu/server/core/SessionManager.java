@@ -17,6 +17,7 @@
 
 package io.openvidu.server.core;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
@@ -43,6 +44,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.FormatChecker;
 import io.openvidu.server.utils.GeoLocation;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.kurento.client.MediaType;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,6 +123,8 @@ public abstract class SessionManager {
 	public abstract void unsubscribe(Participant participant, String senderName, Integer transactionId);
 
 	public abstract void switchVoiceMode(Participant participant, VoiceMode operation);
+
+	public abstract void pauseAndResumeStream(Participant participant, OperationMode operation, String mediaType);
 
 	public abstract void sendMessage(Participant participant, String message, Integer transactionId);
 
@@ -777,7 +781,14 @@ public abstract class SessionManager {
 			params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());
 			params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUuid());
 			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUuid());
-			sendEndRollCallNotify(participants, params);
+
+			boolean sendChangeRole;
+			if (sendChangeRole = (existSpeakerPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit())) {
+				existSpeakerPart.changePartRole(OpenViduRole.SUBSCRIBER);
+			}
+			JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(existSpeakerPart,
+					OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER) : null;
+			sendEndRollCallNotify(participants, params, sendChangeRole, changeRoleNotifiParam);
 		}
 
 		if (isMcu) {
@@ -792,6 +803,13 @@ public abstract class SessionManager {
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_SOURCE_ID_PARAM, moderatorPart.getUuid());
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUuid());
 
+		boolean sendChangeRole;
+		if (sendChangeRole = (targetPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit())) {
+			targetPart.changePartRole(OpenViduRole.PUBLISHER);
+		}
+		JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(targetPart,
+				OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
+
 		// broadcast the changes of layout
 		participants.forEach(participant -> {
 			if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
@@ -799,6 +817,10 @@ public abstract class SessionManager {
 			}
 			// SetRollCall notify
 			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
+			if (sendChangeRole) {
+				this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
+			}
 			if (isMcu) {
 				// broadcast the changes of layout
 				this.notificationService.sendNotification(participant.getParticipantPrivateId(),
@@ -807,12 +829,16 @@ public abstract class SessionManager {
 		});
 	}
 
-	private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params) {
+	private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params,boolean sendChangeRole, JsonArray changeRoleNotifiParam) {
 		participants.forEach(participant -> {
 			if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
 				return;
 			}
 			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
+			if (sendChangeRole) {
+				this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
+			}
 		});
 	}
 

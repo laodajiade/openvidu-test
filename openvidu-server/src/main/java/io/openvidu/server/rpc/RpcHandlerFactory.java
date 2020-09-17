@@ -267,6 +267,14 @@ public class RpcHandlerFactory {
     private CanceInviteHandler canceInviteHandler;
     @Resource
     private GetUploadTokenHandler getUploadTokenHandler;
+    @Resource
+    private UpdateParticipantsOrderHandler updateParticipantsOrderHandler;
+    @Resource
+    private PauseAndResumeStreamHandler pauseAndResumeStreamHandler;
+    @Resource
+    private SetPushStreamStatusHandler setPushStreamStatusHandler;
+
+
 
 
     @PostConstruct
@@ -358,6 +366,9 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.RINGRING_METHOD,                               ringRingHandler);
         handlersMap.put(ProtocolElements.CANCELINVITE_METHOD,                           canceInviteHandler);
         handlersMap.put(ProtocolElements.GET_UPLOAD_TOKEN_METHOD,                       getUploadTokenHandler);
+        handlersMap.put(ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD,              updateParticipantsOrderHandler);
+        handlersMap.put(ProtocolElements.SETPUSHSTREAMSTATUS_METHOD,                    setPushStreamStatusHandler);
+        handlersMap.put(ProtocolElements.PAUSEANDRESUMESTREAM_METHOD,                   pauseAndResumeStreamHandler);
 
     }
 

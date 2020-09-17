@@ -216,6 +216,15 @@ public abstract class RpcAbstractHandler {
         return values;
     }
 
+    protected static List<JsonObject> getJsonObjectListParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
+            return null;
+        }
+        List<JsonObject> values = new ArrayList<>();
+        request.getParams().get(key).getAsJsonArray().forEach(s -> values.add(s.getAsJsonObject()));
+        return values;
+    }
+
     public static int getIntParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()

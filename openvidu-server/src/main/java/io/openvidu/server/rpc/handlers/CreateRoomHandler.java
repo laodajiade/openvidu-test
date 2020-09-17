@@ -8,6 +8,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             conference.setStatus(1);
             conference.setStartTime(new Date());
             conference.setProject(rpcConnection.getProject());
+            conference.setModeratorPassword(StringUtil.getRandomPassWord(6));
             roomManage.createMeetingRoom(conference);
 
             // setPresetInfo.

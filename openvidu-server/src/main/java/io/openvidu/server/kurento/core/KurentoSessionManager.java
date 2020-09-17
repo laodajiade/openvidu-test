@@ -248,6 +248,8 @@ public class KurentoSessionManager extends SessionManager {
 					reason);
 		}
 
+		// adjust order notify after onLeft
+		session.dealParticipantOrder(participant,rpcNotificationService);
 		if (!EndReason.sessionClosedByServer.equals(reason)) {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
@@ -564,6 +566,12 @@ public class KurentoSessionManager extends SessionManager {
 		participant.setVoiceMode(operation);
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
 		kParticipant.switchVoiceModeInSession(operation, kParticipant.getSubscribers().keySet());
+	}
+
+	@Override
+	public void pauseAndResumeStream(Participant participant, OperationMode operation, String mediaType) {
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		kParticipant.pauseAndResumeStreamInSession(operation, mediaType, kParticipant.getSubscribers().keySet());
 	}
 
 	private void switchVoiceModeWithPublicId(Participant participant, VoiceMode operation, String senderName) {

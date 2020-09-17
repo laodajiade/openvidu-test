@@ -22,7 +22,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CDREventName;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.manage.KmsRegistrationManage;
-import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.Getter;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
@@ -197,13 +197,12 @@ public class OpenviduConfig {
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
 
-	@Getter
-	@Resource
-	protected SessionManager sessionManager;
+	@Autowired
+	RpcNotificationService notificationService;
 
 	@Getter
-	@Resource
-	public CacheManage cacheManage;
+	@Autowired
+	private CacheManage cacheManage;
 
 	private String finalUrl;
 	private List<String> kmsUrisList;

@@ -25,6 +25,16 @@ public class StringUtil {
         return sb.toString();
     }
 
+    public static String getRandomPassWord(int length) {
+        Random random = new Random();
+        StringBuilder pass = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int code = random.nextInt(10);
+            pass.append(code);
+        }
+        return pass.toString();
+    }
+
     public static String createSessionId() {
         StringBuffer sb = new StringBuffer();
         sb.append("2");
@@ -38,5 +48,4 @@ public class StringUtil {
         if (Objects.isNull(password)) return false;
         return Pattern.compile(passwordRegs).matcher(password).matches();
     }
-
 }

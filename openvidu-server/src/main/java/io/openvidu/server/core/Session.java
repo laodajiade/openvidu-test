@@ -101,6 +101,7 @@ public class Session implements SessionInterface {
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
 
 	private static AtomicInteger majorParts = new AtomicInteger(0);
+	protected AtomicInteger roomParticipants = new AtomicInteger(-1);
 	private final Object partOrderAdjustLock = new Object();
 
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
@@ -578,11 +579,11 @@ public class Session implements SessionInterface {
 	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
 		int size;
     	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-			size = majorParts.incrementAndGet();
+			size = roomParticipants.incrementAndGet();
 			participant.setOrder(size);
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{} and set part order:{}",
 					participant.getParticipantName(), sessionId, size,size);
-			return size > openviduConfig.getMcuMajorPartLimit();
+			return size > openviduConfig.getSfuPublisherSizeLimit();
 		}
 
     	return false;
@@ -592,13 +593,17 @@ public class Session implements SessionInterface {
     	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
-
-			// deal the order and put the subscriber on the wall if necessary
-			dealPartOrderInSessionAfterLeaving(participant);
 		}
     }
 
-	private void dealPartOrderInSessionAfterLeaving(Participant leavePart) {
+    public void dealParticipantOrder(Participant leavePart, RpcNotificationService notificationService) {
+		if (StreamType.MAJOR.equals(leavePart.getStreamType()) && !OpenViduRole.THOR.equals(leavePart.getRole())) {
+			log.info("current participant leaveRoom roomParticipants size:{}", this.roomParticipants.decrementAndGet());
+			dealPartOrderInSessionAfterLeaving(leavePart,notificationService);
+		}
+	}
+
+	private void dealPartOrderInSessionAfterLeaving(Participant leavePart, RpcNotificationService notificationService) {
 		synchronized (partOrderAdjustLock) {
 			int leavePartOrder = leavePart.getOrder();
 			int sfuLimit = openviduConfig.getSfuPublisherSizeLimit() + 1;
@@ -618,7 +623,7 @@ public class Session implements SessionInterface {
 					}
 					participant.setOrder(--partOrder);
 					// 订阅流变推送流
-					if (partOrder < 9 && participant.getRole() == OpenViduRole.SUBSCRIBER) {
+					if (partOrder < sfuLimit && participant.getRole() == OpenViduRole.SUBSCRIBER) {
 						log.info("after order deal and participant:{} current order:{} and role set {}", participant.getUuid(), participant.getOrder(), OpenViduRole.PUBLISHER);
 						participant.setRole(OpenViduRole.PUBLISHER);
 					}
@@ -628,11 +633,11 @@ public class Session implements SessionInterface {
 			boolean sendPartRoleChanged = Objects.nonNull(sub2PubPart = sub2PubPartRef.get());
 
 			// send notification
-			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged);
+			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged,notificationService);
 		}
 	}
 
-	private void notifyPartOrderOrRoleChanged(Participant sub2PubPart, boolean roleChanged) {
+	private void notifyPartOrderOrRoleChanged(Participant sub2PubPart, boolean roleChanged, RpcNotificationService notificationService) {
 		Set<Participant> participants = getMajorPartEachConnect();
 		// get part order info in session
 		JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
@@ -640,7 +645,6 @@ public class Session implements SessionInterface {
 		JsonArray subToPubChangedParam = roleChanged ?
 				getPartRoleChangedNotifyParamArr(sub2PubPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
 
-		RpcNotificationService notificationService = openviduConfig.getSessionManager().notificationService;
 		participants.forEach(participant -> {
 			// send part order in session changed notification
 			notificationService.sendNotification(participant.getParticipantPrivateId(),
@@ -676,9 +680,9 @@ public class Session implements SessionInterface {
 		return result;
 	}
 
-	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap) {
+	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap,SessionManager sessionManager) {
 		int lineOrder = openviduConfig.getSfuPublisherSizeLimit();
-		RpcNotificationService notificationService = openviduConfig.getSessionManager().notificationService;
+		RpcNotificationService notificationService = sessionManager.notificationService;
 		Set<Participant> participants = getMajorPartEachConnect();
 		Set<Participant> sub2PubPartSet = new HashSet<>(128);
 		Set<Participant> pub2SubPartSet = new HashSet<>(128);
