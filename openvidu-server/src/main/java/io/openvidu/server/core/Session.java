@@ -1138,28 +1138,30 @@ public class Session implements SessionInterface {
     }
 
 	public synchronized void replacePartOrderInConference(String sourceConnectionId, String targetConnectionId) {
-        boolean existSharing = false;
-        for (JsonElement jsonElement : majorShareMixLinkedArr) {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            String connectionId = jsonObject.get("connectionId").getAsString();
-            if (connectionId.equals(sourceConnectionId) || connectionId.equals(targetConnectionId)) {
-                if (jsonObject.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
-                    existSharing = true;
-                }
-            }
-        }
-
-        for (JsonElement jsonElement : majorShareMixLinkedArr) {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            String connectionId = jsonObject.get("connectionId").getAsString();
-            String streamType = jsonObject.get("streamType").getAsString();
-			if (connectionId.equals(sourceConnectionId)) {
-				changeStreamTypeIfNecessary(jsonObject, targetConnectionId, existSharing, streamType);
-			} else if (connectionId.equals(targetConnectionId)) {
-                changeStreamTypeIfNecessary(jsonObject, sourceConnectionId, existSharing, streamType);
+		if (org.apache.commons.lang.StringUtils.isNotEmpty(sourceConnectionId)) {
+			boolean existSharing = false;
+			for (JsonElement jsonElement : majorShareMixLinkedArr) {
+				JsonObject jsonObject = jsonElement.getAsJsonObject();
+				String connectionId = jsonObject.get("connectionId").getAsString();
+				if (connectionId.equals(sourceConnectionId) || connectionId.equals(targetConnectionId)) {
+					if (jsonObject.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+						existSharing = true;
+					}
+				}
 			}
+
+			for (JsonElement jsonElement : majorShareMixLinkedArr) {
+				JsonObject jsonObject = jsonElement.getAsJsonObject();
+				String connectionId = jsonObject.get("connectionId").getAsString();
+				String streamType = jsonObject.get("streamType").getAsString();
+				if (connectionId.equals(sourceConnectionId)) {
+					changeStreamTypeIfNecessary(jsonObject, targetConnectionId, existSharing, streamType);
+				} else if (connectionId.equals(targetConnectionId)) {
+					changeStreamTypeIfNecessary(jsonObject, sourceConnectionId, existSharing, streamType);
+				}
+			}
+			log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 		}
-		log.info("replacePartOrderInConference majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
 	}
 
 	private static void changeStreamTypeIfNecessary(JsonObject jsonObject, String connectionId, boolean existSharing, String streamType) {

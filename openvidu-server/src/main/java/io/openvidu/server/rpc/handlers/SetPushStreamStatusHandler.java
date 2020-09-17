@@ -3,7 +3,9 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.PushStreamStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -32,6 +34,8 @@ public class SetPushStreamStatusHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
         }
+        Participant participant = session.getParticipantByUUID(uuid);
+        participant.setPushStreamStatus(PushStreamStatusEnum.valueOf(status));
         //send notify
         session.getParticipants().forEach(part -> {
             if (StreamType.MAJOR.equals(part.getStreamType())) {

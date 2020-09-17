@@ -766,12 +766,17 @@ public abstract class SessionManager {
 		targetConnectionId = targetPart.getParticipantPublicId();
 		if (Objects.isNull(existSpeakerPart)) {
 			// switch layout
-			JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
-			if (firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
-				sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+			if (conferenceSession.getMajorShareMixLinkedArr().size() > 0) {
+				JsonObject firstOrderPart = conferenceSession.getMajorShareMixLinkedArr().get(0).getAsJsonObject();
+				if (firstOrderPart.get("streamType").getAsString().equals(StreamType.SHARING.name())) {
+					sourceConnectionId = conferenceSession.getMajorShareMixLinkedArr().get(1).getAsJsonObject().get("connectionId").getAsString();
+				} else {
+					sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+				}
 			} else {
-				sourceConnectionId = firstOrderPart.get("connectionId").getAsString();
+				sourceConnectionId = null;
 			}
+
 		} else {
 			// switch layout with current speaker participant
 			sourceConnectionId = existSpeakerPart.getParticipantPublicId();
@@ -826,6 +831,15 @@ public abstract class SessionManager {
 				this.notificationService.sendNotification(participant.getParticipantPrivateId(),
 						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
 			}
+			JsonObject audioParams = new JsonObject();
+			audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM,conferenceSession.getSessionId());
+			audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM,moderatorPart.getUuid());
+			audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"on");
+			JsonArray targetIds = new JsonArray();
+			targetIds.add(targetPart.getUuid());
+			audioParams.add(ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM, targetIds);
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, audioParams);
 		});
 	}
 

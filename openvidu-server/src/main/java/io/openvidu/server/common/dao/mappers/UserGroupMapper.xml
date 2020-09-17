@@ -143,7 +143,7 @@
   </select>
 
   <select id="selectListByGroupid" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.UserGroupVo">
-    select su.id userId,su.username,su.uuid account,su.type
+    select su.id userId,su.username,su.uuid ,su.type,su.phone
     from sd_user_group sug
     left join sd_user su on sug.user_id = su.id
     where sug.group_id IN
@@ -166,7 +166,11 @@
   </delete>
 
   <select id="selectByCorpIds" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.Group">
-      SELECT  id, group_name from  sd_group
-       where  corp_id = #{corpId,jdbcType=BIGINT}
+      select g.id,g.group_name groupName,count(ug.group_id) numOfPeople
+      from sd_group g
+      left join sd_user_group ug
+      on g.id = ug.group_id
+      where g.corp_id =  #{corpId,jdbcType=BIGINT}
+      group by g.id,g.group_name
 </select>
 </mapper>

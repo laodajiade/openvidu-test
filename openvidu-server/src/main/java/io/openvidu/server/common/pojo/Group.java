@@ -17,4 +17,6 @@ public class Group {
     private Date createTime;
 
     private Date updateTime;
+
+    private Integer numOfPeople;
 }

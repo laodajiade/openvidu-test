@@ -47,7 +47,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String clientType;
         TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
                 ? TerminalTypeEnum.valueOf(clientType) : null;
-
+        String deviceName = null;
         Map userInfo = null;
         JsonObject object = new JsonObject();
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
@@ -90,7 +90,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 checkDeviceInfoAndUpdate(device, request, rpcConnection);
 
                 // add deviceName into resp info
-                object.addProperty(ProtocolElements.ACCESS_IN_DEVICE_NAME_PARAM, device.getDeviceName());
+                deviceName = device.getDeviceName();
             }
 
             // find account already login before

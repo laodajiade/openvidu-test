@@ -18,4 +18,6 @@ public class UserGroupVo {
     private String status;
 
     private Integer type;
+
+    private String phone;
 }

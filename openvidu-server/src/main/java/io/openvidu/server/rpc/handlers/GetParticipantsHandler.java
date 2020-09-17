@@ -111,6 +111,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(kurentoParticipant.getSpeakerStatus()));
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
         userObj.addProperty("order",participant.getOrder());
+        userObj.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
 
         if (UserType.register.equals(kurentoParticipant.getUserType())) {
             // get user&dept&device from connectIdUserInfoMap
@@ -121,6 +122,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 userObj.addProperty("username", userDeviceDeptInfo.getUsername());
                 userObj.addProperty("userOrgName", userDeviceDeptInfo.getDeptName());
                 if (!StringUtils.isEmpty(userDeviceDeptInfo.getSerialNumber())) {
+                    userObj.addProperty("serialNumber",userDeviceDeptInfo.getSerialNumber());
                     userObj.addProperty("deviceName", userDeviceDeptInfo.getDeviceName());
                     userObj.addProperty("deviceOrgName", userDeviceDeptInfo.getDeptName());
                     userObj.addProperty("appShowName", userDeviceDeptInfo.getDeviceName());

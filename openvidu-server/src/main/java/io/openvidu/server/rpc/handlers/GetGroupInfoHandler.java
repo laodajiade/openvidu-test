@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,14 +34,11 @@ public class GetGroupInfoHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        List<Long> groupIds = getLongListParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
+        Long groupId = getLongParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
         int pageNum = getIntParam(request,ProtocolElements.PAGENUM);
         int pageSize = getIntParam(request,ProtocolElements.PAGESIZE);
-        if (CollectionUtils.isEmpty(groupIds)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-            return;
-        }
+        List<Long> groupIds = new ArrayList<>();
+        groupIds.add(groupId);
         PageHelper.startPage(pageNum,pageSize);
         List<UserGroupVo> userGroups = userGroupMapper.selectListByGroupid(groupIds);
 
@@ -60,7 +58,10 @@ public class GetGroupInfoHandler extends RpcAbstractHandler {
             }
         }
         PageInfo<UserGroupVo> pageInfo = new PageInfo<>(userGroups);
-        resp.put(ProtocolElements.GET_GROUP_INFO_TOTAL,pageInfo.getTotal());
+        resp.put(ProtocolElements.PAGENUM,pageNum);
+        resp.put(ProtocolElements.PAGESIZE,pageSize);
+        resp.put(ProtocolElements.TOTAL,pageInfo.getTotal());
+        resp.put(ProtocolElements.PAGES,pageInfo.getPages());
         resp.put(ProtocolElements.GET_GROUP_INFO_ACCOUNT_LIST, pageInfo.getList());
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resp);
     }

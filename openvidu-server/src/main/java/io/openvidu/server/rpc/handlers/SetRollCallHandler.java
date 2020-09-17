@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -26,6 +27,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
+        String type = getStringOptionalParam(request, "type");
 
         Session conferenceSession = sessionManager.getSession(sessionId);
         Participant targetPart = conferenceSession.getParticipantByUUID(targetId);
@@ -54,7 +56,11 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             }
             return;
         }
-
+        if ("applicant".equals(type) && targetPart.getHandStatus() == ParticipantHandStatus.down) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PARTICIPANT_DOWN_HAND_NOW);
+            return;
+        }
         sessionManager.setRollCallInSession(conferenceSession, targetPart);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

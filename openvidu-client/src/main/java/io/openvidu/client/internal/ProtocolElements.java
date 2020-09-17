@@ -158,6 +158,7 @@ public class ProtocolElements {
     public static final String ACCESS_IN_ACCESSTYPE_PARAM = "accessType";
 	public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
 	public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
+	public static final String ACCESS_IN_USER_NAME_PARAM = "userName";
 	public static final String ACCESS_IN_DEVICEMODEL_PARAM = "deviceModel";
 	public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
 	public static final String ACCESS_IN_ABILITY_PARAM = "ability";
@@ -482,14 +483,15 @@ public class ProtocolElements {
 
 	public static final String GET_GROUP_LIST_METHOD = "getGroupList";
 	public static final String GET_GROUP_LIST_USERID_PARAM = "userId";
-	public static final String GET_GROUP_LIST_GROUPLIST_PARAM = "groupList";
+	public static final String GET_GROUP_LIST_GROUPLIST_PARAM = "list";
 	public static final String GET_GROUP_LIST_GROUPID_PARAM = "groupId";
 	public static final String GET_GROUP_LIST_GROUPNAME_PARAM = "groupName";
+	public static final String GET_GROUP_LIST_NUMOFPEOPLE_PARAM = "numOfPeople";
 
 	public static final String GET_GROUP_INFO_METHOD = "getGroupInfo";
 	public static final String GET_GROUP_INFO_TOTAL = "total";
-	public static final String GET_GROUP_INFO_ACCOUNT_LIST = "accountList";
-	public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupIds";
+	public static final String GET_GROUP_INFO_ACCOUNT_LIST = "list";
+	public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupId";
 	public static final String GET_GROUP_INFO_GROUPINFO_PARAM = "groupInfo";
 	public static final String GET_GROUP_INFO_DEVIDE_NAME_PARAM = "deviceName";
     public static final String GET_GROUP_INFO_SERIAL_NUMBER_PARAM = "serialNumber";
@@ -688,6 +690,8 @@ public class ProtocolElements {
 
 	public static final String PAGENUM = "pageNum";
 	public static final String PAGESIZE = "pageSize";
+	public static final String TOTAL = "total";
+	public static final String PAGES = "pages";
 
 	public static final String UPDATE_PARTICIPANTS_ORDER_METHOD = "updateParticipantsOrder";
 	public static final String UPDATE_PARTICIPANTS_ORDER_ORDEREDPARTS_PARAM="orderedParts";
