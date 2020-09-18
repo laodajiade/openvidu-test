@@ -19,6 +19,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.InviteCompensationManage;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author geedow
@@ -270,25 +272,31 @@ public abstract class RpcAbstractHandler {
         search.setRoomId(sessionId);
         // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
         search.setStatus(1);
+        AtomicBoolean exitFlag = new AtomicBoolean(false);
         try {
             List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
+
             if (conferences != null && !conferences.isEmpty()) {
-                if (sessionId.equals(userUuid)) {
+                /*if (sessionId.equals(userUuid)) {
                     // force close previous room when sessionId is userUuid.
                     log.warn("conference:{} will be force closed.", sessionId);
                     // TODO
                     conferences.forEach(conference -> sessionManager.endConferenceInfo(conference));
                     cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
                     return false;
-                }
-
-                log.warn("conference:{} already exist.", sessionId);
-                return true;
+                }*/
+                conferences.forEach(conference -> {
+                    Session session = sessionManager.getSession(conference.getRoomId());
+                    if (Objects.nonNull(session) && !session.isClosed()) {
+                        log.warn("conference:{} already exist.", sessionId);
+                        exitFlag.set(true);
+                    }
+                });
             }
         } catch (Exception e) {
             log.info("exception {}", e);
         }
-        return false;
+        return exitFlag.get();
     }
 
     protected JsonArray deviceList(List<DeviceDept> devices) {

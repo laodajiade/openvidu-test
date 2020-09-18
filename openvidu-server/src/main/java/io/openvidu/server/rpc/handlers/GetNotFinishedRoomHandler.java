@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author geedow
@@ -24,7 +26,8 @@ public class GetNotFinishedRoomHandler extends RpcAbstractHandler {
         if (!partInfo.isEmpty()) {
             String roomId = String.valueOf(partInfo.get("roomId"));
             Map roomInfo = cacheManage.getRoomInfo(roomId);
-            if (!roomInfo.isEmpty()) {
+            Session session = sessionManager.getSession(roomId);
+            if (!roomInfo.isEmpty() && Objects.nonNull(session) && !session.isClosed()) {
                 // room info
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ID_PARAM, roomId);
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, String.valueOf(roomInfo.get("conferenceSubject")));

@@ -36,9 +36,8 @@ public class PauseAndResumeStreamHandler extends RpcAbstractHandler {
         }
         for (JsonObject json : streams) {
             String mediaType = json.get("mediaType").getAsString();
-            String streamId = json.get("streamId").getAsString();
-            String participantPublicId = streamId.split("_")[0];
-            Participant participant = sessionManager.getSession(rpcConnection.getSessionId()).getParticipantByPublicId(participantPublicId);
+            String connectionId = json.get("connectionId").getAsString();
+            Participant participant = sessionManager.getSession(rpcConnection.getSessionId()).getParticipantByPublicId(connectionId);
             if (Objects.isNull(participant)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);

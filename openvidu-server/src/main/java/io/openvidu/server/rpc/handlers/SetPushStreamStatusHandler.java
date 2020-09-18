@@ -26,7 +26,7 @@ public class SetPushStreamStatusHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.SETPUSHSTREAMSTATUS_ROOMID_PARAM);
         String uuid = getStringParam(request, ProtocolElements.SETPUSHSTREAMSTATUS_UUID_PARAM);
-        String streamId = getStringParam(request, ProtocolElements.SETPUSHSTREAMSTATUS_STREAMID_PARAM);
+        String connectionId = getStringParam(request, ProtocolElements.SETPUSHSTREAMSTATUS_CONNECTIONID_PARAM);
         String status = getStringParam(request, ProtocolElements.SETPUSHSTREAMSTATUS_STATUS_PARAM);
         Session session = sessionManager.getSession(roomId);
         if (Objects.isNull(session)) {
@@ -42,5 +42,7 @@ public class SetPushStreamStatusHandler extends RpcAbstractHandler {
                 this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SETPUSHSTREAMSTATUS_METHOD, request.getParams());
             }
         });
+
+        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

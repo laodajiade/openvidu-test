@@ -64,6 +64,8 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERSTREAMFRAMERATE_PARAM = "frameRate";
 	public static final String JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM = "videoDimensions";
 	public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
+	public static final String JOINROOM_MICSTATUS_PARAM = "micStatus";
+	public static final String JOINROOM_VIDEOSTATUS_PARAM = "videoStatus";
 	public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
 	public static final String JOINROOM_PEERSPEAKERSTATUS_PARAM = "speakerStatus";
 	public static final String JOINROOM_PEERHANDSTATUS_PARAM = "handStatus";
@@ -231,6 +233,7 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_USE_ID_PARAM = "useIdInRoom";
     public static final String CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
     public static final String CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
+	public static final String CREATE_ROOM_QUIET_STATUS_PARAM = "quietStatusInRoom";
 	public static final String CREATE_ROOM_CONFERENCE_MODE_PARAM = "conferenceMode";
 
 
@@ -703,7 +706,7 @@ public class ProtocolElements {
 	public static final String SETPUSHSTREAMSTATUS_METHOD = "setPushStreamStatus";
 	public static final String SETPUSHSTREAMSTATUS_ROOMID_PARAM = "roomId";
 	public static final String SETPUSHSTREAMSTATUS_UUID_PARAM = "uuid";
-	public static final String SETPUSHSTREAMSTATUS_STREAMID_PARAM = "streamId";
+	public static final String SETPUSHSTREAMSTATUS_CONNECTIONID_PARAM = "connectionId";
 	public static final String SETPUSHSTREAMSTATUS_STATUS_PARAM = "status";
 
 

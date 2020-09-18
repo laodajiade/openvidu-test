@@ -88,6 +88,7 @@ public class SessionEventsHandler {
 		}
 		Session session = sessionManager.getSession(sessionId);
 		JsonObject result = new JsonObject();
+		JsonObject roomInfoJson = new JsonObject();
 		JsonArray resultArray = new JsonArray();
 		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
@@ -128,6 +129,10 @@ public class SessionEventsHandler {
 			JsonObject participantJson = new JsonObject();
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
 					existingParticipant.getParticipantPublicId());
+			participantJson.addProperty(ProtocolElements.JOINROOM_MICSTATUS_PARAM,
+					existingParticipant.getMicStatus().name());
+			participantJson.addProperty(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM,
+					existingParticipant.getVideoStatus().name());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
 					existingParticipant.getCreatedAt());
 			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHARESTATUS_PARAM,
@@ -204,44 +209,45 @@ public class SessionEventsHandler {
 			}
 		}
 
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getMicStatus().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getVideoStatus().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_CONFERENCE_MODE_PARAM, session.getConferenceMode().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
-		result.addProperty("subtitleConfig", session.getSubtitleConfig().name());
-		result.addProperty("order",participant.getOrder());
-		result.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_MIC_STATUS_PARAM, participant.getMicStatus().name());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_VIDEO_STATUS_PARAM, participant.getVideoStatus().name());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_SHARE_POWER_PARAM, participant.getPreset().getSharePowerInRoom().name());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_SUBJECT_PARAM, participant.getPreset().getRoomSubject());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_CONFERENCE_MODE_PARAM, session.getConferenceMode().name());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CAPACITY_PARAM, participant.getPreset().getRoomCapacity());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
+		roomInfoJson.addProperty("subtitleConfig", session.getSubtitleConfig().name());
+		roomInfoJson.addProperty("order",participant.getOrder());
+		roomInfoJson.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
 		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
-			result.add("extraInfo", session.getSubtitleExtraConfig());
+			roomInfoJson.add("extraInfo", session.getSubtitleExtraConfig());
 		}
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
-		result.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
-		result.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
-		result.addProperty(ProtocolElements.SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM,participant.getPreset().getAllowPartOperSpeaker().name());
-        result.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
-        result.addProperty("automatically", session.isAutomatically());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
+		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
+		roomInfoJson.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
+		roomInfoJson.addProperty(ProtocolElements.SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM,participant.getPreset().getAllowPartOperSpeaker().name());
+		roomInfoJson.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
+		roomInfoJson.addProperty("automatically", session.isAutomatically());
+		roomInfoJson.addProperty(ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM,participant.getPreset().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
-			result.addProperty("mode", session.getLayoutMode().getMode());
+			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
 		}
 		result.add("value", resultArray);
 
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            result.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
+			roomInfoJson.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 
             JsonObject layoutInfoObj = new JsonObject();
             layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
-            result.add("layoutInfo", layoutInfoObj);
+			roomInfoJson.add("layoutInfo", layoutInfoObj);
         }
-
+		result.add("roomInfo", roomInfoJson);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 	}
 

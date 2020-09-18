@@ -141,7 +141,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         if (AccessTypeEnum.terminal.equals(accessType)) {
             cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.online);
         }
-
+        object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }

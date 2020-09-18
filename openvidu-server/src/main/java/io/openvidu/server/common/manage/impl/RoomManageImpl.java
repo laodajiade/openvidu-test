@@ -83,7 +83,7 @@ public class RoomManageImpl implements RoomManage {
         partInfo.put("handStatus", participant.getHandStatus().name());
         partInfo.put("micStatus", participant.getMicStatus().name());
         partInfo.put("videoStatus", participant.getVideoStatus().name());
-
+        partInfo.put("order", participant.getOrder());
         cacheManage.savePartInfo(participant.getUuid(), partInfo);
     }
 

@@ -579,7 +579,7 @@ public class Session implements SessionInterface {
 	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
 		int size;
     	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-			size = roomParticipants.incrementAndGet();
+    		size = roomParticipants.incrementAndGet();
 			participant.setOrder(size);
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{} and set part order:{}",
 					participant.getParticipantName(), sessionId, size,size);
