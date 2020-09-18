@@ -183,6 +183,14 @@ public class OpenviduConfig {
 	@Value("${H5.page.infos}")
 	private String h5PagesInfoConfig;
 
+	@Getter
+    @Value("${lb.rtn.strategy}")
+    private String lbRTNStrategy;
+
+	@Value("${lb.rtns}")
+	private String lbRTNs;
+
+
 
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
@@ -489,6 +497,11 @@ public class OpenviduConfig {
 	public String getH5PagesInfoConfig() {
 		return h5PagesInfoConfig;
 	}
+
+	public String getLBRTNStrategy() { return this.lbRTNStrategy; }
+
+	public String getLBRTNsStrings() { return this.lbRTNs; }
+
 
 	public void initiateOpenViduWebhookEndpoint(String endpoint) throws Exception {
 		try {
