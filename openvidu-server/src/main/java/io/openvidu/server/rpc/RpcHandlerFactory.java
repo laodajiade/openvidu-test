@@ -273,6 +273,14 @@ public class RpcHandlerFactory {
     private PauseAndResumeStreamHandler pauseAndResumeStreamHandler;
     @Resource
     private SetPushStreamStatusHandler setPushStreamStatusHandler;
+    @Resource
+    private GetSpecificPageOfDeptHandler getSpecificPageOfDeptHandler;
+    @Resource
+    private GetSpecificPageOfMemberHandler getSpecificPageOfMemberHandler;
+    @Resource
+    private GetMemberDetailsHandler getMemberDetailsHandler;
+    @Resource
+    private RecursiveQueryUserHandler recursiveQueryUserHandler;
 
 
 
@@ -369,6 +377,10 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD,              updateParticipantsOrderHandler);
         handlersMap.put(ProtocolElements.SETPUSHSTREAMSTATUS_METHOD,                    setPushStreamStatusHandler);
         handlersMap.put(ProtocolElements.PAUSEANDRESUMESTREAM_METHOD,                   pauseAndResumeStreamHandler);
+        handlersMap.put(ProtocolElements.GETSPECIFICPAGEOFDEPT_METHOD,                  getSpecificPageOfDeptHandler);
+        handlersMap.put(ProtocolElements.GETSPECIFICPAGEOFMEMBER_METHOD,                getSpecificPageOfMemberHandler);
+        handlersMap.put(ProtocolElements.GETMEMBERDETAILS_METHOD,                       getMemberDetailsHandler);
+        handlersMap.put(ProtocolElements.RECURSIVEQUERYUSER_METHOD,                     recursiveQueryUserHandler);
 
     }
 

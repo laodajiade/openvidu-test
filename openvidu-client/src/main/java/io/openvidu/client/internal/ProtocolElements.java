@@ -709,6 +709,11 @@ public class ProtocolElements {
 	public static final String SETPUSHSTREAMSTATUS_CONNECTIONID_PARAM = "connectionId";
 	public static final String SETPUSHSTREAMSTATUS_STATUS_PARAM = "status";
 
+	public static final String GETSPECIFICPAGEOFDEPT_METHOD = "getSpecificPageOfDept";
+	public static final String GETSPECIFICPAGEOFMEMBER_METHOD = "getSpecificPageOfMember";
+	public static final String GETMEMBERDETAILS_METHOD = "getMemberDetails";
+	public static final String RECURSIVEQUERYUSER_METHOD = "recursiveQueryUser";
+
 
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
