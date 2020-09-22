@@ -24,6 +24,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
@@ -576,10 +577,15 @@ public class Session implements SessionInterface {
 		this.activePublishers.decrementAndGet();
 	}
 
-	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
+	public boolean needToChangePartRoleAccordingToLimit(Participant participant, CacheManage cacheManage) {
 		int size;
     	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-    		size = roomParticipants.incrementAndGet();
+			Map userInfo = cacheManage.getUserInfoByUUID(participant.getUuid());
+			if (Objects.nonNull(userInfo)) {
+				size = Integer.parseInt(userInfo.get("order").toString());
+			} else {
+				size = roomParticipants.incrementAndGet();
+			}
 			participant.setOrder(size);
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{} and set part order:{}",
 					participant.getParticipantName(), sessionId, size,size);

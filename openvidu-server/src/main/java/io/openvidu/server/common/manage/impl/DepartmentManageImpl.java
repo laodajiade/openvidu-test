@@ -10,7 +10,9 @@ import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.DepartmentTree;
 import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.common.pojo.DeviceDeptSearch;
+import io.openvidu.server.service.DepartmentService;
 import io.openvidu.server.utils.TreeToolUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -18,8 +20,10 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +40,9 @@ public class DepartmentManageImpl implements DepartmentManage {
 
     @Resource
     private DeviceDeptMapper deviceDeptMapper;
+
+    @Autowired
+    private DepartmentService departmentService;
 
     @Override
     public JsonObject genDeptTreeJsonObj(@NotNull Long orgId) {
@@ -94,6 +101,22 @@ public class DepartmentManageImpl implements DepartmentManage {
         deviceDeptSearch.setSerialNumber(devSerialNum);
         List<DeviceDept> deviceDepts = deviceDeptMapper.selectBySearchCondition(deviceDeptSearch);
         return !CollectionUtils.isEmpty(deviceDepts) ? deviceDepts.get(0) : null;
+    }
+
+    /**
+     * 递归获取 deptIds 下的所有子部门,并返回包含本部门已经子部门的id列表
+     */
+    @Override
+    public List<Long> getAllChildDept(List<Long> deptIds) {
+
+        Set<Long> depts = new HashSet<>();
+
+        while (depts.addAll(deptIds)) {
+            List<Department> departments = departmentService.listByParentId(deptIds);
+            deptIds = departments.stream().map(Department::getId).collect(Collectors.toList());
+        }
+
+        return new ArrayList<>(depts);
     }
 
 }

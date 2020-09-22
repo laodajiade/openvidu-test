@@ -21,7 +21,7 @@
     id, parent_id, dept_name, corp_id, project, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_department
     where id = #{id,jdbcType=BIGINT}
@@ -31,6 +31,22 @@
     select id, parent_id, dept_name
     from sd_department
     where corp_id = #{corpId,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectRootDept" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_department
+    where project = #{project,jdbcType=VARCHAR}
+    and parent_id is null
+  </select>
+
+  <select id="selectChildDept" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_department
+    where project = #{project,jdbcType=VARCHAR}
+    and parent_id = #{parentId,jdbcType=BIGINT}
   </select>
 
   <select id="getSubFirstLevelDepts" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -49,11 +65,11 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Department" >
-    insert into sd_department (id, parent_id, dept_name, 
-      corp_id, project, create_time, 
+    insert into sd_department (id, parent_id, dept_name,
+      corp_id, project, create_time,
       update_time)
-    values (#{id,jdbcType=BIGINT}, #{parentId,jdbcType=BIGINT}, #{deptName,jdbcType=VARCHAR}, 
-      #{corpId,jdbcType=BIGINT}, #{project,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+    values (#{id,jdbcType=BIGINT}, #{parentId,jdbcType=BIGINT}, #{deptName,jdbcType=VARCHAR},
+      #{corpId,jdbcType=BIGINT}, #{project,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
       #{updateTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Department" >

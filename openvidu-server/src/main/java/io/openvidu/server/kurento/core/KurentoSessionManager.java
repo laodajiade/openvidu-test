@@ -25,6 +25,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.Conference;
@@ -78,6 +79,8 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Resource
 	private ApplicationContext applicationContext;
+	@Resource
+	private CacheManage cacheManage;
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -155,7 +158,7 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			// change the part role according to the mcu limit
-			if (kSession.needToChangePartRoleAccordingToLimit(participant)) {
+			if (kSession.needToChangePartRoleAccordingToLimit(participant,cacheManage)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			// deal the default subtitle config

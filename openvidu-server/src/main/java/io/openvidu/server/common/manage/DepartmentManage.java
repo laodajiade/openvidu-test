@@ -19,4 +19,6 @@ public interface DepartmentManage {
     List<Long> getSubDeptIds(Long deptId);
 
     DeviceDept getDeviceDeptBySerialNum(String devSerialNum);
+
+    List<Long> getAllChildDept(List<Long> deptIds);
 }

@@ -1,10 +1,11 @@
 package io.openvidu.server.common.dao;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.openvidu.server.common.pojo.RootDept;
 import io.openvidu.server.common.pojo.UserDept;
 import io.openvidu.server.common.pojo.UserDeptSearch;
 
-public interface UserDeptMapper {
+public interface UserDeptMapper extends BaseMapper<UserDept> {
 
     String selectByUserId(Long userId);
 

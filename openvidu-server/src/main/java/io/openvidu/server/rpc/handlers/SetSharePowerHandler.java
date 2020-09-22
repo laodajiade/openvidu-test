@@ -54,8 +54,8 @@ public class SetSharePowerHandler extends RpcAbstractHandler {
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
                 if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
-                long userId = gson.fromJson(p.getClientMetadata(), JsonObject.class).get("clientData").getAsLong();
-                if ((Objects.isNull(targetIds) || targetIds.isEmpty()) || targetIds.contains(String.valueOf(userId))) {
+                String userUuid = p.getUuid();
+                if ((Objects.isNull(targetIds) || targetIds.isEmpty()) || targetIds.contains(userUuid)) {
                     p.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(status));
                 }
                 this.notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.SET_SHARE_POWER_METHOD, params);
