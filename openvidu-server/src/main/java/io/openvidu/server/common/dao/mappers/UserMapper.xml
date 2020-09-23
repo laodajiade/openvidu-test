@@ -82,6 +82,7 @@
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
     and su.title is null
+    and su.uuid <![CDATA[ <> 'administrator' ]]>
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
   </select>
 
@@ -92,6 +93,8 @@
     from sd_user_dept sud
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
+    and su.title is null
+    and su.uuid <![CDATA[ <> 'administrator' ]]>
     and sud.dept_id  in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=BIGINT}
@@ -267,6 +270,7 @@
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
     and su.title is null
+    and su.uuid <![CDATA[ <> 'administrator' ]]>
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
   </select>
 
@@ -299,6 +303,7 @@
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
     and su.title is null
+    and su.uuid <![CDATA[ <> 'administrator' ]]>
     and su.uuid in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=VARCHAR}
@@ -334,6 +339,7 @@
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
     and su.title is null
+    and su.uuid <![CDATA[ <> 'administrator' ]]>
     and su.id in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=BIGINT}

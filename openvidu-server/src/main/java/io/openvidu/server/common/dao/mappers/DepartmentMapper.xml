@@ -41,7 +41,7 @@
     and parent_id is null
   </select>
 
-  <select id="selectChildDept" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="selectChildDept" parameterType="java.lang.Object" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from sd_department

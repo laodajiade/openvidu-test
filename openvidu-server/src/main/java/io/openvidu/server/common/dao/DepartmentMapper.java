@@ -2,6 +2,7 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.DepartmentTree;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public interface DepartmentMapper {
 
     Department selectRootDept(String project);
 
-    List<Department> selectChildDept(Long parentId,String project);
+    List<Department> selectChildDept(@Param("parentId") Long parentId, @Param("project") String project);
 
     List<Department> selectByParentIds(List<Long> deptIds);
 }

@@ -48,7 +48,7 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
             } else {
                 deptPath = department.getDeptName() + "/" + deptPath;
             }
-            deptId = department.getParentId();
+            deptId = department.getParentId() == null ? 0L : department.getParentId();
         } while (deptId != 0L);
 
         JsonObject jsonObject = new JsonObject();
