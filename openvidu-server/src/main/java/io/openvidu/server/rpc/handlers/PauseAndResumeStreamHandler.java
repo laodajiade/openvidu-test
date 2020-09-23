@@ -53,12 +53,6 @@ public class PauseAndResumeStreamHandler extends RpcAbstractHandler {
             }
 
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-            // send notify
-            sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(part -> {
-                if (StreamType.MAJOR.equals(part.getStreamType())) {
-                    this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.PAUSEANDRESUMESTREAM_METHOD, request.getParams());
-                }
-            });
         }
     }
 }
