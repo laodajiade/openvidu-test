@@ -121,4 +121,14 @@
     where su.uuid = #{uuid,jdbcType=VARCHAR}
     limit 1
   </select>
+
+  <select id="selectByDeptIdsList" resultMap="BaseResultMap" parameterType="java.util.List" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_user_dept
+    where dept_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
 </mapper>

@@ -1,12 +1,11 @@
 package io.openvidu.server.common.dao;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.DepartmentTree;
 
 import java.util.List;
 
-public interface DepartmentMapper extends BaseMapper<Department> {
+public interface DepartmentMapper {
 
     int deleteByPrimaryKey(Long id);
 
@@ -27,4 +26,6 @@ public interface DepartmentMapper extends BaseMapper<Department> {
     Department selectRootDept(String project);
 
     List<Department> selectChildDept(Long parentId,String project);
+
+    List<Department> selectByParentIds(List<Long> deptIds);
 }

@@ -320,7 +320,7 @@
     INNER JOIN sd_user u ON u.id = ud.user_id
     WHERE u.id in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
-      #{item,jdbcType=VARCHAR}
+      #{item,jdbcType=BIGINT}
     </foreach>
     union
     select
@@ -336,7 +336,7 @@
     and su.title is null
     and su.id in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
-      #{item,jdbcType=VARCHAR}
+      #{item,jdbcType=BIGINT}
     </foreach>
   </select>
 

@@ -49,6 +49,16 @@
     and parent_id = #{parentId,jdbcType=BIGINT}
   </select>
 
+  <select id="selectByParentIds" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_department
+    where parent_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
   <select id="getSubFirstLevelDepts" parameterType="java.lang.Long" resultMap="BaseResultMap">
       select id, parent_id, dept_name
       from  sd_department
