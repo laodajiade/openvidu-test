@@ -44,7 +44,6 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.FormatChecker;
 import io.openvidu.server.utils.GeoLocation;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.kurento.client.MediaType;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +123,7 @@ public abstract class SessionManager {
 
 	public abstract void switchVoiceMode(Participant participant, VoiceMode operation);
 
-	public abstract void pauseAndResumeStream(Participant participant, OperationMode operation, String mediaType);
+	public abstract void pauseAndResumeStream(Participant pausePart,Participant targetPart, OperationMode operation, String mediaType);
 
 	public abstract void sendMessage(Participant participant, String message, Integer transactionId);
 
@@ -814,6 +813,10 @@ public abstract class SessionManager {
 		}
 		JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(targetPart,
 				OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
+
+		targetPart.setMicStatus(ParticipantMicStatus.on);
+		targetPart.setVideoStatus(ParticipantVideoStatus.on);
+		targetPart.setSpeakerStatus(ParticipantSpeakerStatus.on);
 
 		// broadcast the changes of layout
 		participants.forEach(participant -> {

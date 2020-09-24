@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -32,16 +33,33 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String targetConnectionId = null;
         Session conferenceSession = sessionManager.getSession(sessionId);
         Set<Participant> participants = conferenceSession.getParticipants();
+        Participant part = null;
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (targetId.equals(participant.getUuid())) {
                     participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
                     targetConnectionId = participant.getParticipantPublicId();
+                    part = participant;
                 }
 
                 if (sourceId.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
                     sourceConnectionId = participant.getParticipantPublicId();
                 }
+            }
+        }
+
+        if (part != null) {
+            if ((part.getOrder() > openviduConfig.getSfuPublisherSizeLimit())) {
+                part.changePartRole(OpenViduRole.SUBSCRIBER);
+                Session session = sessionManager.getSession(sessionId);
+                JsonArray changeRoleNotifiParam = session.getPartRoleChangedNotifyParamArr(part,
+                        OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
+                participants.forEach(participant -> {
+                    if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                        this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                                ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
+                    }
+                });
             }
         }
 

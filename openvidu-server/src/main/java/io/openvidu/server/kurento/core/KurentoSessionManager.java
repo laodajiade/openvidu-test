@@ -572,9 +572,10 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
-	public void pauseAndResumeStream(Participant participant, OperationMode operation, String mediaType) {
-		KurentoParticipant kParticipant = (KurentoParticipant) participant;
-		kParticipant.pauseAndResumeStreamInSession(operation, mediaType, kParticipant.getSubscribers().keySet());
+	public void pauseAndResumeStream(Participant pausePart, Participant targetPart,  OperationMode operation, String mediaType) {
+		KurentoParticipant kParticipant = (KurentoParticipant) pausePart;
+		Set<String> publicIds = kParticipant.getSubscribers().keySet();
+		kParticipant.pauseAndResumeStreamInSession(targetPart,operation, mediaType,publicIds);
 	}
 
 	private void switchVoiceModeWithPublicId(Participant participant, VoiceMode operation, String senderName) {

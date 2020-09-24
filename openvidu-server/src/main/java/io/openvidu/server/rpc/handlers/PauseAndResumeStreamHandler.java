@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.OperationMode;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -37,14 +36,15 @@ public class PauseAndResumeStreamHandler extends RpcAbstractHandler {
         for (JsonObject json : streams) {
             String mediaType = json.get("mediaType").getAsString();
             String connectionId = json.get("connectionId").getAsString();
-            Participant participant = sessionManager.getSession(rpcConnection.getSessionId()).getParticipantByPublicId(connectionId);
-            if (Objects.isNull(participant)) {
+            Participant pausePart = sessionManager.getParticipant(rpcConnection.getSessionId(),rpcConnection.getParticipantPrivateId());
+            Participant targetPart = sessionManager.getSession(rpcConnection.getSessionId()).getParticipantByPublicId(connectionId);
+            if (Objects.isNull(targetPart)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
                 return;
             }
             try {
-                sessionManager.pauseAndResumeStream(participant,operationMode,mediaType);
+                sessionManager.pauseAndResumeStream(pausePart,targetPart,operationMode,mediaType);
             } catch (Exception e) {
                 log.error("request method:{} error:{}",request.getMethod(),e);
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
