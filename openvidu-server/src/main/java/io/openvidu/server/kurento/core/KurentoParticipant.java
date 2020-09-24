@@ -75,6 +75,9 @@ public class KurentoParticipant extends Participant {
 
 	private String publisherStreamId;
 
+	private final String strMSTagDebugMCUParticipant = "debugMCUParticipant";
+	private final String strMSTagDebugEndpointName = "debugEndpointName";
+
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager, LivingManager livingManager) {
@@ -165,11 +168,13 @@ public class KurentoParticipant extends Participant {
                 this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
             }
 
-			this.publisher.getMajorShareHubPort().setName(getParticipantName());
+//			this.publisher.getMajorShareHubPort().setName(getParticipantName());
+			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
 		}
 
 		this.publisher.setEndpointName(publisherStreamId);
 		this.publisher.getEndpoint().setName(publisherStreamId);
+		this.publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub");
 		this.publisher.setStreamId(publisherStreamId);
 		endpointConfig.addEndpointListeners(this.publisher, "publisher");
 
@@ -334,6 +339,7 @@ public class KurentoParticipant extends Participant {
 
 			subscriber.setEndpointName(subscriberEndpointName);
 			subscriber.getEndpoint().setName(subscriberEndpointName);
+			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub");
 			subscriber.setStreamId(kSender.getPublisherStreamId());
 
 			endpointConfig.addEndpointListeners(subscriber, "subscriber");
