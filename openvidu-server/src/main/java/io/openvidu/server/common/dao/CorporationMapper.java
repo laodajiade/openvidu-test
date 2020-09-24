@@ -12,6 +12,8 @@ public interface CorporationMapper {
 
     Corporation selectByPrimaryKey(Long id);
 
+    Corporation selectByCorpProject(String project);
+
     int updateByPrimaryKeySelective(Corporation record);
 
     int updateByPrimaryKey(Corporation record);

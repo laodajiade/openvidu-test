@@ -16,4 +16,6 @@ public class Corporation {
 
     private Date updateTime;
 
+    private Integer capacity;
+
 }

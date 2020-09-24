@@ -102,10 +102,20 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // verify room capacity limit.
                 if (!Objects.isNull(sessionManager.getSession(sessionId)) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
                     Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
-                    if (StreamType.MAJOR.equals(streamType) && majorParts.size() >= preset.getRoomCapacity()) {
+                    if (StreamType.MAJOR.equals(streamType) && majorParts.size() > preset.getRoomCapacity()) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
-                        errCode = ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
+                        errCode = ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED;
                         break;
+                    }
+                    //query sd_corporation info
+                    Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+                    if (Objects.nonNull(corporation.getCapacity())) {
+                        // verify corporation capacity limit.
+                        if (StreamType.MAJOR.equals(streamType) && majorParts.size() > corporation.getCapacity()) {
+                            log.error("verify corporation:{} capacity:{} cur capacity:{}", sessionId, corporation.getCapacity(), majorParts.size());
+                            errCode = ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED;
+                            break;
+                        }
                     }
                 }
 

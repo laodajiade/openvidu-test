@@ -84,6 +84,8 @@ public enum ErrorCodeEnum {
     MODERATOR_PROHIBIT_ON_SPEAKER(13039,"主持人禁止开启扬声器"),
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中"),
+    ROOM_CAPACITY_CORP_LIMITED(13041, "已达企业会议人数上限，请稍后再试"),
+    ROOM_CAPACITY_PERSONAL_LIMITED(13042, "已达会议人数上限，请稍后再试"),
     PARTICIPANT_DOWN_HAND_NOW(13043, "参会者已取消举手发言"),
     COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
 
