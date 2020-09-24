@@ -23,7 +23,7 @@
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
-    status, password, invite_limit, create_time, update_time, project
+    status, password, moderator_password, invite_limit, create_time, update_time, project
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
       select
