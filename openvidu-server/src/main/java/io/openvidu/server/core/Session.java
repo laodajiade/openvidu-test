@@ -607,8 +607,8 @@ public class Session implements SessionInterface {
 	private void dealPartOrderInSessionAfterLeaving(Participant leavePart, RpcNotificationService notificationService) {
 		synchronized (partOrderAdjustLock) {
 			int leavePartOrder = leavePart.getOrder();
-			int sfuLimit = openviduConfig.getSfuPublisherSizeLimit() + 1;
-			int lineOrder = openviduConfig.getSfuPublisherSizeLimit();
+			int sfuLimit = openviduConfig.getSfuPublisherSizeLimit();
+			int lineOrder = openviduConfig.getSfuPublisherSizeLimit() - 1;
 			// decrement the part order which original order is bigger than leavePart.
 			// recorder the part whose role need to be changed.
 			Participant sub2PubPart;
@@ -682,7 +682,7 @@ public class Session implements SessionInterface {
 	}
 
 	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap,SessionManager sessionManager) {
-		int lineOrder = openviduConfig.getSfuPublisherSizeLimit();
+		int lineOrder = openviduConfig.getSfuPublisherSizeLimit() - 1;
 		RpcNotificationService notificationService = sessionManager.notificationService;
 		Set<Participant> participants = getMajorPartEachConnect();
 		Set<Participant> sub2PubPartSet = new HashSet<>(128);

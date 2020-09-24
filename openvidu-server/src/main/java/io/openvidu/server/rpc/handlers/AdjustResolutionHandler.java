@@ -15,7 +15,7 @@ public class AdjustResolutionHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String connectionId = getStringParam(request, ProtocolElements.ADJUST_RESOLUTION_CONNECTIONID_PAPM);
         String serialNumber = getStringOptionalParam(request, ProtocolElements.ADJUST_RESOLUTION_SERIALNUMBER_PAPM);
-        String resolution = getStringParam(request, ProtocolElements.ADJUST_RESOLUTION_RESOLUTION_PAPM);
+        int resolution = getIntParam(request, ProtocolElements.ADJUST_RESOLUTION_RESOLUTION_PAPM);
 
         RpcConnection rpc = lookingDevice(rpcConnection, connectionId);
         // verify current user role
