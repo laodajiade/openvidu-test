@@ -11,7 +11,7 @@ public class UserGroupVo {
 
     private Long userId;
 
-    private String account;
+    private String uuid;
 
     private String username;
 

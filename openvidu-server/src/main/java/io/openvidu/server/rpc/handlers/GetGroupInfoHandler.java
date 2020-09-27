@@ -49,7 +49,7 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
                     String deviceStatus = Objects.isNull(userDevice.getSerialNumber()) ? null : cacheManage.getDeviceStatus(userDevice.getSerialNumber());
                     userGroupVo.setStatus(Objects.isNull(deviceStatus) ? DeviceStatus.offline.name() : deviceStatus);
                 } else {
-                    userGroupVo.setStatus(cacheManage.getTerminalStatus(userGroupVo.getAccount()));
+                    userGroupVo.setStatus(cacheManage.getTerminalStatus(userGroupVo.getUuid()));
                 }
             }
         }
