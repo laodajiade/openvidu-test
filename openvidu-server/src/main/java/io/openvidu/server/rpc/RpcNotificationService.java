@@ -27,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -163,6 +165,32 @@ public class RpcNotificationService {
 		}
 		return null;
 	}
+
+    public void sendBatchNotification(List<String> participantPrivateIds, final String method, final Object params) {
+        List<String> successList = new ArrayList<>();
+        List<String> failList = new ArrayList<>();
+
+        for (String participantPrivateId : participantPrivateIds) {
+            RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
+            if (rpcSession == null || rpcSession.getSession() == null) {
+                log.error("No rpc session found for private id {}, unable to send notification {}: {}",
+                        participantPrivateId, method, params);
+                failList.add(participantPrivateId);
+                continue;
+            }
+            Session s = rpcSession.getSession();
+            try {
+                s.sendNotification(method, params);
+                successList.add(participantPrivateId);
+            } catch (Exception e) {
+                failList.add(participantPrivateId);
+                log.error("Exception sending notification '{}': {} to participant with private id {}", method, params,
+                        participantPrivateId, e);
+            }
+        }
+        log.info("\nbatch WebSocket notification- Notification method:{} and params: \n{}" +
+                "\nsuccessList:{}  failList:{}", method, params, successList, failList);
+    }
 
 	private Transaction getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {
 		RpcConnection rpcSession = rpcConnections.get(participantPrivateId);

@@ -301,6 +301,12 @@
 			<version>${version.spring-boot}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${version.spring-boot}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
 			<version>${version.dockerjava}</version>

@@ -3,20 +3,16 @@ package io.openvidu.server.rpc.handlers;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.dao.DeviceMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.pojo.*;
-import io.openvidu.server.rpc.RpcAbstractHandler;
+import io.openvidu.server.common.pojo.UserDevice;
+import io.openvidu.server.common.pojo.UserGroupVo;
+import io.openvidu.server.core.RespResult;
+import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -30,16 +26,16 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-public class GetGroupInfoHandler extends RpcAbstractHandler {
+public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Override
-    public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+    public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
         Long groupId = getLongParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
-        int pageNum = getIntParam(request,ProtocolElements.PAGENUM);
-        int pageSize = getIntParam(request,ProtocolElements.PAGESIZE);
+        int pageNum = getIntParam(request, ProtocolElements.PAGENUM);
+        int pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
         List<Long> groupIds = new ArrayList<>();
         groupIds.add(groupId);
-        PageHelper.startPage(pageNum,pageSize);
+        PageHelper.startPage(pageNum, pageSize);
         List<UserGroupVo> userGroups = userGroupMapper.selectListByGroupid(groupIds);
 
         JSONObject resp = new JSONObject();
@@ -58,11 +54,11 @@ public class GetGroupInfoHandler extends RpcAbstractHandler {
             }
         }
         PageInfo<UserGroupVo> pageInfo = new PageInfo<>(userGroups);
-        resp.put(ProtocolElements.PAGENUM,pageNum);
-        resp.put(ProtocolElements.PAGESIZE,pageSize);
-        resp.put(ProtocolElements.TOTAL,pageInfo.getTotal());
-        resp.put(ProtocolElements.PAGES,pageInfo.getPages());
+        resp.put(ProtocolElements.PAGENUM, pageNum);
+        resp.put(ProtocolElements.PAGESIZE, pageSize);
+        resp.put(ProtocolElements.TOTAL, pageInfo.getTotal());
+        resp.put(ProtocolElements.PAGES, pageInfo.getPages());
         resp.put(ProtocolElements.GET_GROUP_INFO_ACCOUNT_LIST, pageInfo.getList());
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resp);
+        return RespResult.ok(resp);
     }
 }

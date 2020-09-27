@@ -24,7 +24,6 @@
     sud.update_time updateTime,sd.device_name deviceName
     from sd_user_dev sud
     left join sd_device sd on sud.serial_number = sd.serial_number
-    from sd_user_dev
     <where>
       <if test="userId != null" >
         and user_id = #{userId,jdbcType=BIGINT}
