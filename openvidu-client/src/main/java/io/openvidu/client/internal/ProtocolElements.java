@@ -491,7 +491,7 @@ public class ProtocolElements {
 	public static final String GET_GROUP_LIST_GROUPNAME_PARAM = "groupName";
 	public static final String GET_GROUP_LIST_NUMOFPEOPLE_PARAM = "numOfPeople";
 
-	public static final String GET_GROUP_INFO_METHOD = "getGroupInfo";
+	public static final String GET_GROUP_INFO_METHOD = "getGroupMember";
 	public static final String GET_GROUP_INFO_TOTAL = "total";
 	public static final String GET_GROUP_INFO_ACCOUNT_LIST = "list";
 	public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupId";
