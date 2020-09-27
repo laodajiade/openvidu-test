@@ -76,6 +76,8 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
             }
             jsonArray.add(jsonObject);
         });
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonArray);
+        JsonObject respJson = new JsonObject();
+        respJson.add("list",jsonArray);
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
 }

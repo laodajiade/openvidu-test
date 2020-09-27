@@ -12,6 +12,7 @@ import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -82,9 +83,11 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     if (!partInfo.isEmpty()) {
-                        Participant originalPart = sessionManager.getSession(sessionId).getParticipantByUUID(rpcConnection.getUserUuid());
-                        //save previous order if reconnect
-                        sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
+                        if (!CollectionUtils.isEmpty(sessionManager.getSession(sessionId).getParticipants())) {
+                            Participant originalPart = sessionManager.getSession(sessionId).getParticipantByUUID(rpcConnection.getUserUuid());
+                            //save previous order if reconnect
+                            sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
+                        }
                         String roomId = partInfo.get("roomId").toString();
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
                                 !sessionId.equals(roomId) ? Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)
