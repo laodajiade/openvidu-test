@@ -27,4 +27,6 @@ public class User {
     private Date updateTime;
 
     private String icon;
+
+    private Integer type;
 }

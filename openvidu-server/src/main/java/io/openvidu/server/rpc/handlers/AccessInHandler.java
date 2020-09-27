@@ -8,6 +8,7 @@ import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -113,7 +114,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             // deal web thor login
             if (AccessTypeEnum.web.equals(accessType)
-                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection))) {
+                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection,uuid))) {
                 break;
             }
         } while (false);
@@ -146,13 +147,19 @@ public class AccessInHandler extends RpcAbstractHandler {
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }
 
-    private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection) {
-        // check HDC terminal ever online
-        String deviceStatus;
-        if (Objects.isNull(previousRpc) || !TerminalTypeEnum.HDC.equals(previousRpc.getTerminalType())
-                || Objects.equals(DeviceStatus.offline.name(), deviceStatus = cacheManage.getDeviceStatus(previousRpc.getSerialNumber()))
-                || Objects.equals(DeviceStatus.upgrading.name(), deviceStatus)) {
-            return ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
+    private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection,String userUuid) {
+        User user = userMapper.selectByUUID(userUuid);
+        if (Objects.isNull(user)) {
+            return ErrorCodeEnum.USER_NOT_EXIST;
+        }
+        if (user.getType().equals(1)) {
+            // check HDC terminal ever online
+            String deviceStatus;
+            if (Objects.isNull(previousRpc) || !TerminalTypeEnum.HDC.equals(previousRpc.getTerminalType())
+                    || Objects.equals(DeviceStatus.offline.name(), deviceStatus = cacheManage.getDeviceStatus(previousRpc.getSerialNumber()))
+                    || Objects.equals(DeviceStatus.upgrading.name(), deviceStatus)) {
+                return ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
+            }
         }
 
         // check HDC terminal necessary conditions
@@ -181,11 +188,10 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
             }
         } else {    // HDC terminal not in room
-            String uuid = previousRpc.getUserUuid();
             RpcConnection preLoginThorConnect = notificationService.getRpcConnections().stream()
                     .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection)
                             && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
-                            && Objects.equals(uuid, rpcConn.getUserUuid()))
+                            && Objects.equals(userUuid, rpcConn.getUserUuid()))
                     .max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 
             if (Objects.nonNull(preLoginThorConnect)) {

@@ -10,11 +10,12 @@
     <result column="password" property="password" jdbcType="VARCHAR" />
     <result column="title" property="title" jdbcType="VARCHAR" />
     <result column="project" property="project" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <sql id="Base_Column_List" >
-    id, uuid, username, phone, email, password, title, project, create_time, update_time
+    id, uuid, username, phone, email, password, title, project, type, create_time, update_time
   </sql>
 
   <select id="selectByPrimaryKeys" resultMap="BaseResultMap" parameterType="java.util.List">

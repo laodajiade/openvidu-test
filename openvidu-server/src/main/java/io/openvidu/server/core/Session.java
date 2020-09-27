@@ -108,6 +108,7 @@ public class Session implements SessionInterface {
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private Set<String> languages = new HashSet<>();
 	private JsonObject subtitleExtraConfig = null;
+	protected ConcurrentHashMap<String,Integer> reconnectPartOrderMap = new ConcurrentHashMap<>();
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -577,17 +578,35 @@ public class Session implements SessionInterface {
 		this.activePublishers.decrementAndGet();
 	}
 
-	public boolean needToChangePartRoleAccordingToLimit(Participant participant, CacheManage cacheManage) {
-		int size;
+	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
     	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-			size = roomParticipants.incrementAndGet();
-			participant.setOrder(size);
-			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{} and set part order:{}",
-					participant.getParticipantName(), sessionId, size,size);
+    		int size = majorParts.incrementAndGet();
+			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
+					participant.getParticipantName(), sessionId, size);
+
 			return size > openviduConfig.getSfuPublisherSizeLimit();
 		}
-
     	return false;
+	}
+
+	public void setMajorPartsOrder (Participant participant) {
+
+		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+			int order;
+			if (reconnectPartOrderMap.containsKey(participant.getUuid())) {
+				order = reconnectPartOrderMap.get(participant.getUuid());
+			} else {
+				order = roomParticipants.incrementAndGet();
+			}
+			participant.setOrder(order);
+			log.info("ParticipantName:{} join session:{} and after set majorPart order:{}",
+					participant.getParticipantName(), sessionId, order);
+			reconnectPartOrderMap.remove(participant.getUuid());
+		}
+	}
+
+	public void saveOriginalPartOrder(Participant participant) {
+		reconnectPartOrderMap.put(participant.getUuid(),participant.getOrder());
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
@@ -785,6 +804,10 @@ public class Session implements SessionInterface {
 
     public int getMajorPartSize() {
     	return majorParts.get();
+	}
+
+	public int getMajorPartOrder() {
+    	return roomParticipants.incrementAndGet();
 	}
 
 	public boolean isClosed() {

@@ -158,9 +158,11 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			// change the part role according to the mcu limit
-			if (kSession.needToChangePartRoleAccordingToLimit(participant,cacheManage)) {
+			if (kSession.needToChangePartRoleAccordingToLimit(participant)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
+			//set the part order
+			kSession.setMajorPartsOrder(participant);
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
 
