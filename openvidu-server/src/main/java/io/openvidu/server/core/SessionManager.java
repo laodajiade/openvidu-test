@@ -836,13 +836,18 @@ public abstract class SessionManager {
 			}
 			JsonObject audioParams = new JsonObject();
 			audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM,conferenceSession.getSessionId());
-			audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM,moderatorPart.getUuid());
+			audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM,moderatorPart.getUuid());
 			audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"on");
 			JsonArray targetIds = new JsonArray();
 			targetIds.add(targetPart.getUuid());
-			audioParams.add(ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM, targetIds);
+			audioParams.add(ProtocolElements.SET_VIDEO_TARGETS_PARAM, targetIds);
+			JsonObject audioSpeakerParams = new JsonObject();
+			audioSpeakerParams.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM,conferenceSession.getSessionId());
+			audioSpeakerParams.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM,conferenceSession.getSessionId());
+			audioSpeakerParams.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM,"on");
+			audioSpeakerParams.add(ProtocolElements.SET_AUDIO_SPEAKER_TARGET_ID_PARAM,targetIds);
 			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
-			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, audioParams);
+			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, audioSpeakerParams);
 		});
 	}
 
