@@ -33,6 +33,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
+        String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
         boolean isReconnected = getBooleanParam(request, ProtocolElements.JOINROOM_ISRECONNECTED_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
@@ -65,7 +66,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // verify conference password
                 if (StreamType.MAJOR.equals(streamType) && !Objects.equals(joinType, ParticipantJoinType.invited.name())
-                        && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)) {
+                        && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password) && StringUtils.isEmpty(moderatorPassword)) {
                     log.error("invalid room password:{}", password);
                     errCode = ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR;
                     break;
