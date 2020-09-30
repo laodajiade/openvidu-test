@@ -815,7 +815,7 @@ public abstract class SessionManager {
 				OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
 
 		targetPart.setMicStatus(ParticipantMicStatus.on);
-		targetPart.setVideoStatus(ParticipantVideoStatus.on);
+		//targetPart.setVideoStatus(ParticipantVideoStatus.on);
 		targetPart.setSpeakerStatus(ParticipantSpeakerStatus.on);
 
 		// broadcast the changes of layout
