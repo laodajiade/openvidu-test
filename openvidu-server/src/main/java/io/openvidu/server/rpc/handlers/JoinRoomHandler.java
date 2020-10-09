@@ -58,7 +58,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 search.setRoomId(sessionId);
                 search.setStatus(1);
                 List<Conference> conference = conferenceMapper.selectBySearchCondition(search);
-                if (conference == null || conference.isEmpty()) {
+                Session session = sessionManager.getSession(sessionId);
+                if (conference == null || conference.isEmpty() || Objects.isNull(session)) {
                     log.error("can not find roomId:{} in data layer", sessionId);
                     errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                     break;
@@ -83,11 +84,11 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // remove previous participant if reconnect
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-                    if (!partInfo.isEmpty()) {
-                        if (!CollectionUtils.isEmpty(sessionManager.getSession(sessionId).getParticipants())) {
-                            Participant originalPart = sessionManager.getSession(sessionId).getParticipantByUUID(rpcConnection.getUserUuid());
+                    if (!partInfo.isEmpty() && Objects.nonNull(session)) {
+                        if (!CollectionUtils.isEmpty(session.getParticipants())) {
+                            Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
                             //save previous order if reconnect
-                            sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
+                            session.saveOriginalPartOrder(originalPart);
                         }
                         String roomId = partInfo.get("roomId").toString();
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
@@ -152,7 +153,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
-                    if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsLong()) &&
+                    if (!Objects.isNull(thorPart) && thorPart.getUuid().equals(clientMetadataObj.get("account").getAsString()) &&
                             !Objects.equals(OpenViduRole.THOR, role) && streamType.equals(StreamType.MAJOR)) {
                         role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
@@ -162,7 +163,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 clientMetadata = clientMetadataObj.toString();
 
                 // check ever already exits share part
-                Session session;
                 if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
                         && Objects.nonNull(session.getParticipants().stream()
                         .filter(participant -> StreamType.SHARING.equals(participant.getStreamType())).findAny().orElse(null))) {

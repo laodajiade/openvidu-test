@@ -611,7 +611,9 @@ public class Session implements SessionInterface {
 	}
 
 	public void saveOriginalPartOrder(Participant participant) {
-		reconnectPartOrderMap.put(participant.getUuid(),participant.getOrder());
+    	if (Objects.nonNull(participant)) {
+			reconnectPartOrderMap.put(participant.getUuid(),participant.getOrder());
+		}
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
