@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionPreset;
@@ -50,8 +51,19 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
             if ((majorParts.size() + targetIds.size()) > preset.getRoomCapacity()) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
+                        null, ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED);
                 return;
+            }
+            //query sd_corporation info
+            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+            if (Objects.nonNull(corporation.getCapacity())) {
+                // verify corporation capacity limit.
+                if ( (majorParts.size() + targetIds.size()) > corporation.getCapacity()) {
+                    log.error("verify corporation:{} capacity:{} cur capacity:{}", sessionId, corporation.getCapacity(), majorParts.size());
+                    this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                            null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+                    return;
+                }
             }
         }
 
