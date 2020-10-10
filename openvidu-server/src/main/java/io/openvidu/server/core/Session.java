@@ -584,7 +584,7 @@ public class Session implements SessionInterface {
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
 					participant.getParticipantName(), sessionId, size);
 
-			return size > openviduConfig.getSfuPublisherSizeLimit();
+			return size > openviduConfig.getMcuMajorPartLimit();
 		}
     	return false;
 	}
@@ -617,7 +617,7 @@ public class Session implements SessionInterface {
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
-    	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+    	if (ConferenceModeEnum.MCU.equals(this.conferenceMode) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
 		}
