@@ -158,11 +158,15 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			// change the part role according to the mcu limit
-			if (kSession.needToChangePartRoleAccordingToLimit(participant)) {
+			if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode()) && kSession.needToChangePartRoleAccordingToLimit(participant)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			//set the part order
 			kSession.setMajorPartsOrder(participant);
+			// change the part role according to the sfu limit
+			if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit()) {
+				participant.changePartRole(OpenViduRole.SUBSCRIBER);
+			}
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
 

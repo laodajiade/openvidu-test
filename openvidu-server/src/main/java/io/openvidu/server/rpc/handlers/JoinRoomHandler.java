@@ -33,6 +33,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
+        String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
         boolean isReconnected = getBooleanParam(request, ProtocolElements.JOINROOM_ISRECONNECTED_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
@@ -65,7 +66,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // verify conference password
                 if (StreamType.MAJOR.equals(streamType) && !Objects.equals(joinType, ParticipantJoinType.invited.name())
-                        && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)) {
+                        && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password) && StringUtils.isEmpty(moderatorPassword)) {
                     log.error("invalid room password:{}", password);
                     errCode = ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR;
                     break;
@@ -82,9 +83,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // remove previous participant if reconnect
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-                    if (!partInfo.isEmpty()) {
-                        if (!CollectionUtils.isEmpty(sessionManager.getSession(sessionId).getParticipants())) {
-                            Participant originalPart = sessionManager.getSession(sessionId).getParticipantByUUID(rpcConnection.getUserUuid());
+                    Session session = sessionManager.getSession(sessionId);
+                    if (!partInfo.isEmpty() && Objects.nonNull(session)) {
+                        if (!CollectionUtils.isEmpty(session.getParticipants())) {
+                            Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
                             //save previous order if reconnect
                             sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
                         }
@@ -108,7 +110,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // verify room capacity limit.
                 if (!Objects.isNull(sessionManager.getSession(sessionId)) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
                     Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
-                    if (StreamType.MAJOR.equals(streamType) && majorParts.size() > preset.getRoomCapacity()) {
+                    if (StreamType.MAJOR.equals(streamType) && majorParts.size() > preset.getRoomCapacity() - 1) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
                         errCode = ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED;
                         break;
@@ -117,7 +119,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
                     if (Objects.nonNull(corporation.getCapacity())) {
                         // verify corporation capacity limit.
-                        if (StreamType.MAJOR.equals(streamType) && majorParts.size() > corporation.getCapacity()) {
+                        if (StreamType.MAJOR.equals(streamType) && majorParts.size() > corporation.getCapacity() -1) {
                             log.error("verify corporation:{} capacity:{} cur capacity:{}", sessionId, corporation.getCapacity(), majorParts.size());
                             errCode = ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED;
                             break;
@@ -151,7 +153,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
                     Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
-                    if (!Objects.isNull(thorPart) && thorPart.getUserId().equals(clientMetadataObj.get("clientData").getAsLong()) &&
+                    if (!Objects.isNull(thorPart) && thorPart.getUuid().equals(clientMetadataObj.get("account").getAsString()) &&
                             !Objects.equals(OpenViduRole.THOR, role) && streamType.equals(StreamType.MAJOR)) {
                         role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());

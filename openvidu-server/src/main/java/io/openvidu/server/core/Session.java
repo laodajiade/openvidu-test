@@ -24,7 +24,6 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
-import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
@@ -42,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -584,7 +584,7 @@ public class Session implements SessionInterface {
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
 					participant.getParticipantName(), sessionId, size);
 
-			return size > openviduConfig.getSfuPublisherSizeLimit();
+			return size > openviduConfig.getMcuMajorPartLimit();
 		}
     	return false;
 	}
@@ -593,10 +593,15 @@ public class Session implements SessionInterface {
 
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			int order;
-			if (reconnectPartOrderMap.containsKey(participant.getUuid())) {
+			if (!CollectionUtils.isEmpty(reconnectPartOrderMap) && reconnectPartOrderMap.containsKey(participant.getUuid())) {
 				order = reconnectPartOrderMap.get(participant.getUuid());
 			} else {
-				order = roomParticipants.incrementAndGet();
+				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+					order = 0;
+					roomParticipants.incrementAndGet();
+				} else {
+					order = roomParticipants.incrementAndGet();
+				}
 			}
 			participant.setOrder(order);
 			log.info("ParticipantName:{} join session:{} and after set majorPart order:{}",
@@ -606,11 +611,13 @@ public class Session implements SessionInterface {
 	}
 
 	public void saveOriginalPartOrder(Participant participant) {
-		reconnectPartOrderMap.put(participant.getUuid(),participant.getOrder());
+    	if (Objects.nonNull(participant)) {
+			reconnectPartOrderMap.put(participant.getUuid(),participant.getOrder());
+		}
 	}
 
 	public void deregisterMajorParticipant(Participant participant) {
-    	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+    	if (ConferenceModeEnum.MCU.equals(this.conferenceMode) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			log.info("ParticipantName:{} leave session:{} and decrement majorPart size:{}",
                     participant.getParticipantName(), sessionId, majorParts.decrementAndGet());
 		}
@@ -618,8 +625,10 @@ public class Session implements SessionInterface {
 
     public void dealParticipantOrder(Participant leavePart, RpcNotificationService notificationService) {
 		if (StreamType.MAJOR.equals(leavePart.getStreamType()) && !OpenViduRole.THOR.equals(leavePart.getRole())) {
-			log.info("current participant leaveRoom roomParticipants size:{}", this.roomParticipants.decrementAndGet());
-			dealPartOrderInSessionAfterLeaving(leavePart,notificationService);
+			if (!OpenViduRole.MODERATOR.equals(leavePart.getRole())) {
+				log.info("current participant leaveRoom roomParticipants size:{}", this.roomParticipants.decrementAndGet());
+				dealPartOrderInSessionAfterLeaving(leavePart,notificationService);
+			}
 		}
 	}
 
