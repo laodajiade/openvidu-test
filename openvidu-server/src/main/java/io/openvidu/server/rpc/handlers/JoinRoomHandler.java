@@ -58,8 +58,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 search.setRoomId(sessionId);
                 search.setStatus(1);
                 List<Conference> conference = conferenceMapper.selectBySearchCondition(search);
-                Session session = sessionManager.getSession(sessionId);
-                if (conference == null || conference.isEmpty() || Objects.isNull(session)) {
+                if (conference == null || conference.isEmpty()) {
                     log.error("can not find roomId:{} in data layer", sessionId);
                     errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                     break;
@@ -84,11 +83,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // remove previous participant if reconnect
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
+                    Session session = sessionManager.getSession(sessionId);
                     if (!partInfo.isEmpty() && Objects.nonNull(session)) {
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
                             Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
                             //save previous order if reconnect
-                            session.saveOriginalPartOrder(originalPart);
+                            sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
                         }
                         String roomId = partInfo.get("roomId").toString();
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
@@ -163,6 +163,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 clientMetadata = clientMetadataObj.toString();
 
                 // check ever already exits share part
+                Session session;
                 if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
                         && Objects.nonNull(session.getParticipants().stream()
                         .filter(participant -> StreamType.SHARING.equals(participant.getStreamType())).findAny().orElse(null))) {
