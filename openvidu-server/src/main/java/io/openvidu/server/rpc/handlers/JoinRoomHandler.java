@@ -118,20 +118,22 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断发起会议时是否超出企业人数上限
-                Collection<Session> sessions = sessionManager.getSessions();
-                if (Objects.nonNull(sessions)) {
-                    AtomicInteger limitCapacity = new AtomicInteger();
-                    sessions.forEach(e ->{
-                        if (rpcConnection.getProject().equals(e.getConference().getProject())) {
-                            limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                if (StreamType.MAJOR.equals(streamType)) {
+                    Collection<Session> sessions = sessionManager.getSessions();
+                    if (Objects.nonNull(sessions)) {
+                        AtomicInteger limitCapacity = new AtomicInteger();
+                        sessions.forEach(e ->{
+                            if (rpcConnection.getProject().equals(e.getConference().getProject())) {
+                                limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                            }
+                        });
+                        //query sd_corporation info
+                        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+                        if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() -1) {
+                            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                                    null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+                            return ;
                         }
-                    });
-                    //query sd_corporation info
-                    Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-                    if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() -1) {
-                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                                null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                        return ;
                     }
                 }
 
