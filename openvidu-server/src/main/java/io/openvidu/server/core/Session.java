@@ -560,6 +560,12 @@ public class Session implements SessionInterface {
 				.filter(participant -> Objects.nonNull(participant) && participant.getRole().isController()).findAny().orElse(null);
 	}
 
+	public Participant getThorPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant) && participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
     public Participant getParticipantByStreamId(String streamId) {
         checkClosed();
         return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
@@ -775,7 +781,13 @@ public class Session implements SessionInterface {
 				evictShareNotifyParam.addProperty("connectionId", sharePartPublicId.get());
 				evictShareNotifyParam.addProperty("reason", EndReason.forceDisconnectByServer.name());
 			}
-
+			//send notify web
+			Participant thorPart = getThorPart();
+			if (Objects.nonNull(thorPart)) {
+				// send part order in session changed notification
+				notificationService.sendNotification(thorPart.getParticipantPrivateId(),
+						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
+			}
 			// send notify
 			participants.forEach(participant -> {
 				// send part order in session changed notification

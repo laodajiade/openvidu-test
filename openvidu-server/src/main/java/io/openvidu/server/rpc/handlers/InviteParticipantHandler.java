@@ -8,6 +8,7 @@ import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -18,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author geedow
@@ -54,16 +56,23 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED);
                 return;
             }
+        }
+
+        //判断发起会议时是否超出企业人数上限
+        Collection<Session> sessions = sessionManager.getSessions();
+        if (Objects.nonNull(sessions)) {
+            AtomicInteger limitCapacity = new AtomicInteger();
+            sessions.forEach(e ->{
+                if (rpcConnection.getProject().equals(e.getConference().getProject())) {
+                    limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                }
+            });
             //query sd_corporation info
             Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-            if (Objects.nonNull(corporation.getCapacity())) {
-                // verify corporation capacity limit.
-                if ( (majorParts.size() + targetIds.size()) > corporation.getCapacity()) {
-                    log.error("verify corporation:{} capacity:{} cur capacity:{}", sessionId, corporation.getCapacity(), majorParts.size());
-                    this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                    return;
-                }
+            if (Objects.nonNull(corporation.getCapacity()) && targetIds.size() + limitCapacity.get() > corporation.getCapacity()) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+                return ;
             }
         }
 

@@ -5,6 +5,9 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.Corporation;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -12,10 +15,15 @@ import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author geedow
@@ -34,7 +42,23 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         if (StringUtils.isEmpty(sessionId)) {
             sessionId = generalRoomId();
         }
-
+        //判断发起会议时是否超出企业人数上限
+        Collection<Session> sessions = sessionManager.getSessions();
+        if (Objects.nonNull(sessions)) {
+            AtomicInteger limitCapacity = new AtomicInteger();
+            sessions.forEach(e ->{
+                if (rpcConnection.getProject().equals(e.getConference().getProject())) {
+                    limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                }
+            });
+            //query sd_corporation info
+            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+            if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() -1) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+                return ;
+            }
+        }
         if (isExistingRoom(sessionId, rpcConnection.getUserUuid())) {
             log.warn("conference:{} already exist.", sessionId);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
