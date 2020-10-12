@@ -6,6 +6,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author geedow
@@ -68,4 +69,8 @@ public interface CacheManage {
     void setLogUploadToken(@NotNull String uuid, @NotNull String uploadToken);
 
     void batchUpdatePartInfo(String uuid, Map<String, Object> updateMap);
+
+    boolean getCorpExpired(String project);
+
+    void setCorpExpired(Set<String> projects);
 }

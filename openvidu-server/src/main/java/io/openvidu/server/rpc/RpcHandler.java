@@ -106,6 +106,12 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 							+ ". Method 'Session.connect()' must be the first operation called in any session");
 		}
 
+		if (ProtocolElements.CORP_SERVICE_EXPIRED_FILTERS.contains(request.getMethod()) && cacheManage.getCorpExpired(rpcConnection.getProject())) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.CORP_SERVICE_EXPIRED);
+			return;
+		}
+
 		transaction.startAsync();
 		RpcAbstractHandler rpcAbstractHandler = rpcHandlerFactory.getRpcHandler(request.getMethod());
 		if (Objects.isNull(rpcAbstractHandler)) {

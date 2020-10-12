@@ -48,6 +48,8 @@ public class CorpExpireSchedule {
 
         Set<String> expiredSet = corporations.stream().map(Corporation::getProject).collect(Collectors.toSet());
 
+        cacheManage.setCorpExpired(expiredSet);
+
         Collection<Session> sessions = sessionManager.getSessions();
 
         for (Session session : sessions) {
