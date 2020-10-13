@@ -17,7 +17,9 @@
 package io.openvidu.client.internal;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class defines constant values of client-server messages and their
@@ -732,9 +734,9 @@ public class ProtocolElements {
 
     /**
      * 如果企业到期，以下接口无法使用
-     */
-    public static final List<String> CORP_SERVICE_EXPIRED_FILTERS = Arrays.asList(
-            CREATE_ROOM_METHOD, JOINROOM_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
-            MODIFY_PASSWORD_METHOD
-    );
+	 */
+	public static final Set<String> CORP_SERVICE_EXPIRED_FILTERS = new HashSet<>(Arrays.asList(
+			CREATE_ROOM_METHOD, JOINROOM_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
+			MODIFY_PASSWORD_METHOD
+	));
 }

@@ -47,6 +47,7 @@
     from sd_department
     where project = #{project,jdbcType=VARCHAR}
     and parent_id = #{parentId,jdbcType=BIGINT}
+    order by sort_number asc, id asc
   </select>
 
   <select id="selectByParentIds" parameterType="java.util.List" resultMap="BaseResultMap">
