@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.AllUserInfo;
+import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,12 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
                 return;
             }
             PageHelper.startPage(pageNum,pageSize);
+        }
+        if (deptId.equals(0L)) {
+            Department department = departmentMapper.selectRootDept(rpcConnection.getProject());
+            if (Objects.nonNull(department)) {
+                deptId = department.getId();
+            }
         }
         List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId);
         JsonArray jsonArray = new JsonArray();
