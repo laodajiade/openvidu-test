@@ -68,4 +68,15 @@ public interface CacheManage {
     void setLogUploadToken(@NotNull String uuid, @NotNull String uploadToken);
 
     void batchUpdatePartInfo(String uuid, Map<String, Object> updateMap);
+
+    void saveInviteInfo(String sessionId, String entryValue);
+
+    Map getInviteInfo(String sessionId);
+
+    void saveAccessInParticipantPrivateId(String uuid,String privateId);
+
+    String getAccessInParticipantPrivateId(String uuid);
+
+    void delAccessInParticipantPrivateId(String uuid);
+
 }

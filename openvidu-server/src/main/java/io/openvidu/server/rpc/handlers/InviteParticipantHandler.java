@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.pojo.Corporation;
@@ -93,7 +94,11 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
         List<User> invitees = userMapper.selectUserByUuidList(targetIds);
         if (!CollectionUtils.isEmpty(invitees)) {
-            invitees.forEach(invitee -> addInviteCompensation(invitee.getUuid(), params, expireTime));
+            invitees.forEach(invitee -> {
+                cacheManage.saveInviteInfo(sessionId,invitee.getUuid());
+                addInviteCompensation(invitee.getUuid(), params, expireTime);
+            });
+
         }
 
         Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();

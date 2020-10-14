@@ -130,6 +130,10 @@ public abstract class RpcAbstractHandler {
         inviteCompensationManage.disableInviteCompensation(account);
     }
 
+    protected void cancelAllInviteCompensation(String roomId) {
+        inviteCompensationManage.disableAllInviteCompensation(roomId);
+    }
+
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);
 
     public static String getStringParam(Request<JsonObject> request, String key) {
