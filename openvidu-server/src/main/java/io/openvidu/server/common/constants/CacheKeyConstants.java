@@ -17,6 +17,8 @@ public class CacheKeyConstants {
     /** 用户设备状态缓存key前缀 */
     public static final String DEV_PREFIX_KEY = "device:";
 
+    public static final String CONFERENCE_TO_BEGIN_NOTIFY = "conference:to:begin:notify";
+
     /** 会议信息key前缀 conference:{sessionId}*/
     private static final String CONFERENCES_KEY = "conference:%s";
 

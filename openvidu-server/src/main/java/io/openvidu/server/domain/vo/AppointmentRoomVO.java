@@ -24,4 +24,6 @@ public class AppointmentRoomVO {
 
     private List<String> participants;
 
+
+    private Long userId;
 }

@@ -718,6 +718,27 @@ public class ProtocolElements {
 	public static final String RECURSIVEQUERYUSER_METHOD = "recursiveQueryUser";
 
 
+	public static final String CREATEAPPOINTMENTROOM_METHOD = "createAppointmentRoom";
+	public static final String CREATEAPPOINTMENTROOM_ROOMID_PARAM = "roomId";
+	public static final String CREATEAPPOINTMENTROOM_PWD_PARAM = "password";
+	public static final String CREATEAPPOINTMENTROOM_SUBJECT_PARAM = "subject";
+	public static final String CREATEAPPOINTMENTROOM_DESC_PARAM = "desc";
+	public static final String CREATEAPPOINTMENTROOM_MODERATOR_ROOM_ID_PARAM = "moderatorRoomId";
+	public static final String CREATEAPPOINTMENTROOM_CONFERENCEMODE_PARAM = "conferenceMode";
+	public static final String CREATEAPPOINTMENTROOM_AUTOCALL_PARAM = "autoCall";
+	public static final String CREATEAPPOINTMENTROOM_ROOMCAPACITY_PARAM = "roomCapacity";
+	public static final String CREATEAPPOINTMENTROOM_STARTTIME_PARAM = "startTime";
+	public static final String CREATEAPPOINTMENTROOM_ENDTIME_PARAM = "endTime";
+	public static final String CREATEAPPOINTMENTROOM_DURATION_PARAM = "duration";
+	public static final String CREATEAPPOINTMENTROOM_PARTICIPANTS_PARAM = "participants";
+	public static final String CREATEAPPOINTMENTROOM_CREATOR_PARAM = "creator";
+	public static final String CREATEAPPOINTMENTROOM_MODERATORJOINCONFIG_PARAM = "moderatorJoinConfig";
+	public static final String CREATEAPPOINTMENTROOM_PARTICIPANTJOINCONFIG_PARAM = "participantJoinConfig";
+
+	public static final String CONFERENCE_TO_BEGIN_METHOD = "conferenceToBegin";
+	public static final String XXL_JOB_ID = "id";
+	public static final String XXL_JOB_PARAM = "executorParam";
+	public static final String APPOINTMENT_CONFERENCE_CREATED_METHOD = "appointmentConferenceCreated";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,

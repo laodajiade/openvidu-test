@@ -258,4 +258,9 @@ public class CacheManageImpl implements CacheManage {
         tokenStringTemplate.delete(key);
         tokenStringTemplate.opsForSet().add(key, projects.toArray(new String[0]));
     }
+    @Override
+
+    public void publish(String channel, String message) {
+        tokenStringTemplate.convertAndSend(channel, message);
+    }
 }
