@@ -40,7 +40,7 @@ public class CompositeService {
             createMajorShareHubPortOut();
         }
         majorShareComposite.setName(session.getSessionId());
-        majorShareHubPortOut.setName(session.getSessionId() + "_mix_out");
+//        majorShareHubPortOut.setName(session.getSessionId() + "_mix_out");
     }
 
     void closeMajorShareComposite() {

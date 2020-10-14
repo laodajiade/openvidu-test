@@ -29,6 +29,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.lb.rtn.RTNFactory;
 import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,7 @@ public abstract class MediaEndpoint {
 	public String selectedRemoteIceCandidate;
 	public Queue<KmsEvent> kmsEvents = new ConcurrentLinkedQueue<>();
 	public Future<?> kmsWebrtcStatsThread;
+	public RTNFactory rtnFactory;
 
 	/**
 	 * Constructor to set the owner, the endpoint's name and the media pipeline.
@@ -106,6 +108,7 @@ public abstract class MediaEndpoint {
 		this.setMediaPipeline(pipeline);
 
 		this.openviduConfig = openviduConfig;
+		this.rtnFactory = RTNFactory.getInstance(openviduConfig);
 		this.maxRecvKbps = this.openviduConfig.getVideoMaxRecvBandwidth();
 		this.minRecvKbps = this.openviduConfig.getVideoMinRecvBandwidth();
 		this.maxSendKbps = this.openviduConfig.getVideoMaxSendBandwidth();
@@ -269,6 +272,8 @@ public abstract class MediaEndpoint {
 					webEndpoint.setMinVideoRecvBandwidth(minRecvKbps);
 					webEndpoint.setMaxVideoSendBandwidth(maxSendKbps);
 					webEndpoint.setMinVideoSendBandwidth(minSendKbps);
+					// TODO. 媒体服务小节点策略
+//					webEndpoint.setTurnUrl(rtnFactory.getRTNObject().turnUrl);
 
 					endpointLatch.countDown();
 					log.trace("EP {}: Created a new WebRtcEndpoint", endpointName);
