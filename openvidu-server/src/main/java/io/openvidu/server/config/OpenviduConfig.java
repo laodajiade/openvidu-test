@@ -193,6 +193,11 @@ public class OpenviduConfig {
 	@Getter
 	@Value("${device.upload.url}")
 	private String devUploadUrl;
+    @Value("${lb.rtn.strategy}")
+    private String lbRTNStrategy;
+
+	@Value("${lb.rtns}")
+	private String lbRTNs;
 
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
@@ -506,6 +511,11 @@ public class OpenviduConfig {
 	public String getH5PagesInfoConfig() {
 		return h5PagesInfoConfig;
 	}
+
+	public String getLBRTNStrategy() { return this.lbRTNStrategy; }
+
+	public String getLBRTNsStrings() { return this.lbRTNs; }
+
 
 	public void initiateOpenViduWebhookEndpoint(String endpoint) throws Exception {
 		try {
