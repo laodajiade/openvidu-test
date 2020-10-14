@@ -1,5 +1,6 @@
 package io.openvidu.server.common.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
@@ -18,4 +19,9 @@ public class Corporation {
 
     private Integer capacity;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date activationDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date expireDate;
 }

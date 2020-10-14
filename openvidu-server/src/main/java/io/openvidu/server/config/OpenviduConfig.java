@@ -193,6 +193,8 @@ public class OpenviduConfig {
 	@Getter
 	@Value("${device.upload.url}")
 	private String devUploadUrl;
+
+	@Getter
     @Value("${lb.rtn.strategy}")
     private String lbRTNStrategy;
 
