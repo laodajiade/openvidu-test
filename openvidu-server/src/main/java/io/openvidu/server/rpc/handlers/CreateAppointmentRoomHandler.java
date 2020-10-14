@@ -1,11 +1,15 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.dao.AppointParticipantMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
+import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
+import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.resp.AppointmentRoomResp;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
@@ -18,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service("createAppointmentRoom")
@@ -26,6 +30,9 @@ public class CreateAppointmentRoomHandler extends ExRpcAbstractHandler<Appointme
 
     @Autowired
     private AppointConferenceManage appointConferenceManage;
+
+    @Autowired
+    private AppointParticipantMapper appointParticipantMapper;
 
     @Resource
     private CorporationMapper corporationMapper;
@@ -69,15 +76,35 @@ public class CreateAppointmentRoomHandler extends ExRpcAbstractHandler<Appointme
 
 
         // 保存预约会议
-        //List<User> users = userManage.queryByUuidList(params.getParticipants());
-        //roomManage.addAppointMentRoom(conference, users);
         appointConferenceManage.insert(params, rpcConnection);
+        List<User> users = userManage.queryByUuidList(params.getParticipants());
+
+        if (Objects.nonNull(users) && !users.isEmpty()) {
+            appointParticipantMapper.batchInsert(constructBatchAppoints(params.getRuid(), users));
+        }
 
 
         AppointmentRoomResp resp = new AppointmentRoomResp();
         resp.setRuid(params.getRuid());
         resp.setRoomId(params.getRoomId());
         return RespResult.ok(resp);
+    }
+
+    private List<AppointParticipant> constructBatchAppoints(String ruid, List<User> users) {
+        List<AppointParticipant> appointParticipantList = new ArrayList<>(users.size());
+        users.forEach(user -> {
+            AppointParticipant appointParticipant = new AppointParticipant();
+            appointParticipant.setRuid(ruid);
+            appointParticipant.setUuid(user.getUuid());
+            appointParticipant.setUserId(user.getId());
+            appointParticipant.setStatus(ConferenceStatus.NOT_YET.getStatus());
+            appointParticipant.setProject(user.getProject());
+            appointParticipant.setCreateTime(new Date());
+
+            appointParticipantList.add(appointParticipant);
+        });
+
+        return appointParticipantList;
     }
 
     /**

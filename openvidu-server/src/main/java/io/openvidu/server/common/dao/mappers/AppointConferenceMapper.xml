@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.openvidu.server.common.dao.AppointConferenceMapper">
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.AppointConference">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="ruid" jdbcType="VARCHAR" property="ruid" />
+    <result column="room_id" jdbcType="VARCHAR" property="roomId" />
+    <result column="conference_subject" jdbcType="VARCHAR" property="conferenceSubject" />
+    <result column="conference_desc" jdbcType="VARCHAR" property="conferenceDesc" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="moderator_uuid" jdbcType="VARCHAR" property="moderatorUuid" />
+    <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
+    <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="duration" jdbcType="INTEGER" property="duration" />
+    <result column="room_capacity" jdbcType="INTEGER" property="roomCapacity" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="auto_invite" jdbcType="INTEGER" property="autoInvite" />
+    <result column="project" jdbcType="VARCHAR" property="project" />
+    <result column="type" jdbcType="CHAR" property="type" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, ruid, room_id, conference_subject, conference_desc, user_id, moderator_uuid, 
+    start_time, end_time, duration, room_capacity, `password`, auto_invite, project, 
+    `type`, create_time, update_time
+  </sql>
+  <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from sd_appoint_conference
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sd_appoint_conference
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sd_appoint_conference
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample">
+    delete from sd_appoint_conference
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.AppointConference" useGeneratedKeys="true">
+    insert into sd_appoint_conference (ruid, room_id, conference_subject, 
+      conference_desc, user_id, moderator_uuid, 
+      start_time, end_time, duration, 
+      room_capacity, `password`, auto_invite, 
+      project, `type`, create_time, 
+      update_time)
+    values (#{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR}, 
+      #{conferenceDesc,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{moderatorUuid,jdbcType=VARCHAR}, 
+      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{duration,jdbcType=INTEGER}, 
+      #{roomCapacity,jdbcType=INTEGER}, #{password,jdbcType=VARCHAR}, #{autoInvite,jdbcType=INTEGER}, 
+      #{project,jdbcType=VARCHAR}, #{type,jdbcType=CHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.AppointConference" useGeneratedKeys="true">
+    insert into sd_appoint_conference
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="ruid != null">
+        ruid,
+      </if>
+      <if test="roomId != null">
+        room_id,
+      </if>
+      <if test="conferenceSubject != null">
+        conference_subject,
+      </if>
+      <if test="conferenceDesc != null">
+        conference_desc,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="moderatorUuid != null">
+        moderator_uuid,
+      </if>
+      <if test="startTime != null">
+        start_time,
+      </if>
+      <if test="endTime != null">
+        end_time,
+      </if>
+      <if test="duration != null">
+        duration,
+      </if>
+      <if test="roomCapacity != null">
+        room_capacity,
+      </if>
+      <if test="password != null">
+        `password`,
+      </if>
+      <if test="autoInvite != null">
+        auto_invite,
+      </if>
+      <if test="project != null">
+        project,
+      </if>
+      <if test="type != null">
+        `type`,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="ruid != null">
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null">
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="conferenceSubject != null">
+        #{conferenceSubject,jdbcType=VARCHAR},
+      </if>
+      <if test="conferenceDesc != null">
+        #{conferenceDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="moderatorUuid != null">
+        #{moderatorUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="duration != null">
+        #{duration,jdbcType=INTEGER},
+      </if>
+      <if test="roomCapacity != null">
+        #{roomCapacity,jdbcType=INTEGER},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="autoInvite != null">
+        #{autoInvite,jdbcType=INTEGER},
+      </if>
+      <if test="project != null">
+        #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample" resultType="java.lang.Long">
+    select count(*) from sd_appoint_conference
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+    <update id="updateByExampleSelective" parameterType="map">
+    update sd_appoint_conference
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.ruid != null">
+        ruid = #{record.ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.roomId != null">
+        room_id = #{record.roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.conferenceSubject != null">
+        conference_subject = #{record.conferenceSubject,jdbcType=VARCHAR},
+      </if>
+      <if test="record.conferenceDesc != null">
+        conference_desc = #{record.conferenceDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userId != null">
+        user_id = #{record.userId,jdbcType=BIGINT},
+      </if>
+      <if test="record.moderatorUuid != null">
+        moderator_uuid = #{record.moderatorUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.startTime != null">
+        start_time = #{record.startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.endTime != null">
+        end_time = #{record.endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.duration != null">
+        duration = #{record.duration,jdbcType=INTEGER},
+      </if>
+      <if test="record.roomCapacity != null">
+        room_capacity = #{record.roomCapacity,jdbcType=INTEGER},
+      </if>
+      <if test="record.password != null">
+        `password` = #{record.password,jdbcType=VARCHAR},
+      </if>
+      <if test="record.autoInvite != null">
+        auto_invite = #{record.autoInvite,jdbcType=INTEGER},
+      </if>
+      <if test="record.project != null">
+        project = #{record.project,jdbcType=VARCHAR},
+      </if>
+      <if test="record.type != null">
+        `type` = #{record.type,jdbcType=CHAR},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updateTime != null">
+        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update sd_appoint_conference
+    set id = #{record.id,jdbcType=BIGINT},
+      ruid = #{record.ruid,jdbcType=VARCHAR},
+      room_id = #{record.roomId,jdbcType=VARCHAR},
+      conference_subject = #{record.conferenceSubject,jdbcType=VARCHAR},
+      conference_desc = #{record.conferenceDesc,jdbcType=VARCHAR},
+      user_id = #{record.userId,jdbcType=BIGINT},
+      moderator_uuid = #{record.moderatorUuid,jdbcType=VARCHAR},
+      start_time = #{record.startTime,jdbcType=TIMESTAMP},
+      end_time = #{record.endTime,jdbcType=TIMESTAMP},
+      duration = #{record.duration,jdbcType=INTEGER},
+      room_capacity = #{record.roomCapacity,jdbcType=INTEGER},
+      `password` = #{record.password,jdbcType=VARCHAR},
+      auto_invite = #{record.autoInvite,jdbcType=INTEGER},
+      project = #{record.project,jdbcType=VARCHAR},
+      `type` = #{record.type,jdbcType=CHAR},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      update_time = #{record.updateTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.AppointConference">
+    update sd_appoint_conference
+    <set>
+      <if test="ruid != null">
+        ruid = #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null">
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="conferenceSubject != null">
+        conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
+      </if>
+      <if test="conferenceDesc != null">
+        conference_desc = #{conferenceDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="moderatorUuid != null">
+        moderator_uuid = #{moderatorUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        start_time = #{startTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="endTime != null">
+        end_time = #{endTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="duration != null">
+        duration = #{duration,jdbcType=INTEGER},
+      </if>
+      <if test="roomCapacity != null">
+        room_capacity = #{roomCapacity,jdbcType=INTEGER},
+      </if>
+      <if test="password != null">
+        `password` = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="autoInvite != null">
+        auto_invite = #{autoInvite,jdbcType=INTEGER},
+      </if>
+      <if test="project != null">
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        `type` = #{type,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.AppointConference">
+    update sd_appoint_conference
+    set ruid = #{ruid,jdbcType=VARCHAR},
+      room_id = #{roomId,jdbcType=VARCHAR},
+      conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
+      conference_desc = #{conferenceDesc,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=BIGINT},
+      moderator_uuid = #{moderatorUuid,jdbcType=VARCHAR},
+      start_time = #{startTime,jdbcType=TIMESTAMP},
+      end_time = #{endTime,jdbcType=TIMESTAMP},
+      duration = #{duration,jdbcType=INTEGER},
+      room_capacity = #{roomCapacity,jdbcType=INTEGER},
+      `password` = #{password,jdbcType=VARCHAR},
+      auto_invite = #{autoInvite,jdbcType=INTEGER},
+      project = #{project,jdbcType=VARCHAR},
+      `type` = #{type,jdbcType=CHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+
+  <select id="getConflictAppointConferenceList" resultMap="BaseResultMap">
+    select id from sd_appoint_conference
+    where room_id = #{roomId,jdbcType=VARCHAR}
+    <if test="ruid != null">
+      and ruid != #{ruid,jdbcType=VARCHAR}
+    </if>
+    and start_time <![CDATA[<=]]> #{endTime,jdbcType=TIMESTAMP} and end_time >= #{startTime,jdbcType=TIMESTAMP}
+  </select>
+</mapper>

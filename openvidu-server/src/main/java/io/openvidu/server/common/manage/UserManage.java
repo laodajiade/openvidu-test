@@ -25,4 +25,6 @@ public interface UserManage {
     void updateUserInfo(User update);
 
     Map<String, UserDeviceDeptInfo> getUserInfoInRoom(Set<Participant> participants);
+
+    List<User> queryByUuidList(List<String> uuids);
 }

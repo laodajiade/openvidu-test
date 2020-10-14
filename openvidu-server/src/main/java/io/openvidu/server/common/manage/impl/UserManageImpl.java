@@ -109,4 +109,8 @@ public class UserManageImpl implements UserManage {
         return connectIdPartMap;
     }
 
+    @Override
+    public List<User> queryByUuidList(List<String> uuids) {
+        return userMapper.selectUserByUuidList(uuids);
+    }
 }

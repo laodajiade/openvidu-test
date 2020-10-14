@@ -33,6 +33,12 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
 
     @Test
     public void test() {
+        String roomId = "123456789";
+        // clear conference
+        AppointConferenceExample example = new AppointConferenceExample();
+        example.createCriteria().andRoomIdEqualTo(roomId);
+        appointConferenceMapper.deleteByExample(example);
+
         ClientSession session = new ClientSession("123456", null);
         RpcConnection rpcConnection = new RpcConnection(session);
 
@@ -43,7 +49,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         AppointmentRoomVO vo = new AppointmentRoomVO();
 
         vo.setRuid(null);
-        vo.setRoomId("123456789");
+        vo.setRoomId(roomId);
         vo.setPassword("");
         vo.setSubject("test subject" + DateUtil.getTimeOfDate(System.currentTimeMillis()));
         vo.setDesc("test desc" + DateUtil.getTimeOfDate(System.currentTimeMillis()));
@@ -52,7 +58,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         vo.setDuration(60);
         vo.setEndTime(vo.getStartTime() + 60000 * vo.getDuration());
 
-        vo.setParticipants(Arrays.asList("123", "123"));
+        vo.setParticipants(Arrays.asList("80101900005", "80101900006", "80101900007"));
 
 
         RespResult<AppointmentRoomResp> result = handler.doProcess(rpcConnection, null, vo);
@@ -97,7 +103,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         vo.setDuration(60);
         vo.setEndTime(vo.getStartTime() + 60000 * vo.getDuration());
 
-        vo.setParticipants(Arrays.asList("123", "123"));
+        vo.setParticipants(Arrays.asList("80101900005", "80101900006", "80101900007"));
 
 
         RespResult<AppointmentRoomResp> result = handler.doProcess(rpcConnection, null, vo);
