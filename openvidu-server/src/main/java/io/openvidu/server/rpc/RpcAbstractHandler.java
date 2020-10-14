@@ -117,6 +117,9 @@ public abstract class RpcAbstractHandler {
     protected HttpUtil httpUtil;
 
     @Resource
+    protected PresetMapper presetMapper;
+
+    @Resource
     protected InviteCompensationManage inviteCompensationManage;
 
     protected void addInviteCompensation(String account, JsonElement jsonElement, String expireTime) {
