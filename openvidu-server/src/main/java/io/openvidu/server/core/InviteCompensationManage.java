@@ -1,11 +1,15 @@
 package io.openvidu.server.core;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +17,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -27,6 +32,10 @@ public class InviteCompensationManage {
 
     @Resource
     private RpcNotificationService notificationService;
+    @Resource
+    private SessionManager sessionManager;
+    @Resource
+    private CacheManage cacheManage;
 
     @Resource(name = "reconnectCompensationScheduler")
     private TaskScheduler taskScheduler;
@@ -47,6 +56,26 @@ public class InviteCompensationManage {
         if (!Objects.isNull(scheduler)) {
             log.info("Disable Invite Compensation account:{}", account);
             scheduler.disable();
+        }
+    }
+
+    public void disableAllInviteCompensation(String roomId) {
+        Map inviteInfo = cacheManage.getInviteInfo(roomId);
+        if (!inviteInfo.isEmpty()) {
+            for (Object key : inviteInfo.keySet()) {
+                String account  = (String) key;
+                InviteCompensationScheduler scheduler = map.remove(account);
+                if (!Objects.isNull(scheduler)) {
+                    log.info("Close Room Disable Invite Compensation account:{}", account);
+                    scheduler.disable();
+                }
+                String participantPrivateId = cacheManage.getAccessInParticipantPrivateId(account);
+                if (StringUtils.isNotEmpty(participantPrivateId)) {
+                    log.info("Close Room CANCELINVITE_NOTIFY_METHOD account:{}", account);
+                    notificationService.sendNotification(participantPrivateId,
+                            ProtocolElements.CANCELINVITE_NOTIFY_METHOD, new JsonObject());
+                }
+            }
         }
     }
 

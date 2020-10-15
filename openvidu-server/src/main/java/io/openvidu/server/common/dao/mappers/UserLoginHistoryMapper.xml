@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.UserLoginHistoryMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.UserLoginHistory" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="terminal_type" property="terminalType" jdbcType="CHAR" />
+    <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+    <result column="version" property="version" jdbcType="VARCHAR" />
+    <result column="project" property="project" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, uuid, terminal_type, version, project, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_user_login_history
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectByCondition" parameterType="io.openvidu.server.common.pojo.UserLoginHistory"
+          resultType="io.openvidu.server.common.pojo.UserLoginHistory">
+    select
+    <include refid="Base_Column_List" />
+    from sd_user_login_history
+    where user_id = #{userId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from sd_user_login_history
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.UserLoginHistory" >
+    insert into sd_user_login_history (id, user_id, uuid,
+      terminal_type, version, project)
+    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{uuid,jdbcType=VARCHAR},
+      #{terminalType,jdbcType=CHAR}, #{version,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.UserLoginHistory" >
+    insert into sd_user_login_history
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="uuid != null" >
+        uuid,
+      </if>
+      <if test="terminalType != null" >
+        terminal_type,
+      </if>
+      <if test="serialNumber != null" >
+        serial_number,
+      </if>
+      <if test="version != null" >
+        version,
+      </if>
+      <if test="project != null" >
+        project,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="uuid != null" >
+        #{uuid,jdbcType=VARCHAR},
+      </if>
+      <if test="terminalType != null" >
+        #{terminalType,jdbcType=CHAR},
+      </if>
+      <if test="serialNumber != null" >
+        #{serialNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="version != null" >
+        #{version,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null" >
+        #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.UserLoginHistory" >
+    update sd_user_login_history
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="uuid != null" >
+        uuid = #{uuid,jdbcType=VARCHAR},
+      </if>
+      <if test="terminalType != null" >
+        terminal_type = #{terminalType,jdbcType=CHAR},
+      </if>
+      <if test="version != null" >
+        version = #{version,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null" >
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.UserLoginHistory" >
+    update sd_user_login_history
+    set user_id = #{userId,jdbcType=BIGINT},
+      uuid = #{uuid,jdbcType=VARCHAR},
+      terminal_type = #{terminalType,jdbcType=CHAR},
+      version = #{version,jdbcType=VARCHAR},
+      project = #{project,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

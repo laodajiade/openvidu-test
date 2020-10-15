@@ -65,6 +65,8 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                 cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
             }});
 
+        //cancel invite
+        cancelAllInviteCompensation(sessionId);
         // TODO: compatible to the delay of leaving room
         this.sessionManager.updateConferenceInfo(sessionId);
 

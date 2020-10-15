@@ -28,6 +28,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.cdr.CallDetailRecord;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -80,8 +81,8 @@ public class SessionEventsHandler {
 		CDR.recordSessionDestroyed(sessionId, reason);
 	}
 
-	public void onParticipantJoined(Participant participant, String sessionId, Set<Participant> existingParticipants,
-			Integer transactionId, OpenViduException error) {
+	public void onParticipantJoined(Conference conference, Participant participant, String sessionId, Set<Participant> existingParticipants,
+									Integer transactionId, OpenViduException error) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
@@ -237,6 +238,12 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty(ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM,participant.getPreset().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
+		}
+        if (participant.getRole().equals(OpenViduRole.MODERATOR)) {
+			roomInfoJson.addProperty("moderatorPass", conference.getModeratorPassword());
+		}
+        if (org.apache.commons.lang.StringUtils.isNotEmpty(conference.getPassword())) {
+			roomInfoJson.addProperty("password", conference.getPassword());
 		}
 		result.add("value", resultArray);
 

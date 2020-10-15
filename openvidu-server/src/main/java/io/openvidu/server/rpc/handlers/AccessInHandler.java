@@ -9,6 +9,7 @@ import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.UserLoginHistory;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -48,6 +49,11 @@ public class AccessInHandler extends RpcAbstractHandler {
         String clientType;
         TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
                 ? TerminalTypeEnum.valueOf(clientType) : null;
+        String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+        String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
+        String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
+        String mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
+        JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         String deviceName = null;
         Map userInfo = null;
         JsonObject object = new JsonObject();
@@ -88,7 +94,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
 
                 // update device info if necessary
-                checkDeviceInfoAndUpdate(device, request, rpcConnection);
+                checkDeviceInfoAndUpdate(device, deviceVersion, ability, deviceModel, mac, terminalConfig , rpcConnection);
 
                 // add deviceName into resp info
                 deviceName = device.getDeviceName();
@@ -124,7 +130,8 @@ public class AccessInHandler extends RpcAbstractHandler {
                     request.getId(), object, errCode);
             return;
         }
-
+        Long userId = Long.valueOf(String.valueOf(userInfo.get("userId")));
+        String project = !StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT;
         // set necessary into rpc connection
         rpcConnection.setUserUuid(uuid);
         rpcConnection.setUdid(udid);
@@ -132,15 +139,23 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setAccessType(accessType);
         rpcConnection.setTerminalType(terminalType);
         rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
-        rpcConnection.setUserId(Long.valueOf(String.valueOf(userInfo.get("userId"))));
+        rpcConnection.setUserId(userId);
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
         }
-        rpcConnection.setProject(!StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT);
+        rpcConnection.setProject(project);
+
+        //save cache privateId
+        cacheManage.saveAccessInParticipantPrivateId(uuid,rpcConnection.getParticipantPrivateId());
 
         // update user online status in cache
         if (AccessTypeEnum.terminal.equals(accessType)) {
             cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.online);
+        }
+        // record user login history
+        if (UserType.register == userType && AccessTypeEnum.terminal == accessType) {
+            userManage.saveUserLoginHistroy(UserLoginHistory.builder().userId(userId).uuid(uuid)
+                    .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
         // send resp
@@ -227,12 +242,11 @@ public class AccessInHandler extends RpcAbstractHandler {
         }
     }
 
-    private void checkDeviceInfoAndUpdate(Device device, Request<JsonObject> request, RpcConnection rpcConnection) {
-        String deviceVersion, ability = null, deviceModel = null, mac = null;
-        if (!Objects.equals(deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM), device.getVersion())
-                || !Objects.equals(ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM), device.getAbility())
-                || !Objects.equals(deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM), device.getDeviceModel())
-                || !Objects.equals(mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM), device.getDeviceMac())) {
+    private void checkDeviceInfoAndUpdate(Device device, String deviceVersion, String ability, String deviceModel, String mac, JsonElement terminalConfig, RpcConnection rpcConnection) {
+        if (!Objects.equals(deviceVersion, device.getVersion())
+                || !Objects.equals(ability, device.getAbility())
+                || !Objects.equals(deviceModel, device.getDeviceModel())
+                || !Objects.equals(mac, device.getDeviceMac())) {
             Device dev = new Device();
             dev.setSerialNumber(device.getSerialNumber());
             dev.setVersion(deviceVersion);
@@ -245,7 +259,6 @@ public class AccessInHandler extends RpcAbstractHandler {
 
         rpcConnection.setUsername(device.getDeviceName());
         rpcConnection.setAbility(ability);
-        JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
     }
 
