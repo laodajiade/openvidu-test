@@ -150,6 +150,7 @@
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=BIGINT}
     </foreach>
+    order by sug.sort_number desc, sug.id asc
   </select>
 
   <select id="selectListByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
@@ -172,5 +173,6 @@
       on g.id = ug.group_id
       where g.corp_id =  #{corpId,jdbcType=BIGINT}
       group by g.id,g.group_name
+      order by g.sort_number asc
 </select>
 </mapper>

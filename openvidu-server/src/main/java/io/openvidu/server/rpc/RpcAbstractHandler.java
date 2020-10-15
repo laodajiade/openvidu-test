@@ -114,6 +114,9 @@ public abstract class RpcAbstractHandler {
     protected RoomManage roomManage;
 
     @Resource
+    protected DepartmentMapper departmentMapper;
+
+    @Resource
     protected HttpUtil httpUtil;
 
     @Resource

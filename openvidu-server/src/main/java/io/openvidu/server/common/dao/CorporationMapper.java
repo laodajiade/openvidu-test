@@ -1,6 +1,9 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Corporation;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface CorporationMapper {
 
@@ -17,4 +20,7 @@ public interface CorporationMapper {
     int updateByPrimaryKeySelective(Corporation record);
 
     int updateByPrimaryKey(Corporation record);
+
+    List<Corporation> listCorpExpire(@Param("expire") String expire);
+
 }

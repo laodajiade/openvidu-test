@@ -253,7 +253,8 @@
       u.uuid,
       u.type,
       u.phone,
-      d.serial_number serialNumber
+      d.serial_number serialNumber,
+      0 as sort_number
     FROM
       sd_device_dept d
     INNER JOIN sd_device v ON d.serial_number = v.serial_number
@@ -266,13 +267,15 @@
     su.uuid,
     su.type,
     su.phone,
-    '' serialNumber
+    '' serialNumber,
+    sort_number
     from sd_user_dept sud
     inner join sd_user su on sud.user_id = su.id
     where su.type = 0
     and su.title is null
     and su.uuid <![CDATA[ <> 'administrator' ]]>
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
+    order by sort_number desc
   </select>
 
   <select id="selectAllUserByUuidList" parameterType="java.util.List" resultType="io.openvidu.server.common.pojo.AllUserInfo">

@@ -8,9 +8,11 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="capacity" jdbcType="INTEGER" property="capacity" />
+    <result column="activation_date" jdbcType="DATE" property="activationDate" />
+    <result column="expire_date" jdbcType="DATE" property="expireDate" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, corp_name, project, create_time, update_time,capacity
+    id, corp_name, project, create_time, update_time, capacity, activation_date, expire_date
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select
@@ -25,15 +27,23 @@
     where project = #{project,jdbcType=VARCHAR}
     limit 1
   </select>
+
+  <select id="listCorpExpire" resultType="io.openvidu.server.common.pojo.Corporation">
+    select
+    <include refid="Base_Column_List" />
+    from sd_corporation
+    where #{expire} > expire_date
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from sd_corporation
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Corporation">
     insert into sd_corporation (id, corp_name, project,
-      create_time, update_time)
+      create_time, update_time, activation_date, expire_date)
     values (#{id,jdbcType=BIGINT}, #{corpName,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR},
-      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{activationDate,jdbcType=DATE}, #{expireDate,jdbcType=DATE})
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Corporation">
     insert into sd_corporation
@@ -53,6 +63,12 @@
       <if test="updateTime != null">
         update_time,
       </if>
+      <if test="activationDate != null">
+        activation_date,
+      </if>
+      <if test="expireDate != null">
+        expire_date
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -69,6 +85,12 @@
       </if>
       <if test="updateTime != null">
         #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="activationDate != null">
+        #{activationDate,jdbcType=DATE},
+      </if>
+      <if test="expireDate != null">
+        #{expireDate,jdbcType=DATE},
       </if>
     </trim>
   </insert>
@@ -87,6 +109,12 @@
       <if test="updateTime != null">
         update_time = #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="activationDate != null">
+        #{activationDate,jdbcType=DATE},
+      </if>
+      <if test="expireDate != null">
+        #{expireDate,jdbcType=DATE},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -95,7 +123,10 @@
     set corp_name = #{corpName,jdbcType=VARCHAR},
       project = #{project,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP}
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      activation_date = #{activationDate,jdbcType=TIMESTAMP},
+      expire_date = #{expireDate,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
 </mapper>

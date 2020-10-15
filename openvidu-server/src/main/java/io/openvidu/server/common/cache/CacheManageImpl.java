@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -196,7 +197,7 @@ public class CacheManageImpl implements CacheManage {
             }
         } else {
             // set the initial value of today
-            roomRedisTemplate.opsForValue().set(key, partSize,172800, TimeUnit.SECONDS);
+            roomRedisTemplate.opsForValue().set(key, partSize, 172800, TimeUnit.SECONDS);
         }
     }
 
@@ -217,7 +218,7 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public void recordWsExceptionLink(RpcConnection rpc, boolean overKeepAlive) {
         long expireTime = TerminalTypeEnum.HDC.equals(rpc.getTerminalType()) ? hdcRetainInRoomInterval : otherTerminalRetainInRoomInterval;
-        expireTime = overKeepAlive ? expireTime -20 : expireTime;
+        expireTime = overKeepAlive ? expireTime - 20 : expireTime;
         roomRedisTemplate.opsForValue().set(String.format(BrokerChannelConstans.CLIENT_WS_EXCEPTION_KEY, rpc.getSessionId(), rpc.getParticipantPrivateId()),
                 1, expireTime, TimeUnit.SECONDS);
     }
@@ -280,4 +281,13 @@ public class CacheManageImpl implements CacheManage {
     }
 
 
+    public boolean getCorpExpired(String project) {
+        return tokenStringTemplate.opsForSet().isMember("corp_expired_col", project);
+    }
+
+    public void setCorpExpired(Set<String> projects) {
+        String key = "corp_expired_col";
+        tokenStringTemplate.delete(key);
+        tokenStringTemplate.opsForSet().add(key, projects.toArray(new String[0]));
+    }
 }

@@ -17,6 +17,7 @@
 
 package io.openvidu.server.rpc;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -62,7 +63,7 @@ public class RpcNotificationService {
 		Transaction t = getAndRemoveTransaction(participantPrivateId, transactionId);
 		if (t == null) {
 			log.error("No transaction {} found for paticipant with private id {}, unable to send result {}",
-					transactionId, participantPrivateId, result);
+					transactionId, participantPrivateId, new GsonBuilder().setPrettyPrinting().create().toJson(result));
 			return;
 		}
 		try {

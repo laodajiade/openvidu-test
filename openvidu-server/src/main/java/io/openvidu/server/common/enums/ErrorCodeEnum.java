@@ -49,6 +49,7 @@ public enum ErrorCodeEnum {
     PERFORMANCE_EXCEED(11002, "服务不给力，请稍后再试"),
     INVALID_METHOD_CALL(11003, "非法调用"),
     UNRECOGNIZED_API(11005, "非法API调用"),
+    CORP_SERVICE_EXPIRED(11006, "服务已到期"),
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
