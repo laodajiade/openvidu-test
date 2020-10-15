@@ -354,10 +354,11 @@ public abstract class SessionManager {
 		return sessionNotActive;
 	}
 
-	public void storeSessionNotActiveWhileRoomCreated(String sessionId) {
+	public Session storeSessionNotActiveWhileRoomCreated(String sessionId) {
 		Session sessionNotActive = new Session(sessionId,
 				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
 		dealSessionNotActiveStored(sessionId, sessionNotActive);
+		return sessionNotActive;
 	}
 
 	private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
@@ -899,6 +900,19 @@ public abstract class SessionManager {
 		return StreamType.MAJOR.equals(streamType) && Objects.nonNull(session = getSession(sessionId))
 				&& Objects.nonNull(session.getParticipantByUUID(userUuid));*/
 		return cacheManage.existsConferenceRelativeInfo(CacheKeyConstants.getParticipantKey(uuid));
+	}
+
+
+	public void storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
+		log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
+		Session session = storeSessionNotActiveWhileRoomCreated(roomId);
+		session.setConference(conference);
+
+		// change the conference status
+		Conference update = new Conference();
+		update.setId(conference.getId());
+		update.setStatus(ConferenceStatus.PROCESS.getStatus());
+		conferenceMapper.updateByPrimaryKeySelective(update);
 	}
 
 }

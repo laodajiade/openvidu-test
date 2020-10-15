@@ -1,11 +1,17 @@
 package io.openvidu.server.domain.vo;
 
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AppointmentRoomVO {
 
     private String ruid;

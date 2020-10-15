@@ -54,7 +54,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         vo.setSubject("test subject" + DateUtil.getTimeOfDate(System.currentTimeMillis()));
         vo.setDesc("test desc" + DateUtil.getTimeOfDate(System.currentTimeMillis()));
         vo.setAutoCall(false);
-        vo.setStartTime(System.currentTimeMillis() + 15000);
+        vo.setStartTime(System.currentTimeMillis() + 16 * 1000 * 60);
         vo.setDuration(60);
         vo.setEndTime(vo.getStartTime() + 60000 * vo.getDuration());
 

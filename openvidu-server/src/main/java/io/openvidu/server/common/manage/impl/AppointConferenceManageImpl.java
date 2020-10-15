@@ -5,6 +5,7 @@ import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
+import io.openvidu.server.common.pojo.AppointConferenceExample;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
@@ -116,5 +117,13 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         appointConferenceMapper.insertSelective(ac);
 
         params.setRuid(ac.getRuid());
+    }
+
+    @Override
+    public AppointConference getByRuid(String ruid) {
+        AppointConferenceExample example = new AppointConferenceExample();
+        example.createCriteria().andRuidEqualTo(ruid);
+        List<AppointConference> list = appointConferenceMapper.selectByExample(example);
+        return list.isEmpty() ? null : list.get(0);
     }
 }

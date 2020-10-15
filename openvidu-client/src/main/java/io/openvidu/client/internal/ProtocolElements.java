@@ -238,7 +238,7 @@ public class ProtocolElements {
     public static final String CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
 	public static final String CREATE_ROOM_QUIET_STATUS_PARAM = "quietStatusInRoom";
 	public static final String CREATE_ROOM_CONFERENCE_MODE_PARAM = "conferenceMode";
-
+	public static final String CREATE_ROOM_RUID_PARAM = "ruid";
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
 	public static final String SHARE_ROOM_ID_PARAM = "roomId";
@@ -329,6 +329,8 @@ public class ProtocolElements {
 	public static final String INVITE_PARTICIPANT_DEVICE_NAME_PARAM = "deviceName";
 	public static final String INVITE_PARTICIPANT_EXPIRETIME_PARAM = "expireTime";
 	public static final String INVITE_PARTICIPANT_USERICON_PARAM = "userIcon";
+	public static final String INVITE_PARTICIPANT_AUTO_INVITE_PARAM = "autoInvite";
+	public static final String INVITE_PARTICIPANT_PASSWORD_PARAM = "password";
 
 	public static final String REFUSE_INVITE_METHOD = "refuseInvite";
 	public static final String REFUSE_INVITE_ID_PARAM = "roomId";
@@ -717,23 +719,10 @@ public class ProtocolElements {
 	public static final String GETMEMBERDETAILS_METHOD = "getMemberDetails";
 	public static final String RECURSIVEQUERYUSER_METHOD = "recursiveQueryUser";
 
-
-	public static final String CREATEAPPOINTMENTROOM_METHOD = "createAppointmentRoom";
-	public static final String CREATEAPPOINTMENTROOM_ROOMID_PARAM = "roomId";
-	public static final String CREATEAPPOINTMENTROOM_PWD_PARAM = "password";
 	public static final String CREATEAPPOINTMENTROOM_SUBJECT_PARAM = "subject";
-	public static final String CREATEAPPOINTMENTROOM_DESC_PARAM = "desc";
-	public static final String CREATEAPPOINTMENTROOM_MODERATOR_ROOM_ID_PARAM = "moderatorRoomId";
-	public static final String CREATEAPPOINTMENTROOM_CONFERENCEMODE_PARAM = "conferenceMode";
-	public static final String CREATEAPPOINTMENTROOM_AUTOCALL_PARAM = "autoCall";
-	public static final String CREATEAPPOINTMENTROOM_ROOMCAPACITY_PARAM = "roomCapacity";
 	public static final String CREATEAPPOINTMENTROOM_STARTTIME_PARAM = "startTime";
 	public static final String CREATEAPPOINTMENTROOM_ENDTIME_PARAM = "endTime";
-	public static final String CREATEAPPOINTMENTROOM_DURATION_PARAM = "duration";
-	public static final String CREATEAPPOINTMENTROOM_PARTICIPANTS_PARAM = "participants";
 	public static final String CREATEAPPOINTMENTROOM_CREATOR_PARAM = "creator";
-	public static final String CREATEAPPOINTMENTROOM_MODERATORJOINCONFIG_PARAM = "moderatorJoinConfig";
-	public static final String CREATEAPPOINTMENTROOM_PARTICIPANTJOINCONFIG_PARAM = "participantJoinConfig";
 
 	public static final String CONFERENCE_TO_BEGIN_METHOD = "conferenceToBegin";
 	public static final String XXL_JOB_ID = "id";

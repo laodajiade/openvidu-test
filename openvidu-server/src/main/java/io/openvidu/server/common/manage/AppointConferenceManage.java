@@ -1,5 +1,6 @@
 package io.openvidu.server.common.manage;
 
+import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
@@ -12,4 +13,6 @@ public interface AppointConferenceManage {
     Conference constructConf(RpcConnection rpcConnection, Request<AppointmentRoomVO> request);
 
     void insert(AppointmentRoomVO params, RpcConnection rpcConnection);
+
+    AppointConference getByRuid(String ruid);
 }

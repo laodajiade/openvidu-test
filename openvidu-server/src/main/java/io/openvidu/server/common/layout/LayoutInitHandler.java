@@ -47,7 +47,6 @@ public class LayoutInitHandler {
             }
             layoutMap.put(layoutMode, layouts);
         }
-        log.info("layout init result:{}", layoutMap.toString());
     }
 
     public static JsonArray getLayoutByMode(LayoutModeEnum layoutModeEnum) {
