@@ -37,7 +37,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         String sessionId = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_PARAM);
         String password = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_PASSWORD_PARAM);
         String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
-        String moderatorPass = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MODERATORPASSWORD_PARAM);
+        String moderatorPassword = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MODERATORPASSWORD_PARAM);
         ConferenceModeEnum conferenceMode = ConferenceModeEnum.valueOf(getStringParam(request,
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         if (StringUtils.isEmpty(sessionId)) {
@@ -81,7 +81,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             conference.setStatus(1);
             conference.setStartTime(new Date());
             conference.setProject(rpcConnection.getProject());
-            conference.setModeratorPassword(StringUtils.isEmpty(moderatorPass) ? StringUtil.getRandomPassWord(6) : moderatorPass);
+            conference.setModeratorPassword(StringUtils.isEmpty(moderatorPassword) ? StringUtil.getRandomPassWord(6) : moderatorPassword);
             roomManage.createMeetingRoom(conference);
 
             // setPresetInfo.
