@@ -30,4 +30,8 @@ public interface ConferenceMapper {
     void deleteByRuid(String ruid);
 
     List<Conference> queryConferenceByTimeRange(ConfStatisticSearch confStatisticSearch);
+
+    List<Conference> selectPageRecordsByCondition(ConferenceSearch search);
+
+    long selectConfRecordsCountByCondition(ConferenceSearch search);
 }

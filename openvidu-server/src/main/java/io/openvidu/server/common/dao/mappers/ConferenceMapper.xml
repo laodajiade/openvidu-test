@@ -274,4 +274,49 @@
     delete from sd_conference where ruid = #{ruid,jdbcType=VARCHAR}
   </select>
 
+  <select id="selectPageRecordsByCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference
+    <where>
+      <if test="roomId != null" >
+        room_id = #{roomId,jdbcType=VARCHAR}
+      </if>
+      <if test="project != null" >
+        and project = #{project,jdbcType=VARCHAR}
+      </if>
+      <if test="status != null">
+        and status = #{status,jdbcType=TINYINT}
+      </if>
+      <if test="from != null" >
+        and start_time &gt;= #{from,jdbcType=TIMESTAMP}
+      </if>
+      <if test="to != null">
+        and start_time &lt;= #{to,jdbcType=TIMESTAMP}
+      </if>
+    </where>
+    order by start_time desc
+    limit #{limit,jdbcType=INTEGER} offset #{offset,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectConfRecordsCountByCondition" resultType="java.lang.Long" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
+    select count(1) from sd_conference
+    <where>
+      <if test="roomId != null" >
+        room_id = #{roomId,jdbcType=VARCHAR}
+      </if>
+      <if test="project != null" >
+        and project = #{project,jdbcType=VARCHAR}
+      </if>
+      <if test="status != null">
+        and status = #{status,jdbcType=TINYINT}
+      </if>
+      <if test="from != null" >
+        and start_time &gt;= #{from,jdbcType=TIMESTAMP}
+      </if>
+      <if test="to != null">
+        and start_time &lt;= #{to,jdbcType=TIMESTAMP}
+      </if>
+    </where>
+  </select>
 </mapper>

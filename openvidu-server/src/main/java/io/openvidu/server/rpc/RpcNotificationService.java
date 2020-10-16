@@ -60,7 +60,7 @@ public class RpcNotificationService {
 	}
 
 	public void sendResponse(String participantPrivateId, Integer transactionId, Object result) {
-		Transaction t = getAndRemoveTransaction(participantPrivateId, transactionId);
+ 		Transaction t = getAndRemoveTransaction(participantPrivateId, transactionId);
 		if (t == null) {
 			log.error("No transaction {} found for paticipant with private id {}, unable to send result {}",
 					transactionId, participantPrivateId, new GsonBuilder().setPrettyPrinting().create().toJson(result));

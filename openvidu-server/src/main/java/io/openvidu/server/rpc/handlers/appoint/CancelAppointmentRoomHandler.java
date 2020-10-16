@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service(ProtocolElements.UPDATE_APPOINTMENT_ROOM_METHOD)
+@Service(ProtocolElements.CANCEL_APPOINTMENT_ROOM_METHOD)
 public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler<JsonObject> {
 
 

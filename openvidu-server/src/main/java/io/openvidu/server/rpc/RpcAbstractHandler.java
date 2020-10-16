@@ -153,6 +153,14 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsBoolean();
     }
 
+    public static Long getLongOptionalParam(Request<JsonObject> request, String key) {
+        if (request.getParams() == null || request.getParams().get(key) == null) {
+            return null;
+        }
+
+        return request.getParams().get(key).getAsLong();
+    }
+
     public static boolean getBooleanOptionalParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             return false;
@@ -453,5 +461,13 @@ public abstract class RpcAbstractHandler {
     protected boolean isAdmin(String uuid) {
         Map userInfo = cacheManage.getUserInfoByUUID(uuid);
         return userInfo.containsKey("role") && "admin".equals(String.valueOf(userInfo.get("role")));
+    }
+
+    public RpcNotificationService getNotificationService() {
+        return notificationService;
+    }
+
+    public void setNotificationService(RpcNotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 }
