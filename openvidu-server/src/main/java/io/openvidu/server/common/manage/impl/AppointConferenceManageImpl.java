@@ -46,11 +46,11 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
 //        return Optional.ofNullable(appointConferenceMapper.selectOneByExample(example));
 //    }
 //
-//    public void deleteByRuid(String ruid) {
-//        AppointConferenceExample example = new AppointConferenceExample();
-//        example.createCriteria().andRuidEqualTo(ruid);
-//        appointConferenceMapper.deleteByExample(example);
-//    }
+    public void deleteByRuid(String ruid) {
+        AppointConferenceExample example = new AppointConferenceExample();
+        example.createCriteria().andRuidEqualTo(ruid);
+        appointConferenceMapper.deleteByExample(example);
+    }
 //
     public boolean isConflict(AppointmentRoomVO vo) {
 

@@ -27,5 +27,7 @@ public interface ConferenceMapper {
 
     Conference selectByRuid(String ruid);
 
+    void deleteByRuid(String ruid);
+
     List<Conference> queryConferenceByTimeRange(ConfStatisticSearch confStatisticSearch);
 }

@@ -13,4 +13,6 @@ public interface AppointConferenceManage {
     AppointConference getByRuid(String ruid);
 
     void updateAppointment(AppointConference appt, AppointmentRoomVO vo);
+
+    void deleteByRuid(String ruid);
 }

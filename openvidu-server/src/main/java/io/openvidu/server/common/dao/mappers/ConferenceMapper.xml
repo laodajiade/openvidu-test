@@ -269,4 +269,9 @@
     and start_time &lt;= #{endTime,jdbcType=TIMESTAMP}
     and status = #{status,jdbcType=TINYINT}
   </select>
+
+  <select id="deleteByRuid" parameterType="java.lang.String" >
+    delete from sd_conference where ruid = #{ruid,jdbcType=VARCHAR}
+  </select>
+
 </mapper>
