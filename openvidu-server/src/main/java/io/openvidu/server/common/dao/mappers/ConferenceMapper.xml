@@ -200,7 +200,7 @@
       <if test="conferenceSubject != null" >
         conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
       </if>
-      <if test="desc != null" >
+      <if test="conferenceDesc != null" >
         conference_desc = #{conferenceDesc,jdbcType=VARCHAR},
       </if>
       <if test="conferenceMode != null" >
