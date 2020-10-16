@@ -26,4 +26,6 @@ public interface RoomManage {
     CorpMcuConfig getCorpMcuConfig(String project);
 
     int createMeetingRoom(Conference conference);
+
+    void storeConcurrentNumber(Conference conference);
 }

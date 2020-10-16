@@ -41,4 +41,6 @@ public class Conference {
     private Date updateTime;
 
     private String moderatorPassword;
+
+    private Integer concurrentNumber;
 }
