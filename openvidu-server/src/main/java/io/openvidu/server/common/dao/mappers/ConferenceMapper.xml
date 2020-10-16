@@ -197,7 +197,7 @@
       <if test="roomId != null" >
         room_id = #{roomId,jdbcType=VARCHAR},
       </if>
-      <if test="subject != null" >
+      <if test="conferenceSubject != null" >
         conference_subject = #{conferenceSubject,jdbcType=VARCHAR},
       </if>
       <if test="desc != null" >
