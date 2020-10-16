@@ -13,6 +13,7 @@ public class DateUtil {
     private static final String[] WEEKDAYS = { "周一", "周二", "周三", "周四", "周五", "周六", "周日" };
 
     public static final String FORMAT_YEAR_MONTH_DAY = "yyyyMMdd";
+    public static final String DEFAULT_YEAR_MONTH_DAY = "yyyy-MM-dd";
 
     /**
      * 获取结束时间

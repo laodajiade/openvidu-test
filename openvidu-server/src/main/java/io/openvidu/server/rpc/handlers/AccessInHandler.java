@@ -6,21 +6,23 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.pojo.Device;
-import io.openvidu.server.common.pojo.DeviceSearch;
-import io.openvidu.server.common.pojo.User;
-import io.openvidu.server.common.pojo.UserLoginHistory;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.DateUtil;
+import io.openvidu.server.utils.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -158,6 +160,10 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
+        Corporation corporation = corporationMapper.selectByCorpProject(project);
+        object.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(),DateUtil.DEFAULT_YEAR_MONTH_DAY));
+        object.addProperty("validPeriod", Period.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())).getDays());
+
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }
