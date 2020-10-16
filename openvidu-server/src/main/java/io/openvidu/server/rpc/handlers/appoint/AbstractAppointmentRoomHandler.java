@@ -1,4 +1,4 @@
-package io.openvidu.server.rpc.handlers;
+package io.openvidu.server.rpc.handlers.appoint;
 
 import com.google.gson.JsonObject;
 import com.sensegigit.cockcrow.CrowOnceHelper;
@@ -7,8 +7,10 @@ import com.sensegigit.cockcrow.pojo.CrowOnceResponse;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.ConferenceJobTypeEnum;
+import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.JobGroupEnum;
 import io.openvidu.server.common.manage.ConferenceJobManage;
+import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.ConferenceJob;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
@@ -98,6 +100,23 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                 notificationService.sendNotification(rpcConnection1.getParticipantPrivateId(), ProtocolElements.CONFERENCE_TO_BEGIN_METHOD, jsonObject);
             }
         });
+    }
+
+    protected List<AppointParticipant> constructBatchAppoints(String ruid, List<User> users) {
+        List<AppointParticipant> appointParticipantList = new ArrayList<>(users.size());
+        users.forEach(user -> {
+            AppointParticipant appointParticipant = new AppointParticipant();
+            appointParticipant.setRuid(ruid);
+            appointParticipant.setUuid(user.getUuid());
+            appointParticipant.setUserId(user.getId());
+            appointParticipant.setStatus(ConferenceStatus.NOT_YET.getStatus());
+            appointParticipant.setProject(user.getProject());
+            appointParticipant.setCreateTime(new Date());
+
+            appointParticipantList.add(appointParticipant);
+        });
+
+        return appointParticipantList;
     }
 
 }

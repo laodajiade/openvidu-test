@@ -907,12 +907,6 @@ public abstract class SessionManager {
 		log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
 		Session session = storeSessionNotActiveWhileRoomCreated(roomId);
 		session.setConference(conference);
-
-		// change the conference status
-		Conference update = new Conference();
-		update.setId(conference.getId());
-		update.setStatus(ConferenceStatus.PROCESS.getStatus());
-		conferenceMapper.updateByPrimaryKeySelective(update);
 	}
 
 }

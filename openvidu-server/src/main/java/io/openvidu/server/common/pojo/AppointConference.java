@@ -95,5 +95,7 @@ public class AppointConference implements Serializable {
      */
     private Date updateTime;
 
+    private Integer conferenceMode;
+
     private static final long serialVersionUID = 1L;
 }

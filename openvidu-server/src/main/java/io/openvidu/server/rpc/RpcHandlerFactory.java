@@ -282,11 +282,13 @@ public class RpcHandlerFactory {
     @Resource
     private RecursiveQueryUserHandler recursiveQueryUserHandler;
 
-
-
+    @Resource
+    private Map<String,ExRpcAbstractHandler> exHandlersMap;
 
     @PostConstruct
     public void init() {
+        handlersMap.putAll(exHandlersMap);
+
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD,                              accessInHandler);
         handlersMap.put(ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_METHOD,                confirmApplyForLoginHandler);
         handlersMap.put(ProtocolElements.ACCESS_OUT_METHOD,                             accessOutHandler);

@@ -1,4 +1,4 @@
-package io.openvidu.server.rpc.handlers;
+package io.openvidu.server.rpc.handlers.appoint;
 
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -7,9 +7,9 @@ import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.resp.AppointmentRoomResp;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import io.openvidu.server.utils.DateUtil;
 import junit.framework.TestCase;
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +42,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         ClientSession session = new ClientSession("123456", null);
         RpcConnection rpcConnection = new RpcConnection(session);
 
-        rpcConnection.setUserId(10186L);
+        rpcConnection.setUserId(267L);
         rpcConnection.setProject("alibb");
         rpcConnection.setUserUuid("uuid");
 
@@ -87,7 +87,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         ClientSession session = new ClientSession("123456", null);
         RpcConnection rpcConnection = new RpcConnection(session);
 
-        rpcConnection.setUserId(10186L);
+        rpcConnection.setUserId(267L);
         rpcConnection.setProject("alibb");
         rpcConnection.setUserUuid("uuid");
 

@@ -91,6 +91,7 @@ public enum ErrorCodeEnum {
     ROOM_CAPACITY_CORP_LIMITED(13041, "已达企业会议人数上限，请稍后再试"),
     ROOM_CAPACITY_PERSONAL_LIMITED(13042, "已达会议人数上限，请稍后再试"),
     PARTICIPANT_DOWN_HAND_NOW(13043, "参会者已取消举手发言"),
+    THE_CONFERENCE_HAS_STARTED(13048, "预约会议已开始"),
     COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
 
 

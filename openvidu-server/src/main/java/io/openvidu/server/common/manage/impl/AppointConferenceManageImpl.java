@@ -2,18 +2,14 @@ package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
-import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
-import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.RuidHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -70,31 +66,6 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         return Objects.nonNull(list) && !list.isEmpty();
     }
 
-    public Conference constructConf(RpcConnection rpcConnection, Request<AppointmentRoomVO> request) {
-        Conference conference = new Conference();
-        AppointmentRoomVO params = request.getParams();
-
-        String roomId = StringUtils.isNotBlank(params.getRoomId()) ? params.getRoomId() : rpcConnection.getUserUuid();
-        String moderatorUuid = rpcConnection.getUserUuid();
-
-
-        // save conference info
-        conference.setRoomId(roomId);
-
-        //conference.setRuid(StringUtils.isNotBlank(params.getRuid()) ? params.getRuid() : RuidHelper.generateAppointmentId());
-        conference.setConferenceSubject(params.getSubject());
-        conference.setConferenceMode(params.getConferenceMode().getMode());
-        conference.setUserId(rpcConnection.getUserId());
-        conference.setPassword(params.getPassword());
-        conference.setStatus(ConferenceStatus.NOT_YET.getStatus());
-        conference.setStartTime(new Date(params.getStartTime()));
-
-        conference.setRoomCapacity(0);//roomCapacity不再需要
-        conference.setProject(rpcConnection.getProject());
-        conference.setConferenceDesc(params.getDesc());
-        conference.setModeratorUuid(moderatorUuid);
-        return conference;
-    }
 
     @Override
     public void insert(AppointmentRoomVO params, RpcConnection rpcConnection) {
@@ -125,5 +96,17 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         example.createCriteria().andRuidEqualTo(ruid);
         List<AppointConference> list = appointConferenceMapper.selectByExample(example);
         return list.isEmpty() ? null : list.get(0);
+    }
+
+    @Override
+    public void updateAppointment(AppointConference appt, AppointmentRoomVO vo) {
+        appt.setConferenceSubject(vo.getSubject());
+        appt.setConferenceDesc(vo.getDesc());
+        appt.setStartTime(new Date(vo.getStartTime()));
+        appt.setEndTime(new Date(vo.getEndTime()));
+        appt.setDuration(vo.getDuration());
+        appt.setRoomCapacity(vo.getRoomCapacity());
+        appt.setAutoInvite(vo.getAutoCall() ? 1 : 0);
+        appointConferenceMapper.updateByPrimaryKey(appt);
     }
 }

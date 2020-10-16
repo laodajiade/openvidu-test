@@ -2,24 +2,28 @@ package io.openvidu.server.job;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sensegigit.cockcrow.CrowOnceHelper;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.AutoInviteEnum;
+import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.rpc.handlers.CreateAppointmentRoomHandler;
+import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,6 +60,12 @@ public class AppointConferenceJobHandler {
     @Autowired
     private AppointParticipantManage appointParticipantManage;
 
+    @Resource
+    private CrowOnceHelper crowOnceHelper;
+
+    @Resource
+    private ConferenceMapper conferenceMapper;
+
     /**
      * 预约会议通知
      *
@@ -68,9 +78,6 @@ public class AppointConferenceJobHandler {
         Long jobId = jsonParam.get(ProtocolElements.XXL_JOB_ID).getAsLong();
         JsonObject businessParam = jsonParam.get(ProtocolElements.XXL_JOB_PARAM).getAsJsonObject();
         String ruid = businessParam.get(ProtocolElements.CREATE_ROOM_RUID_PARAM).getAsString();
-
-        // 异步删除定时任务
-        //applicationContext.publishEvent(new DelCrowOnceEvent(jobId));
 
         // 会议不存在直接返回
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
@@ -96,6 +103,8 @@ public class AppointConferenceJobHandler {
             createAppointmentRoomHandler.sendConferenceToBeginNotify(vo, uuidSet);
             log.info("conferenceToBeginJobHandler notify end...");
         }
+        // 删除定时任务
+        crowOnceHelper.delCrowOnce(jobId);
         return ReturnT.SUCCESS;
     }
 
@@ -107,43 +116,50 @@ public class AppointConferenceJobHandler {
      */
     @XxlJob("conferenceBeginJobHandler")
     public ReturnT<String> conferenceBeginJobHandler(String param) {
-        log.info("conferenceBeginJobHandler begin..." + param);
-        JsonObject jsonParam = new JsonParser().parse(param).getAsJsonObject();
-        Long jobId = jsonParam.get(ProtocolElements.XXL_JOB_ID).getAsLong();
-        JsonObject businessParam = jsonParam.get(ProtocolElements.XXL_JOB_PARAM).getAsJsonObject();
-        String ruid = businessParam.get(ProtocolElements.CREATE_ROOM_RUID_PARAM).getAsString();
+        try {
+            log.info("conferenceBeginJobHandler begin..." + param);
+            JsonObject jsonParam = new JsonParser().parse(param).getAsJsonObject();
+            Long jobId = jsonParam.get(ProtocolElements.XXL_JOB_ID).getAsLong();
+            JsonObject businessParam = jsonParam.get(ProtocolElements.XXL_JOB_PARAM).getAsJsonObject();
+            String ruid = businessParam.get(ProtocolElements.CREATE_ROOM_RUID_PARAM).getAsString();
 
-        // 异步删除定时任务
-        //applicationContext.publishEvent(new DelCrowOnceEvent(jobId));
-
-        // 获取会议信息
-        AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
-        if (Objects.isNull(appointConference)) {
-            log.error("conferenceBeginJobHandler conference not exist, ruid:{}", ruid);
-            return ReturnT.FAIL;
-        }
-
-
-        // 是否自动呼叫、房间是否被使用中
-        if (appointConference.getAutoInvite().intValue() == AutoInviteEnum.AUTO_INVITE.getValue().intValue() && !isRoomInUse(appointConference.getRoomId())) {
-            // create room session
-
-            //todo
-            //sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
-
-            // sendNotify
-            List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
-
-            if (Objects.isNull(appointParts) || appointParts.isEmpty()) {
-                log.error("conferenceBeginJobHandler appointParts is empty, ruid:{}", ruid);
+            // 获取会议信息
+            AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
+            if (Objects.isNull(appointConference)) {
+                log.error("conferenceBeginJobHandler conference not exist, ruid:{}", ruid);
                 return ReturnT.FAIL;
             }
-            // 邀请通知
-            Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
-            log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
-            inviteParticipant(appointConference, uuidSet);
+
+
+            // 是否自动呼叫、房间是否被使用中
+            if (appointConference.getAutoInvite().intValue() == AutoInviteEnum.AUTO_INVITE.getValue().intValue() && !isRoomInUse(appointConference.getRoomId())) {
+                // change the conference status
+                Conference conference = constructConf(appointConference);
+                conferenceMapper.insertSelective(conference);
+
+                sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
+
+                // sendNotify
+                List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
+
+                if (Objects.isNull(appointParts) || appointParts.isEmpty()) {
+                    log.error("conferenceBeginJobHandler appointParts is empty, ruid:{}", ruid);
+                    return ReturnT.FAIL;
+                }
+                // 邀请通知
+                Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
+                log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
+                inviteParticipant(appointConference, uuidSet);
+            }
+
+            // 删除定时任务
+            crowOnceHelper.delCrowOnce(jobId);
+            return ReturnT.SUCCESS;
+        } catch (Exception e) {
+            log.info("conferenceBeginJobHandler error ", e);
+            throw e;
         }
-        return ReturnT.SUCCESS;
+
     }
 
 
@@ -196,6 +212,27 @@ public class AppointConferenceJobHandler {
             log.info("conferenceBeginJobHandler roomId={} is in use", roomId);
         }
         return isRoomInUse;
+    }
+
+    public Conference constructConf(AppointConference ac) {
+        Conference conference = new Conference();
+
+        // save conference info
+        conference.setRoomId(ac.getRoomId());
+
+        conference.setRuid(ac.getRuid());
+        conference.setConferenceSubject(ac.getConferenceSubject());
+        conference.setConferenceMode(ac.getConferenceMode());
+        conference.setUserId(ac.getUserId());
+        conference.setPassword(ac.getPassword());
+        conference.setStatus(ConferenceStatus.PROCESS.getStatus());
+        conference.setStartTime(ac.getStartTime());
+
+        conference.setRoomCapacity(ac.getRoomCapacity());
+        conference.setProject(ac.getProject());
+        conference.setConferenceDesc(ac.getConferenceDesc());
+        conference.setModeratorUuid(ac.getModeratorUuid());
+        return conference;
     }
 
 }
