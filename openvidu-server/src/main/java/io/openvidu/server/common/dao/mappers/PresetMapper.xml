@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.PresetMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.Preset" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+    <result column="preset_index" property="index" jdbcType="TINYINT" />
+    <result column="config_info" property="configInfo" jdbcType="VARCHAR" />
+    <result column="thumbnail_url" property="thumbnailUrl" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="deleted" property="deleted" jdbcType="TINYINT" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, serial_number, preset_index, config_info, thumbnail_url, create_time, update_time
+  </sql>
+
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.Preset" >
+    insert into sd_preset_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="serialNumber != null" >
+        serial_number,
+      </if>
+      <if test="index != null" >
+        preset_index,
+      </if>
+      <if test="configInfo != null" >
+        config_info,
+      </if>
+      <if test="thumbnailUrl != null" >
+        thumbnail_url,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="deleted != null" >
+        deleted,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="serialNumber != null" >
+        #{serialNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="index != null" >
+        #{index,jdbcType=TINYINT},
+      </if>
+      <if test="configInfo != null" >
+        #{configInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="thumbnailUrl != null" >
+        #{thumbnailUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deleted != null" >
+        #{deleted,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="selectBySerialNumberAndIndex" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_preset_info
+    where deleted = 0
+    and preset_index = #{index,jdbcType=INTEGER}
+    and serial_number = #{serialNumber,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectList" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_preset_info
+    where deleted = 0
+    and serial_number = #{serialNumber,jdbcType=VARCHAR}
+  </select>
+
+  <update id="deleteByIndexs" >
+    update sd_preset_info
+    set deleted = 1,
+    update_time = now()
+    where serial_number = #{serialNumber,jdbcType=VARCHAR}
+    and preset_index in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </update>
+
+  <update id="update" parameterType="io.openvidu.server.common.pojo.Preset">
+    update sd_preset_info
+    <set>
+      <if test="serialNumber != null and serialNumber !=''">
+        serial_number = #{serialNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="index != null ">
+        preset_index = #{index,jdbcType=INTEGER},
+      </if>
+      <if test="configInfo != null and configInfo !=''">
+        config_info = #{configInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="thumbnailUrl != null and thumbnailUrl !=''">
+        thumbnail_url = #{thumbnailUrl,jdbcType=VARCHAR},
+      </if>
+      update_time = now()
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+</mapper>

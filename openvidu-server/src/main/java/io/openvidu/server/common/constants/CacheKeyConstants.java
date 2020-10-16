@@ -40,6 +40,10 @@ public class CacheKeyConstants {
 
     /** 设备日志上传token缓存key前缀 */
     public static final String LOG_UPLOAD_TOKEN_PREFIX_KEY = "log:upload:token:";
+    /** 会议邀请用户缓存key前缀 */
+    private static final String INVITE_PREFIX_KEY = "conference:invite:%s";
+
+    public static final String ACCESSIN_PRIVATEID_PREFIX_KEY = "accessIn:privateId:";
 
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
@@ -55,5 +59,9 @@ public class CacheKeyConstants {
     }
     public static String getSubscriberSetRollCallKey(String sessionId, Long startTime, String uuid) {
         return String.format(SUBSCRIBER_SET_ROLL_CALL_KEY, sessionId, startTime, uuid);
+    }
+
+    public static String getConferencesInviteKey(String sessionId) {
+        return String.format(INVITE_PREFIX_KEY, sessionId);
     }
 }

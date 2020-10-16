@@ -186,11 +186,11 @@ public class KurentoSessionManager extends SessionManager {
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
-			sessionEventsHandler.onParticipantJoined(participant, sessionId, null,
+			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, null,
 					transactionId, e);
 		}
 		if (existingParticipants != null) {
-			sessionEventsHandler.onParticipantJoined(participant, sessionId, existingParticipants,
+			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, existingParticipants,
 					transactionId, null);
 		}
 	}

@@ -2,6 +2,7 @@ package io.openvidu.server.common.manage;
 
 import io.openvidu.server.common.pojo.Role;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.UserLoginHistory;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Participant;
 
@@ -27,4 +28,6 @@ public interface UserManage {
     Map<String, UserDeviceDeptInfo> getUserInfoInRoom(Set<Participant> participants);
 
     List<User> queryByUuidList(List<String> uuids);
+
+    void saveUserLoginHistroy(UserLoginHistory userLoginHistory);
 }

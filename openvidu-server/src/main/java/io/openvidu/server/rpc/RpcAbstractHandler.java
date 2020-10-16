@@ -114,7 +114,13 @@ public abstract class RpcAbstractHandler {
     protected RoomManage roomManage;
 
     @Resource
+    protected DepartmentMapper departmentMapper;
+
+    @Resource
     protected HttpUtil httpUtil;
+
+    @Resource
+    protected PresetMapper presetMapper;
 
     @Resource
     protected InviteCompensationManage inviteCompensationManage;
@@ -125,6 +131,10 @@ public abstract class RpcAbstractHandler {
 
     protected void cancelInviteCompensation(String account) {
         inviteCompensationManage.disableInviteCompensation(account);
+    }
+
+    protected void cancelAllInviteCompensation(String roomId) {
+        inviteCompensationManage.disableAllInviteCompensation(roomId);
     }
 
     public abstract void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request);

@@ -2,12 +2,14 @@ package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.RoleMapper;
+import io.openvidu.server.common.dao.UserLoginHistoryMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.dao.UserRoleMapper;
 import io.openvidu.server.common.manage.DepartmentManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Role;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.UserLoginHistory;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Participant;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,9 @@ public class UserManageImpl implements UserManage {
 
     @Resource
     private UserRoleMapper userRoleMapper;
+
+    @Resource
+    private UserLoginHistoryMapper userLoginHistoryMapper;
 
 
     @Override
@@ -107,6 +112,21 @@ public class UserManageImpl implements UserManage {
                             participant -> userIdUserInfoMap.get(participant.getUserId())));
         }
         return connectIdPartMap;
+    }
+
+    @Override
+    public void saveUserLoginHistroy(UserLoginHistory userLoginHistory) {
+        UserLoginHistory exists;
+        if (Objects.nonNull(exists = userLoginHistoryMapper.selectByCondition(userLoginHistory))) {
+            // update latest login history
+            if (!Objects.equals(userLoginHistory.getTerminalType(), exists.getTerminalType())
+                    || !Objects.equals(userLoginHistory.getVersion(), exists.getVersion())) {
+                userLoginHistoryMapper.updateByPrimaryKeySelective(UserLoginHistory.builder().id(exists.getId())
+                        .version(userLoginHistory.getVersion()).terminalType(userLoginHistory.getTerminalType()).build());
+            }
+        } else {
+            userLoginHistoryMapper.insertSelective(userLoginHistory);
+        }
     }
 
     @Override

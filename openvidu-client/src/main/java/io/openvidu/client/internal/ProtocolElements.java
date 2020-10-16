@@ -227,6 +227,7 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_METHOD = "createRoom";
 	public static final String CREATE_ROOM_ID_PARAM = "roomId";
 	public static final String CREATE_ROOM_PASSWORD_PARAM = "password";
+	public static final String CREATE_ROOM_MODERATORPASSWORD_PARAM = "moderatorPassword";
 	public static final String CREATE_ROOM_MIC_STATUS_PARAM = "micStatusInRoom";
 	public static final String CREATE_ROOM_VIDEO_STATUS_PARAM = "videoStatusInRoom";
 	public static final String CREATE_ROOM_SHARE_POWER_PARAM = "sharePowerInRoom";
@@ -725,6 +726,25 @@ public class ProtocolElements {
 	public static final String GETMEMBERDETAILS_METHOD = "getMemberDetails";
 	public static final String RECURSIVEQUERYUSER_METHOD = "recursiveQueryUser";
 
+	public static final String SET_PRESET_POSITION_METHOD = "setPresetPosition";
+	public static final String SET_PRESET_POSITION_SERIALNUMBER_PARAM = "serialNumber";
+	public static final String SET_PRESET_POSITION_INDEX_PARAM = "index";
+	public static final String SET_PRESET_POSITION_CONFIGINFO_PARAM = "configInfo";
+	public static final String SET_PRESET_POSITION_THUMBNAIL_PARAM = "thumbnail";
+
+	public static final String DISCARDPRESETPOSITIONS_METHOD = "discardPresetPositions";
+	public static final String DISCARDPRESETPOSITIONS_SERIALNUMBER_PARAM = "serialNumber";
+	public static final String DISCARDPRESETPOSITIONS_INDEXARRAY_PARAM = "indexArray";
+
+	public static final String GETPRESETPOSITIONS_METHOD = "getPresetPositions";
+	public static final String GETPRESETPOSITIONS_SERIALNUMBER_PARAM = "serialNumber";
+
+	public static final String ADJUSTTOPRESETPOSITION_METHOD = "adjustToPresetPosition";
+	public static final String ADJUSTTOPRESETPOSITION_SERIALNUMBER_PARAM = "serialNumber";
+	public static final String ADJUSTTOPRESETPOSITION_INDEX_PARAM = "index";
+	public static final String ADJUSTTOPRESETPOSITION_CONFIGINFO_PARAM = "configInfo";
+	public static final String ADJUSTTOPRESETPOSITIONNOTIFY_METHOD = "adjustToPresetPositionNotify";
+
 	public static final String CREATEAPPOINTMENTROOM_SUBJECT_PARAM = "subject";
 	public static final String CREATEAPPOINTMENTROOM_STARTTIME_PARAM = "startTime";
 	public static final String CREATEAPPOINTMENTROOM_ENDTIME_PARAM = "endTime";
@@ -755,7 +775,8 @@ public class ProtocolElements {
 			MODIFY_PASSWORD_METHOD, GETH5PAGES_METHOD, RINGRING_METHOD, REFUSE_INVITE_METHOD,GET_UPLOAD_TOKEN_METHOD,
 			GETSPECIFICPAGEOFDEPT_METHOD,GETSPECIFICPAGEOFMEMBER_METHOD,GETMEMBERDETAILS_METHOD,RECURSIVEQUERYUSER_METHOD,
 			GET_GROUP_LIST_METHOD, GET_GROUP_INFO_METHOD, CREATE_APPOINTMENT_ROOM_METHOD, UPDATE_APPOINTMENT_ROOM_METHOD,
-			CANCEL_APPOINTMENT_ROOM_METHOD
+			CANCEL_APPOINTMENT_ROOM_METHOD,SET_PRESET_POSITION_METHOD,DISCARDPRESETPOSITIONS_METHOD,
+			GETPRESETPOSITIONS_METHOD,ADJUSTTOPRESETPOSITION_METHOD
 	);
 
     /**

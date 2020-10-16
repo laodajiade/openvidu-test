@@ -11,6 +11,7 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.Role;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -74,10 +75,10 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
             jsonObject.addProperty("subject", conference.getConferenceSubject());
             jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
             jsonObject.addProperty("startTime", conference.getStartTime().getTime());
-            Participant moderator = session.getModeratorPart();
-            jsonObject.addProperty("moderatorAccount", moderator.getUuid());
-            jsonObject.addProperty("moderatorUserId", moderator.getUserId());
-            jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(moderator.getUuid()).get("token").toString());
+            User user = userMapper.selectByPrimaryKey(conference.getUserId());
+            jsonObject.addProperty("moderatorAccount", user.getUuid());
+            jsonObject.addProperty("moderatorUserId", user.getId());
+            jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString());
             jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->
                     StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
         }
