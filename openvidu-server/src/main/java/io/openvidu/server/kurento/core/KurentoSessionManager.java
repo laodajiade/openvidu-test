@@ -183,6 +183,11 @@ public class KurentoSessionManager extends SessionManager {
 			roomManage.storePartHistory(participant, conference);
 			// save max concurrent statistics
 			cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
+			//save max concurrent in conference
+			Conference concurrentCon = new Conference();
+			concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
+			concurrentCon.setId(conference.getId());
+			roomManage.storeConcurrentNumber(concurrentCon);
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);

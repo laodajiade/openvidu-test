@@ -131,4 +131,9 @@ public class RoomManageImpl implements RoomManage {
 
         return result;
     }
+
+    @Override
+    public void storeConcurrentNumber(Conference conference) {
+        conferenceMapper.updateByPrimaryKeySelective(conference);
+    }
 }
