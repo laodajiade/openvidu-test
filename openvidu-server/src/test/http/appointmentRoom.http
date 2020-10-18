@@ -22,4 +22,15 @@ Content-Type: application/json
   "subject": "test create appt"
 }
 
+
+
 ###
+# 删除预约会议
+POST http://localhost:4443/dev/test?id={{uuid}}&method=cancelAppointmentRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid": "appt-cd8e0b95422c4e7fadeb20fcef0cb502"
+}

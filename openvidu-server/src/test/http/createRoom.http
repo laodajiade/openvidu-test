@@ -14,7 +14,7 @@ Content-Type: application/json
   "password": "",
   "quietStatusInRoom": "smart",
   "roomId": "80101900003",
-  "ruid": "appt-cd8e0b95422c4e7fadeb20fcef0cb502",
+  "ruid": "appt-37b036c46a72477f9bcd6624582fd03e",
   "sharePowerInRoom": "on",
   "subject": "80101900003的会议",
   "useIdInRoom": "allParticipants",

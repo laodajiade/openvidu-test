@@ -424,4 +424,9 @@
     </if>
     and start_time <![CDATA[<=]]> #{endTime,jdbcType=TIMESTAMP} and end_time >= #{startTime,jdbcType=TIMESTAMP}
   </select>
+  <update id="changeStatusByRuid">
+      update sd_appoint_conference
+      set `status` = #{status,jdbcType=INTEGER}
+      where ruid = #{ruid,jdbcType=VARCHAR}
+  </update>
 </mapper>
