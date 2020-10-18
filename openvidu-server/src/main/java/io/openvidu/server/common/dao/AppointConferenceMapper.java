@@ -35,4 +35,6 @@ public interface AppointConferenceMapper {
     int updateByPrimaryKey(AppointConference record);
 
     List<AppointConference> getConflictAppointConferenceList(AppointConference condition);
+
+    List<AppointConference> pendingAboutAppointment(Long userId);
 }

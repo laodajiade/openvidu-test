@@ -319,4 +319,11 @@
       </if>
     </where>
   </select>
+
+  <select id="getFinishedList" resultType="io.openvidu.server.common.pojo.Conference">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference a
+    where a.`status`=2  and (a.user_id = #{userId} or a.ruid in ( select ruid from sd_conf_part_history  b where b.user_id = #{userId} ))
+  </select>
 </mapper>
