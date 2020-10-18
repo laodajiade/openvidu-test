@@ -19,6 +19,7 @@
     <result column="type" jdbcType="CHAR" property="type" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="INTEGER" property="status" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -81,7 +82,7 @@
   <sql id="Base_Column_List">
     id, ruid, room_id, conference_subject, conference_desc, user_id, moderator_uuid, 
     start_time, end_time, duration, room_capacity, `password`, auto_invite, project, 
-    `type`, create_time, update_time
+    `type`, create_time, update_time, `status`
   </sql>
   <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample" resultMap="BaseResultMap">
     select
@@ -119,13 +120,13 @@
       start_time, end_time, duration, 
       room_capacity, `password`, auto_invite, 
       project, `type`, create_time, 
-      update_time)
+      update_time, `status`)
     values (#{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR}, 
       #{conferenceDesc,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{moderatorUuid,jdbcType=VARCHAR}, 
       #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{duration,jdbcType=INTEGER}, 
       #{roomCapacity,jdbcType=INTEGER}, #{password,jdbcType=VARCHAR}, #{autoInvite,jdbcType=INTEGER}, 
       #{project,jdbcType=VARCHAR}, #{type,jdbcType=CHAR}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{updateTime,jdbcType=TIMESTAMP})
+      #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.AppointConference" useGeneratedKeys="true">
     insert into sd_appoint_conference
@@ -178,6 +179,9 @@
       <if test="updateTime != null">
         update_time,
       </if>
+      <if test="status != null">
+        `status`,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="ruid != null">
@@ -228,6 +232,9 @@
       <if test="updateTime != null">
         #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample" resultType="java.lang.Long">
@@ -236,7 +243,7 @@
       <include refid="Example_Where_Clause" />
     </if>
   </select>
-    <update id="updateByExampleSelective" parameterType="map">
+  <update id="updateByExampleSelective" parameterType="map">
     update sd_appoint_conference
     <set>
       <if test="record.id != null">
@@ -290,6 +297,9 @@
       <if test="record.updateTime != null">
         update_time = #{record.updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="record.status != null">
+        `status` = #{record.status,jdbcType=INTEGER},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -313,7 +323,8 @@
       project = #{record.project,jdbcType=VARCHAR},
       `type` = #{record.type,jdbcType=CHAR},
       create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      update_time = #{record.updateTime,jdbcType=TIMESTAMP}
+      update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      `status` = #{record.status,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -369,6 +380,9 @@
       <if test="updateTime != null">
         update_time = #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="status != null">
+        `status` = #{status,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -389,7 +403,8 @@
       project = #{project,jdbcType=VARCHAR},
       `type` = #{type,jdbcType=CHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP}
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      `status` = #{status,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
 

@@ -51,7 +51,13 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         example.createCriteria().andRuidEqualTo(ruid);
         appointConferenceMapper.deleteByExample(example);
     }
-//
+
+    @Override
+    public void updateById(AppointConference appt) {
+        appointConferenceMapper.updateByPrimaryKey(appt);
+    }
+
+    //
     public boolean isConflict(AppointmentRoomVO vo) {
 
         // 判断会议是否冲突

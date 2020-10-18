@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers.appoint;
 
+import com.alibaba.fastjson.JSON;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
@@ -60,7 +61,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
 
         vo.setParticipants(Arrays.asList("80101900005", "80101900006", "80101900007"));
 
-
+        System.out.println(JSON.toJSONString(vo));
         RespResult<AppointmentRoomResp> result = handler.doProcess(rpcConnection, null, vo);
 
 
