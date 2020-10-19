@@ -273,6 +273,7 @@ public class KurentoSessionManager extends SessionManager {
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"
 			if (remainingParticipants.isEmpty()) {
+			    session.setClosing(true);
 				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
 					// stop recording
 					log.info("Last participant left. Stopping recording of session {}", sessionId);
@@ -286,10 +287,10 @@ public class KurentoSessionManager extends SessionManager {
 			sessionEventsHandler.closeRpcSession(participant.getParticipantPrivateId());
 		}
 
-		// update recording
-		if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
-			updateRecording(session.getSessionId());
-		}
+        // update recording
+        if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
+            updateRecording(session.getSessionId());
+        }
 
 		return sessionClosedByLastParticipant;
 	}
@@ -439,7 +440,11 @@ public class KurentoSessionManager extends SessionManager {
                     .equals(streamMode)) {
 				senderParticipant = session.getParticipantByPublicId(senderName);
             } else {
-				senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
+				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+					senderParticipant = participant;
+				} else {
+				    senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
+				}
 			}
 
 			if (senderParticipant == null) {
@@ -482,26 +487,26 @@ public class KurentoSessionManager extends SessionManager {
 		}
 	}
 
-	private Participant getInviteDelayPart(String sessionId, Long userId) throws InterruptedException {
-		Participant senderParticipant;
-		for (int i = 0; i < 3; i++) {
-			if (Objects.nonNull(senderParticipant = getSession(sessionId).getParticipants()
-					.stream()
-					.filter(part -> part.getUserId().equals(userId) && !Objects.equals(OpenViduRole.THOR, part.getRole())
-							&& Objects.equals(StreamType.MAJOR, part.getStreamType()))
-					.findFirst().orElse(null))) {
-				return senderParticipant;
-			} else {
-				Thread.sleep(3000);
-			}
-		}
+    private Participant getInviteDelayPart(String sessionId, Long userId) throws InterruptedException {
+        Participant senderParticipant;
+        for (int i = 0; i < 3; i++) {
+            if (Objects.nonNull(senderParticipant = getSession(sessionId).getParticipants()
+                    .stream()
+                    .filter(part -> part.getUserId().equals(userId) && !Objects.equals(OpenViduRole.THOR, part.getRole())
+                            && Objects.equals(StreamType.MAJOR, part.getStreamType()))
+                    .findFirst().orElse(null))) {
+                return senderParticipant;
+            } else {
+                Thread.sleep(3000);
+            }
+        }
 
-		return getSession(sessionId).getParticipants().stream().filter(part -> part.getUserId().equals(userId) &&
-				!Objects.equals(OpenViduRole.THOR, part.getRole()) && Objects.equals(StreamType.MAJOR, part.getStreamType()))
-				.findFirst().orElse(null);
-	}
+        return getSession(sessionId).getParticipants().stream().filter(part -> part.getUserId().equals(userId) &&
+                !Objects.equals(OpenViduRole.THOR, part.getRole()) && Objects.equals(StreamType.MAJOR, part.getStreamType()))
+                .findFirst().orElse(null);
+    }
 
-	@Override
+    @Override
 	public void unsubscribe(Participant participant, String senderName, Integer transactionId) {
 		log.debug("Request [UNSUBSCRIBE] remoteParticipant={} ({})", senderName, participant.getParticipantPublicId());
 
@@ -1211,7 +1216,7 @@ public class KurentoSessionManager extends SessionManager {
 				.startTime(kurentoSession.getStartRecordingTime())
 				.rootPath(openviduConfig.getRecordingPath())
 				.outputMode(RecordOutputMode.COMPOSED)
-				.mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
+                .mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
 
 		// construct needed media source according to participants that joined the room
 		constructMediaSources(recordingProperties, kurentoSession);
@@ -1220,19 +1225,19 @@ public class KurentoSessionManager extends SessionManager {
 		recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
 	}
 
-	@Override
-	public void stopRecording(String sessionId) {
-		Session session;
-		if (Objects.isNull(session = getSession(sessionId))) {
-			log.info("Stop recording but session:{} is closed.", sessionId);
-			return;
-		}
+    @Override
+    public void stopRecording(String sessionId) {
+        Session session;
+        if (Objects.isNull(session = getSession(sessionId))) {
+            log.info("Stop recording but session:{} is closed.", sessionId);
+            return;
+        }
 
 		log.info("Stop recording and sessionId is {}", sessionId);
-		// pub stop recording task
-		recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
-				.ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
-	}
+        // pub stop recording task
+        recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
+                .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
+    }
 
 	@Override
 	public void updateRecording(String sessionId) {
@@ -1338,23 +1343,23 @@ public class KurentoSessionManager extends SessionManager {
 		JsonObject jsonObject = new Gson().fromJson(String.valueOf(msg), JsonObject.class);
 		if (jsonObject.has("method") && jsonObject.has("params")
 				&& Objects.nonNull(ruid = jsonObject.get("params").getAsJsonObject().get("ruid").getAsString())) {
-			Session session;
+		    Session session;
 			Optional<Session> sessionOptional = getSessions().stream().filter(session1 -> Objects.equals(ruid, session1.getRuid())).findAny();
 			if (sessionOptional.isPresent()) {
-				session = sessionOptional.get();
-				switch (jsonObject.get("method").getAsString()) {
-					case CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE:
-						stopRecordAndNotify(session);
-						break;
-					case CommonConstants.RECORD_STOP_BY_MODERATOR:
-						changeRoomRecordStatusAndNotify(session);
-						break;
-					case CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT:
-						sendStorageNotify(session);
-						break;
-					default:
-						break;
-				}
+			    session = sessionOptional.get();
+                switch (jsonObject.get("method").getAsString()) {
+                    case CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE:
+                        stopRecordAndNotify(session);
+                        break;
+                    case CommonConstants.RECORD_STOP_BY_MODERATOR:
+                        changeRoomRecordStatusAndNotify(session);
+                        break;
+                    case CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT:
+                        sendStorageNotify(session);
+                        break;
+                    default:
+                        break;
+                }
 			} else {
 				log.warn("Session that ruid:{} not found.", ruid);
 			}
@@ -1363,42 +1368,42 @@ public class KurentoSessionManager extends SessionManager {
 		}
 	}
 
-	private void sendStorageNotify(Session session) {
-		JsonObject notify = new JsonObject();
-		notify.addProperty("reason", CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT);
-		session.getParticipants()
-				.stream()
-				.filter(participant -> StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().isController())
-				.forEach(participant ->
-						rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
-	}
+    private void sendStorageNotify(Session session) {
+        JsonObject notify = new JsonObject();
+        notify.addProperty("reason", CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT);
+        session.getParticipants()
+                .stream()
+                .filter(participant -> StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().isController())
+                .forEach(participant ->
+                        rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
+    }
 
-	private void changeRoomRecordStatusAndNotify(Session session) {
-		if (session.sessionAllowedToStopRecording()) {
-			JsonObject notify = new JsonObject();
-			notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_MODERATOR);
-			session.getParticipants().forEach(participant ->
-					rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
-		} else {
-			log.warn("Fail to change the record status and roomId:{}, ruid:{}", session.getSessionId(), session.getRuid());
-		}
-	}
+    private void changeRoomRecordStatusAndNotify(Session session) {
+        if (session.sessionAllowedToStopRecording()) {
+            JsonObject notify = new JsonObject();
+            notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_MODERATOR);
+            session.getParticipants().forEach(participant ->
+                    rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
+        } else {
+            log.warn("Fail to change the record status and roomId:{}, ruid:{}", session.getSessionId(), session.getRuid());
+        }
+    }
 
-	private void stopRecordAndNotify(Session session) {
-		if (session.sessionAllowedToStopRecording()) {
-			// stop the recording
-			stopRecording(session.getSessionId());
-			// send the stopping recording notify
-			JsonObject notify = new JsonObject();
-			notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE);
-			session.getParticipants().forEach(participant -> {
-				if (StreamType.MAJOR.equals(participant.getStreamType())) {
-					rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
-				}
-			});
-		} else {
-			log.warn("Fail to stop the record and ruid:{}", session.getRuid());
-		}
-	}
+    private void stopRecordAndNotify(Session session) {
+        if (session.sessionAllowedToStopRecording()) {
+            // stop the recording
+            stopRecording(session.getSessionId());
+            // send the stopping recording notify
+            JsonObject notify = new JsonObject();
+            notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE);
+            session.getParticipants().forEach(participant -> {
+                if (StreamType.MAJOR.equals(participant.getStreamType())) {
+                    rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
+                }
+            });
+        } else {
+            log.warn("Fail to stop the record and ruid:{}", session.getRuid());
+        }
+    }
 
 }
