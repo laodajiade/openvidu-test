@@ -4,8 +4,6 @@ import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.RecordingProperties;
-import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -14,13 +12,13 @@ import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -53,7 +51,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         search.setRoomId(roomId);
         search.setStatus(ConferenceStatus.PROCESS.getStatus());
         List<Conference> conferenceList = conferenceMapper.selectBySearchCondition(search);
-        if (Objects.isNull(conferenceList) || conferenceList.isEmpty()) {
+        if (CollectionUtils.isEmpty(conferenceList)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
@@ -73,7 +71,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         }
 
         // 权限校验（web：管理员，terminal：主持人）
-        if (!isModerator(participant.getRole())) {
+        if (!participant.getRole().isController()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
@@ -102,7 +100,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         ConferenceRecord condition = new ConferenceRecord();
         condition.setRuid(session.getRuid());
         List<ConferenceRecord> existRecordList = conferenceRecordManage.getByCondition(condition);
-        if (Objects.isNull(existRecordList) || existRecordList.isEmpty()) {
+        if (CollectionUtils.isEmpty(existRecordList)) {
             conferenceRecordManage.insertSelective(constructConferenceRecord(rpcConnection, session));
         } else {
             ConferenceRecord existRecord = existRecordList.get(0);
@@ -111,17 +109,12 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             conferenceRecordManage.updateByPrimaryKey(existRecord);
         }
 
-        // 通知媒体服务开始录制视频
-        KurentoSession kurentoSession = (KurentoSession) session;
-        recordingManager.startRecording(kurentoSession,
-                new RecordingProperties.Builder()
-                        .name("")
-                        .outputMode(kurentoSession.getSessionProperties().defaultOutputMode())
-                        .recordingLayout(kurentoSession.getSessionProperties().defaultRecordingLayout())
-                        .customLayout(kurentoSession.getSessionProperties().defaultCustomLayout())
-                        .build());
+        // 通知录制服务
+        sessionManager.startRecording(roomId);
+
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
         // 通知与会者开始录制
         notifyStartRecording(rpcConnection.getSessionId());
     }
@@ -146,4 +139,3 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     }
 
 }
-

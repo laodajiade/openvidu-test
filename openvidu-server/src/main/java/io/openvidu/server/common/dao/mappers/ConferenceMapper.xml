@@ -44,20 +44,21 @@
       </where>
   </select>
 
-  <select id="selectBySearchParam" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
+  <select id="selectBySearchParam" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.dto.CorpRoomsSearch">
     select
     <include refid="Base_Column_List" />
     from sd_conference
     <where>
-      <if test="roomId != null">
-        room_id like CONCAT('%',#{roomId},'%')
-      </if>
-      <if test="status != null">
-        and status = #{status,jdbcType=TINYINT}
+      <if test="roomIds != null">
+        room_id in
+        <foreach collection="roomIds" index="index" item="item" separator="," open="(" close=")">
+          #{item,jdbcType=VARCHAR}
+        </foreach>
       </if>
       <if test="project != null">
         and project = #{project,jdbcType=VARCHAR}
       </if>
+      and status = 1
     </where>
   </select>
   <select id="selectUnclosedConference" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.Conference">

@@ -29,4 +29,8 @@ public interface ConferenceRecordMapper {
 
     void increaseConferenceRecordCountByRuid(String ruid);
 
+    void deleteByRoomId(String roomId);
+
+    void updatePreRecordErrorStatus(ConferenceRecord record);
+
 }

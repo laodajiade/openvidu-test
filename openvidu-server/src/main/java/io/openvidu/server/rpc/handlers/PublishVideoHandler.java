@@ -66,5 +66,10 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
             cacheManage.delConferenceRelativeKey(key);
         }
+
+        // update recording
+        if (session.isRecording.get() && participant.ableToUpdateRecord()) {
+            sessionManager.updateRecording(session.getSessionId());
+        }
     }
 }

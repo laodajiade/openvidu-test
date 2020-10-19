@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -124,6 +125,8 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected InviteCompensationManage inviteCompensationManage;
+
+    protected BigDecimal bigDecimalMB = new BigDecimal(1024 * 1024);
 
     protected void addInviteCompensation(String account, JsonElement jsonElement, String expireTime) {
         inviteCompensationManage.activateInviteCompensation(account, jsonElement, Long.valueOf(expireTime));

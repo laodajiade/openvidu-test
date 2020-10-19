@@ -641,7 +641,11 @@ public class ProtocolElements {
 	public static final String DOWNLOAD_CONF_RECORD_ID_PARAM = "id";
 
 	public static final String DEL_CONF_RECORD_METHOD = "delConferenceRecord";
-	public static final String DEL_CONF_RECORD_ID_PARAM = "id";
+	public static final String DEL_CONF_RECORD_ID_PARAM = "ids";
+
+	public static final String CLEAR_CONFERENCE_RECORD = "clearConferenceRecord";
+
+	public static final String GET_ROOMS_RECORD_INFO = "getRoomsRecordInfo";
 
 	public static final String START_LIVE_METHOD = "startLive";
 	public static final String START_LIVE_ROOMID_PARAM = "roomId";

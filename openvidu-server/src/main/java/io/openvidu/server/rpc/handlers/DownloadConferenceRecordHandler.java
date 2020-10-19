@@ -1,6 +1,5 @@
 package io.openvidu.server.rpc.handlers;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import io.openvidu.client.internal.ProtocolElements;
@@ -56,26 +55,7 @@ public class DownloadConferenceRecordHandler extends RpcAbstractHandler {
     }
 
     private String getDownloadUrl(ConferenceRecordInfo conferenceRecordInfo) {
-        String downloadUrl = null;
-        JSONObject respObj = httpUtil.syncRequest(openviduConfig.getRecordTranscodingRequestUrl(),
-                constructDownloadReqBody(conferenceRecordInfo));
-        if (Objects.nonNull(respObj) && respObj.containsKey("mp4FileAddr")) {
-            downloadUrl = openviduConfig.getRecordThumbnailServer() + respObj.getString("mp4FileAddr").replace("/opt/openvidu/recordings/", "");
-        }
-        log.info("DownloadConferenceRecordHandler getDownloadUrl result:{}", downloadUrl);
-        return downloadUrl;
+        return conferenceRecordInfo.getRecordUrl().replaceAll(openviduConfig.getRecordingPath(), openviduConfig.getRecordDownloadServer());
     }
 
-    private String constructDownloadReqBody(ConferenceRecordInfo conferenceRecordInfo) {
-        JSONObject reqBody = new JSONObject();
-        reqBody.fluentPut("fileAddr", conferenceRecordInfo.getRecordUrl())
-                .fluentPut("outputAddr", conferenceRecordInfo.getRecordUrl().substring(0,
-                        conferenceRecordInfo.getRecordUrl().lastIndexOf("/")))
-                .fluentPut("remuxMp4", true)
-                .fluentPut("screenshot", false)
-                .fluentPut("indexFile", false)
-                .fluentPut("extend", "downloadConferenceRecord");
-        return reqBody.toString();
-    }
 }
-

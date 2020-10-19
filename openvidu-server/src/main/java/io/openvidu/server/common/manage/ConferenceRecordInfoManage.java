@@ -1,5 +1,6 @@
 package io.openvidu.server.common.manage;
 
+import com.github.pagehelper.Page;
 import io.openvidu.server.common.pojo.ConferenceRecordInfo;
 import io.openvidu.server.common.pojo.ConferenceRecordSearch;
 import io.openvidu.server.common.pojo.User;
@@ -19,7 +20,7 @@ public interface ConferenceRecordInfoManage {
 
     int updateByPrimaryKey(ConferenceRecordInfo record);
 
-    List<ConferenceRecordInfo> getPageListBySearch(ConferenceRecordSearch search);
+    Page<ConferenceRecordInfo> getPageListBySearch(ConferenceRecordSearch search);
 
     long selectConfRecordsInfoCountByCondition(ConferenceRecordSearch condition);
 
@@ -28,5 +29,7 @@ public interface ConferenceRecordInfoManage {
     void playbackConferenceRecord(ConferenceRecordInfo conferenceRecordInfo, User operator);
 
     void downloadConferenceRecord(ConferenceRecordInfo conferenceRecordInfo, User operator);
+
+    List<ConferenceRecordInfo> selectByIds(List<Long> ids);
 
 }

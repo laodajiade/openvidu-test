@@ -28,6 +28,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.utils.JsonUtils;
+import lombok.Getter;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
@@ -49,6 +50,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	protected MediaOptions mediaOptions;
 
+	@Getter
 	private PassThrough passThru = null;
 	private ListenerSubscription passThruSubscription = null;
 

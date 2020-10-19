@@ -63,6 +63,11 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         }
         sessionManager.setRollCallInSession(conferenceSession, targetPart);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+        // update recording
+        if (conferenceSession.ableToUpdateRecord()) {
+            sessionManager.updateRecording(conferenceSession.getSessionId());
+        }
     }
 
 }

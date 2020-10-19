@@ -40,5 +40,10 @@ public class ReplaceRollCallHandler extends RpcAbstractHandler {
         });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+        // update recording
+        if (sessionManager.getSession(sessionId).ableToUpdateRecord()) {
+            sessionManager.updateRecording(sessionId);
+        }
     }
 }
