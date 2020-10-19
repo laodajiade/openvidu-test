@@ -350,4 +350,15 @@
     </foreach>
   </select>
 
+  <select id="selectAdminUserByProject" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT
+      u.*
+    FROM
+      sd_user u,
+      sd_preset_admin spa
+    WHERE
+      spa.project = #{project,jdbcType=VARCHAR}
+    AND spa.user_id = u.id
+  </select>
+
 </mapper>

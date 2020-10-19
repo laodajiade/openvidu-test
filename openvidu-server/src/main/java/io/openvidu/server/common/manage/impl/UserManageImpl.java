@@ -130,6 +130,11 @@ public class UserManageImpl implements UserManage {
     }
 
     @Override
+    public User getAdminUserByProject(String project) {
+        return userMapper.selectAdminUserByProject(project);
+    }
+
+    @Override
     public List<User> queryByUuidList(List<String> uuids) {
         return userMapper.selectUserByUuidList(uuids);
     }

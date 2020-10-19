@@ -22,12 +22,16 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
+import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.kafka.RecordingKafkaProducer;
 import io.openvidu.server.common.manage.RoomManage;
+import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
@@ -77,6 +81,9 @@ public class KurentoSessionManager extends SessionManager {
 	@Autowired
 	private RoomManage roomManage;
 
+	@Autowired
+    private UserManage userManage;
+
 	@Resource
 	private ApplicationContext applicationContext;
 
@@ -85,6 +92,9 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Resource
 	private RecordingKafkaProducer recordingTaskProducer;
+
+	@Resource
+    private RedisPublisher redisPublisher;
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -1376,6 +1386,22 @@ public class KurentoSessionManager extends SessionManager {
                 .filter(participant -> StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().isController())
                 .forEach(participant ->
                         rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
+
+        // send sms to admin user
+        String project = session.getConference().getProject();
+        User adminUser = userManage.getAdminUserByProject(project);
+        if (StringUtils.isEmpty(adminUser.getPhone())) {
+            return;
+        }
+
+        JsonObject smsObj = new JsonObject();
+        JsonObject contentObj = new JsonObject();
+        contentObj.addProperty("project", project);
+
+        smsObj.addProperty("phoneNumber", adminUser.getPhone());
+        smsObj.add("content", contentObj);
+        smsObj.addProperty("smsType", "RecordStorage");
+        redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
     }
 
     private void changeRoomRecordStatusAndNotify(Session session) {

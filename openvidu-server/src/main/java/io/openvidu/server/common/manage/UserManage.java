@@ -30,4 +30,6 @@ public interface UserManage {
     List<User> queryByUuidList(List<String> uuids);
 
     void saveUserLoginHistroy(UserLoginHistory userLoginHistory);
+
+    User getAdminUserByProject(String project);
 }
