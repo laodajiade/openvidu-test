@@ -474,6 +474,7 @@ public class ProtocolElements {
 	public static  final  String COMMAND_UOGRADE_DOWNLOADURL_PAPM  = "downloadUrl";
 
 	public static  final  String UPGRADE_NOTIFY_METHOD = "upgradeNotify";
+	public static  final  String CORP_INFO_MODIFIED_NOTIFY_METHOD = "corpInfoModifiedNotify";
 
 	public static  final  String ADJUST_RESOLUTION_METHOD = "adjustResolution";
 	public static  final  String ADJUST_RESOLUTION_CONNECTIONID_PAPM  = "connectionId";
