@@ -169,9 +169,9 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.add("participants", constructAppointPartsInfo(participants));
 
             if (conference.getRuid().startsWith("appt-")) {
-                appointConfObj.addProperty("autoCall", appointConferenceManage.getByRuid(conference.getRuid()).getAutoInvite());
+                appointConfObj.addProperty("autoCall", appointConferenceManage.getByRuid(conference.getRuid()).getAutoInvite() == 1);
             } else {
-                appointConfObj.addProperty("autoCall", 0);
+                appointConfObj.addProperty("autoCall", false);
             }
             appointConfObj.addProperty("duration", (conference.getEndTime().getTime() - conference.getStartTime().getTime()) / 60000);
 
