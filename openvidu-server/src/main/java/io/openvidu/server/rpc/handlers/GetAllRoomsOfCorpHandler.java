@@ -4,20 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.PartRoleEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.Role;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -36,7 +33,6 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
         JsonObject respObj = new JsonObject();
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
         Role role = userManage.getUserRoleById(Long.valueOf(userInfo.get("roleId").toString()));
-
         if (!role.getRoleName().equals(PartRoleEnum.admin.name())) {
             log.warn("userId:{} roleName not admin", userInfo.get("userId"));
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -44,13 +40,10 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
             return;
         }
 
-        ConferenceSearch allRoomsOfCropSearch = new ConferenceSearch();
-        allRoomsOfCropSearch.setStatus(ConferenceStatus.PROCESS.getStatus());
-        allRoomsOfCropSearch.setProject(String.valueOf(userInfo.get("project")));
-        if (StringUtils.isNotEmpty(roomId)) {
-            allRoomsOfCropSearch.setRoomId(roomId);
-        }
-        List<Conference> list = roomManage.getAllRoomsOfCorp(allRoomsOfCropSearch);
+
+        CorpRoomsSearch search = CorpRoomsSearch.builder().project(rpcConnection.getProject())
+                .roomIds(roomManage.getSubRoomIds(roomId, getLongOptionalParam(request, "orgId"))).build();
+        List<Conference> list = roomManage.getAllRoomsOfCorp(search);
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(conference -> {
                 JsonObject jsonObject;
@@ -75,10 +68,14 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
             jsonObject.addProperty("subject", conference.getConferenceSubject());
             jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
             jsonObject.addProperty("startTime", conference.getStartTime().getTime());
-            User user = userMapper.selectByPrimaryKey(conference.getUserId());
-            jsonObject.addProperty("moderatorAccount", user.getUuid());
-            jsonObject.addProperty("moderatorUserId", user.getId());
-            jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString());
+            Participant moderator = session.getModeratorPart();
+            if (Objects.nonNull(moderator)) {
+                jsonObject.addProperty("moderatorAccount", moderator.getUuid());
+                jsonObject.addProperty("moderatorUserId", moderator.getUserId());
+                jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(moderator.getUuid()).get("token").toString());
+            } else {
+                return null;
+            }
             jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->
                     StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
         }

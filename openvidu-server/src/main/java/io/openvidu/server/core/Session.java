@@ -566,6 +566,11 @@ public class Session implements SessionInterface {
 				.filter(participant -> Objects.nonNull(participant) && participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
+	public Participant getSharingPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.SHARING.name())).filter(Objects::nonNull).findAny().orElse(null);
+	}
+
     public Participant getParticipantByStreamId(String streamId) {
         checkClosed();
         return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
@@ -1070,10 +1075,8 @@ public class Session implements SessionInterface {
 			}
 		}
 
-		Participant speakerPart = getParticipants().stream().filter(participant -> Objects.equals(ParticipantHandStatus.speaker,
-				participant.getHandStatus()) && Objects.equals(StreamType.MAJOR, participant.getStreamType())).findFirst().orElse(null);
 		if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
-			if (Objects.isNull(speakerPart)) {
+			if (Objects.isNull(getSharingPart()) && Objects.isNull(getSpeakerPart())) {
 				majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
 			} else {
 				JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());
@@ -1346,8 +1349,7 @@ public class Session implements SessionInterface {
     }
 
 	public boolean getConferenceRecordStatus() {
-		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
-				&& isRecording.get();
+		return isRecordingConfigured() && isRecording.get();
 	}
 
 	public boolean getLivingStatus() {
@@ -1373,6 +1375,10 @@ public class Session implements SessionInterface {
 				.findAny().orElse(null);
 		return Objects.nonNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 				&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY);
+	}
+
+	public boolean ableToUpdateRecord() {
+		return isRecording.get() && !closing && !closed;
 	}
 
 }

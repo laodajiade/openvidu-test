@@ -4,6 +4,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.CorpMcuConfig;
+import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
  * @date 2020/5/27 16:37
  */
 public interface RoomManage {
-    List<Conference> getAllRoomsOfCorp(ConferenceSearch allRoomsOfCropSearch);
+    List<Conference> getAllRoomsOfCorp(CorpRoomsSearch search);
 
     List<ConferencePartHistory> getConfHistoryRecordsByCondition(ConferencePartHistory search);
 
@@ -28,4 +29,6 @@ public interface RoomManage {
     int createMeetingRoom(Conference conference);
 
     void storeConcurrentNumber(Conference conference);
+
+    List<String> getSubRoomIds(String roomId, Long orgId);
 }

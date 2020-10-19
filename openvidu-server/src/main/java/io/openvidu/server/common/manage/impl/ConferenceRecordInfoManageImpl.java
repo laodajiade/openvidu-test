@@ -1,5 +1,7 @@
 package io.openvidu.server.common.manage.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import io.openvidu.server.common.dao.ConferenceRecordInfoMapper;
 import io.openvidu.server.common.dao.ConferenceRecordMapper;
 import io.openvidu.server.common.enums.ConferenceRecordOperationTypeEnum;
@@ -11,8 +13,10 @@ import io.openvidu.server.common.pojo.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -57,8 +61,10 @@ public class ConferenceRecordInfoManageImpl implements ConferenceRecordInfoManag
     }
 
     @Override
-    public List<ConferenceRecordInfo> getPageListBySearch(ConferenceRecordSearch search) {
-        return conferenceRecordInfoMapper.getPageListBySearch(search);
+    public Page<ConferenceRecordInfo> getPageListBySearch(ConferenceRecordSearch search) {
+        return PageHelper.startPage(search.getPageNum(), search.getSize(),
+                search.getFilter().getFilter() + " " + search.getSort().name())
+                .doSelectPage(() -> conferenceRecordInfoMapper.getPageListBySearch(search.getRuidList()));
     }
 
     @Override
@@ -93,6 +99,11 @@ public class ConferenceRecordInfoManageImpl implements ConferenceRecordInfoManag
     public void downloadConferenceRecord(ConferenceRecordInfo conferenceRecordInfo, User operator) {
         // 保存下载记录
         conferenceRecordLogManage.insertOperationLog(conferenceRecordInfo, ConferenceRecordOperationTypeEnum.DOWNLOAD.name().toLowerCase(), operator);
+    }
+
+    @Override
+    public List<ConferenceRecordInfo> selectByIds(List<Long> ids) {
+        return CollectionUtils.isEmpty(ids) ? Collections.emptyList() : conferenceRecordInfoMapper.selectByIds(ids);
     }
 
 }

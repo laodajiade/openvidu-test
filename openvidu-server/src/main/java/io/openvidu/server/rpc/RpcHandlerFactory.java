@@ -283,6 +283,10 @@ public class RpcHandlerFactory {
     private GetMemberDetailsHandler getMemberDetailsHandler;
     @Resource
     private RecursiveQueryUserHandler recursiveQueryUserHandler;
+    @Resource
+    private GetRoomsRecordInfoHandler getRoomsRecordInfoHandler;
+    @Resource
+    private ClearConferenceRecordHandler clearConferenceRecordHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -367,7 +371,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_LIVE_STATUS_METHOD,                        getLiveStatusHandler);
         handlersMap.put(ProtocolElements.GETALLROOMSOFCORP_METHOD,                      getAllRoomsOfCorpHandler);
         handlersMap.put(ProtocolElements.GETMEETINGSRECORDDETAIL_METHOD,                getMeetingRecordDetailHandler);
-        handlersMap.put(ProtocolElements.GET_MEETING_RECORDS_METHOD,                getMeetingRecordsHandler);
+        handlersMap.put(ProtocolElements.GET_MEETING_RECORDS_METHOD,                    getMeetingRecordsHandler);
         handlersMap.put(ProtocolElements.SETSUBTITLECONFIG_METHOD,                      setSubtitleConfigHandler);
         handlersMap.put(ProtocolElements.SENDSUBTITLE_METHOD,                           sendSubtitleHandler);
         handlersMap.put(ProtocolElements.MODIFY_PASSWORD_METHOD,                        modifyPasswordHandler);
@@ -386,6 +390,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETSPECIFICPAGEOFMEMBER_METHOD,                getSpecificPageOfMemberHandler);
         handlersMap.put(ProtocolElements.GETMEMBERDETAILS_METHOD,                       getMemberDetailsHandler);
         handlersMap.put(ProtocolElements.RECURSIVEQUERYUSER_METHOD,                     recursiveQueryUserHandler);
+        handlersMap.put(ProtocolElements.GET_ROOMS_RECORD_INFO,                         getRoomsRecordInfoHandler);
+        handlersMap.put(ProtocolElements.CLEAR_CONFERENCE_RECORD,                       clearConferenceRecordHandler);
 
     }
 

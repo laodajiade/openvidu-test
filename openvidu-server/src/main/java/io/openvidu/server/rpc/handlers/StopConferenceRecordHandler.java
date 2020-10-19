@@ -3,10 +3,10 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.ConferenceRecord;
-import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -46,7 +47,7 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
         record.setRoomId(roomId);
         record.setStatus(ConferenceRecordStatusEnum.PROCESS.getStatus());
         List<ConferenceRecord> conferenceRecordList = conferenceRecordManage.getByCondition(record);
-        if (Objects.isNull(conferenceRecordList) || conferenceRecordList.isEmpty()) {
+        if (CollectionUtils.isEmpty(conferenceRecordList)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
             return;
@@ -73,8 +74,9 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
-        // 通知媒体服务暂停录制视频
-        recordingManager.stopRecording(session, null, EndReason.recordingStoppedByServer);
+        // 通知录制服务停止录制视频
+        sessionManager.stopRecording(roomId);
+
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         // 通知与会者停止录制
@@ -82,8 +84,9 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
     }
 
     private void notifyStopRecording(String sessionId) {
+        JsonObject notify = new JsonObject();
+        notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_MODERATOR);
         sessionManager.getSession(sessionId).getParticipants().forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, new JsonObject()));
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
     }
 }
-

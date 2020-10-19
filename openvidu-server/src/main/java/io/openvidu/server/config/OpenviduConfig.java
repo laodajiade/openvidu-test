@@ -201,6 +201,14 @@ public class OpenviduConfig {
 	@Value("${lb.rtns}")
 	private String lbRTNs;
 
+	@Getter
+	@Value("${recording.path}")
+	private String recordingPath;
+
+	@Getter
+	@Value("${media.profile.spec.type}")
+	private String mediaProfileSpecType;
+
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
 

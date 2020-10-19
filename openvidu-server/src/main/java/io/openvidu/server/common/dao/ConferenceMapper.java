@@ -3,6 +3,7 @@ package io.openvidu.server.common.dao;
 import io.openvidu.server.common.pojo.ConfStatisticSearch;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public interface ConferenceMapper {
 
     List<Conference> selectBySearchCondition(ConferenceSearch search);
 
-    List<Conference> selectBySearchParam(ConferenceSearch search);
+    List<Conference> selectBySearchParam(CorpRoomsSearch search);
 
     List<Conference> selectUnclosedConference(Conference conference);
 

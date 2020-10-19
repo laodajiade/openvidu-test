@@ -90,5 +90,10 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+        // update recording
+        if (conferenceSession.ableToUpdateRecord()) {
+            sessionManager.updateRecording(conferenceSession.getSessionId());
+        }
     }
 }

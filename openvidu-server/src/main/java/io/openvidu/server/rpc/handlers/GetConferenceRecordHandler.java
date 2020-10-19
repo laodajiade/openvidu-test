@@ -1,9 +1,12 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.github.pagehelper.Page;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.SortEnum;
 import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.ConferenceRecordInfo;
 import io.openvidu.server.common.pojo.ConferenceRecordSearch;
@@ -13,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.util.Comparator;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,11 +30,9 @@ public class GetConferenceRecordHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        JsonObject respObj = new JsonObject();
-        JsonArray jsonArray = new JsonArray();
-        respObj.addProperty(ProtocolElements.GET_CONF_RECORD__TOTAL_PARAM, 0);
-        respObj.add(ProtocolElements.GET_CONF_RECORD__RECORDS_PARAM, jsonArray);
-
+        String roomId = getStringParam(request, "roomId");
+        SortEnum sort = SortEnum.valueOf(getStringParam(request, "sort"));
+        ConferenceRecordSearch.SortFilter filter = ConferenceRecordSearch.SortFilter.valueOf(getStringParam(request, "filter"));
         int pageNum = getIntParam(request, ProtocolElements.GET_CONF_RECORD__PAGENUM_PARAM);
         int size = getIntParam(request, ProtocolElements.GET_CONF_RECORD__SIZE_PARAM);
         if (pageNum <= 0 || size <= 0 || size > 100) {
@@ -40,52 +41,51 @@ public class GetConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
+        long total = 0L;
+        JsonArray jsonArray = new JsonArray();
+
         // 根据roomId进行查询
         ConferenceRecord record = new ConferenceRecord();
+        record.setRoomId(roomId);
         record.setProject(rpcConnection.getProject());
         List<ConferenceRecord> conferenceRecordList = conferenceRecordManage.getByCondition(record);
+        if (!CollectionUtils.isEmpty(conferenceRecordList)) {
+            // 录制文件处理补偿（当前录制KMS高概率出现无法回调结束录制事件）
+            record.setId(conferenceRecordList.get(conferenceRecordList.size() - 1).getId());
+            record.setStatus(ConferenceRecordStatusEnum.FINISH.getStatus());
+            conferenceRecordManage.updatePreRecordErrorStatus(record);
 
-        if (Objects.isNull(conferenceRecordList) || conferenceRecordList.isEmpty()) {
-            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
-            return;
+            ConferenceRecordSearch condition = ConferenceRecordSearch.builder()
+                    .ruidList(conferenceRecordList.stream().map(ConferenceRecord::getRuid).distinct().collect(Collectors.toList()))
+                    .sort(sort)
+                    .filter(filter)
+                    .pageNum(pageNum)
+                    .size(size).build();
+
+            List<ConferenceRecordInfo> recordInfoList;
+            Page<ConferenceRecordInfo> recordInfoPage = conferenceRecordInfoManage.getPageListBySearch(condition);
+            if (!CollectionUtils.isEmpty(recordInfoList = recordInfoPage.getResult())) {
+                total = recordInfoPage.getTotal();
+                recordInfoList.forEach(conferenceRecordInfo -> {
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("id", conferenceRecordInfo.getId());
+                    jsonObject.addProperty("recordName", conferenceRecordInfo.getRecordName());
+                    jsonObject.addProperty("occupation",
+                            new BigDecimal(conferenceRecordInfo.getRecordSize()).divide(bigDecimalMB, 2, BigDecimal.ROUND_UP).toString());
+                    jsonObject.addProperty("startTime", conferenceRecordInfo.getStartTime().getTime());
+                    jsonObject.addProperty("duration",
+                            (conferenceRecordInfo.getEndTime().getTime() - conferenceRecordInfo.getStartTime().getTime()) / 1000);
+                    jsonObject.addProperty("status", conferenceRecordInfo.getFinishedStatus());
+
+                    jsonArray.add(jsonObject);
+                });
+            }
         }
-        // 获取ruid并排序
-        List<String> ruidList = conferenceRecordList.stream().sorted(Comparator.comparing(ConferenceRecord::getRequestStartTime).reversed()).map(ConferenceRecord::getRuid).distinct().collect(Collectors.toList());
-        // 根据ruid获取所有的会议记录
-        ConferenceRecordSearch condition = ConferenceRecordSearch.builder().ruidList(ruidList).recordQueryTimeInterval(recordQueryTimeInterval).offset((pageNum - 1) * size).limit(size).build();
-        List<ConferenceRecordInfo> infoList = conferenceRecordInfoManage.getPageListBySearch(condition);
-        List<String> infoRuidList = infoList.stream().map(ConferenceRecordInfo::getRuid).distinct().collect(Collectors.toList());
-        // 获取总数
-        long totalCount = conferenceRecordInfoManage.selectConfRecordsInfoCountByCondition(condition);
 
-        ruidList.retainAll(infoRuidList);
+        JsonObject respObj = new JsonObject();
+        respObj.addProperty(ProtocolElements.GET_CONF_RECORD__TOTAL_PARAM, total);
+        respObj.add(ProtocolElements.GET_CONF_RECORD__RECORDS_PARAM, jsonArray);
 
-        if (Objects.isNull(ruidList) || ruidList.isEmpty()) {
-            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
-            return;
-        }
-
-        ruidList.stream().forEach(ruid -> {
-            // 根据ruid获取对应的info，并排序
-            List<ConferenceRecordInfo> recordInfoList = infoList.stream().filter(conferenceRecordInfo -> ruid.equals(conferenceRecordInfo.getRuid()))
-                    .sorted(Comparator.comparing(ConferenceRecordInfo::getStartTime).reversed()).collect(Collectors.toList());
-            recordInfoList.stream().forEach(conferenceRecordInfo -> {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("ruid", ruid);
-                jsonObject.addProperty("id", conferenceRecordInfo.getId());
-                jsonObject.addProperty("recordName", conferenceRecordInfo.getRecordDisplayName());
-                jsonObject.addProperty("recordSize", conferenceRecordInfo.getRecordSize());
-                jsonObject.addProperty("thumbnailUrl", openviduConfig.getRecordThumbnailServer() +
-                        conferenceRecordInfo.getThumbnailUrl().replace("/opt/openvidu/recordings/", ""));
-                jsonObject.addProperty("startTime", conferenceRecordInfo.getStartTime().getTime());
-                jsonObject.addProperty("endTime", conferenceRecordInfo.getEndTime().getTime());
-                ConferenceRecord record1 = conferenceRecordList.stream().filter(conferenceRecord -> ruid.equals(conferenceRecord.getRuid())).findFirst().orElse(null);
-                jsonObject.addProperty("requestStartTime", Objects.isNull(record1) ? null : record1.getRequestStartTime().getTime());
-                jsonArray.add(jsonObject);
-            });
-        });
-
-        respObj.addProperty(ProtocolElements.GET_CONF_RECORD__TOTAL_PARAM, totalCount);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
     }
 

@@ -19,10 +19,14 @@ public interface ConferenceRecordInfoMapper {
 
     int updateByPrimaryKey(ConferenceRecordInfo record);
 
-    List<ConferenceRecordInfo> getPageListBySearch(@Param("condition") ConferenceRecordSearch condition);
+    List<ConferenceRecordInfo> getPageListBySearch(List<String> ruids);
 
     long selectConfRecordsInfoCountByCondition(@Param("condition") ConferenceRecordSearch condition);
 
     List<ConferenceRecordInfo> selectByRuid(String ruid);
+
+    void deleteByRuids(List<String> ruids);
+
+    List<ConferenceRecordInfo> selectByIds(List<Long> ids);
 
 }
