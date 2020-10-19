@@ -65,6 +65,10 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             return RespResult.fail(ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
         }
 
+        // 校验有效期
+        if (corporation.getExpireDate().getTime() + ONE_DAY_MILLIS > params.getEndTime()) {
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
+        }
         // 判断是否会议冲突
         if (appointConferenceManage.isConflict(params)) {
             return RespResult.fail(ErrorCodeEnum.APPOINT_CONFERENCE_CONFLICT);

@@ -16,12 +16,9 @@ import io.openvidu.server.exception.BindValidateException;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
-import io.openvidu.server.utils.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -86,9 +83,13 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
 
         for (ConferenceHisResp conferenceHisResp : list) {
             User user = userMap.get(conferenceHisResp.getCreatorUserId());
-            conferenceHisResp.setCreatorAccount(user.getUuid());
-            conferenceHisResp.setCreatorUsername(user.getUsername());
-            conferenceHisResp.setCreatorUserIcon(user.getIcon());
+            if (user != null) {
+                conferenceHisResp.setCreatorAccount(user.getUuid());
+                conferenceHisResp.setCreatorUsername(user.getUsername());
+                conferenceHisResp.setCreatorUserIcon(user.getIcon());
+            } else {
+                conferenceHisResp.setCreatorUsername("用户不存在");
+            }
         }
     }
 
@@ -112,10 +113,10 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
 
             if (StringUtils.isNotBlank(vo.getDate())) {
                 try {
-                    appointConference.setStartTime(DateUtils.parseDate(vo.getDate()+" 00:00:00","yyyy-MM-dd HH:mm:ss"));
-                    appointConference.setEndTime(DateUtils.parseDate(vo.getDate()+" 23:59:59","yyyy-MM-dd HH:mm:ss"));
+                    appointConference.setStartTime(DateUtils.parseDate(vo.getDate() + " 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+                    appointConference.setEndTime(DateUtils.parseDate(vo.getDate() + " 23:59:59", "yyyy-MM-dd HH:mm:ss"));
                 } catch (ParseException e) {
-                    log.error("date parse error error",e);
+                    log.error("date parse error error", e);
                     throw new BindValidateException("date parse error date=" + vo.getDate());
                 }
             }

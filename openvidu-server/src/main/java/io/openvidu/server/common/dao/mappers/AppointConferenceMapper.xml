@@ -419,6 +419,7 @@
         <if test="endTime != null">
          and  #{endTime,jdbcType=TIMESTAMP} >= a.start_time
         </if>
+        order by start_time asc
     </select>
 
 

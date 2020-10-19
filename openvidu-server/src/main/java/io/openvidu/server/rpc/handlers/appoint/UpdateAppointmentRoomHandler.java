@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import sun.security.krb5.internal.PAData;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -34,10 +35,10 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Autowired
     private AppointParticipantMapper appointParticipantMapper;
 
+
     @Transactional
     @Override
     public RespResult<AppointmentRoomResp> doProcess(RpcConnection rpcConnection, Request<AppointmentRoomVO> request, AppointmentRoomVO params) {
-
         BindValidate.notNull(params::getRuid);
 
         AppointConference appt = appointConferenceManage.getByRuid(params.getRuid());
@@ -57,6 +58,7 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (params.getDuration() == null || params.getDuration() <= 0) {
             return RespResult.fail(ErrorCodeEnum.DURATION_TOO_SHORT);
         }
+        params.setEndTime(params.getStartTime() + (params.getDuration() * 60000));
 
         if (CollectionUtils.isEmpty(params.getParticipants())) {
             return RespResult.fail(ErrorCodeEnum.REQUEST_PARAMS_ERROR);
@@ -67,6 +69,11 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         params.setRoomCapacity(corporation.getCapacity());
         if (corporation.getCapacity() < params.getParticipants().size()) {
             return RespResult.fail(ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
+        }
+
+        // 校验有效期
+        if (corporation.getExpireDate().getTime() + ONE_DAY_MILLIS > params.getEndTime()) {
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
         }
 
         // 判断是否会议冲突
