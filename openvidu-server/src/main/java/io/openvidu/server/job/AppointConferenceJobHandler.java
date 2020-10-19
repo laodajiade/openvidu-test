@@ -8,6 +8,7 @@ import com.xxl.job.core.handler.annotation.XxlJob;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.AutoInviteEnum;
@@ -20,16 +21,19 @@ import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -56,6 +60,9 @@ public class AppointConferenceJobHandler {
 
     @Autowired
     private AppointConferenceManage appointConferenceManage;
+
+    @Autowired
+    private AppointConferenceMapper appointConferenceMapper;
 
     @Autowired
     private AppointParticipantManage appointParticipantManage;
@@ -162,6 +169,39 @@ public class AppointConferenceJobHandler {
 
     }
 
+    @Scheduled(cron = "0 0/1 * * * ?")
+    public void fixEndAppointment() {
+        List<AppointConference> list = appointConferenceMapper.getMaybeEndAppointment();
+        if (list.isEmpty()) {
+            return;
+        }
+        Set<String> ruids = sessionManager.getSessions().stream().map(Session::getRuid).collect(Collectors.toSet());
+
+        list.removeIf(appt -> ruids.contains(appt.getRuid()));
+
+        if (list.size() == 0) {
+            return;
+        }
+
+        for (AppointConference appointConference : list) {
+            Conference conference = conferenceMapper.selectByRuid(appointConference.getRuid());
+            if (conference == null) {
+                conference = constructConf(appointConference);
+                conference.setStartTime(appointConference.getEndTime());
+                conference.setEndTime(appointConference.getEndTime());
+                conference.setStatus(2);
+                conferenceMapper.insertSelective(conference);
+            } else {
+                conference.setEndTime(new Date());
+                conference.setStatus(2);
+                conferenceMapper.updateByPrimaryKey(conference);
+            }
+
+            appointConference.setStatus(2);
+            appointConferenceMapper.updateByPrimaryKey(appointConference);
+        }
+
+    }
 
     /**
      * 向与会人发出会议开始呼叫

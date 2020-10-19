@@ -39,4 +39,6 @@ public interface AppointConferenceMapper {
     List<AppointConference> pendingAboutAppointment(AppointConference appointConference);
 
     void changeStatusByRuid(@Param("status") int status, @Param("ruid") String ruid);
+
+    List<AppointConference> getMaybeEndAppointment();
 }
