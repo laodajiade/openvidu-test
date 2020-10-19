@@ -120,8 +120,11 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     }
 
     private void notifyStartRecording(String sessionId) {
-        sessionManager.getSession(sessionId).getParticipants().forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.START_CONF_RECORD_METHOD, new JsonObject()));
+        Session session = sessionManager.getSession(sessionId);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("startRecordingTime", session.getStartRecordingTime());
+        session.getParticipants().forEach(participant ->
+                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.START_CONF_RECORD_METHOD, jsonObject));
     }
 
     private ConferenceRecord constructConferenceRecord(RpcConnection rpcConnection, Session session) {
