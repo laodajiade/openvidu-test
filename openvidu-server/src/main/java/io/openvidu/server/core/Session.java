@@ -209,18 +209,16 @@ public class Session implements SessionInterface {
 
 	@Override
 	public boolean sessionAllowedStartToRecord() {
-		log.info("to start recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
-				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
-		return isRecordingConfigured() && !this.recordingManager.sessionIsBeingRecorded(sessionId)
-				&& isRecording.compareAndSet(false, true);
+		log.info("to start recording, isRecordingConfigured:{}, session:{} is recording:{}",
+				isRecordingConfigured(), sessionId, isRecording.get());
+		return isRecordingConfigured() && isRecording.compareAndSet(false, true);
 	}
 
 	@Override
 	public boolean sessionAllowedToStopRecording() {
-		log.info("to stop recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
-				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
-		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
-				&& isRecording.compareAndSet(true, false);
+		log.info("to stop recording, isRecordingConfigured:{}, session:{} is recording:{}",
+				isRecordingConfigured(), sessionId, isRecording.get());
+		return isRecordingConfigured() && isRecording.compareAndSet(true, false);
 	}
 
 	@Override
