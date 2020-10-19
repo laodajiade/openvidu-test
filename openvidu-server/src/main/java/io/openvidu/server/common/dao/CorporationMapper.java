@@ -1,10 +1,14 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Corporation;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
+@Mapper
 public interface CorporationMapper {
 
     int deleteByPrimaryKey(Long id);

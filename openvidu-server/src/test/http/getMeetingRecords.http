@@ -1,0 +1,24 @@
+# 获取会议历史
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getMeetingRecords
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "size":10,
+  "pageNum":1
+}
+
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getMeetingRecords
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "size":10,
+  "roomId":"88888888",
+  "from":1582943951000,
+  "to":1583030364000,
+  "pageNum":2
+}
