@@ -1,0 +1,13 @@
+
+# 关闭会议室
+POST http://localhost:4443/dev/test?id={{uuid}}&method=closeRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "{{roomId}}"
+}
+
+
+###

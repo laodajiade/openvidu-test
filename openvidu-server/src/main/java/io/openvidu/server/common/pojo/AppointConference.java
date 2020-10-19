@@ -97,5 +97,10 @@ public class AppointConference implements Serializable {
 
     private Integer conferenceMode;
 
+    /**
+     * 0=未开始 1=会议中  2=已结束
+     */
+    private Integer status;
+
     private static final long serialVersionUID = 1L;
 }

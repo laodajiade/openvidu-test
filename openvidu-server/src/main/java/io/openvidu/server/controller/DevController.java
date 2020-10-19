@@ -3,6 +3,8 @@ package io.openvidu.server.controller;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.core.RespResult;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcHandlerFactory;
@@ -25,10 +27,10 @@ public class DevController {
     RpcNotificationService notificationService;
 
 
-    private static Object result;
+    private static RespResult result;
 
     @PostMapping("test")
-    public Object test(@RequestParam("id") String id, @RequestParam("method") String method, @RequestBody String params) {
+    public String test(@RequestParam("id") String id, @RequestParam("method") String method, @RequestBody String params) {
 
         RpcAbstractHandler rpcHandler = rpcHandlerFactory.getRpcHandler(method);
         String participantPrivateId = id;
@@ -48,16 +50,18 @@ public class DevController {
 
         rpcHandler.setNotificationService(notificationService);
 
-        if ("com.google.gson.JsonObject".equals(result.getClass().getName())) {
-            result = new GsonBuilder().setPrettyPrinting().create().toJson(result);
-        }
-
-        return result;
+        return new GsonBuilder().setPrettyPrinting().create().toJson(result);
     }
 
     class RpcNotificationService0 extends RpcNotificationService {
+        @Override
         public void sendResponse(String participantPrivateId, Integer transactionId, Object result) {
-            DevController.result = result;
+            DevController.result = RespResult.ok(result);
+        }
+
+        @Override
+        public void sendErrorResponseWithDesc(String participantPrivateId, Integer transactionId, Object data, ErrorCodeEnum errorCodeEnum) {
+            DevController.result = RespResult.fail(errorCodeEnum);
         }
     }
 

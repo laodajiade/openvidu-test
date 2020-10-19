@@ -34,4 +34,6 @@ public interface ConferenceMapper {
     List<Conference> selectPageRecordsByCondition(ConferenceSearch search);
 
     long selectConfRecordsCountByCondition(ConferenceSearch search);
+
+    List<Conference> getFinishedList(Long userId);
 }

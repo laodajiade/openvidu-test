@@ -1,0 +1,22 @@
+
+# create roome
+POST http://localhost:4443/dev/test?id={{uuid}}&method=createRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "allowPartOperMic": "on",
+  "allowPartOperShare": "on",
+  "conferenceMode": "SFU",
+  "duration": 120,
+  "micStatusInRoom": "on",
+  "password": "",
+  "quietStatusInRoom": "smart",
+  "roomId": "80101900003",
+  "ruid": "appt-37b036c46a72477f9bcd6624582fd03e",
+  "sharePowerInRoom": "on",
+  "subject": "80101900003的会议",
+  "useIdInRoom": "allParticipants",
+  "videoStatusInRoom": "on"
+}

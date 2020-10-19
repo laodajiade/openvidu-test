@@ -1,0 +1,26 @@
+# 获取会议历史
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getConferenceSchedule
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "date" : "20201018",
+  "status" : "pending",
+  "pageNum" : 1,
+  "pageSize" : 20
+}
+
+###
+
+# 获取会议历史
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getConferenceSchedule
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "status" : "close",
+  "pageNum" : 1,
+  "pageSize" : 20
+}

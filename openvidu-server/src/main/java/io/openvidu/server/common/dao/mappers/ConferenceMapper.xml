@@ -322,4 +322,12 @@
       </if>
     </where>
   </select>
+
+  <select id="getFinishedList" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference a
+    where a.`status`=2  and (a.user_id = #{userId} or a.ruid in ( select ruid from sd_conf_part_history  b where b.user_id = #{userId} ))
+    order by start_time desc
+  </select>
 </mapper>

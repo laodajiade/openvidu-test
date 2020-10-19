@@ -28,6 +28,7 @@ import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
@@ -84,6 +85,9 @@ public abstract class SessionManager {
 
 	@Autowired
 	RpcNotificationService notificationService;
+
+	@Autowired
+	AppointConferenceMapper appointConferenceMapper;
 
 	@Resource
 	ConferenceMapper conferenceMapper;
@@ -658,12 +662,19 @@ public abstract class SessionManager {
 		}
 
 		conferences.forEach(this::endConferenceInfo);
+		conferences.forEach(this::endApptConferenceInfo);
 	}
 
 	public void endConferenceInfo(Conference conference) {
 		conference.setStatus(2);
 		conference.setEndTime(new Date());
 		conferenceMapper.updateByPrimaryKey(conference);
+	}
+
+	private void endApptConferenceInfo(Conference conference) {
+		if (conference.getRuid().startsWith("appt-")) {
+			appointConferenceMapper.changeStatusByRuid(ConferenceStatus.FINISHED.getStatus(), conference.getRuid());
+		}
 	}
 
 	public boolean isNewSessionIdValid(String sessionId) {
