@@ -20,10 +20,11 @@
     <result column="project" property="project" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="concurrent_number" property="concurrentNumber" jdbcType="INTEGER" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
-    status, password, moderator_password, invite_limit, create_time, update_time, project
+    status, password, moderator_password, invite_limit, create_time, update_time, project, concurrent_number
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
       select
