@@ -257,4 +257,10 @@
     </foreach>
   </select>
 
+    <select id="selectUserByRuid" resultType="io.openvidu.server.common.pojo.User">
+      select b.id,b.uuid,b.username,b.type
+      from sd_appoint_part a inner join sd_user b on a.user_id = b.id
+      where a.ruid=#{ruid}
+    </select>
+
 </mapper>

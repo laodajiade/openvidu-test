@@ -7,4 +7,6 @@ public class GetConferenceScheduleVO extends PageVO {
 
     private String status;
     private String date;
+
+
 }

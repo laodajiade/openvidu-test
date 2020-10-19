@@ -1,5 +1,6 @@
 package io.openvidu.server.utils;
 
+import com.google.gson.JsonObject;
 import io.openvidu.server.exception.BindValidateException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,6 +35,16 @@ public class BindValidate {
             if (((Collection) obj).isEmpty()) {
                 throwBindValidateException(supplier, " 不能为 empty");
             }
+        }
+    }
+
+
+    public static void notEmpty(JsonObject param, String jsonPath) {
+        if (!param.has(jsonPath)) {
+            throw new BindValidateException(jsonPath + " 不能为 empty");
+        }
+        if (org.apache.commons.lang.StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
+            throw new BindValidateException(jsonPath + " 不能为 empty");
         }
     }
 
