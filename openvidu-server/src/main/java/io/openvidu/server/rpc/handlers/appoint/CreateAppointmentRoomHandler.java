@@ -56,6 +56,8 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             return RespResult.fail(ErrorCodeEnum.DURATION_TOO_SHORT);
         }
 
+        params.setEndTime(params.getStartTime() + (params.getDuration() * 60000));
+
         // 检验容量
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
         params.setRoomCapacity(corporation.getCapacity());

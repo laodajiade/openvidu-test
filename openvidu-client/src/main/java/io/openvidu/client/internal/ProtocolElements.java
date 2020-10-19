@@ -517,6 +517,7 @@ public class ProtocolElements {
 	public static final String CREATE_APPOINTMENT_ROOM_METHOD = "createAppointmentRoom";
 	public static final String UPDATE_APPOINTMENT_ROOM_METHOD = "updateAppointmentRoom";
 	public static final String CANCEL_APPOINTMENT_ROOM_METHOD = "cancelAppointmentRoom";
+	public static final String GET_APPOINTMENT_ROOM_DETAILS_METHOD = "getAppointmentRoomDetails";
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
@@ -787,4 +788,5 @@ public class ProtocolElements {
 			CREATE_ROOM_METHOD, JOINROOM_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
 			MODIFY_PASSWORD_METHOD
 	));
+
 }

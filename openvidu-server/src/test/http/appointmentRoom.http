@@ -22,6 +22,29 @@ Content-Type: application/json
   "subject": "test create appt"
 }
 
+###
+# 创建个人的会议室
+POST http://localhost:4443/dev/test?id={{uuid}}&method=createAppointmentRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "80100201102",
+  "password": "",
+  "subject": "yeyuhui-2的会议",
+  "desc": "",
+  "moderatorRoomId": "",
+  "conferenceMode": "SFU",
+  "autoCall": true,
+  "roomCapacity": 1798303232,
+  "startTime": 1603199481000,
+  "duration": 60,
+  "participants": [
+    "80100201102"
+  ],
+  "sessionId": "7ku17eol0a1r07e0tb1go00fbd"
+}
 
 
 ###
@@ -34,3 +57,15 @@ Content-Type: application/json
 {
   "ruid": "appt-cd8e0b95422c4e7fadeb20fcef0cb502"
 }
+
+###
+# 获取详情
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getAppointmentRoomDetails
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid": "c5000df4-f569-4a2a-ae8f-d839d6671f3a"
+}
+
