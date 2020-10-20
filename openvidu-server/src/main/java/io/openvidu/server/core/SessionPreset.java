@@ -28,6 +28,8 @@ public class SessionPreset {
 
     private SessionPresetEnum quietStatusInRoom;
 
+    private SessionPresetEnum pollingStatusInRoom = SessionPresetEnum.off;
+
     public void setMicStatusInRoom(SessionPresetEnum micStatusInRoom) { this.micStatusInRoom = micStatusInRoom; }
 
     public SessionPresetEnum getMicStatusInRoom() { return this.micStatusInRoom; }
@@ -78,6 +80,14 @@ public class SessionPreset {
 
     public void setQuietStatusInRoom(SessionPresetEnum quietStatusInRoom) {
         this.quietStatusInRoom = quietStatusInRoom;
+    }
+
+    public SessionPresetEnum getPollingStatusInRoom() {
+        return pollingStatusInRoom;
+    }
+
+    public void setPollingStatusInRoom(SessionPresetEnum pollingStatusInRoom) {
+        this.pollingStatusInRoom = pollingStatusInRoom;
     }
 
     public SessionPreset() {

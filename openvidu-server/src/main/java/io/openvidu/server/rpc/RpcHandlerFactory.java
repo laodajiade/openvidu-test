@@ -284,6 +284,12 @@ public class RpcHandlerFactory {
     @Resource
     private RecursiveQueryUserHandler recursiveQueryUserHandler;
     @Resource
+    private StartPollingHandler startPollingHandler;
+    @Resource
+    private StopPollingHandler stopPollingHandler;
+    @Resource
+    private GetPollingStatusHandler getPollingStatusHandler;
+
     private GetRoomsRecordInfoHandler getRoomsRecordInfoHandler;
     @Resource
     private ClearConferenceRecordHandler clearConferenceRecordHandler;
@@ -390,9 +396,11 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETSPECIFICPAGEOFMEMBER_METHOD,                getSpecificPageOfMemberHandler);
         handlersMap.put(ProtocolElements.GETMEMBERDETAILS_METHOD,                       getMemberDetailsHandler);
         handlersMap.put(ProtocolElements.RECURSIVEQUERYUSER_METHOD,                     recursiveQueryUserHandler);
+        handlersMap.put(ProtocolElements.START_POLLING_METHOD,                          startPollingHandler);
+        handlersMap.put(ProtocolElements.STOP_POLLING_METHOD,                           stopPollingHandler);
+        handlersMap.put(ProtocolElements.GET_POLLING_STATUS_METHOD,                     getPollingStatusHandler);
         handlersMap.put(ProtocolElements.GET_ROOMS_RECORD_INFO,                         getRoomsRecordInfoHandler);
         handlersMap.put(ProtocolElements.CLEAR_CONFERENCE_RECORD,                       clearConferenceRecordHandler);
-
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
