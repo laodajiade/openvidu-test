@@ -455,18 +455,14 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
-    public Set<Participant> getMajorAndOnWallParts() {
+    public List<Participant> getOrderedMajorAndOnWallParts() {
         checkClosed();
         return this.participants.values().stream()
                 .map(v -> v.get(StreamType.MAJOR.name()))
                 .filter(participant -> participant.getRole().needToPublish())
-                .collect(Collectors.toSet());
+				.sorted(Comparator.comparing(Participant::getOrder))
+				.collect(Collectors.toList());
 	}
-
-    /*public Participant getParticipantByPrivateId(String participantPrivateId) {
-        checkClosed();
-        return participants.get(participantPrivateId);
-    }*/
 
     public Participant getParticipantByPrivateId(String participantPrivateId) {
         checkClosed();
