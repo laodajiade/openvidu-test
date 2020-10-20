@@ -81,6 +81,7 @@ public class AppointConferenceJobHandler {
      */
     @XxlJob("conferenceToBeginJobHandler")
     public ReturnT<String> conferenceToBeginJobHandler(String param) {
+        log.info("conferenceToBeginJobHandler begin..." + param);
         JsonObject jsonParam = new JsonParser().parse(param).getAsJsonObject();
         Long jobId = jsonParam.get(ProtocolElements.XXL_JOB_ID).getAsLong();
         JsonObject businessParam = jsonParam.get(ProtocolElements.XXL_JOB_PARAM).getAsJsonObject();
@@ -108,7 +109,7 @@ public class AppointConferenceJobHandler {
                     .userId(appointConference.getUserId()).startTime(appointConference.getStartTime().getTime())
                     .duration(appointConference.getDuration()).subject(appointConference.getConferenceSubject()).build();
             createAppointmentRoomHandler.sendConferenceToBeginNotify(vo, uuidSet);
-            log.info("conferenceToBeginJobHandler notify end...");
+            log.info("conferenceToBeginJobHandler notify end... uuidSet ={}", uuidSet);
         }
         // 删除定时任务
         crowOnceHelper.delCrowOnce(jobId);
