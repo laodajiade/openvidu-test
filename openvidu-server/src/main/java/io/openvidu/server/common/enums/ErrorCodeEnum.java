@@ -92,6 +92,7 @@ public enum ErrorCodeEnum {
     ROOM_CAPACITY_PERSONAL_LIMITED(13042, "已达会议人数上限，请稍后再试"),
     PARTICIPANT_DOWN_HAND_NOW(13043, "参会者已取消举手发言"),
     THE_CONFERENCE_HAS_STARTED(13048, "预约会议已开始"),
+    THE_POLLING_HAS_STARTED(13049,"轮询已经开启"),
     RECORD_STORAGE_EXHAUSTED(13050, "存储容量不足，暂不可录制会议"),
     APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED(13051, "预约会议时间不可超出服务到期时间"),
     RECORD_STORAGE_NOT_ENOUGH(13052, "录制存储剩余容量少于100MB"),
