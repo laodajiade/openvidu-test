@@ -113,7 +113,7 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         Assert.assertEquals(result.getCode(), ErrorCodeEnum.SUCCESS);
         Assert.assertEquals(result.getResult().getRoomId(), vo.getRoomId());
         Assert.assertNotNull(result.getResult().getRuid());
-
+        String ruid = result.getResult().getRuid();
         System.out.println("result ruid = " + result.getResult().getRuid());
 
 
@@ -122,6 +122,11 @@ public class CreateAppointmentRoomHandlerTest extends TestCase {
         result = handler.doProcess(rpcConnection, null, vo);
         Assert.assertEquals(result.getCode(), ErrorCodeEnum.APPOINT_CONFERENCE_CONFLICT);
 
+
+        // 将会议结束后不冲突
+        appointConferenceMapper.changeStatusByRuid(2, ruid);
+        result = handler.doProcess(rpcConnection, null, vo);
+        Assert.assertEquals(result.getCode(), ErrorCodeEnum.SUCCESS);
     }
 
 }
