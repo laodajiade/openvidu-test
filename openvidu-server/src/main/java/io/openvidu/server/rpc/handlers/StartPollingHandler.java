@@ -13,8 +13,10 @@ import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author even
@@ -49,7 +51,13 @@ public class StartPollingHandler extends RpcAbstractHandler {
             return;
         }
         preset.setPollingStatusInRoom(SessionPresetEnum.on);
-
+        //
+        Set<Participant> participantSet = session.getPartsExcludeModeratorAndSpeaker();
+        if (CollectionUtils.isEmpty(participantSet)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.CANNOT_START_POLLING);
+            return;
+        }
         timerManager.onStartPolling(Integer.parseInt(time), session, this.notificationService);
         //send notify
         this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
