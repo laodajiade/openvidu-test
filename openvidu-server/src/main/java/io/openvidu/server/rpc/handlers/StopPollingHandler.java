@@ -8,14 +8,12 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.core.SessionPresetEnum;
-import io.openvidu.server.core.TimerManager;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -25,9 +23,6 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class StopPollingHandler extends RpcAbstractHandler {
-
-    @Resource
-    private TimerManager timerManager;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {

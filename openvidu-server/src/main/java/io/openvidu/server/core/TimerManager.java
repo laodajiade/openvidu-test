@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Component
 public class TimerManager {
 
-    private static int interval = 10;
     private static Timer timer = null;
 
     private static TimerTask timerTask = null;
@@ -32,7 +31,9 @@ public class TimerManager {
 
 
     public void onStartPolling(int autoSeconds,Session session, RpcNotificationService notificationService) {
-        if (autoSeconds == 0) {
+        int interval = 10;
+        int maxInterval = 60;
+        if (autoSeconds < interval || autoSeconds > maxInterval) {
             autoSeconds = interval;
         }
 
