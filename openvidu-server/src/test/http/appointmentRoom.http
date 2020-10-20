@@ -38,7 +38,7 @@ Content-Type: application/json
   "conferenceMode": "SFU",
   "autoCall": true,
   "roomCapacity": 1798303232,
-  "startTime": 1603199481000,
+  "startTime": 1603185070274,
   "duration": 60,
   "participants": [
     "80100201102"

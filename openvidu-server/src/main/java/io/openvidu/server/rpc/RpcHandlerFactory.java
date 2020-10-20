@@ -289,7 +289,7 @@ public class RpcHandlerFactory {
     private StopPollingHandler stopPollingHandler;
     @Resource
     private GetPollingStatusHandler getPollingStatusHandler;
-
+    @Resource
     private GetRoomsRecordInfoHandler getRoomsRecordInfoHandler;
     @Resource
     private ClearConferenceRecordHandler clearConferenceRecordHandler;
