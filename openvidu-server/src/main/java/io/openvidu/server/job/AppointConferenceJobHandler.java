@@ -185,6 +185,7 @@ public class AppointConferenceJobHandler {
         }
 
         for (AppointConference appointConference : list) {
+            log.info(" fix end appointment ruid= " + appointConference.getRuid());
             Conference conference = conferenceMapper.selectByRuid(appointConference.getRuid());
             if (conference == null) {
                 conference = constructConf(appointConference);
