@@ -5,7 +5,7 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "date" : "20201018",
+  "date" : "2020-10-20",
   "status" : "pending",
   "pageNum" : 1,
   "pageSize" : 20

@@ -5,12 +5,10 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.core.TimerManager;
-import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +24,12 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-public class StartPollingHandler extends ExRpcAbstractHandler {
+public class StartPollingHandler extends RpcAbstractHandler {
 
     @Resource
     private TimerManager timerManager;
 
-    /*@Override
+    @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.START_POLLING_ROOMID_PARAM);
         String time = getStringParam(request,ProtocolElements.START_POLLING_INTERVAL_TIME_PARAM);
@@ -63,12 +61,6 @@ public class StartPollingHandler extends ExRpcAbstractHandler {
                 ProtocolElements.START_POLLING_NOTIFY_METHOD, request.getParams());
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
-    }*/
-
-    @Override
-    public RespResult<?> doProcess(RpcConnection rpcConnection, Request request, Object params) {
-        timerManager.onStartPolling(Integer.parseInt("10"),null,null);
-        return null;
     }
 
 }

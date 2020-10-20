@@ -73,7 +73,7 @@ public class CorpExpireSchedule {
                     }
                 });
 
-                sessionManager.closeSession(session.getSessionId(), EndReason.ServiceExpired);
+                sessionManager.closeSession(session.getSessionId(), EndReason.serviceExpired);
             }
         }
     }

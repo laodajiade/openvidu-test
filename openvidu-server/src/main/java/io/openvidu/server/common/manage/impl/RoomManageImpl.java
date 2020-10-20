@@ -8,18 +8,16 @@ import io.openvidu.server.common.dao.CorpMcuConfigMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoomManage;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferencePartHistory;
-import io.openvidu.server.common.pojo.ConferenceSearch;
-import io.openvidu.server.common.pojo.CorpMcuConfig;
+import io.openvidu.server.common.manage.UserManage;
+import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author chosongi
@@ -40,10 +38,13 @@ public class RoomManageImpl implements RoomManage {
     @Resource
     private CacheManage cacheManage;
 
+    @Resource
+    private UserManage userManage;
+
 
     @Override
-    public List<Conference> getAllRoomsOfCorp(ConferenceSearch conferenceSearch) {
-        return conferenceMapper.selectBySearchParam(conferenceSearch);
+    public List<Conference> getAllRoomsOfCorp(CorpRoomsSearch search) {
+        return conferenceMapper.selectBySearchParam(search);
     }
 
     @Override
@@ -135,5 +136,11 @@ public class RoomManageImpl implements RoomManage {
     @Override
     public void storeConcurrentNumber(Conference conference) {
         conferenceMapper.updateByPrimaryKeySelective(conference);
+    }
+
+    @Override
+    public List<String> getSubRoomIds(String roomId, Long orgId) {
+        return StringUtils.isNotEmpty(roomId) ? Collections.singletonList(roomId) :
+                (Objects.nonNull(orgId) ? userManage.getSubUserByDeptId(orgId).stream().map(User::getUuid).collect(Collectors.toList()) : null);
     }
 }

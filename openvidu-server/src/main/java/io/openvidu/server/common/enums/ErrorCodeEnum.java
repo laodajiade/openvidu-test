@@ -94,6 +94,7 @@ public enum ErrorCodeEnum {
     PARTICIPANT_DOWN_HAND_NOW(13043, "参会者已取消举手发言"),
     THE_CONFERENCE_HAS_STARTED(13048, "预约会议已开始"),
     THE_POLLING_HAS_STARTED(13049,"轮询已经开启"),
+    APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED(13051, "预约会议时间不可超出服务到期时间"),
     COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
 
 

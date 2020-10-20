@@ -451,4 +451,8 @@ public class Participant {
 		json.addProperty("clientData", this.clientMetadata);
 		return json;
 	}
+
+	public boolean ableToUpdateRecord() {
+		return getRole().needToPublish() && getStreamType().isStreamTypeMixInclude();
+	}
 }

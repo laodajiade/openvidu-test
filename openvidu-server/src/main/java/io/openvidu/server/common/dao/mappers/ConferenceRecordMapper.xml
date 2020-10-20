@@ -247,7 +247,7 @@
     </where>
   </select>
   <update id="decreaseConferenceRecordCountByRuid">
-    update sd_conference_record set record_count = record_count - 1 where record_count > 0 and ruid = #{ruid,jdbcType=VARCHAR}
+    update sd_conference_record set record_count = record_count - 1 where ruid = #{ruid,jdbcType=VARCHAR} and record_count > 0
   </update>
   <delete id="deleteUselessRecord">
     delete from sd_conference_record where record_count <![CDATA[<=]]> 0 and status = 2
@@ -262,4 +262,32 @@
   <update id="increaseConferenceRecordCountByRuid">
     update sd_conference_record set record_count = record_count + 1 where ruid = #{ruid,jdbcType=VARCHAR}
   </update>
+
+  <delete id="deleteByRoomId" parameterType="java.lang.String">
+    delete from sd_conference_record
+    where room_id = #{roomId,jdbcType=VARCHAR}
+  </delete>
+
+  <update id="updatePreRecordErrorStatus" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+    update sd_conference_record
+    <set>
+      <if test="recordCount != null">
+        record_count = #{recordCount,jdbcType=INTEGER},
+      </if>
+      <if test="totalDuration != null">
+        total_duration = #{totalDuration,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="recorderUuid != null">
+        recorder_uuid = #{recorderUuid,jdbcType=VARCHAR},
+      </if>
+      <if test="recorderName != null">
+        recorder_name = #{recorderName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id &lt; #{id,jdbcType=BIGINT} and room_id = #{roomId,jdbcType=VARCHAR}
+  </update>
+
 </mapper>

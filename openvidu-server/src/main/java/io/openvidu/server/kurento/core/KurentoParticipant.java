@@ -252,10 +252,10 @@ public class KurentoParticipant extends Participant {
 		log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
 
-		if (this.openviduConfig.isRecordingModuleEnabled()
+		/*if (this.openviduConfig.isRecordingModuleEnabled()
 				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
 			this.recordingManager.startOneIndividualStreamRecording(session, null, null, this);
-		}
+		}*/
 
 		if (this.openviduConfig.isLivingModuleEnabled()
 				&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
@@ -473,13 +473,15 @@ public class KurentoParticipant extends Participant {
 		if (publisher != null && publisher.getEndpoint() != null) {
 
 			// Remove streamId from publisher's map
-			this.session.publishedStreamIds.remove(this.getPublisherStreamId());
+			if (!StringUtils.isEmpty(this.getPublisherStreamId())) {
+				this.session.publishedStreamIds.remove(this.getPublisherStreamId());
+			}
 
-			if (this.openviduConfig.isRecordingModuleEnabled()
+			/*if (this.openviduConfig.isRecordingModuleEnabled()
 					&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
 				this.recordingManager.stopOneIndividualStreamRecording(session, this.getPublisherStreamId(),
 						kmsDisconnectionTime);
-			}
+			}*/
 			if (this.openviduConfig.isLivingModuleEnabled()
 					&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
 				this.livingManager.stopOneIndividualStreamLiving(session, this.getPublisherStreamId(),
@@ -495,14 +497,16 @@ public class KurentoParticipant extends Participant {
 				releaseElement(getParticipantPublicId(), el);
 				log.info("Release publisher self mediaElement and object id:{}", el.getId());
 			}
-			publisher.closeAudioComposite();
-			releaseElement(getParticipantPublicId(), publisher.getEndpoint());
+			if (Objects.nonNull(publisher)) {
+				publisher.closeAudioComposite();
+				releaseElement(getParticipantPublicId(), publisher.getEndpoint());
+
+				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
+			}
 			this.streaming = false;
 			this.session.deregisterPublisher();
 
-			endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
 			publisher = null;
-
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
 		}

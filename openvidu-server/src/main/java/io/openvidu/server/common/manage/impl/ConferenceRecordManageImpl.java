@@ -1,13 +1,22 @@
 package io.openvidu.server.common.manage.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.dao.ConferenceRecordInfoMapper;
 import io.openvidu.server.common.dao.ConferenceRecordMapper;
+import io.openvidu.server.common.dao.RoomRecordSummaryMapper;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.RecordState;
 import io.openvidu.server.common.enums.YesNoEnum;
+import io.openvidu.server.common.kafka.RecordingKafkaProducer;
 import io.openvidu.server.common.manage.ConferenceRecordManage;
 import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.ConferenceRecordInfo;
+import io.openvidu.server.common.pojo.ConferenceRecordSearch;
+import io.openvidu.server.common.pojo.RoomRecordSummary;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +24,7 @@ import org.kurento.client.MediaEvent;
 import org.kurento.client.RecordingEvent;
 import org.kurento.client.StoppedEvent;
 import org.kurento.client.Tag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -30,10 +40,21 @@ import java.util.List;
 public class ConferenceRecordManageImpl implements ConferenceRecordManage {
     @Resource
     private ConferenceRecordMapper conferenceRecordMapper;
+
     @Resource
     private ConferenceRecordInfoMapper conferenceRecordInfoMapper;
+
     @Resource
     private SessionManager sessionManager;
+
+    @Resource
+    private RoomRecordSummaryMapper recordSummaryMapper;
+
+    @Resource
+    private RecordingKafkaProducer recordingKafkaProducer;
+
+    @Value("${recording.path}")
+    private String recordingPath;
 
     @Override
     public int deleteByPrimaryKey(Long id) {
@@ -175,6 +196,85 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
 
     private String getDisplayName(MediaEvent event) {
         return new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date(Long.valueOf(event.getTimestampMillis())));
+    }
+
+    @Override
+    public Page<RoomRecordSummary> getRoomRecordSummaryByCondition(ConferenceRecordSearch search) {
+        return PageHelper.startPage(search.getPageNum(), search.getSize())
+                .doSelectPage(() -> recordSummaryMapper.selectByCondition(search));
+    }
+
+    @Override
+    @Transactional
+    public void clearRoomRecords(String roomId, List<String> ruids, String project) {
+        recordSummaryMapper.deleteByRoomId(roomId);
+        conferenceRecordMapper.deleteByRoomId(roomId);
+        conferenceRecordInfoMapper.deleteByRuids(ruids);
+
+        // send delete file path producer task
+        JsonObject object = new JsonObject();
+        object.addProperty("filePath", getRoomRecordAbsolutePath(project, roomId));
+        JsonObject params = new JsonObject();
+        params.addProperty("method", CommonConstants.MQ_METHOD_DEL_RECORDING_FILE);
+        params.add("params", object);
+
+        recordingKafkaProducer.sendRecordingFileOperationTask(params.toString());
+
+    }
+
+    @Override
+    @Transactional
+    public void deleteConferenceRecord(List<ConferenceRecordInfo> conferenceRecordInfos) {
+        JsonArray fileArr = new JsonArray();
+        conferenceRecordInfos.forEach(conferenceRecordInfo -> {
+            ConferenceRecord search = new ConferenceRecord();
+            search.setRuid(conferenceRecordInfo.getRuid());
+            ConferenceRecord conferenceRecord = conferenceRecordMapper.getByCondition(search).get(0);
+
+            // 删除录制会议详情
+            conferenceRecordInfoMapper.deleteByPrimaryKey(conferenceRecordInfo.getId());
+            // 修改录制会议文件数量
+            conferenceRecordMapper.decreaseConferenceRecordCountByRuid(conferenceRecordInfo.getRuid());
+            // 修改房间概览文件存储量
+            RoomRecordSummary update = new RoomRecordSummary();
+            update.setRoomId(conferenceRecord.getRoomId());
+            update.setOccupation(conferenceRecordInfo.getRecordSize());
+            recordSummaryMapper.decreaseRecordSummary(update);
+
+            fileArr.add(conferenceRecordInfo.getRecordUrl());
+        });
+
+        // 删除所有录制完成且recordCount为0的录制会议
+        conferenceRecordMapper.deleteUselessRecord();
+        // 删除所有房间录制概览记录
+        recordSummaryMapper.deleteUselessSummaryInfo();
+
+        // send delete files producer task
+        JsonObject filesObj = new JsonObject();
+        filesObj.add("files", fileArr);
+        JsonObject params = new JsonObject();
+        params.addProperty("method", CommonConstants.MQ_METHOD_DEL_RECORDING_FILE);
+        params.add("params", filesObj);
+
+        recordingKafkaProducer.sendRecordingFileOperationTask(params.toString());
+    }
+
+    @Override
+    public List<RoomRecordSummary> getAllRoomRecordSummaryByProject(ConferenceRecordSearch search) {
+        return recordSummaryMapper.selectByCondition(search);
+    }
+
+    @Override
+    public void updatePreRecordErrorStatus(ConferenceRecord record) {
+        conferenceRecordMapper.updatePreRecordErrorStatus(record);
+    }
+
+    private String getRoomRecordAbsolutePath(String project, String roomId) {
+        return new StringBuilder(recordingPath)
+                .append(project)
+                .append("/")
+                .append(roomId)
+                .append("/").toString();
     }
 
 }

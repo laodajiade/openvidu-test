@@ -209,20 +209,25 @@
     where id = #{id,jdbcType=BIGINT}
   </update>
 
-  <select id="getPageListBySearch" resultMap="BaseResultMap">
-    select
-    <include refid="Base_Column_List"/>
-    from sd_conference_record_info
-    where ruid in
-    <foreach collection="condition.ruidList" item="item" index="index" separator="," open="(" close=")">
-      #{condition.ruidList[${index}],jdbcType=VARCHAR}
+  <select id="getPageListBySearch" resultType="io.openvidu.server.common.pojo.ConferenceRecordInfo" parameterType="java.util.List">
+    SELECT
+      cri.id,
+      cri.ruid,
+      cri.record_name AS recordName,
+      cri.record_size AS recordSize,
+      cri.start_time AS startTime,
+      cri.end_time AS endTime,
+      cr.`status` AS finishedStatus
+    FROM
+      sd_conference_record_info cri
+    INNER JOIN sd_conference_record cr ON cr.ruid = cri.ruid
+    WHERE
+      cri.ruid IN
+    <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
     </foreach>
-    <if test="condition.recordQueryTimeInterval != null">
-      and DATEDIFF(NOW(), create_time) &lt; #{condition.recordQueryTimeInterval,jdbcType=INTEGER}
-    </if>
-    order by create_time desc
-    limit #{condition.limit,jdbcType=INTEGER} offset #{condition.offset,jdbcType=BIGINT}
   </select>
+
   <select id="selectConfRecordsInfoCountByCondition" resultType="long">
     select count(id) from sd_conference_record_info where ruid in
     <foreach collection="condition.ruidList" item="item" index="index" separator="," open="(" close=")">
@@ -238,5 +243,32 @@
     <include refid="Base_Column_List"/>
     from sd_conference_record_info
     where ruid = #{ruid,jdbcType=VARCHAR}
+  </select>
+
+  <delete id="deleteByRuids" parameterType="java.util.List">
+    delete from sd_conference_record_info
+    where ruid in
+    <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
+    </foreach>
+  </delete>
+
+  <select id="selectByIds" resultType="io.openvidu.server.common.pojo.ConferenceRecordInfo" parameterType="java.util.List">
+    SELECT
+      cri.id,
+      cri.ruid,
+      cri.record_name AS recordName,
+      cri.record_size AS recordSize,
+      cri.start_time AS startTime,
+      cri.end_time AS endTime,
+      cri.record_url AS recordUrl,
+      cr.`status` AS finishedStatus
+    FROM
+      sd_conference_record_info cri
+    INNER JOIN sd_conference_record cr ON cr.ruid = cri.ruid
+    where cri.id in
+    <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
   </select>
 </mapper>

@@ -209,18 +209,16 @@ public class Session implements SessionInterface {
 
 	@Override
 	public boolean sessionAllowedStartToRecord() {
-		log.info("to start recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
-				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
-		return isRecordingConfigured() && !this.recordingManager.sessionIsBeingRecorded(sessionId)
-				&& isRecording.compareAndSet(false, true);
+		log.info("to start recording, isRecordingConfigured:{}, session:{} is recording:{}",
+				isRecordingConfigured(), sessionId, isRecording.get());
+		return isRecordingConfigured() && isRecording.compareAndSet(false, true);
 	}
 
 	@Override
 	public boolean sessionAllowedToStopRecording() {
-		log.info("to stop recording, isRecordingConfigured:{}, sessionsRecordings contains {}:{}, session isRecording:{}",
-				isRecordingConfigured(), sessionId, this.recordingManager.sessionIsBeingRecorded(sessionId), isRecording.get());
-		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
-				&& isRecording.compareAndSet(true, false);
+		log.info("to stop recording, isRecordingConfigured:{}, session:{} is recording:{}",
+				isRecordingConfigured(), sessionId, isRecording.get());
+		return isRecordingConfigured() && isRecording.compareAndSet(true, false);
 	}
 
 	@Override
@@ -574,6 +572,11 @@ public class Session implements SessionInterface {
 		checkClosed();
 		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
 				.filter(participant -> Objects.nonNull(participant) && participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+	}
+
+	public Participant getSharingPart() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.SHARING.name())).filter(Objects::nonNull).findAny().orElse(null);
 	}
 
     public Participant getParticipantByStreamId(String streamId) {
@@ -1080,10 +1083,8 @@ public class Session implements SessionInterface {
 			}
 		}
 
-		Participant speakerPart = getParticipants().stream().filter(participant -> Objects.equals(ParticipantHandStatus.speaker,
-				participant.getHandStatus()) && Objects.equals(StreamType.MAJOR, participant.getStreamType())).findFirst().orElse(null);
 		if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
-			if (Objects.isNull(speakerPart)) {
+			if (Objects.isNull(getSharingPart()) && Objects.isNull(getSpeakerPart())) {
 				majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
 			} else {
 				JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());
@@ -1356,8 +1357,7 @@ public class Session implements SessionInterface {
     }
 
 	public boolean getConferenceRecordStatus() {
-		return isRecordingConfigured() && this.recordingManager.sessionIsBeingRecorded(sessionId)
-				&& isRecording.get();
+		return isRecordingConfigured() && isRecording.get();
 	}
 
 	public boolean getLivingStatus() {
@@ -1383,6 +1383,10 @@ public class Session implements SessionInterface {
 				.findAny().orElse(null);
 		return Objects.nonNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 				&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY);
+	}
+
+	public boolean ableToUpdateRecord() {
+		return isRecording.get() && !closing && !closed;
 	}
 
 }

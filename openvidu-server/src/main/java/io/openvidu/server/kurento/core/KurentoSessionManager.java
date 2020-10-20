@@ -17,18 +17,21 @@
 
 package io.openvidu.server.kurento.core;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.*;
+import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.kafka.RecordingKafkaProducer;
 import io.openvidu.server.common.manage.RoomManage;
+import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
@@ -44,6 +47,7 @@ import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.ListenerSubscription;
+import org.kurento.client.MediaProfileSpecType;
 import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
@@ -77,10 +81,20 @@ public class KurentoSessionManager extends SessionManager {
 	@Autowired
 	private RoomManage roomManage;
 
+	@Autowired
+    private UserManage userManage;
+
 	@Resource
 	private ApplicationContext applicationContext;
+
 	@Resource
 	private CacheManage cacheManage;
+
+	@Resource
+	private RecordingKafkaProducer recordingTaskProducer;
+
+	@Resource
+    private RedisPublisher redisPublisher;
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -269,39 +283,24 @@ public class KurentoSessionManager extends SessionManager {
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"
 			if (remainingParticipants.isEmpty()) {
-				if (openviduConfig.isRecordingModuleEnabled()
-						&& MediaMode.ROUTED.equals(session.getSessionProperties().mediaMode())
-						&& (this.recordingManager.sessionIsBeingRecorded(sessionId))) {
-					// Start countdown to stop recording. Will be aborted if a Publisher starts
-					// before timeout
-					log.info(
-							"Last participant left. Starting {} seconds countdown for stopping recording of session {}",
-							this.openviduConfig.getOpenviduRecordingAutostopTimeout(), sessionId);
-					recordingManager.stopRecording(session, null, EndReason.automaticStop);
+			    session.setClosing(true);
+				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
+					// stop recording
+					log.info("Last participant left. Stopping recording of session {}", sessionId);
+					stopRecording(sessionId);
 				}
-
-				if (openviduConfig.isLivingModuleEnabled()
-						&& MediaMode.ROUTED.equals(session.getSessionProperties().mediaMode())
-						&& (this.livingManager.sessionIsBeingLived(sessionId))) {
-					log.info("Last participant left. Stop living of session {}", sessionId);
-					livingManager.stopLiving(session, null, EndReason.automaticStop);
-				}
-			} /*else if (remainingParticipants.size() == 1 && openviduConfig.isRecordingModuleEnabled()
-					&& MediaMode.ROUTED.equals(session.getSessionProperties().mediaMode())
-					&& this.recordingManager.sessionIsBeingRecorded(sessionId)
-					&& ProtocolElements.RECORDER_PARTICIPANT_PUBLICID
-							.equals(remainingParticipants.iterator().next().getParticipantPublicId())) {
-				// Start countdown
-				log.info("Last participant left. Starting {} seconds countdown for stopping recording of session {}",
-						this.openviduConfig.getOpenviduRecordingAutostopTimeout(), sessionId);
-				recordingManager.initAutomaticRecordingStopThread(session);
-			}*/
+			}
 		}
 
 		// Finally close websocket session if required
 		if (closeWebSocket) {
 			sessionEventsHandler.closeRpcSession(participant.getParticipantPrivateId());
 		}
+
+        // update recording
+        if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
+            updateRecording(session.getSessionId());
+        }
 
 		return sessionClosedByLastParticipant;
 	}
@@ -388,64 +387,6 @@ public class KurentoSessionManager extends SessionManager {
 					kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
 		}
 
-		if (kSession.getSessionProperties().recordingMode().equals(RecordingMode.ALWAYS) && !kSession.isRecording.get()
-				&& kSession.sessionAllowedStartToRecord()) {
-			// Start automatic recording for sessions configured with RecordingMode.ALWAYS
-			new Thread(() -> recordingManager.startRecording(kSession,
-					new RecordingProperties.Builder().name("")
-							.outputMode(kSession.getSessionProperties().defaultOutputMode())
-							.recordingLayout(kSession.getSessionProperties().defaultRecordingLayout())
-							.customLayout(kSession.getSessionProperties().defaultCustomLayout()).build())).start();
-		} else if (kSession.isRecording.get()) {
-			new Thread(() -> recordingManager.connectStreamToExistingRecorderComposite(kSession, participant)).start();
-		}
-
-		if (kSession.getSessionProperties().livingMode().equals(LivingMode.ALWAYS) && !kSession.isLiving.get()
-				&& kSession.sessionAllowedStartToLive()) {
-			// Start automatic recording for sessions configured with RecordingMode.ALWAYS
-			new Thread(() -> livingManager.startLiving(kSession,
-					new LivingProperties.Builder()
-							.name("")
-							.outputMode(kSession.getSessionProperties().defaultOutputMode())
-							.livingLayout(kSession.getSessionProperties().defaultLivingLayout())
-							.customLayout(kSession.getSessionProperties().defaultCustomLayout())
-							.build(),
-					participant.getUuid())).start();
-		} else if (kSession.isLiving.get()) {
-			new Thread(() -> livingManager.connectStreamToExistingLiveComposite(kSession, participant)).start();
-		}
-
-
-		/*if (this.openviduConfig.isRecordingModuleEnabled()
-				&& MediaMode.ROUTED.equals(kSession.getSessionProperties().mediaMode())
-				&& kSession.getActivePublishers() == 0) {
-			if (RecordingMode.ALWAYS.equals(kSession.getSessionProperties().recordingMode())
-					&& !recordingManager.sessionIsBeingRecorded(kSession.getSessionId())
-					&& !kSession.recordingManuallyStopped.get()) {
-				// Start automatic recording for sessions configured with RecordingMode.ALWAYS
-				new Thread(() -> {
-					recordingManager.startRecording(kSession,
-							new RecordingProperties.Builder().name("")
-									.outputMode(kSession.getSessionProperties().defaultOutputMode())
-									.recordingLayout(kSession.getSessionProperties().defaultRecordingLayout())
-									.customLayout(kSession.getSessionProperties().defaultCustomLayout()).build());
-				}).start();
-			} else if (RecordingMode.MANUAL.equals(kSession.getSessionProperties().recordingMode())
-					&& recordingManager.sessionIsBeingRecorded(kSession.getSessionId())) {
-				// Abort automatic recording stop (user published before timeout)
-				log.info("Participant {} published before timeout finished. Aborting automatic recording stop",
-						participant.getParticipantPublicId());
-				boolean stopAborted = recordingManager.abortAutomaticRecordingStopThread(kSession,
-						EndReason.automaticStop);
-				if (stopAborted) {
-					log.info("Automatic recording stopped successfully aborted");
-				} else {
-					log.info("Automatic recording stopped couldn't be aborted. Recording of session {} has stopped",
-							kSession.getSessionId());
-				}
-			}
-		}*/
-
 		kSession.newPublisher(participant);
 
 		participants = kParticipant.getSession().getParticipants();
@@ -459,6 +400,7 @@ public class KurentoSessionManager extends SessionManager {
 					kParticipant.getPublisher().createdAt(), kSession.getSessionId(), mediaOptions, sdpAnswer,
 					participants, transactionId, null);
 		}
+
 		kParticipant.getPublisher().gatherCandidates();
 	}
 
@@ -511,17 +453,7 @@ public class KurentoSessionManager extends SessionManager {
 				if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
 					senderParticipant = participant;
 				} else {
-					senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
-							part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
-							Objects.equals(StreamType.MAJOR, part.getStreamType())).findFirst().orElse(null);
-					if (senderParticipant == null) {
-						log.info("Not found the same account login terminal cause the delay of inviting parts.");
-						Thread.sleep(3600);
-						if (Objects.isNull(getSession(participant.getSessionId()))) return;
-						senderParticipant = getSession(participant.getSessionId()).getParticipants().stream().filter(part ->
-								part.getUserId().equals(participant.getUserId()) && !Objects.equals(OpenViduRole.THOR, part.getRole()) &&
-										Objects.equals(StreamType.MAJOR, part.getStreamType())).findAny().orElse(null);
-					}
+				    senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
 				}
 			}
 
@@ -565,7 +497,26 @@ public class KurentoSessionManager extends SessionManager {
 		}
 	}
 
-	@Override
+    private Participant getInviteDelayPart(String sessionId, Long userId) throws InterruptedException {
+        Participant senderParticipant;
+        for (int i = 0; i < 3; i++) {
+            if (Objects.nonNull(senderParticipant = getSession(sessionId).getParticipants()
+                    .stream()
+                    .filter(part -> part.getUserId().equals(userId) && !Objects.equals(OpenViduRole.THOR, part.getRole())
+                            && Objects.equals(StreamType.MAJOR, part.getStreamType()))
+                    .findFirst().orElse(null))) {
+                return senderParticipant;
+            } else {
+                Thread.sleep(3000);
+            }
+        }
+
+        return getSession(sessionId).getParticipants().stream().filter(part -> part.getUserId().equals(userId) &&
+                !Objects.equals(OpenViduRole.THOR, part.getRole()) && Objects.equals(StreamType.MAJOR, part.getStreamType()))
+                .findFirst().orElse(null);
+    }
+
+    @Override
 	public void unsubscribe(Participant participant, String senderName, Integer transactionId) {
 		log.debug("Request [UNSUBSCRIBE] remoteParticipant={} ({})", senderName, participant.getParticipantPublicId());
 
@@ -1256,5 +1207,229 @@ public class KurentoSessionManager extends SessionManager {
 			filter.removeEventListener(pub.removeListener(eventType));
 		}
 	}
+
+	@Override
+	public void startRecording(String sessionId) {
+		Session session;
+		if (Objects.isNull(session = getSession(sessionId))) {
+			log.info("Start recording but session:{} is closed.", sessionId);
+			return;
+		}
+
+		log.info("Start recording and sessionId is {}", sessionId);
+		// set needed recording properties
+		KurentoSession kurentoSession = (KurentoSession) session;
+		ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
+				.project(kurentoSession.getConference().getProject())
+				.roomId(kurentoSession.getSessionId())
+				.ruid(kurentoSession.getRuid())
+				.startTime(kurentoSession.getStartRecordingTime())
+				.rootPath(openviduConfig.getRecordingPath())
+				.outputMode(RecordOutputMode.COMPOSED)
+                .mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
+
+		// construct needed media source according to participants that joined the room
+		constructMediaSources(recordingProperties, kurentoSession);
+
+		// pub start recording task
+		recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
+	}
+
+    @Override
+    public void stopRecording(String sessionId) {
+        Session session;
+        if (Objects.isNull(session = getSession(sessionId))) {
+            log.info("Stop recording but session:{} is closed.", sessionId);
+            return;
+        }
+
+		log.info("Stop recording and sessionId is {}", sessionId);
+        // pub stop recording task
+        recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
+                .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
+    }
+
+	@Override
+	public void updateRecording(String sessionId) {
+		Session session;
+		if (Objects.nonNull(session = getSession(sessionId))) {
+			log.info("Update recording and sessionId is {}", sessionId);
+			KurentoSession kurentoSession = (KurentoSession) session;
+			ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
+					.ruid(kurentoSession.getRuid())
+					.outputMode(RecordOutputMode.COMPOSED).build();
+
+			if (constructMediaSources(recordingProperties, kurentoSession)) {
+				// pub update recording task
+				recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.updateRecording.buildMqMsg(recordingProperties).toString());
+			} else {
+				log.warn("Not found required participant and do not update the recording.");
+			}
+		} else {
+			log.info("Update recording but session:{} is closed.", sessionId);
+		}
+	}
+
+	private boolean constructMediaSources(ConferenceRecordingProperties recordingProperties, KurentoSession kurentoSession) {
+		Participant sharingPart = null, moderatorPart = null, speakerPart = null;
+		Set<Participant> participants = kurentoSession.getParticipants();
+		for (Participant participant : participants) {
+			if (!participant.getStreamType().isStreamTypeMixInclude()) {
+				continue;
+			}
+
+			if (StreamType.SHARING.equals(participant.getStreamType())) {
+				sharingPart = participant;
+			}
+
+			if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
+				speakerPart = participant;
+			}
+
+			if (participant.getRole().isController() && participant.getRole().needToPublish()) {
+				moderatorPart = participant;
+			}
+		}
+
+		JsonObject mediaSourceObj = new JsonObject();
+		mediaSourceObj.addProperty("kmsLocated", kurentoSession.getKms().getIp());
+		mediaSourceObj.addProperty("mediaPipelineId", kurentoSession.getPipeline().getId());
+
+		JsonArray passThruList = new JsonArray();
+		if (Objects.isNull(sharingPart)) {
+			// layout of recording is the same as MCU layout
+			recordingProperties.setLayoutMode(kurentoSession.getLayoutMode().getMode());
+			JsonArray majorShareMixLinkedArr = kurentoSession.getMajorShareMixLinkedArr();
+			int order = 1;
+			for (JsonElement jsonElement : majorShareMixLinkedArr) {
+				String publicId = jsonElement.getAsJsonObject().get("connectionId").getAsString();
+				Optional<Participant> part = participants.stream()
+						.filter(participant -> Objects.equals(publicId, participant.getParticipantPublicId())).findAny();
+				if (part.isPresent()) {
+					passThruList.add(constructPartRecordInfo(part.get(), order));
+					order++;
+				}
+			}
+		} else {
+
+			if (Objects.isNull(moderatorPart)) {
+				log.error("Moderator participant not found.");
+				return false;
+			}
+
+			// specific recording layout
+			passThruList.add(constructPartRecordInfo(sharingPart, 1));
+			if (Objects.isNull(speakerPart)) {
+				passThruList.add(constructPartRecordInfo(moderatorPart, 2));
+				recordingProperties.setLayoutMode(LayoutModeEnum.TWO.getMode());
+			} else {
+				passThruList.add(constructPartRecordInfo(speakerPart, 2));
+				passThruList.add(constructPartRecordInfo(moderatorPart, 3));
+				recordingProperties.setLayoutMode(LayoutModeEnum.THREE.getMode());
+			}
+		}
+
+		mediaSourceObj.add("passThruList", passThruList);
+		JsonArray mediaSources = new JsonArray();
+		mediaSources.add(mediaSourceObj);
+
+		recordingProperties.setMediaSources(mediaSources);
+		return true;
+	}
+
+	private JsonObject constructPartRecordInfo(Participant part, int order) {
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
+		log.info("construct participant:{} record info.", part.getParticipantPublicId());
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("passThruId", kurentoParticipant.getPublisher().getPassThru().getId());
+		jsonObject.addProperty("order", order);
+		jsonObject.addProperty("osd", part.getUsername());
+		return jsonObject;
+	}
+
+	@Override
+	public void handleRecordErrorEvent(Object msg) {
+		String ruid;
+		JsonObject jsonObject = new Gson().fromJson(String.valueOf(msg), JsonObject.class);
+		if (jsonObject.has("method") && jsonObject.has("params")
+				&& Objects.nonNull(ruid = jsonObject.get("params").getAsJsonObject().get("ruid").getAsString())) {
+		    Session session;
+			Optional<Session> sessionOptional = getSessions().stream().filter(session1 -> Objects.equals(ruid, session1.getRuid())).findAny();
+			if (sessionOptional.isPresent()) {
+			    session = sessionOptional.get();
+                switch (jsonObject.get("method").getAsString()) {
+                    case CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE:
+                        stopRecordAndNotify(session);
+                        break;
+                    case CommonConstants.RECORD_STOP_BY_MODERATOR:
+                        changeRoomRecordStatusAndNotify(session);
+                        break;
+                    case CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT:
+                        sendStorageNotify(session);
+                        break;
+                    default:
+                        break;
+                }
+			} else {
+				log.warn("Session that ruid:{} not found.", ruid);
+			}
+		} else {
+			log.error("Invalid record error event:{}", msg);
+		}
+	}
+
+    private void sendStorageNotify(Session session) {
+        JsonObject notify = new JsonObject();
+        notify.addProperty("reason", CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT);
+        session.getParticipants()
+                .stream()
+                .filter(participant -> StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().isController())
+                .forEach(participant ->
+                        rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
+
+        // send sms to admin user
+        String project = session.getConference().getProject();
+        User adminUser = userManage.getAdminUserByProject(project);
+        if (StringUtils.isEmpty(adminUser.getPhone())) {
+            return;
+        }
+
+        JsonObject smsObj = new JsonObject();
+        JsonObject contentObj = new JsonObject();
+        contentObj.addProperty("project", project);
+
+        smsObj.addProperty("phoneNumber", adminUser.getPhone());
+        smsObj.add("content", contentObj);
+        smsObj.addProperty("smsType", "RecordStorage");
+        redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
+    }
+
+    private void changeRoomRecordStatusAndNotify(Session session) {
+        if (session.sessionAllowedToStopRecording()) {
+            JsonObject notify = new JsonObject();
+            notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_MODERATOR);
+            session.getParticipants().forEach(participant ->
+                    rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
+        } else {
+            log.warn("Fail to change the record status and roomId:{}, ruid:{}", session.getSessionId(), session.getRuid());
+        }
+    }
+
+    private void stopRecordAndNotify(Session session) {
+        if (session.sessionAllowedToStopRecording()) {
+            // stop the recording
+            stopRecording(session.getSessionId());
+            // send the stopping recording notify
+            JsonObject notify = new JsonObject();
+            notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE);
+            session.getParticipants().forEach(participant -> {
+                if (StreamType.MAJOR.equals(participant.getStreamType())) {
+                    rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
+                }
+            });
+        } else {
+            log.warn("Fail to stop the record and ruid:{}", session.getRuid());
+        }
+    }
 
 }

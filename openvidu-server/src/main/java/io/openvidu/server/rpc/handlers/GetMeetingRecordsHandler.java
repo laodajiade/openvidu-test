@@ -55,6 +55,7 @@ public class GetMeetingRecordsHandler extends RpcAbstractHandler {
                 recObj.addProperty("conferenceMode", ConferenceModeEnum.parse(record.getConferenceMode()).name());
                 recObj.addProperty("startTime", !Objects.isNull(record.getStartTime()) ? record.getStartTime().getTime() : 0L);
                 recObj.addProperty("endTime", !Objects.isNull(record.getEndTime()) ? record.getEndTime().getTime() : 0L);
+                recObj.addProperty("concurrentNumber", record.getConcurrentNumber());
 
                 recordArr.add(recObj);
             });

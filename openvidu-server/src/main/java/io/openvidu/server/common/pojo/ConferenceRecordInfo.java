@@ -33,6 +33,8 @@ public class ConferenceRecordInfo {
 
     private Date updateTime;
 
+    private Integer finishedStatus;
+
     public Long getId() {
         return id;
     }
@@ -151,6 +153,14 @@ public class ConferenceRecordInfo {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getFinishedStatus() {
+        return finishedStatus;
+    }
+
+    public void setFinishedStatus(Integer finishedStatus) {
+        this.finishedStatus = finishedStatus;
     }
 
 }

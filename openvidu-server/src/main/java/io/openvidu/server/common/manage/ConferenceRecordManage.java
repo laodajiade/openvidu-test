@@ -1,6 +1,10 @@
 package io.openvidu.server.common.manage;
 
+import com.github.pagehelper.Page;
 import io.openvidu.server.common.pojo.ConferenceRecord;
+import io.openvidu.server.common.pojo.ConferenceRecordInfo;
+import io.openvidu.server.common.pojo.ConferenceRecordSearch;
+import io.openvidu.server.common.pojo.RoomRecordSummary;
 import io.openvidu.server.kurento.core.KurentoSession;
 import org.kurento.client.MediaEvent;
 
@@ -22,5 +26,15 @@ public interface ConferenceRecordManage {
     List<ConferenceRecord> getByCondition(ConferenceRecord record);
 
     void dealConfRecordEvent(KurentoSession session, MediaEvent event);
+
+    Page<RoomRecordSummary> getRoomRecordSummaryByCondition(ConferenceRecordSearch search);
+
+    void clearRoomRecords(String roomId, List<String> ruids, String project);
+
+    void deleteConferenceRecord(List<ConferenceRecordInfo> conferenceRecordInfos);
+
+    List<RoomRecordSummary> getAllRoomRecordSummaryByProject(ConferenceRecordSearch search);
+
+    void updatePreRecordErrorStatus(ConferenceRecord record);
 
 }

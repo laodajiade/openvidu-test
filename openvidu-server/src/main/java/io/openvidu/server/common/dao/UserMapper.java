@@ -42,4 +42,6 @@ public interface UserMapper {
     List<AllUserInfo> selectAllUserByUuidList(List<String> uuids);
 
     List<AllUserInfo> selectAllUserByUserIdsList(List<Long> userIds);
+
+    User selectAdminUserByProject(String project);
 }

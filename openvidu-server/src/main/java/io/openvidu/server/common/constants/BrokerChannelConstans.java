@@ -3,6 +3,9 @@ package io.openvidu.server.common.constants;
 public class BrokerChannelConstans {
     public static final String DEVICE_UPGRADE_CHANNEL = "channel:device:upgrade";
     public static final String USER_DELETE_CHANNEL = "channel:user:delete";
+    public static final String CORP_SERVICE_EXPIRED_CHANNEL = "channel:corp:expired";
+
+    public static final String SMS_DELIVERY_CHANNEL = "channel:sms:delivery";
 
     /**
      * 客户端WS链接异常记录Key

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.RoomRecordSummaryMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.RoomRecordSummary" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+    <result column="room_subject" property="roomSubject" jdbcType="VARCHAR" />
+    <result column="project" property="project" jdbcType="VARCHAR" />
+    <result column="occupation" property="occupation" jdbcType="BIGINT" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, room_id, room_subject, project, occupation, create_time, update_time
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from sd_room_record_summary
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceRecordSearch">
+    select
+    <include refid="Base_Column_List" />
+    from sd_room_record_summary
+    <where>
+      <if test="roomIds != null">
+        room_id in
+        <foreach collection="roomIds" item="item" index="index" separator="," open="(" close=")">
+          #{item,jdbcType=VARCHAR}
+        </foreach>
+      </if>
+      <if test="project != null">
+        and project = #{project,jdbcType=VARCHAR}
+      </if>
+      <if test="roomSubject != null">
+        and room_subject like CONCAT('%',#{roomSubject,jdbcType=VARCHAR},'%')
+      </if>
+    </where>
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from sd_room_record_summary
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <delete id="deleteByRoomId" parameterType="java.lang.String" >
+    delete from sd_room_record_summary
+    where room_id = #{roomId,jdbcType=VARCHAR}
+  </delete>
+
+  <delete id="deleteUselessSummaryInfo">
+    delete from sd_room_record_summary where occupation <![CDATA[<=]]> 0
+  </delete>
+
+  <insert id="insert" parameterType="io.openvidu.server.common.pojo.RoomRecordSummary" >
+    insert into sd_room_record_summary (id, room_id, room_subject, 
+      project, occupation, create_time, 
+      update_time)
+    values (#{id,jdbcType=BIGINT}, #{roomId,jdbcType=VARCHAR}, #{roomSubject,jdbcType=VARCHAR}, 
+      #{project,jdbcType=VARCHAR}, #{occupation,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.RoomRecordSummary" >
+    insert into sd_room_record_summary
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="roomId != null" >
+        room_id,
+      </if>
+      <if test="roomSubject != null" >
+        room_subject,
+      </if>
+      <if test="project != null" >
+        project,
+      </if>
+      <if test="occupation != null" >
+        occupation,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null" >
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomSubject != null" >
+        #{roomSubject,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null" >
+        #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="occupation != null" >
+        #{occupation,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.RoomRecordSummary" >
+    update sd_room_record_summary
+    <set >
+      <if test="roomId != null" >
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="roomSubject != null" >
+        room_subject = #{roomSubject,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null" >
+        project = #{project,jdbcType=VARCHAR},
+      </if>
+      <if test="occupation != null" >
+        occupation = #{occupation,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.RoomRecordSummary" >
+    update sd_room_record_summary
+    set room_id = #{roomId,jdbcType=VARCHAR},
+      room_subject = #{roomSubject,jdbcType=VARCHAR},
+      project = #{project,jdbcType=VARCHAR},
+      occupation = #{occupation,jdbcType=BIGINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="decreaseRecordSummary" parameterType="io.openvidu.server.common.pojo.RoomRecordSummary">
+    update sd_room_record_summary
+    set occupation = occupation - #{occupation,jdbcType=BIGINT}
+    where room_id = #{roomId,jdbcType=VARCHAR}
+  </update>
+</mapper>

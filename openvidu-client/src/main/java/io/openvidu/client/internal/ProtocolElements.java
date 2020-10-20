@@ -474,6 +474,7 @@ public class ProtocolElements {
 	public static  final  String COMMAND_UOGRADE_DOWNLOADURL_PAPM  = "downloadUrl";
 
 	public static  final  String UPGRADE_NOTIFY_METHOD = "upgradeNotify";
+	public static  final  String CORP_INFO_MODIFIED_NOTIFY_METHOD = "corpInfoModifiedNotify";
 
 	public static  final  String ADJUST_RESOLUTION_METHOD = "adjustResolution";
 	public static  final  String ADJUST_RESOLUTION_CONNECTIONID_PAPM  = "connectionId";
@@ -516,6 +517,7 @@ public class ProtocolElements {
 	public static final String CREATE_APPOINTMENT_ROOM_METHOD = "createAppointmentRoom";
 	public static final String UPDATE_APPOINTMENT_ROOM_METHOD = "updateAppointmentRoom";
 	public static final String CANCEL_APPOINTMENT_ROOM_METHOD = "cancelAppointmentRoom";
+	public static final String GET_APPOINTMENT_ROOM_DETAILS_METHOD = "getAppointmentRoomDetails";
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
@@ -639,7 +641,11 @@ public class ProtocolElements {
 	public static final String DOWNLOAD_CONF_RECORD_ID_PARAM = "id";
 
 	public static final String DEL_CONF_RECORD_METHOD = "delConferenceRecord";
-	public static final String DEL_CONF_RECORD_ID_PARAM = "id";
+	public static final String DEL_CONF_RECORD_ID_PARAM = "ids";
+
+	public static final String CLEAR_CONFERENCE_RECORD = "clearConferenceRecord";
+
+	public static final String GET_ROOMS_RECORD_INFO = "getRoomsRecordInfo";
 
 	public static final String START_LIVE_METHOD = "startLive";
 	public static final String START_LIVE_ROOMID_PARAM = "roomId";
@@ -794,7 +800,9 @@ public class ProtocolElements {
 			GETSPECIFICPAGEOFDEPT_METHOD,GETSPECIFICPAGEOFMEMBER_METHOD,GETMEMBERDETAILS_METHOD,RECURSIVEQUERYUSER_METHOD,
 			GET_GROUP_LIST_METHOD, GET_GROUP_INFO_METHOD, CREATE_APPOINTMENT_ROOM_METHOD, UPDATE_APPOINTMENT_ROOM_METHOD,
 			CANCEL_APPOINTMENT_ROOM_METHOD,SET_PRESET_POSITION_METHOD,DISCARDPRESETPOSITIONS_METHOD,
-			GETPRESETPOSITIONS_METHOD,ADJUSTTOPRESETPOSITION_METHOD,GET_CONFERENCE_SCHEDULE_METHOD,START_POLLING_METHOD
+
+			GETPRESETPOSITIONS_METHOD,ADJUSTTOPRESETPOSITION_METHOD,GET_CONFERENCE_SCHEDULE_METHOD,GET_ROOMS_RECORD_INFO,
+            CLEAR_CONFERENCE_RECORD, GET_APPOINTMENT_ROOM_DETAILS_METHOD,START_POLLING_METHOD,STOP_POLLING_METHOD,GET_POLLING_STATUS_METHOD
 	);
 
     /**
@@ -804,4 +812,5 @@ public class ProtocolElements {
 			CREATE_ROOM_METHOD, JOINROOM_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
 			MODIFY_PASSWORD_METHOD
 	));
+
 }

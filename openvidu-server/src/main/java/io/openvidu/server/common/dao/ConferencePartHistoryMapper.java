@@ -1,6 +1,7 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.ConferencePartHistory;
+import io.openvidu.server.common.pojo.User;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public interface ConferencePartHistoryMapper {
     void updatePartHistroy(ConferencePartHistory update);
 
     List<ConferencePartHistory> selectConfPartHistoryByRuids(List<String> ruids);
+
+    List<User> selectUserByRuid(String ruid);
 }

@@ -551,6 +551,8 @@ public abstract class SessionManager {
 				cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline));
 		for (String sessionId : sessions.keySet()) {
 			try {
+				// stop the record task
+				stopRecording(sessionId);
 				closeSession(sessionId, EndReason.openviduServerStopped);
 			} catch (Exception e) {
 				log.warn("Error closing session '{}'", sessionId, e);
@@ -585,11 +587,11 @@ public abstract class SessionManager {
 		Set<Participant> participants = getParticipants(sessionId);
 
 		// set session status: closing
-        session.setClosing(true);
+//        session.setClosing(true);
 		boolean sessionClosedByLastParticipant = false;
-		if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
+		/*if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
 			session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
-		}
+		}*/
 
 		for (Participant p : participants) {
 			try {
@@ -920,4 +922,11 @@ public abstract class SessionManager {
 		session.setConference(conference);
 	}
 
+	public abstract void startRecording(String sessionId);
+
+	public abstract void stopRecording(String sessionId);
+
+	public abstract void updateRecording(String sessionId);
+
+    public abstract void handleRecordErrorEvent(Object msg);
 }
