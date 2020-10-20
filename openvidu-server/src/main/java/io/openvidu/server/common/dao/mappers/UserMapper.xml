@@ -254,7 +254,7 @@
       u.type,
       u.phone,
       d.serial_number serialNumber,
-      0 as sort_number
+      d.sort_number
     FROM
       sd_device_dept d
     INNER JOIN sd_device v ON d.serial_number = v.serial_number

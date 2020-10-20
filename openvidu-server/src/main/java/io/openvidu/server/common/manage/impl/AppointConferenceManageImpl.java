@@ -87,11 +87,12 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setEndTime(new Date(params.getEndTime()));
         ac.setDuration(params.getDuration());
         ac.setRoomCapacity(params.getRoomCapacity());
-
         ac.setAutoInvite(params.getAutoCall() ? 1 : 0);
         ac.setProject(rpcConnection.getProject());
         ac.setType("N");
         ac.setConferenceMode(params.getConferenceMode().getMode());
+        ac.setPassword(params.getPassword());
+        ac.setModeratorPassword(params.getModeratorPassword());
         appointConferenceMapper.insertSelective(ac);
 
         params.setRuid(ac.getRuid());
@@ -115,6 +116,8 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         appt.setRoomCapacity(vo.getRoomCapacity());
         appt.setAutoInvite(vo.getAutoCall() ? 1 : 0);
         appt.setConferenceMode(vo.getConferenceMode().getMode());
+        appt.setPassword(vo.getPassword());
+        appt.setModeratorPassword(vo.getModeratorPassword());
         appointConferenceMapper.updateByPrimaryKey(appt);
     }
 }

@@ -71,6 +71,11 @@ public class AppointConference implements Serializable {
     private String password;
 
     /**
+     * 主持密码
+     */
+    private String moderatorPassword;
+
+    /**
      * 0：设置自动呼叫；1：禁止自动呼叫（仅当预约会议时，该字段存在设置意义）
      */
     private Integer autoInvite;
@@ -95,12 +100,15 @@ public class AppointConference implements Serializable {
      */
     private Date updateTime;
 
-    private Integer conferenceMode;
-
     /**
      * 0=未开始 1=会议中  2=已结束
      */
     private Integer status;
+
+    /**
+     * 会议模式（0：SFU，1：MCU）
+     */
+    private Integer conferenceMode;
 
     private static final long serialVersionUID = 1L;
 }

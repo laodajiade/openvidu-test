@@ -17,6 +17,7 @@ public class AppointmentRoomVO {
     private String ruid;
     private String roomId;
     private String password;
+    private String moderatorPassword;
     private String subject;
     private String desc;
     private String moderatorRoomId;

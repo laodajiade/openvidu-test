@@ -106,6 +106,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("isStart", appointConference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", appointConference.getProject());
             appointConfObj.addProperty("password", appointConference.getPassword());
+            appointConfObj.addProperty("moderatorPassword", appointConference.getModeratorPassword());
 
             appointConfObj.add("participants", constructAppointPartsInfo(parts));
 
@@ -165,6 +166,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("isStart", conference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", conference.getProject());
             appointConfObj.addProperty("password", conference.getPassword());
+            appointConfObj.addProperty("moderatorPassword", conference.getModeratorPassword());
 
             appointConfObj.add("participants", constructAppointPartsInfo(participants));
 

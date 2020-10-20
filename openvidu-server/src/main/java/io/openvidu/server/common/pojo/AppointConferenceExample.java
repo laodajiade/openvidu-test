@@ -885,6 +885,76 @@ public class AppointConferenceExample {
             return (Criteria) this;
         }
 
+        public Criteria andModeratorPasswordIsNull() {
+            addCriterion("moderator_password is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordIsNotNull() {
+            addCriterion("moderator_password is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordEqualTo(String value) {
+            addCriterion("moderator_password =", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordNotEqualTo(String value) {
+            addCriterion("moderator_password <>", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordGreaterThan(String value) {
+            addCriterion("moderator_password >", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordGreaterThanOrEqualTo(String value) {
+            addCriterion("moderator_password >=", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordLessThan(String value) {
+            addCriterion("moderator_password <", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordLessThanOrEqualTo(String value) {
+            addCriterion("moderator_password <=", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordLike(String value) {
+            addCriterion("moderator_password like", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordNotLike(String value) {
+            addCriterion("moderator_password not like", value, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordIn(List<String> values) {
+            addCriterion("moderator_password in", values, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordNotIn(List<String> values) {
+            addCriterion("moderator_password not in", values, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordBetween(String value1, String value2) {
+            addCriterion("moderator_password between", value1, value2, "moderatorPassword");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorPasswordNotBetween(String value1, String value2) {
+            addCriterion("moderator_password not between", value1, value2, "moderatorPassword");
+            return (Criteria) this;
+        }
+
         public Criteria andAutoInviteIsNull() {
             addCriterion("auto_invite is null");
             return (Criteria) this;
@@ -1262,6 +1332,66 @@ public class AppointConferenceExample {
 
         public Criteria andStatusNotBetween(Integer value1, Integer value2) {
             addCriterion("`status` not between", value1, value2, "status");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeIsNull() {
+            addCriterion("conference_mode is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeIsNotNull() {
+            addCriterion("conference_mode is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeEqualTo(Integer value) {
+            addCriterion("conference_mode =", value, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeNotEqualTo(Integer value) {
+            addCriterion("conference_mode <>", value, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeGreaterThan(Integer value) {
+            addCriterion("conference_mode >", value, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeGreaterThanOrEqualTo(Integer value) {
+            addCriterion("conference_mode >=", value, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeLessThan(Integer value) {
+            addCriterion("conference_mode <", value, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeLessThanOrEqualTo(Integer value) {
+            addCriterion("conference_mode <=", value, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeIn(List<Integer> values) {
+            addCriterion("conference_mode in", values, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeNotIn(List<Integer> values) {
+            addCriterion("conference_mode not in", values, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeBetween(Integer value1, Integer value2) {
+            addCriterion("conference_mode between", value1, value2, "conferenceMode");
+            return (Criteria) this;
+        }
+
+        public Criteria andConferenceModeNotBetween(Integer value1, Integer value2) {
+            addCriterion("conference_mode not between", value1, value2, "conferenceMode");
             return (Criteria) this;
         }
     }

@@ -3,8 +3,6 @@ package io.openvidu.server.common.dao;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
 import java.util.List;
-
-import io.openvidu.server.common.pojo.Conference;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
