@@ -31,7 +31,7 @@ public class StopPollingHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String roomId = getStringParam(request,ProtocolElements.STOP_POLLING_ROOMID_PARAM);
+        String roomId = getStringParam(request, ProtocolElements.STOP_POLLING_ROOMID_PARAM);
         Session session = sessionManager.getSession(roomId);
         if (Objects.isNull(session)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -50,7 +50,7 @@ public class StopPollingHandler extends RpcAbstractHandler {
         timerManager.onStopPolling();
         //send notify
         this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
-                ProtocolElements.STOP_POLLING_NODIFY_METHOD,request.getParams());
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(),request.getId(),new JsonObject());
+                ProtocolElements.STOP_POLLING_NODIFY_METHOD, request.getParams());
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

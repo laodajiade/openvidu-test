@@ -33,7 +33,7 @@ public class GetPollingStatusHandler extends RpcAbstractHandler {
         }
         SessionPreset sessionPreset = session.getPresetInfo();
         JsonObject resJson = new JsonObject();
-        resJson.addProperty(ProtocolElements.GETPOLLINGSTATUS_STATUS_PARAM,sessionPreset.getPollingStatusInRoom().name());
+        resJson.addProperty(ProtocolElements.GETPOLLINGSTATUS_STATUS_PARAM, sessionPreset.getPollingStatusInRoom().name());
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resJson);
     }
 }
