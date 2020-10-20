@@ -1,15 +1,12 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
-import io.netty.util.internal.StringUtil;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferenceRecord;
-import io.openvidu.server.common.pojo.ConferenceSearch;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -20,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -27,20 +25,21 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class StartConferenceRecordHandler extends RpcAbstractHandler {
+
     @Value("${min.interval.stop}")
     private Long minIntervalStop;
 
+    private static final long lowerLimit = 20 * 1024 * 1024;
+
+    private static final long upperLimit = 100 * 1024 * 1024;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String roomId = getStringOptionalParam(request, ProtocolElements.START_CONF_RECORD_ROOMID_PARAM);
-        if (StringUtil.isNullOrEmpty(roomId)) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
-            return;
-        }
+        String roomId = getStringParam(request, ProtocolElements.START_CONF_RECORD_ROOMID_PARAM);
+        boolean forceRec = getBooleanOptionalParam(request, "force");
 
-        Session session = sessionManager.getSession(roomId);
-        if (Objects.isNull(session)) {
+        Session session;
+        if (Objects.isNull(session = sessionManager.getSession(roomId))) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
@@ -74,6 +73,23 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         if (!participant.getRole().isController()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
+        // 校验录制存储空间
+        // 小于20MB时，拒绝录制，返回13050（record storage exhausted）
+        // 小于100MB时，返回13052（record storage less than 100MB）
+        List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
+                .project(rpcConnection.getProject()).build());
+        long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
+        long remainStorageSpace = new BigDecimal(openviduConfig.getCommonStorageLimit()).longValue() * 1024 * 1024 - usedSpaceSize;
+        if (remainStorageSpace <= lowerLimit) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.RECORD_STORAGE_EXHAUSTED);
+            return;
+        } else if (remainStorageSpace <= upperLimit && !forceRec) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.RECORD_STORAGE_NOT_ENOUGH);
             return;
         }
 
