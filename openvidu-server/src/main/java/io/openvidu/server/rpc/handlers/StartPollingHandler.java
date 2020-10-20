@@ -55,7 +55,7 @@ public class StartPollingHandler extends RpcAbstractHandler {
         }
         preset.setPollingStatusInRoom(SessionPresetEnum.on);
 
-        timerManager.onStartPolling(Integer.parseInt(time),session,this.notificationService);
+        timerManager.onStartPolling(Integer.parseInt(time), session, this.notificationService);
         //send notify
         this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
                 ProtocolElements.START_POLLING_NOTIFY_METHOD, request.getParams());
