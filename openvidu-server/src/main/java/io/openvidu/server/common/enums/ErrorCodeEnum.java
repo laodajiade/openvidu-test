@@ -84,18 +84,21 @@ public enum ErrorCodeEnum {
     SHARING_ALREADY_EXISTS(13029, "会议中已存在共享"),
     CONFERENCE_IS_LIVING(13031, "会议正在直播中"),
     CONFERENCE_LIVE_NOT_START(13032, "会议尚未开始直播"),
+    COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限"),
     CONFERENCE_RECORD_FREQUENT_OPERATION(13034, "会议录制操作频繁，请稍后再试"),
     JOIN_ROOM_DUPLICATELY(13035, "重复入会"),
     MODERATOR_PROHIBIT_ON_SPEAKER(13039,"主持人禁止开启扬声器"),
-    DEVICE_NOT_FOUND(13100, "设备不存在"),
-    DEVICE_BUSY(13101,"设备在会议或升级中"),
     ROOM_CAPACITY_CORP_LIMITED(13041, "已达企业会议人数上限，请稍后再试"),
     ROOM_CAPACITY_PERSONAL_LIMITED(13042, "已达会议人数上限，请稍后再试"),
     PARTICIPANT_DOWN_HAND_NOW(13043, "参会者已取消举手发言"),
     THE_CONFERENCE_HAS_STARTED(13048, "预约会议已开始"),
+    THE_POLLING_HAS_STARTED(13049,"轮询已经开启"),
+    RECORD_STORAGE_EXHAUSTED(13050, "存储容量不足，暂不可录制会议"),
     APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED(13051, "预约会议时间不可超出服务到期时间"),
-    COUNT_OF_CONFERENCE_LIMIT(13033,"会议数已达上限");
+    RECORD_STORAGE_NOT_ENOUGH(13052, "录制存储剩余容量少于100MB"),
 
+    DEVICE_NOT_FOUND(13100, "设备不存在"),
+    DEVICE_BUSY(13101,"设备在会议或升级中");
 
     private int code;
     private String message;

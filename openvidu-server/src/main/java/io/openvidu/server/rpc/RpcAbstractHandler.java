@@ -21,6 +21,7 @@ import io.openvidu.server.core.InviteCompensationManage;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.TimerManager;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.utils.HttpUtil;
@@ -125,6 +126,9 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected InviteCompensationManage inviteCompensationManage;
+
+    @Resource
+    protected TimerManager timerManager;
 
     protected BigDecimal bigDecimalMB = new BigDecimal(1024 * 1024);
 

@@ -209,6 +209,10 @@ public class OpenviduConfig {
 	@Value("${media.profile.spec.type}")
 	private String mediaProfileSpecType;
 
+	@Getter
+	@Value("${common.storage.limit}")
+	private String commonStorageLimit;
+
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
 

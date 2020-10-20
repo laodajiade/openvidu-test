@@ -22,9 +22,6 @@ import java.util.List;
 @Component
 public class GetRoomsRecordInfoHandler extends RpcAbstractHandler {
 
-    @Value("${common.storage.limit}")
-    private String commonStorageLimit;
-
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         int pageNum,size;
@@ -58,7 +55,7 @@ public class GetRoomsRecordInfoHandler extends RpcAbstractHandler {
                         .project(rpcConnection.getProject()).build());
         long usedSpaceSize = roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
         JsonObject resp = new JsonObject();
-        resp.addProperty("totalStorageSpace", commonStorageLimit);
+        resp.addProperty("totalStorageSpace", openviduConfig.getCommonStorageLimit());
         resp.addProperty("usedStorageSpace",
                 new BigDecimal(usedSpaceSize).divide(bigDecimalMB, 2, BigDecimal.ROUND_UP).toString());
         resp.addProperty("total", page.getTotal());

@@ -445,6 +445,16 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
+	public Set<Participant> getPartsExcludeModeratorAndSpeaker() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant)
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole())
+						&& !Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
+						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole()))
+				.collect(Collectors.toSet());
+	}
+
     public Set<Participant> getMajorAndOnWallParts() {
         checkClosed();
         return this.participants.values().stream()
