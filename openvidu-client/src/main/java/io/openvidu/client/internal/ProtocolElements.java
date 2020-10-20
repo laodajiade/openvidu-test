@@ -763,6 +763,24 @@ public class ProtocolElements {
 	public static final String GETMEETINGSRECORDS_FROM_PARAM = "from";
 	public static final String GETMEETINGSRECORDS_TO_PARAM = "to";
 
+	public static final String START_POLLING_METHOD = "startPolling";
+	public static final String START_POLLING_ROOMID_PARAM = "roomId";
+	public static final String START_POLLING_INTERVAL_TIME_PARAM = "time";
+
+	public static final String START_POLLING_NOTIFY_METHOD = "startPollingNotify";
+	public static final String POLLING_TO_NOTIFY_METHOD = "pollingToNotify";
+	public static final String POLLING_CHECK_NOTIFY_METHOD = "pollingCheckNotify";
+	public static final String POLLING_CONNECTIONID_METHOD = "connectionId";
+
+	public static final String STOP_POLLING_METHOD = "stopPolling";
+	public static final String STOP_POLLING_ROOMID_PARAM = "roomId";
+	public static final String STOP_POLLING_NODIFY_METHOD = "stopPollingNotify";
+
+	public static final String GET_POLLING_STATUS_METHOD = "getPollingStatus";
+	public static final String GETPOLLINGSTATUS_ROOMID_PARAM = "roomId";
+	public static final String GETPOLLINGSTATUS_STATUS_PARAM = "status";
+
+
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
@@ -776,7 +794,7 @@ public class ProtocolElements {
 			GETSPECIFICPAGEOFDEPT_METHOD,GETSPECIFICPAGEOFMEMBER_METHOD,GETMEMBERDETAILS_METHOD,RECURSIVEQUERYUSER_METHOD,
 			GET_GROUP_LIST_METHOD, GET_GROUP_INFO_METHOD, CREATE_APPOINTMENT_ROOM_METHOD, UPDATE_APPOINTMENT_ROOM_METHOD,
 			CANCEL_APPOINTMENT_ROOM_METHOD,SET_PRESET_POSITION_METHOD,DISCARDPRESETPOSITIONS_METHOD,
-			GETPRESETPOSITIONS_METHOD,ADJUSTTOPRESETPOSITION_METHOD,GET_CONFERENCE_SCHEDULE_METHOD
+			GETPRESETPOSITIONS_METHOD,ADJUSTTOPRESETPOSITION_METHOD,GET_CONFERENCE_SCHEDULE_METHOD,START_POLLING_METHOD
 	);
 
     /**

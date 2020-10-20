@@ -283,6 +283,13 @@ public class RpcHandlerFactory {
     private GetMemberDetailsHandler getMemberDetailsHandler;
     @Resource
     private RecursiveQueryUserHandler recursiveQueryUserHandler;
+    @Resource
+    private StartPollingHandler startPollingHandler;
+    @Resource
+    private StopPollingHandler stopPollingHandler;
+    @Resource
+    private GetPollingStatusHandler getPollingStatusHandler;
+
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -386,7 +393,9 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETSPECIFICPAGEOFMEMBER_METHOD,                getSpecificPageOfMemberHandler);
         handlersMap.put(ProtocolElements.GETMEMBERDETAILS_METHOD,                       getMemberDetailsHandler);
         handlersMap.put(ProtocolElements.RECURSIVEQUERYUSER_METHOD,                     recursiveQueryUserHandler);
-
+        handlersMap.put(ProtocolElements.START_POLLING_METHOD,                          startPollingHandler);
+        handlersMap.put(ProtocolElements.STOP_POLLING_METHOD,                           stopPollingHandler);
+        handlersMap.put(ProtocolElements.GET_POLLING_STATUS_METHOD,                     getPollingStatusHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
