@@ -202,6 +202,10 @@ public class OpenviduConfig {
 	private String lbRTNs;
 
 	@Getter
+	@Value("${stun.sever.infos}")
+	private String stunServers;
+
+	@Getter
 	@Value("${recording.path}")
 	private String recordingPath;
 

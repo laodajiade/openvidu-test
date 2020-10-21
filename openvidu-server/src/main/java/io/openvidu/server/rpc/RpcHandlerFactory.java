@@ -293,6 +293,8 @@ public class RpcHandlerFactory {
     private GetRoomsRecordInfoHandler getRoomsRecordInfoHandler;
     @Resource
     private ClearConferenceRecordHandler clearConferenceRecordHandler;
+    @Resource
+    private GetIceServerListHandler getIceServerListHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -401,6 +403,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_POLLING_STATUS_METHOD,                     getPollingStatusHandler);
         handlersMap.put(ProtocolElements.GET_ROOMS_RECORD_INFO,                         getRoomsRecordInfoHandler);
         handlersMap.put(ProtocolElements.CLEAR_CONFERENCE_RECORD,                       clearConferenceRecordHandler);
+        handlersMap.put(ProtocolElements.GET_ICE_SERVER_LIST,                           getIceServerListHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
