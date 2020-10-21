@@ -42,7 +42,7 @@ public class StopPollingHandler extends RpcAbstractHandler {
         }
         SessionPreset sessionPreset = session.getPresetInfo();
         sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-        timerManager.onStopPolling();
+        timerManager.stopPollingCompensation(roomId);
         //send notify
         this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
                 ProtocolElements.STOP_POLLING_NODIFY_METHOD, request.getParams());
