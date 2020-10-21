@@ -46,8 +46,6 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
     @Override
     public RespResult<PageResult<ConferenceHisResp>> doProcess(RpcConnection rpcConnection, Request<GetConferenceScheduleVO> request,
                                                                GetConferenceScheduleVO params) {
-
-        //BindValidate.notNull(params::getInterval);
         BindValidate.notNull(params::getStatus);
         BindValidate.notNull(params::getPageNum);
         BindValidate.notNull(params::getPageSize);
@@ -57,7 +55,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         Page<Object> page = PageHelper.startPage(params.getPageNum(), params.getPageSize());
 
         if ("pending".equals(params.getStatus())) {
-            conferences = new Pending(rpcConnection.getUserId(), params).getList();
+            conferences = pending(rpcConnection, params);
         } else {
             conferences = new Finished(rpcConnection.getUserId(), params).getList();
         }
@@ -66,11 +64,15 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         return RespResult.ok(new PageResult<>(conferences, page));
     }
 
+    protected List<ConferenceHisResp> pending(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
+        return new Pending(rpcConnection.getUserId(), params).getList();
+    }
+
 
     /**
      * 补全创建人
      */
-    private void fetchUpCreator(List<ConferenceHisResp> list) {
+    protected void fetchUpCreator(List<ConferenceHisResp> list) {
 
         if (CollectionUtils.isEmpty(list)) {
             return;

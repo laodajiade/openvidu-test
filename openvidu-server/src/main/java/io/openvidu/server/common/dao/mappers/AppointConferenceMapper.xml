@@ -440,22 +440,24 @@
     where id = #{id,jdbcType=BIGINT}
   </update>
 
-    <select id="pendingAboutAppointment"  resultMap="BaseResultMap">
-      select
-      <include refid="Base_Column_List" />
-       from sd_appoint_conference a  where a.`status`!=2
-       and (a.user_id = #{userId} or a.ruid in ( select ruid from sd_appoint_part  b where b.user_id =#{userId} ) )
-        <if test="startTime != null">
-          and a.start_time >= #{startTime,jdbcType=TIMESTAMP}
-        </if>
-        <if test="endTime != null">
-         and  #{endTime,jdbcType=TIMESTAMP} >= a.start_time
-        </if>
-        order by start_time asc
-    </select>
+  <select id="pendingAboutAppointment" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_appoint_conference a where a.`status`!=2
+    <if test="userId != null">
+      and (a.user_id = #{userId} or a.ruid in ( select ruid from sd_appoint_part b where b.user_id =#{userId} ) )
+    </if>
+    <if test="startTime != null">
+      and a.start_time >= #{startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="endTime != null">
+      and #{endTime,jdbcType=TIMESTAMP} >= a.start_time
+    </if>
+    order by start_time asc
+  </select>
 
 
-    <select id="getConflictAppointConferenceList" resultMap="BaseResultMap">
+  <select id="getConflictAppointConferenceList" resultMap="BaseResultMap">
     select id from sd_appoint_conference
     where room_id = #{roomId,jdbcType=VARCHAR}
     <if test="ruid != null">

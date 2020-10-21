@@ -5,7 +5,7 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "date" : "2020-10-20",
+  "date" : "2020-10-21",
   "status" : "pending",
   "pageNum" : 1,
   "pageSize" : 20
@@ -21,6 +21,19 @@ Content-Type: application/json
 
 {
   "status" : "close",
+  "pageNum" : 1,
+  "pageSize" : 20
+}
+
+
+### 获取会议历史 管理后台
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getConferenceScheduleAdmin
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "status" : "pending",
   "pageNum" : 1,
   "pageSize" : 20
 }

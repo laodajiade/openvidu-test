@@ -70,10 +70,16 @@ public abstract class ExRpcAbstractHandler<P> extends RpcAbstractHandler {
         return new Request<>(request.getSessionId(), request.getId(), request.getMethod(), param);
     }
 
+    private final static int DEEP = 3;
+
     @SuppressWarnings("unchecked")
     public Class<P> getParamsType() {
         Type genType = this.getClass().getGenericSuperclass();
 
+        int tryCnt = 0;
+        while (!(genType instanceof ParameterizedType) && tryCnt++ < DEEP) {
+            genType = ((Class) genType).getGenericSuperclass();
+        }
         if (!(genType instanceof ParameterizedType)) {
             return (Class<P>) genType.getClass();
         }
