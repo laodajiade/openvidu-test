@@ -58,7 +58,7 @@ public class StartPollingHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CANNOT_START_POLLING);
             return;
         }
-        timerManager.onStartPolling(Integer.parseInt(time), session, this.notificationService);
+        timerManager.startPollingCompensation(roomId, Integer.parseInt(time));
         //send notify
         this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
                 ProtocolElements.START_POLLING_NOTIFY_METHOD, request.getParams());
