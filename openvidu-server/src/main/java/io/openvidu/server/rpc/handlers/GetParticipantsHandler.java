@@ -123,6 +123,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 userObj.addProperty("userOrgName", userDeviceDeptInfo.getDeptName());
                 if (!StringUtils.isEmpty(userDeviceDeptInfo.getSerialNumber())) {
                     userObj.addProperty("serialNumber",userDeviceDeptInfo.getSerialNumber());
+                    userObj.addProperty("deviceModel", userDeviceDeptInfo.getDeviceModel());
                     userObj.addProperty("deviceName", userDeviceDeptInfo.getDeviceName());
                     userObj.addProperty("deviceOrgName", userDeviceDeptInfo.getDeptName());
                     userObj.addProperty("appShowName", userDeviceDeptInfo.getDeviceName());
