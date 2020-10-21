@@ -192,6 +192,16 @@ public class OpenViduServer implements JsonRpcConfigurer {
 		return executor;
 	}
 
+	@Bean(name = "pollingCompensationScheduler")
+	public ThreadPoolTaskScheduler pollingThreadPoolTaskScheduler() {
+		ThreadPoolTaskScheduler executor = new ThreadPoolTaskScheduler();
+		executor.setPoolSize(20);
+		executor.setThreadNamePrefix("pollingCompensateTaskExecutor-");
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(60);
+		return executor;
+	}
+
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
 

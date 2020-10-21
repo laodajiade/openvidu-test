@@ -32,7 +32,7 @@ public class TimerManager {
     private SessionManager sessionManager;
     @Resource
     private RpcNotificationService notificationService;
-    @Resource(name = "reconnectCompensationScheduler")
+    @Resource(name = "pollingCompensationScheduler")
     private TaskScheduler taskScheduler;
 
     private static ConcurrentHashMap<String, PollingCompensationScheduler> map = new ConcurrentHashMap<>();
