@@ -88,6 +88,19 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     if (!partInfo.isEmpty() && Objects.nonNull(session)) {
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
                             Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
+                            //participant reconnect stop polling
+                            if (Objects.nonNull(originalPart) && originalPart.getRole().isController()) {
+                                if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+                                    timerManager.onStopPolling();
+                                    //send stop polling notify
+
+                                    JsonObject notifyParam = new JsonObject();
+                                    notifyParam.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM,sessionId);
+                                    notificationService.sendNotification(originalPart.getParticipantPrivateId(),
+                                            ProtocolElements.STOP_POLLING_NODIFY_METHOD,notifyParam);
+                                }
+                            }
+
                             //save previous order if reconnect
                             sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
                         }

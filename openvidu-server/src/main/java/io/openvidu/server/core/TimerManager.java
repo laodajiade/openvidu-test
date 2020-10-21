@@ -1,6 +1,7 @@
 package io.openvidu.server.core;
 
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -53,14 +54,21 @@ public class TimerManager {
     public void dealPollingCheck(Session session, RpcNotificationService notificationService) {
         Set<Participant> pollingPartSet = session.getPartsExcludeModeratorAndSpeaker();
         if (!CollectionUtils.isEmpty(pollingPartSet)) {
+
             List<Participant> participants = pollingPartSet.stream().sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toList());
+            log.info("need to polling participants:{}", JSON.toJSONString(participants));
             if (index > participants.size() - 1) {
                 index = 0;
             }
             Participant participant = participants.get(index);
+            //notify current part polling to
+            JsonObject currentNotifyParam = new JsonObject();
+            currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participant.getParticipantPublicId());
+            session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                    ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
 
             if (participant.isStreaming()) {
-                log.info("polling check part:{}", participant.getParticipantPublicId());
+                log.info("polling check part:{} the index:{}", participant.getParticipantPublicId(), index);
                 //send notify polling check
                 JsonObject jsonCheckParam = new JsonObject();
                 jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participant.getParticipantPublicId());
@@ -76,10 +84,23 @@ public class TimerManager {
                 nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participants.get(nextToIndex).getParticipantPublicId());
                 session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
-            }
+                index++;
+            } else {
 
-            log.info("index:{}", index);
-            index++;
+                //notify next part polling to
+                int notifyIndex = index + 1;
+                if (notifyIndex > participants.size() - 1) {
+                    notifyIndex = 0;
+                }
+                log.info("polling skip to next part:{}  the index:{}",participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
+                JsonObject nextNotifyParam = new JsonObject();
+                nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participants.get(notifyIndex).getParticipantPublicId());
+                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                        ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
+                index++;
+                dealPollingCheck(session,notificationService);
+
+            }
         }
     }
 
