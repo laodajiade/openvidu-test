@@ -44,8 +44,8 @@ public class StopPollingHandler extends RpcAbstractHandler {
         sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
         timerManager.stopPollingCompensation(roomId);
         //send notify
-        this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
-                ProtocolElements.STOP_POLLING_NODIFY_METHOD, request.getParams());
+        session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                ProtocolElements.STOP_POLLING_NODIFY_METHOD, request.getParams()));
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

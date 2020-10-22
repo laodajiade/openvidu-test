@@ -60,8 +60,9 @@ public class StartPollingHandler extends RpcAbstractHandler {
         }
         timerManager.startPollingCompensation(roomId, Integer.parseInt(time));
         //send notify
-        this.notificationService.sendNotification(operatePart.getParticipantPrivateId(),
-                ProtocolElements.START_POLLING_NOTIFY_METHOD, request.getParams());
+        session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                ProtocolElements.START_POLLING_NOTIFY_METHOD, request.getParams()));
+
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
     }
