@@ -28,6 +28,7 @@ import io.openvidu.server.utils.HttpUtil;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -129,6 +130,9 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected TimerManager timerManager;
+
+    @Autowired
+    protected AppointConferenceManage appointConferenceManage;
 
     protected BigDecimal bigDecimalMB = new BigDecimal(1024 * 1024);
 
