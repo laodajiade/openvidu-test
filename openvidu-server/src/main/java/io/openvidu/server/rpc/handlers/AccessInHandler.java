@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -162,7 +163,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
         Corporation corporation = corporationMapper.selectByCorpProject(project);
         object.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(),DateUtil.DEFAULT_YEAR_MONTH_DAY));
-        object.addProperty("validPeriod", Period.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())).getDays());
+        object.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);

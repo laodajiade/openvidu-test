@@ -8,13 +8,19 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Component
 @Slf4j
@@ -38,7 +44,7 @@ public class CorpServiceExpiredNotifyHandler {
         JsonObject params = new JsonObject();
         params.addProperty("project", corporation.getProject());
         params.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(), DateUtil.DEFAULT_YEAR_MONTH_DAY));
-        params.addProperty("validPeriod", Period.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())).getDays());
+        params.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 
         rpcNotificationService.getRpcConnections().stream()
                 .filter(rpcConnection -> rpcConnection.getProject().equals(corporation.getProject()))
