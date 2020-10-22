@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -50,17 +51,18 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
         String ruid = params.get("ruid").getAsString();
         try {
             JsonObject result;
+            Detail detail;
             if (ruid.startsWith("appt-")) {
                 Conference conference = conferenceMapper.selectByRuid(ruid);
                 if (conference != null && conference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
-                    result = new ConferenceDetail().getDetail(ruid);
+                    detail = new ConferenceDetail();
                 } else {
-                    result = new AppointmentDetail().getDetail(ruid);
+                    detail = new AppointmentDetail();
                 }
             } else {
-                result = new ConferenceDetail().getDetail(ruid);
+                detail = new ConferenceDetail();
             }
-
+            result = detail.getDetail(rpcConnection, ruid);
             return RespResult.ok(result);
         } catch (BizException e) {
             return RespResult.fail(e.getRespEnum());
@@ -68,8 +70,8 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
     }
 
 
-    class AppointmentDetail {
-        private JsonObject getDetail(String ruid) {
+    class AppointmentDetail implements Detail {
+        public JsonObject getDetail(RpcConnection rpcConnection, String ruid) {
             AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
 
             if (appointConference == null) {
@@ -78,6 +80,12 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
 
             // 根据ruid获取所有的会议邀请信息
             List<User> parts = conferencePartHistoryMapper.selectUserByRuid(ruid);
+
+            if (rpcConnection.getAccessType()!= AccessTypeEnum.web) {
+                if (parts.stream().noneMatch(user -> user.getId().equals(rpcConnection.getUserId())) && !appointConference.getUserId().equals(rpcConnection.getUserId())) {
+                    throw new BizException(ErrorCodeEnum.CONFERENCE_RECORD_NOT_EXIST);
+                }
+            }
 
             // 获取到所有预约会议发起人对象
             User creator = userManage.getUserByUserId(appointConference.getUserId());
@@ -130,9 +138,10 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
         }
     }
 
-    class ConferenceDetail {
+    class ConferenceDetail implements Detail {
 
-        public JsonObject getDetail(String ruid) {
+        @Override
+        public JsonObject getDetail(RpcConnection rpcConnection, String ruid) {
             Conference conference = conferenceMapper.selectByRuid(ruid);
 
             if (conference == null) {
@@ -194,6 +203,12 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
 
             return partInfoArr;
         }
+
+
+    }
+
+    interface Detail {
+        JsonObject getDetail(RpcConnection rpcConnection, String ruid);
     }
 }
 
