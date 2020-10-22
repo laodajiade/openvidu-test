@@ -240,7 +240,7 @@ public class SessionEventsHandler {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
 		}
         if (participant.getRole().equals(OpenViduRole.MODERATOR)) {
-			roomInfoJson.addProperty("moderatorPass", conference.getModeratorPassword());
+			roomInfoJson.addProperty("moderatorPassword", conference.getModeratorPassword());
 		}
         if (org.apache.commons.lang.StringUtils.isNotEmpty(conference.getPassword())) {
 			roomInfoJson.addProperty("password", conference.getPassword());
