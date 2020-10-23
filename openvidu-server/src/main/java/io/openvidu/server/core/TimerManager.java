@@ -1,7 +1,6 @@
 package io.openvidu.server.core;
 
 
-import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -58,6 +57,7 @@ public class TimerManager {
 
     class PollingCompensationScheduler{
         private int index = 0;
+        private int first = 0;
         private String roomId;
         private int intervalTime;
 
@@ -87,16 +87,18 @@ public class TimerManager {
             if (!CollectionUtils.isEmpty(pollingPartSet)) {
 
                 List<Participant> participants = pollingPartSet.stream().sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toList());
-                log.info("need to polling participants:{}", JSON.toJSONString(participants));
                 if (index > participants.size() - 1) {
                     index = 0;
                 }
                 Participant participant = participants.get(index);
-                //notify current part polling to
-                JsonObject currentNotifyParam = new JsonObject();
-                currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participant.getParticipantPublicId());
-                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                        ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
+                //notify current part:index=0 polling to
+                if (first == 0) {
+                    JsonObject currentNotifyParam = new JsonObject();
+                    currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participant.getParticipantPublicId());
+                    session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                            ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
+                    first++;
+                }
 
                 if (participant.isStreaming()) {
                     log.info("polling check part:{} the index:{}", participant.getParticipantPublicId(), index);
@@ -135,13 +137,14 @@ public class TimerManager {
         }
 
         void startPollingTask() {
-            pollingTask = taskScheduler.scheduleAtFixedRate(pollingNotify, new Date(), getIntervalTime(intervalTime));
+            pollingTask = taskScheduler.scheduleAtFixedRate(pollingNotify, new Date(), getIntervalTime(intervalTime) * 1000);
         }
 
         void disable() {
             if (pollingTask != null) {
                 pollingTask.cancel(false);
                 index = 0;
+                first = 0;
             }
         }
     }

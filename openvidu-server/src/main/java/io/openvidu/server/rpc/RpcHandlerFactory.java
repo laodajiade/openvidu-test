@@ -295,6 +295,8 @@ public class RpcHandlerFactory {
     private ClearConferenceRecordHandler clearConferenceRecordHandler;
     @Resource
     private GetIceServerListHandler getIceServerListHandler;
+    @Resource
+    private GetCorpInfoHandler getCorpInfoHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -404,6 +406,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_ROOMS_RECORD_INFO,                         getRoomsRecordInfoHandler);
         handlersMap.put(ProtocolElements.CLEAR_CONFERENCE_RECORD,                       clearConferenceRecordHandler);
         handlersMap.put(ProtocolElements.GET_ICE_SERVER_LIST,                           getIceServerListHandler);
+        handlersMap.put(ProtocolElements.GET_CORP_INFO,                                 getCorpInfoHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
