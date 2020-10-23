@@ -1,8 +1,8 @@
 package io.openvidu.server.common.enums;
 
 public enum AutoInviteEnum {
-    AUTO_INVITE(0, "自动呼叫"),
-    DISABLE_AUTO_INVITE(1, "禁止自动呼叫");
+    AUTO_INVITE(1, "自动呼叫"),
+    DISABLE_AUTO_INVITE(0, "禁止自动呼叫");
 
     private Integer value;
     private String desc;

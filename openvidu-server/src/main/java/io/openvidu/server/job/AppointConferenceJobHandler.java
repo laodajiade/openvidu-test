@@ -1,5 +1,6 @@
 package io.openvidu.server.job;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sensegigit.cockcrow.CrowOnceHelper;
@@ -158,6 +159,8 @@ public class AppointConferenceJobHandler {
                 Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
                 log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
                 inviteParticipant(appointConference, uuidSet);
+            } else {
+                log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
             }
 
             // 删除定时任务
