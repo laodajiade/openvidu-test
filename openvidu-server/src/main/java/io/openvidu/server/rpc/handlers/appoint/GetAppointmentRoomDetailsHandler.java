@@ -81,7 +81,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             // 根据ruid获取所有的会议邀请信息
             List<User> parts = conferencePartHistoryMapper.selectUserByRuid(ruid);
 
-            if (rpcConnection.getAccessType()!= AccessTypeEnum.web) {
+            if (rpcConnection.getAccessType() != AccessTypeEnum.web) {
                 if (parts.stream().noneMatch(user -> user.getId().equals(rpcConnection.getUserId())) && !appointConference.getUserId().equals(rpcConnection.getUserId())) {
                     throw new BizException(ErrorCodeEnum.CONFERENCE_RECORD_NOT_EXIST);
                 }
@@ -100,7 +100,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("roomId", appointConference.getRoomId());
             appointConfObj.addProperty("subject", appointConference.getConferenceSubject());
             appointConfObj.addProperty("conferenceMode", ConferenceModeEnum.parse(appointConference.getConferenceMode()).name());
-            appointConfObj.addProperty("autoCall", appointConference.getAutoInvite().compareTo(0) == 0);// 参数设置
+            appointConfObj.addProperty("autoCall", appointConference.getAutoInvite() == 1);// 参数设置
             appointConfObj.addProperty("roomCapacity", appointConference.getRoomCapacity());
             appointConfObj.addProperty("startTime", String.valueOf(appointConference.getStartTime().getTime()));
             appointConfObj.addProperty("duration", appointConference.getDuration());

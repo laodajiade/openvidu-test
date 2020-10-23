@@ -29,8 +29,8 @@ public class DevController {
 
     private static RespResult result;
 
-    @PostMapping("test")
-    public String test(@RequestParam("id") String id, @RequestParam("method") String method, @RequestBody String params) {
+    @PostMapping(value = "test",produces = "application/json")
+    public @ResponseBody String test(@RequestParam("id") String id, @RequestParam("method") String method, @RequestBody String params) {
 
         RpcAbstractHandler rpcHandler = rpcHandlerFactory.getRpcHandler(method);
         String participantPrivateId = id;

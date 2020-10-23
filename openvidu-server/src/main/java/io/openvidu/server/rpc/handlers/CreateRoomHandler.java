@@ -2,14 +2,12 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
@@ -21,12 +19,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -92,7 +88,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 }
                 if (appt.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
                     notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.APPOINTMENT_CONFERENCE_IS_FINISHED);
+                            null, ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
                     return;
                 }
                 appt.setStatus(ConferenceStatus.PROCESS.getStatus());
