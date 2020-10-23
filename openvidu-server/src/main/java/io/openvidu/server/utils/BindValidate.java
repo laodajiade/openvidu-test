@@ -43,7 +43,7 @@ public class BindValidate {
         if (!param.has(jsonPath)) {
             throw new BindValidateException(jsonPath + " 不能为 empty");
         }
-        if (org.apache.commons.lang.StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
+        if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
             throw new BindValidateException(jsonPath + " 不能为 empty");
         }
     }

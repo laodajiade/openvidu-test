@@ -87,12 +87,12 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 AppointConference appt = appointConferenceManage.getByRuid(ruid);
                 if (appt == null) {
                     notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                            null, ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
                     return;
                 }
                 if (appt.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
                     notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.CONFERENCE_IS_FINISHED);
+                            null, ErrorCodeEnum.APPOINTMENT_CONFERENCE_IS_FINISHED);
                     return;
                 }
                 appt.setStatus(ConferenceStatus.PROCESS.getStatus());

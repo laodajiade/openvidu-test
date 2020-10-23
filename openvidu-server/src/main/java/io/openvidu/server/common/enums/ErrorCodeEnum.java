@@ -97,6 +97,8 @@ public enum ErrorCodeEnum {
     APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED(13051, "预约会议时间不可超出服务到期时间"),
     RECORD_STORAGE_NOT_ENOUGH(13052, "录制存储剩余容量少于100MB"),
     CANNOT_START_POLLING(13053,"不满足开启轮询条件"),
+    APPOINTMENT_CONFERENCE_NOT_EXIST(13054,"预约会议不存在"),
+    APPOINTMENT_CONFERENCE_IS_FINISHED(13055,"预约会议已结束"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

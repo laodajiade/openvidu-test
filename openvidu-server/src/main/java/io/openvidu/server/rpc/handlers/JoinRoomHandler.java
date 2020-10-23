@@ -72,7 +72,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         && sessionManager.getSession(sessionId).getRuid().startsWith("appt-")) {
                     AppointConference appointConference = appointConferenceManage.getByRuid(sessionManager.getSession(sessionId).getRuid());
                     if (appointConference == null) {
-                        errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+                        errCode = ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST;
                         break;
                     }
                 }

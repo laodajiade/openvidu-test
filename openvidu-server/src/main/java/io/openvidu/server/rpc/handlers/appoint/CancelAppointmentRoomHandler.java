@@ -32,7 +32,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
 
         if (appointConference == null) {
-            return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
         }
 
 

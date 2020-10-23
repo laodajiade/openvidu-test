@@ -43,7 +43,7 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         AppointConference appt = appointConferenceManage.getByRuid(params.getRuid());
         if (appt == null) {
-            return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
         }
         if (appt.getStartTime().before(new Date())) {
             return RespResult.fail(ErrorCodeEnum.THE_CONFERENCE_HAS_STARTED);
