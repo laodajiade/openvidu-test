@@ -1380,6 +1380,9 @@ public class KurentoSessionManager extends SessionManager {
                     case CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT:
                         sendStorageNotify(session);
                         break;
+					case CommonConstants.RECORD_REBUILD_TASK:
+						reStartRecord(session);
+						break;
                     default:
                         break;
                 }
@@ -1391,7 +1394,11 @@ public class KurentoSessionManager extends SessionManager {
 		}
 	}
 
-    private void sendStorageNotify(Session session) {
+	private void reStartRecord(Session session) {
+		startRecording(session.getSessionId());
+	}
+
+	private void sendStorageNotify(Session session) {
         JsonObject notify = new JsonObject();
         notify.addProperty("reason", CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT);
         session.getParticipants()
