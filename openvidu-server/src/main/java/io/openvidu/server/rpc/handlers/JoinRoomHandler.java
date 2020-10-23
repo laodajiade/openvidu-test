@@ -68,7 +68,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // v.1.3.2 如果会议室有人，则不删除房间，无法通过预约邀请新加入房间
                 // 未来的版本会对预约会议做功能上优化，这段代码可能可以删除
-                if (!Objects.equals(joinType, ParticipantJoinType.invited.name()) && sessionManager.getSession(sessionId).getRuid().startsWith("appt-")) {
+                if (!Objects.equals(joinType, ParticipantJoinType.invited.name()) && (!Objects.isNull(sessionManager.getSession(sessionId)))
+                        && sessionManager.getSession(sessionId).getRuid().startsWith("appt-")) {
                     AppointConference appointConference = appointConferenceManage.getByRuid(sessionManager.getSession(sessionId).getRuid());
                     if (appointConference == null) {
                         errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
