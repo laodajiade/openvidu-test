@@ -30,6 +30,7 @@ import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.lb.rtn.RTNFactory;
+import io.openvidu.server.lb.rtn.RTNObject;
 import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -273,8 +274,9 @@ public abstract class MediaEndpoint {
 					webEndpoint.setMaxVideoSendBandwidth(maxSendKbps);
 					webEndpoint.setMinVideoSendBandwidth(minSendKbps);
 					// 媒体服务小节点轮询策略
-					if (Objects.nonNull(rtnFactory.getRTNObject())) {
-						webEndpoint.setTurnUrl(rtnFactory.getRTNObject().turnUrl);
+                    RTNObject rtnObject;
+					if (Objects.nonNull(rtnObject = rtnFactory.getRTNObject())) {
+						webEndpoint.setTurnUrl(rtnObject.turnUrl);
 					}
 
 					endpointLatch.countDown();
