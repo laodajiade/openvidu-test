@@ -272,8 +272,10 @@ public abstract class MediaEndpoint {
 					webEndpoint.setMinVideoRecvBandwidth(minRecvKbps);
 					webEndpoint.setMaxVideoSendBandwidth(maxSendKbps);
 					webEndpoint.setMinVideoSendBandwidth(minSendKbps);
-					// TODO. 媒体服务小节点策略
-//					webEndpoint.setTurnUrl(rtnFactory.getRTNObject().turnUrl);
+					// 媒体服务小节点轮询策略
+					if (Objects.nonNull(rtnFactory.getRTNObject())) {
+						webEndpoint.setTurnUrl(rtnFactory.getRTNObject().turnUrl);
+					}
 
 					endpointLatch.countDown();
 					log.trace("EP {}: Created a new WebRtcEndpoint", endpointName);
