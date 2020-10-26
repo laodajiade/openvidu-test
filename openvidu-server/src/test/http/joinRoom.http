@@ -1,0 +1,276 @@
+
+
+# 加入普通的会议室
+POST http://localhost:4443/dev/test?id=alibb100002&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100002}",
+  "micStatus": "on",
+  "password": "",
+  "platform": "windows",
+  "role": "MODERATOR",
+  "secret": "",
+  "session": "alibb100002",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on"
+}
+
+###
+
+
+# 加入 预约会议 的会议
+POST http://localhost:4443/dev/test?id={{uuid}}&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":{{uuid}}}",
+  "micStatus": "on",
+  "password": "",
+  "platform": "windows",
+  "role": "PUBLISHER",
+  "secret": "",
+  "session": "{{roomId}}",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on",
+  "ruid": "appt-e38e20479d9d41c08d6c3185425bca62"
+}
+
+
+###
+# 创建随机会议室
+POST http://localhost:4443/dev/test?id=alibb100002&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100002}",
+  "micStatus": "on",
+  "password": "123456",
+  "platform": "windows",
+  "role": "MODERATOR",
+  "secret": "",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "roomIdType": "random",
+  "videoStatus": "on"
+}
+
+
+###
+# 加入随机的预约会议
+POST http://localhost:4443/dev/test?id=alibb100002&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100002}",
+  "micStatus": "off",
+  "password": "",
+  "platform": "windows",
+  "role": "PUBLISHER",
+  "secret": "",
+  "session": "alibb29363",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "roomIdType": "random",
+  "ruid": "196pgruyhnd6rtm5",
+  "videoStatus": "off"
+}
+
+
+
+###
+# 加入随机的预约会议
+POST http://localhost:4443/dev/test?id=alibb100003&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100003}",
+  "micStatus": "off",
+  "password": "",
+  "platform": "windows",
+  "role": "PUBLISHER",
+  "secret": "",
+  "session": "alibb100002",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on"
+}
+
+
+###
+
+# 加入随机的预约会议   03 加入02 创建的随机预约，测试是否会创建房间，并且密码正确
+POST http://localhost:4443/dev/test?id=alibb100003&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100003}",
+  "micStatus": "off",
+  "platform": "windows",
+  "role": "PUBLISHER",
+  "secret": "",
+  "session": "alibb88407",
+  "ruid": "196pgruyhnd6rtm5",
+  "password": "111111",
+  "roomIdType": "random",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on"
+}
+
+
+
+###
+
+# 加入随机的预约会议（会议室不存在）  02加入02创建的随机预约，测试是否会创建房间，并且密码是否正确
+POST http://localhost:4443/dev/test?id=alibb100002&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100002}",
+  "micStatus": "off",
+  "platform": "windows",
+  "role": "PUBLISHER",
+  "secret": "",
+  "session": "alibb88407",
+  "ruid": "i0d5h3ndy7hylufc",
+  "password": "111111",
+  "roomIdType": "random",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on"
+}
+
+
+###
+# 03加入02会议
+POST http://localhost:4443/dev/test?id=alibb100003&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 120,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100003}",
+  "micStatus": "off",
+  "platform": "windows",
+  "role": "PUBLISHER",
+  "secret": "",
+  "session": "alibb100002",
+  "ruid": "i0d5h3ndy7hylufc",
+  "password": "666665",
+  "roomIdType": "random",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on"
+}
+
+###
+# 分享流
+POST http://localhost:4443/dev/test?id=alibb100003&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "conferenceMode": "SFU",
+    "dataChannels": "false",
+    "duration": 0,
+    "isReconnected": false,
+    "joinType": "active",
+    "metadata": "{\"account\":alibb100009}",
+    "micStatus": "off",
+    "password": "",
+    "platform": "android",
+    "role": "PUBLISHER",
+    "roomIdType": "random",
+    "ruid": "",
+    "secret": "",
+    "session": "alibb08377",
+    "streamType": "SHARING",
+    "useIdInRoom": "allParticipants",
+    "videoStatus": "on"
+}
+
+
+###
+# test test
+POST http://localhost:4443/dev/test?id=alibb100002&method=joinRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "dataChannels": "false",
+  "duration": 60,
+  "isReconnected": false,
+  "joinType": "active",
+  "metadata": "{\"account\":alibb100002}",
+  "micStatus": "on",
+  "password": "",
+  "platform": "android",
+  "role": "PUBLISHER",
+  "roomIdType": "unknown",
+  "ruid": "appt-14f642b923204924bd930c298ecd0da4",
+  "secret": "",
+  "session": "alibb90499",
+  "streamType": "MAJOR",
+  "useIdInRoom": "allParticipants",
+  "videoStatus": "on"
+}

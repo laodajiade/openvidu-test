@@ -13,10 +13,10 @@ Content-Type: application/json
   "micStatusInRoom": "on",
   "password": "",
   "quietStatusInRoom": "smart",
-  "roomId": "80101900003",
-  "ruid": "appt-37b036c46a72477f9bcd6624582fd03e",
+  "roomId": "{{roomId}}",
+  "ruid": "appt-e38e20479d9d41c08d6c3185425bca62",
   "sharePowerInRoom": "on",
-  "subject": "80101900003的会议",
+  "subject": "80101900003的会议滴滴",
   "useIdInRoom": "allParticipants",
   "videoStatusInRoom": "on"
 }

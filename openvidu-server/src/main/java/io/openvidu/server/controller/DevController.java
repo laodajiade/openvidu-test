@@ -37,19 +37,21 @@ public class DevController {
         RpcConnection connection = notificationService.getRpcConnections().stream().filter(c -> c.getUserUuid().equals(id)).findFirst().get();
         //RpcConnection connection = notificationService.getRpcConnection(participantPrivateId);
         RpcNotificationService notificationService = rpcHandler.getNotificationService();
+        result = null;
+        try {
+            RpcNotificationService r0 = new RpcNotificationService0();
+            rpcHandler.setNotificationService(r0);
 
-        RpcNotificationService r0 = new RpcNotificationService0();
-        rpcHandler.setNotificationService(r0);
+            Request<JsonObject> request = new Request<>();
+            request.setId(9999);
+            request.setMethod(method);
+            request.setParams(new Gson().fromJson(params, JsonObject.class));
 
-        Request<JsonObject> request = new Request<>();
-        request.setId(9999);
-        request.setMethod(method);
-        request.setParams(new Gson().fromJson(params, JsonObject.class));
-
-        rpcHandler.handRpcRequest(connection, request);
-
-        rpcHandler.setNotificationService(notificationService);
-
+            rpcHandler.handRpcRequest(connection, request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rpcHandler.setNotificationService(notificationService);
+        }
         return new GsonBuilder().setPrettyPrinting().create().toJson(result);
     }
 
