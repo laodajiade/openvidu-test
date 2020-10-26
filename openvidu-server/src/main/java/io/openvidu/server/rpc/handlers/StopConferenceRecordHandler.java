@@ -74,6 +74,8 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
+        sessionManager.setStopRecordingTime(session.getSessionId(), System.currentTimeMillis());
+
         // 通知录制服务停止录制视频
         sessionManager.stopRecording(roomId);
 
