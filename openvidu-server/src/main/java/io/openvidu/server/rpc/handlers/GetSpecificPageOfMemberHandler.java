@@ -31,6 +31,13 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
         Integer pageNum = getIntOptionalParam(request,"pageNum");
         Integer pageSize = getIntOptionalParam(request,"pageSize");
 
+        if (deptId.equals(0L)) {
+            Department department = departmentMapper.selectRootDept(rpcConnection.getProject());
+            if (Objects.nonNull(department)) {
+                deptId = department.getId();
+            }
+        }
+
         if (isChooseAll) {
             PageHelper.startPage(1,Integer.MAX_VALUE);
         } else {
@@ -40,12 +47,6 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
                 return;
             }
             PageHelper.startPage(pageNum,pageSize);
-        }
-        if (deptId.equals(0L)) {
-            Department department = departmentMapper.selectRootDept(rpcConnection.getProject());
-            if (Objects.nonNull(department)) {
-                deptId = department.getId();
-            }
         }
         List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId);
         JsonArray jsonArray = new JsonArray();

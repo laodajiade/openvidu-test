@@ -9,7 +9,10 @@ import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.manage.UserManage;
-import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferencePartHistory;
+import io.openvidu.server.common.pojo.CorpMcuConfig;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 import org.apache.commons.lang.StringUtils;
@@ -116,7 +119,15 @@ public class RoomManageImpl implements RoomManage {
 
     @Override
     public int createMeetingRoom(Conference conference) {
-        int result = conferenceMapper.insert(conference);
+        // 防止预约会议重复创建
+        Conference existAppt = null;
+        if (conference.getRuid().startsWith("appt-")) {
+            existAppt = getConferenceByRuid(conference.getRuid());
+        }
+        int result = 0;
+        if (existAppt == null) {
+            result = conferenceMapper.insert(conference);
+        }
         if (result > 0) {
             // save in cache
             Map<String, Object> roomInfo = new HashMap<>();
