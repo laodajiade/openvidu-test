@@ -30,7 +30,7 @@ public class GetNotFinishedRoomHandler extends RpcAbstractHandler {
             if (!roomInfo.isEmpty() && Objects.nonNull(session) && !session.isClosed()) {
                 // room info
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_ID_PARAM, roomId);
-                respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, String.valueOf(roomInfo.get("conferenceSubject")));
+                respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SUBJECT_PARAM, String.valueOf(session.getPresetInfo().getRoomSubject()));
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_PASSWORD_PARAM, String.valueOf(roomInfo.get("password")));
 
                 // participant info.

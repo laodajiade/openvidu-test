@@ -1,0 +1,7 @@
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getNotFinishedRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+}
