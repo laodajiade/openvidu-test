@@ -26,6 +26,8 @@ public interface DepartmentMapper {
 
     Department selectRootDept(String project);
 
+    Department selectRootDeptByUuid(String uuid);
+
     List<Department> selectChildDept(@Param("parentId") Long parentId, @Param("project") String project);
 
     List<Department> selectByParentIds(List<Long> deptIds);

@@ -20,7 +20,6 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -49,9 +48,7 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
             }
         } else {
             // request not from vhd device
-            Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-            Long orgId = Long.valueOf(String.valueOf(userInfo.get("deptId")));
-            rootDept = departmentMapper.selectByPrimaryKey(orgId);
+            rootDept = departmentMapper.selectRootDeptByUuid(rpcConnection.getUserUuid());
         }
 
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());

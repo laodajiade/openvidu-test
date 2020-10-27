@@ -41,6 +41,15 @@
     and parent_id is null
   </select>
 
+  <select id="selectRootDeptByUuid" resultType="io.openvidu.server.common.pojo.Department" parameterType="java.lang.String" >
+    select d.id,d.dept_name deptName,d.parent_id parentId,d.corp_id corpId
+    from sd_user_dept sud
+    left join sd_user su on sud.user_id = su.id
+    left join sd_department d on sud.dept_id = d.id
+    where su.uuid = #{uuid,jdbcType=VARCHAR}
+    limit 1
+  </select>
+
   <select id="selectChildDept" parameterType="java.lang.Object" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
