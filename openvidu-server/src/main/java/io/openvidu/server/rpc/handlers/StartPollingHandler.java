@@ -50,14 +50,14 @@ public class StartPollingHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.THE_POLLING_HAS_STARTED);
             return;
         }
-        preset.setPollingStatusInRoom(SessionPresetEnum.on);
-        preset.setPollingIntervalTime(Integer.valueOf(time));
         Set<Participant> participantSet = session.getPartsExcludeModeratorAndSpeaker();
         if (CollectionUtils.isEmpty(participantSet)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CANNOT_START_POLLING);
             return;
         }
+        preset.setPollingStatusInRoom(SessionPresetEnum.on);
+        preset.setPollingIntervalTime(Integer.valueOf(time));
         timerManager.startPollingCompensation(roomId, Integer.parseInt(time));
         //send notify
         session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
