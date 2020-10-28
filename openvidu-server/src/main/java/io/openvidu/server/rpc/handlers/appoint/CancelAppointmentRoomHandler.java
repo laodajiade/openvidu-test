@@ -10,7 +10,9 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.RespResult;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +74,12 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         appointConferenceManage.deleteByRuid(ruid);
         appointParticipantMapper.deleteByConferenceRuid(ruid);
+
+        // 销毁未活跃的房间
+        Session sessionNotActive = sessionManager.getSessionNotActive(appointConference.getRoomId());
+        if (sessionNotActive != null && sessionNotActive.getRuid().equals(ruid)) {
+            sessionManager.closeSessionAndEmptyCollections(sessionNotActive, EndReason.closeSessionByModerator);
+        }
 
         return RespResult.ok(new JsonObject());
     }
