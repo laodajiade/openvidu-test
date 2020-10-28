@@ -96,6 +96,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
                 conference.setRuid(ruid);
                 roomSubject = appt.getConferenceSubject();
+                conference.setConferenceDesc(appt.getConferenceDesc());
             } else {
                 conference.setRuid(UUID.randomUUID().toString());
             }
