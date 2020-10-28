@@ -131,7 +131,6 @@ public class AppointConferenceJobHandler {
             Long jobId = jsonParam.get(ProtocolElements.XXL_JOB_ID).getAsLong();
             JsonObject businessParam = jsonParam.get(ProtocolElements.XXL_JOB_PARAM).getAsJsonObject();
             String ruid = businessParam.get(ProtocolElements.CREATE_ROOM_RUID_PARAM).getAsString();
-
             // 获取会议信息
             AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
             if (Objects.isNull(appointConference)) {
@@ -139,15 +138,28 @@ public class AppointConferenceJobHandler {
                 return ReturnT.FAIL;
             }
 
+            if (appointConference.getStatus() == 2) {//会议已提前结束
+                crowOnceHelper.delCrowOnce(jobId);
+                return ReturnT.SUCCESS;
+            }
+
+            if (appointConference.getAutoInvite().intValue() != AutoInviteEnum.AUTO_INVITE.getValue().intValue()) {
+                // 删除定时任务
+                crowOnceHelper.delCrowOnce(jobId);
+                return ReturnT.SUCCESS;
+            }
 
             // 是否自动呼叫、房间是否被使用中
-            if (appointConference.getAutoInvite().intValue() == AutoInviteEnum.AUTO_INVITE.getValue().intValue() && !isRoomInUse(appointConference.getRoomId())) {
+            if (!isRoomInUse(appointConference.getRoomId())) {
                 // change the conference status
                 Conference conference = constructConf(appointConference);
                 conferenceMapper.insertSelective(conference);
-
                 sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
+            } else {
+                log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
+            }
 
+            if (isSameRoom(appointConference.getRoomId(), ruid)) {
                 // sendNotify
                 List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
 
@@ -159,9 +171,8 @@ public class AppointConferenceJobHandler {
                 Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
                 log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
                 inviteParticipant(appointConference, uuidSet);
-            } else {
-                log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
             }
+
 
             // 删除定时任务
             crowOnceHelper.delCrowOnce(jobId);
@@ -257,6 +268,27 @@ public class AppointConferenceJobHandler {
             log.info("conferenceBeginJobHandler roomId={} is in use", roomId);
         }
         return isRoomInUse;
+    }
+
+    /**
+     * 判断房间是否被占用的同时判断是不是同一个预约会议
+     *
+     * @param roomId
+     * @return
+     */
+    public boolean isSameRoom(String roomId, String ruid) {
+        Session session = sessionManager.getSession(roomId);
+        if (session != null && Objects.equals(session.getRuid(), ruid)) {
+            log.info("roomId={}, ruid={} is use and same", roomId, ruid);
+            return true;
+        }
+        Session sessionNotActive = sessionManager.getSessionNotActive(roomId);
+        if (sessionNotActive != null && Objects.equals(sessionNotActive.getConference().getRuid(), ruid)) {
+            log.info("roomId={}, ruid={} is use and same", roomId, ruid);
+            return true;
+        }
+        log.info("roomId={}, ruid={} is use and not same", roomId, ruid);
+        return false;
     }
 
     public Conference constructConf(AppointConference ac) {
