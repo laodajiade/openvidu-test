@@ -2,6 +2,7 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.User;
+import org.apache.ibatis.annotations.Delete;
 
 import java.util.List;
 
@@ -25,4 +26,7 @@ public interface ConferencePartHistoryMapper {
     List<ConferencePartHistory> selectConfPartHistoryByRuids(List<String> ruids);
 
     List<User> selectUserByRuid(String ruid);
+
+    @Delete("delete from sd_conf_part_history where ruid = #{ruid}")
+    int deleteByRuid(String ruid);
 }
