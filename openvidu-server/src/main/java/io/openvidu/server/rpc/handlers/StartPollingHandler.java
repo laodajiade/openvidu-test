@@ -51,7 +51,7 @@ public class StartPollingHandler extends RpcAbstractHandler {
             return;
         }
         preset.setPollingStatusInRoom(SessionPresetEnum.on);
-        //
+        preset.setPollingIntervalTime(Integer.valueOf(time));
         Set<Participant> participantSet = session.getPartsExcludeModeratorAndSpeaker();
         if (CollectionUtils.isEmpty(participantSet)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

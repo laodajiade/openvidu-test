@@ -786,6 +786,7 @@ public class ProtocolElements {
 	public static final String GET_POLLING_STATUS_METHOD = "getPollingStatus";
 	public static final String GETPOLLINGSTATUS_ROOMID_PARAM = "roomId";
 	public static final String GETPOLLINGSTATUS_STATUS_PARAM = "status";
+	public static final String GETPOLLINGSTATUS_INTERVALTIME_PARAM = "time";
 
 	public static final String GET_ICE_SERVER_LIST = "getIceServerList";
 	public static final String GET_CORP_INFO = "getCorpInfo";
