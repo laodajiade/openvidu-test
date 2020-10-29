@@ -51,7 +51,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
                     if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
                         log.error("disable participant active join room:{}", sessionId);
-                        errCode = ErrorCodeEnum.PERMISSION_LIMITED;
+                        errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                         break;
                     }
                 }
