@@ -53,6 +53,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_PASSWORD_PARAM = "password";
 	public static final String JOINROOM_MODERATORPASSWORD_PARAM = "moderatorPassword";
 	public static final String JOINROOM_ISRECONNECTED_PARAM = "isReconnected";
+	public static final String JOINROOM_RUID_PARAM = "ruid";
 
 	public static final String JOINROOM_PEERID_PARAM = "id";
 	public static final String JOINROOM_PEERCREATEDAT_PARAM = "createdAt";

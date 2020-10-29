@@ -309,6 +309,7 @@ public class AppointConferenceJobHandler {
         conference.setProject(ac.getProject());
         conference.setConferenceDesc(ac.getConferenceDesc());
         conference.setModeratorUuid(ac.getModeratorUuid());
+        conference.setProject(ac.getProject());
         return conference;
     }
 

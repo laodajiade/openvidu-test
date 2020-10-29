@@ -36,6 +36,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
         String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
+        String ruid = getStringOptionalParam(request, ProtocolElements.JOINROOM_RUID_PARAM);
         boolean isReconnected = getBooleanParam(request, ProtocolElements.JOINROOM_ISRECONNECTED_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
@@ -61,6 +62,15 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 search.setStatus(1);
                 List<Conference> conference = conferenceMapper.selectBySearchCondition(search);
                 if (conference == null || conference.isEmpty()) {
+                    ruid = "appt-de4af0a9ed4e40759dc9ef4e511fec4e";
+                    if (StringUtils.startsWithIgnoreCase(ruid, "appt-")) {
+                        AppointConference ac = appointConferenceManage.getByRuid(ruid);
+                        if (ac != null && ac.getStartTime().after(new Date())) {
+                            log.error("can not find roomId:{} and appointment conference {} did not start", sessionId, ruid);
+                            errCode = ErrorCodeEnum.APPOINTMENT_CONFERENCE_DID_NOT_START;
+                            break;
+                        }
+                    }
                     log.error("can not find roomId:{} in data layer", sessionId);
                     errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                     break;
