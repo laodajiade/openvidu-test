@@ -17,7 +17,7 @@ public class GetIceServerListHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         JsonObject respObj = new JsonObject();
         respObj.add("stunServer", gson.fromJson(openviduConfig.getStunServers(), JsonArray.class));
-        respObj.add("turnServer", gson.fromJson(openviduConfig.getLBRTNsStrings(), JsonArray.class));
+        respObj.add("turnServer", gson.fromJson(openviduConfig.getTurnServers(), JsonArray.class));
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
     }
