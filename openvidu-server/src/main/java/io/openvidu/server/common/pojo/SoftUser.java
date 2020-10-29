@@ -12,7 +12,7 @@ public class SoftUser {
     /**
      * 用户UUID
      */
-    private Long uuid;
+    private String uuid;
     /**
      * 用户名
      */

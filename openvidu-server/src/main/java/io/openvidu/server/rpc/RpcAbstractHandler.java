@@ -364,7 +364,7 @@ public abstract class RpcAbstractHandler {
                 softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM, "");
                 softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_USER_NAME_PARAM, softUser.getUsername());
                 softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_ACCOUNT_PARAM, softUser.getUuid());
-                String status = cacheManage.getTerminalStatus(String.valueOf(softUser.getUuid()));
+                String status = cacheManage.getTerminalStatus(softUser.getUuid());
                 softUserJson.addProperty(ProtocolElements.GET_SUB_DEVORUSER_DEVICESTATUS_PARAM,
                         !StringUtils.isEmpty(status) ? status : DeviceStatus.offline.name());
                 accountList.add(softUserJson);
