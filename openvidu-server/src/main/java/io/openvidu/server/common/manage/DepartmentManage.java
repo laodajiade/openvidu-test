@@ -21,4 +21,6 @@ public interface DepartmentManage {
     DeviceDept getDeviceDeptBySerialNum(String devSerialNum);
 
     List<Long> getAllChildDept(List<Long> deptIds);
+
+    Department getRootDept(String project);
 }

@@ -69,6 +69,13 @@
     </foreach>
   </select>
 
+  <select id="getRootDept" parameterType="java.util.List" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_department
+    where project = #{project} and parent_id is null
+  </select>
+
   <select id="getSubFirstLevelDepts" parameterType="java.lang.Long" resultMap="BaseResultMap">
       select id, parent_id, dept_name
       from  sd_department

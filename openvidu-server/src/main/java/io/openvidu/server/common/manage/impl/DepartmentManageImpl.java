@@ -119,4 +119,9 @@ public class DepartmentManageImpl implements DepartmentManage {
         return new ArrayList<>(depts);
     }
 
+    @Override
+    public Department getRootDept(String project) {
+        return departmentMapper.getRootDept(project);
+    }
+
 }

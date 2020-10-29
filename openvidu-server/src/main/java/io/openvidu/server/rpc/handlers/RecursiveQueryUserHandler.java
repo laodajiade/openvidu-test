@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.pojo.AllUserInfo;
+import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.UserDept;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -38,6 +39,12 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
         List<String> uuids = getStringListParam(request,"uuids");
         List<AllUserInfo> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(deptIds)) {
+
+            if (deptIds.contains(0L)) {
+                Department rootDept = departmentManage.getRootDept(rpcConnection.getProject());
+                deptIds.add(rootDept.getId());
+            }
+
             List<Long> allChildDeptIds = departmentManage.getAllChildDept(deptIds);
             List<UserDept> userDepts = userDeptService.getByDeptIds(allChildDeptIds);
 
