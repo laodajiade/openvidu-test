@@ -10,10 +10,8 @@ import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
-import io.openvidu.server.common.pojo.AppointConference;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferencePartHistory;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.exception.BizException;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
@@ -25,9 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -125,11 +122,33 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
         private JsonArray constructAppointPartsInfo(List<User> parts) {
             JsonArray partInfoArr = new JsonArray();
 
+            if (parts.isEmpty()) {
+                return partInfoArr;
+            }
+
+            List<Long> userIds = parts.stream().map(User::getId).distinct().collect(Collectors.toList());
+            List<UserDept> userDepts = userDeptMapper.selectInUserId(userIds);
+            Map<Long, Long> map = userDepts.stream().collect(Collectors.toMap(UserDept::getUserId, UserDept::getDeptId));
+
+            List<Long> deviceUserIds = parts.stream().filter(u -> u.getType() == 1).map(User::getId).distinct().collect(Collectors.toList());
+            Map<Long, String> userDeviceMap = new HashMap<>();
+            if (!deviceUserIds.isEmpty()) {
+                List<UserDeviceDeptInfo> userDeviceDeptInfos = userMapper.queryUserInfoByUserIds(deviceUserIds);
+                userDeviceMap = userDeviceDeptInfos.stream().collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, UserDeviceDeptInfo::getDeviceName));
+            }
+
+
             for (User user : parts) {
                 JsonObject partInfo = new JsonObject();
                 partInfo.addProperty("account", user.getUuid());
-                partInfo.addProperty("username", user.getUsername());
+
+                if (user.getType() != 1) {
+                    partInfo.addProperty("username", user.getUsername());
+                } else {
+                    partInfo.addProperty("username", userDeviceMap.get(user.getId()));
+                }
                 partInfo.addProperty("userIcon", "");
+                partInfo.addProperty("orgId", map.get(user.getId()));
 
                 partInfoArr.add(partInfo);
             }
@@ -193,11 +212,21 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
         private JsonArray constructAppointPartsInfo(List<ConferencePartHistory> partHistories) {
             JsonArray partInfoArr = new JsonArray();
 
+            if (partHistories.isEmpty()) {
+                return partInfoArr;
+            }
+
+            List<Long> userIds = partHistories.stream().map(ConferencePartHistory::getUserId).distinct().collect(Collectors.toList());
+            List<UserDept> userDepts = userDeptMapper.selectInUserId(userIds);
+            Map<Long, Long> map = userDepts.stream().collect(Collectors.toMap(UserDept::getUserId, UserDept::getDeptId));
+
             for (ConferencePartHistory partHistory : partHistories) {
                 JsonObject partInfo = new JsonObject();
                 partInfo.addProperty("account", partHistory.getUuid());
                 partInfo.addProperty("username", partHistory.getUsername());
                 partInfo.addProperty("userIcon", "");
+                partInfo.addProperty("orgId", map.get(partHistory.getUserId()));
+
                 partInfoArr.add(partInfo);
             }
 

@@ -131,4 +131,15 @@
       #{item,jdbcType=BIGINT}
     </foreach>
   </select>
+
+  <select id="selectInUserId" resultMap="BaseResultMap" parameterType="java.util.List" >
+    select
+    <include refid="Base_Column_List" />
+    from sd_user_dept
+    where user_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
 </mapper>

@@ -28,5 +28,7 @@ public interface UserDeptMapper {
 
     List<UserDept> selectByDeptIdsList(List<Long> deptIds);
 
+    List<UserDept> selectInUserId(List<Long> userIds);
+
 
 }
