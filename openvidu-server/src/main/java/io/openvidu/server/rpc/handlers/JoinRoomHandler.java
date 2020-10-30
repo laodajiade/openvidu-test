@@ -62,7 +62,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 search.setStatus(1);
                 List<Conference> conference = conferenceMapper.selectBySearchCondition(search);
                 if (conference == null || conference.isEmpty()) {
-                    ruid = "appt-de4af0a9ed4e40759dc9ef4e511fec4e";
                     if (StringUtils.startsWithIgnoreCase(ruid, "appt-")) {
                         AppointConference ac = appointConferenceManage.getByRuid(ruid);
                         if (ac != null && ac.getStartTime().after(new Date())) {
@@ -116,9 +115,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                                     timerManager.stopPollingCompensation(sessionId);
                                     //send stop polling notify
                                     JsonObject notifyParam = new JsonObject();
-                                    notifyParam.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM,sessionId);
+                                    notifyParam.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, sessionId);
                                     notificationService.sendNotification(originalPart.getParticipantPrivateId(),
-                                            ProtocolElements.STOP_POLLING_NODIFY_METHOD,notifyParam);
+                                            ProtocolElements.STOP_POLLING_NODIFY_METHOD, notifyParam);
                                 }
                             }
 
@@ -156,17 +155,17 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     Collection<Session> sessions = sessionManager.getSessions();
                     if (Objects.nonNull(sessions)) {
                         AtomicInteger limitCapacity = new AtomicInteger();
-                        sessions.forEach(e ->{
+                        sessions.forEach(e -> {
                             if (rpcConnection.getProject().equals(e.getConference().getProject())) {
                                 limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
                             }
                         });
                         //query sd_corporation info
                         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-                        if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() -1) {
+                        if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
                             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                                     null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                            return ;
+                            return;
                         }
                     }
                 }
@@ -279,7 +278,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), false, EndReason.forceCloseSessionByUser);
                 }
             } else {
-                if (!Objects.isNull(rpcConnection.getSerialNumber()) ) {
+                if (!Objects.isNull(rpcConnection.getSerialNumber())) {
                     cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
                 }
 
