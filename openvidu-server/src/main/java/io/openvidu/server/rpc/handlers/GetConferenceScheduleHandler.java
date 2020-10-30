@@ -7,7 +7,7 @@ import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.PageResult;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.vo.ConferenceHisResp;
@@ -79,18 +79,21 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         }
 
         List<Long> userIdSet = list.stream().map(ConferenceHisResp::getCreatorUserId).distinct().collect(Collectors.toList());
-        List<User> users = userMapper.getUsersByUserIdsList(userIdSet);
 
-        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+        List<UserDeviceDeptInfo> users = userMapper.queryUserInfoByUserIds(userIdSet);
+
+        Map<Long, UserDeviceDeptInfo> userMap = users.stream().collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, Function.identity()));
 
         for (ConferenceHisResp conferenceHisResp : list) {
-            User user = userMap.get(conferenceHisResp.getCreatorUserId());
+            UserDeviceDeptInfo user = userMap.get(conferenceHisResp.getCreatorUserId());
             if (user != null) {
                 conferenceHisResp.setCreatorAccount(user.getUuid());
-                conferenceHisResp.setCreatorUsername(user.getUsername());
-                conferenceHisResp.setCreatorUserIcon(user.getIcon());
+                conferenceHisResp.setCreatorUsername(StringUtils.isNotBlank(user.getUsername()) ? user.getUsername() : user.getDeviceName());
+                conferenceHisResp.setCreatorUserIcon("");
             } else {
-                conferenceHisResp.setCreatorUsername("用户不存在");
+                conferenceHisResp.setCreatorAccount("");
+                conferenceHisResp.setCreatorUsername("已注销");
+                conferenceHisResp.setCreatorUserIcon("");
             }
         }
     }

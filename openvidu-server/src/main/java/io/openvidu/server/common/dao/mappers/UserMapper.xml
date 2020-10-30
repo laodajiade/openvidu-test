@@ -76,6 +76,25 @@
     </foreach>
   </select>
 
+  <select id="queryUserInfoByUserId"  resultType="io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo">
+    SELECT
+    u.id AS userId,
+    u.uuid,
+    u.username,
+    ud.id AS deptId,
+    ud.dept_name AS deptName,
+    d.serial_number AS serialNumber,
+    d.device_name AS deviceName,
+    d.device_model AS deviceModel
+    FROM
+    sd_user u
+    LEFT JOIN sd_user_dept sud ON u.id = sud.user_id
+    LEFT JOIN sd_department ud ON ud.id = sud.dept_id
+    LEFT JOIN sd_user_dev userdev ON u.id = userdev.user_id
+    LEFT JOIN sd_device d ON d.serial_number = userdev.serial_number
+    WHERE u.id = #{userId,jdbcType=BIGINT}
+  </select>
+
   <select id="selectSoftUserByDeptId" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.SoftUser">
     select
     su.uuid,

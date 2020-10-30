@@ -11,6 +11,7 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
+import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.AutoInviteEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
@@ -21,7 +22,7 @@ import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
@@ -55,6 +56,9 @@ public class AppointConferenceJobHandler {
 
     @Resource
     private UserManage userManage;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Resource
     private SessionManager sessionManager;
@@ -230,14 +234,14 @@ public class AppointConferenceJobHandler {
             return;
         }
         // 获取主持人信息
-        User moderator = userManage.getUserByUserId(conference.getUserId());
+        UserDeviceDeptInfo moderator = userMapper.queryUserInfoByUserId(conference.getUserId());
 
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, String.valueOf(System.currentTimeMillis() + 60000));
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, conference.getRoomId());
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, String.valueOf(moderator.getUuid()));
-        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(moderator.getUsername()) ? "" : moderator.getUsername());
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, StringUtils.isEmpty(moderator.getUsername()) ? moderator.getDeviceName() : moderator.getUsername());
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_AUTO_INVITE_PARAM, conference.getAutoInvite());
         params.addProperty("ruid", conference.getRuid());
         if (!StringUtils.isEmpty(conference.getPassword())) {

@@ -18,6 +18,7 @@ import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,13 +86,13 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             }
 
             // 获取到所有预约会议发起人对象
-            User creator = userManage.getUserByUserId(appointConference.getUserId());
+            UserDeviceDeptInfo creator = userMapper.queryUserInfoByUserId(appointConference.getUserId());
 
             // 封装响应参数
             return getAppointConfJson(appointConference, parts, creator);
         }
 
-        private JsonObject getAppointConfJson(AppointConference appointConference, List<User> parts, User creator) {
+        private JsonObject getAppointConfJson(AppointConference appointConference, List<User> parts, UserDeviceDeptInfo creator) {
             JsonObject appointConfObj = new JsonObject();
             appointConfObj.addProperty("ruid", appointConference.getRuid());
             appointConfObj.addProperty("roomId", appointConference.getRoomId());
@@ -104,9 +105,13 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("desc", appointConference.getConferenceDesc());
             appointConfObj.addProperty("moderatorRoomId", appointConference.getModeratorUuid());
             // 会议发起人
-            appointConfObj.addProperty("createorUsername", Objects.nonNull(creator) ? creator.getUsername() : "");
+            appointConfObj.addProperty("createorUsername", Objects.isNull(creator) ? "已注销"
+                    : StringUtils.isNotBlank(creator.getUsername()) ? creator.getUsername() : creator.getDeviceName());
+            appointConfObj.addProperty("creatorUsername", Objects.isNull(creator) ? "已注销"
+                    : StringUtils.isNotBlank(creator.getUsername()) ? creator.getUsername() : creator.getDeviceName());
             appointConfObj.addProperty("createorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
-            appointConfObj.addProperty("creatorUserIcon", Objects.nonNull(creator) ? creator.getIcon() : "");
+            appointConfObj.addProperty("creatorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
+            appointConfObj.addProperty("creatorUserIcon", "");
 
             appointConfObj.addProperty("isStart", appointConference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", appointConference.getProject());
@@ -171,13 +176,13 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             List<ConferencePartHistory> conferencePartHistories = conferencePartHistoryMapper.selectConfPartHistoryByRuids(singletonList(ruid));
 
             // 获取到所有预约会议发起人对象
-            User creator = userManage.getUserByUserId(conference.getUserId());
+            UserDeviceDeptInfo creator = userMapper.queryUserInfoByUserId(conference.getUserId());
 
             // 封装响应参数
             return translateResultJson(conference, conferencePartHistories, creator);
         }
 
-        private JsonObject translateResultJson(Conference conference, List<ConferencePartHistory> participants, User creator) {
+        private JsonObject translateResultJson(Conference conference, List<ConferencePartHistory> participants, UserDeviceDeptInfo creator) {
             JsonObject appointConfObj = new JsonObject();
             appointConfObj.addProperty("ruid", conference.getRuid());
             appointConfObj.addProperty("roomId", conference.getRoomId());
@@ -188,9 +193,13 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("desc", conference.getConferenceDesc());
             appointConfObj.addProperty("moderatorRoomId", conference.getModeratorUuid());
             // 会议发起人
-            appointConfObj.addProperty("createorUsername", Objects.nonNull(creator) ? creator.getUsername() : "");
+            appointConfObj.addProperty("createorUsername", Objects.isNull(creator) ? "已注销"
+                    : StringUtils.isNotBlank(creator.getUsername()) ? creator.getUsername() : creator.getDeviceName());
+            appointConfObj.addProperty("creatorUsername", Objects.isNull(creator) ? "已注销"
+                    : StringUtils.isNotBlank(creator.getUsername()) ? creator.getUsername() : creator.getDeviceName());
             appointConfObj.addProperty("createorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
-            appointConfObj.addProperty("creatorUserIcon", Objects.nonNull(creator) ? creator.getIcon() : "");
+            appointConfObj.addProperty("creatorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
+            appointConfObj.addProperty("creatorUserIcon", "");
             appointConfObj.addProperty("isStart", conference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", conference.getProject());
             appointConfObj.addProperty("password", conference.getPassword());

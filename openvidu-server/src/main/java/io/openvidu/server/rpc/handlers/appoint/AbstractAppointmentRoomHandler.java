@@ -13,11 +13,13 @@ import io.openvidu.server.common.manage.ConferenceJobManage;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.ConferenceJob;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.utils.CrowOnceInfoManager;
 import io.openvidu.server.utils.DateUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -82,8 +84,11 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_STARTTIME_PARAM, vo.getStartTime());
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_SUBJECT_PARAM, vo.getSubject());
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_ENDTIME_PARAM, DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime());
-        User creator = userManage.getUserByUserId(vo.getUserId());
-        jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_CREATOR_PARAM, Objects.nonNull(creator) ? creator.getUsername() : "");
+
+        UserDeviceDeptInfo creator = userMapper.queryUserInfoByUserId(vo.getUserId());
+
+        jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_CREATOR_PARAM, Objects.isNull(creator) ? "已注销"
+                : StringUtils.isEmpty(creator.getUsername()) ? creator.getDeviceName() : creator.getUsername());
         notificationService.getRpcConnections().forEach(rpcConnection1 -> {
             if (!Objects.equals(rpcConnection1.getUserId(), vo.getUserId()) && uuidSet.contains(rpcConnection1.getUserUuid())) {
                 notificationService.sendNotification(rpcConnection1.getParticipantPrivateId(), ProtocolElements.APPOINTMENT_CONFERENCE_CREATED_METHOD, jsonObject);
@@ -93,8 +98,9 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
 
     public void sendConferenceToBeginNotify(AppointmentRoomVO vo, Set<String> uuidSet) {
         JsonObject jsonObject = new JsonObject();
-        User creator = userManage.getUserByUserId(vo.getUserId());
-        jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_CREATOR_PARAM, Objects.nonNull(creator) ? creator.getUsername() : "");
+        UserDeviceDeptInfo creator = userMapper.queryUserInfoByUserId(vo.getUserId());
+        jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_CREATOR_PARAM, Objects.isNull(creator) ? "已注销"
+                : StringUtils.isEmpty(creator.getUsername()) ? creator.getDeviceName() : creator.getUsername());
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_SUBJECT_PARAM, vo.getSubject());
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_STARTTIME_PARAM, vo.getStartTime());
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_ENDTIME_PARAM, DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime());
