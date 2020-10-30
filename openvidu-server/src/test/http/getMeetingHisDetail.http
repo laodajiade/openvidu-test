@@ -1,0 +1,9 @@
+# 获取会议历史
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getMeetingHisDetail
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid":"a86a73f9-5b7a-4675-9e85-da1b8d8988c0"
+}
