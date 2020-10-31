@@ -433,10 +433,12 @@ public abstract class SessionManager {
 		}
 	}*/
 
-	public boolean isPublisherInSession(String sessionId, Participant participant) {
+	public boolean isPublisherInSession(String sessionId, Participant participant,SessionPresetEnum sessionPresetEnum) {
 		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
 			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-				return (OpenViduRole.PUBLISHER.equals(participant.getRole())
+
+				return sessionPresetEnum.equals(SessionPresetEnum.on) ? (OpenViduRole.PUBLISHER.equals(participant.getRole())
+						|| OpenViduRole.MODERATOR.equals(participant.getRole()) || OpenViduRole.SUBSCRIBER.equals(participant.getRole())) : (OpenViduRole.PUBLISHER.equals(participant.getRole())
 						|| OpenViduRole.MODERATOR.equals(participant.getRole()));
 			} else {
 				return false;

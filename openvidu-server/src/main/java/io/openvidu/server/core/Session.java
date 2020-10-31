@@ -640,10 +640,8 @@ public class Session implements SessionInterface {
 
     public void dealParticipantOrder(Participant leavePart, RpcNotificationService notificationService) {
 		if (StreamType.MAJOR.equals(leavePart.getStreamType()) && !OpenViduRole.THOR.equals(leavePart.getRole())) {
-			if (!OpenViduRole.MODERATOR.equals(leavePart.getRole())) {
-				log.info("current participant leaveRoom roomParticipants size:{}", this.roomParticipants.decrementAndGet());
-				dealPartOrderInSessionAfterLeaving(leavePart,notificationService);
-			}
+			log.info("current participant leaveRoom roomParticipants size:{}", this.roomParticipants.decrementAndGet());
+			dealPartOrderInSessionAfterLeaving(leavePart,notificationService);
 		}
 	}
 

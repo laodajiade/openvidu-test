@@ -178,7 +178,7 @@ public class KurentoSessionManager extends SessionManager {
 			//set the part order
 			kSession.setMajorPartsOrder(participant);
 			// change the part role according to the sfu limit
-			if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit()) {
+			if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			// deal the default subtitle config
