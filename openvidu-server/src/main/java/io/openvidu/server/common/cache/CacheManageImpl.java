@@ -286,12 +286,17 @@ public class CacheManageImpl implements CacheManage {
     }
 
     public void setCorpExpired(Set<String> projects) {
+        dropCorpExpiredCollect();
         String key = "corp_expired_col";
-        tokenStringTemplate.delete(key);
         tokenStringTemplate.opsForSet().add(key, projects.toArray(new String[0]));
     }
-    @Override
 
+    public void dropCorpExpiredCollect(){
+        String key = "corp_expired_col";
+        tokenStringTemplate.delete(key);
+    }
+
+    @Override
     public void publish(String channel, String message) {
         tokenStringTemplate.convertAndSend(channel, message);
     }

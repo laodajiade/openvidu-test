@@ -84,5 +84,7 @@ public interface CacheManage {
 
     void setCorpExpired(Set<String> projects);
 
+    void dropCorpExpiredCollect();
+
     void publish(String channel, String message);
 }

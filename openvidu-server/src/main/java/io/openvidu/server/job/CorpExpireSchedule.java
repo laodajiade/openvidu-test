@@ -43,6 +43,7 @@ public class CorpExpireSchedule {
         List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(tomorrow, "yyyy-MM-dd"));
 
         if (corporations.isEmpty()) {
+            cacheManage.dropCorpExpiredCollect();
             return;
         }
 
