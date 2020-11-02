@@ -6,7 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
-import io.openvidu.server.common.enums.UserType;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -37,8 +36,7 @@ public class GetMeetingHisDetailHandler extends RpcAbstractHandler {
                 JsonObject partRecObj = new JsonObject();
                 partRecObj.addProperty("account", conferencePartHistory.getUuid());
                 partRecObj.addProperty("username", conferencePartHistory.getUsername());
-                partRecObj.addProperty("userType", conferencePartHistory.getUserType().compareTo(0) == 0 ?
-                        UserType.register.name() : UserType.tourist.name());
+                partRecObj.addProperty("userType", conferencePartHistory.getTerminalType());
                 partRecObj.addProperty("startTime", conferencePartHistory.getStartTime().getTime());
                 partRecObj.addProperty("endTime", conferencePartHistory.getEndTime().getTime());
                 partRecObj.addProperty("duration", conferencePartHistory.getDuration());
