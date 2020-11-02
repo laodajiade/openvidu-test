@@ -507,8 +507,7 @@ public class KurentoParticipant extends Participant {
 			if (Objects.nonNull(publisher)) {
 				publisher.closeAudioComposite();
 				releaseElement(getParticipantPublicId(), publisher.getEndpoint());
-
-				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
+//				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
 			}
 			this.streaming = false;
 			this.session.deregisterPublisher();
