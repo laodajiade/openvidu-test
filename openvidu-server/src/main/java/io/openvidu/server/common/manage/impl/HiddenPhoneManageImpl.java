@@ -2,6 +2,7 @@ package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.server.common.dao.HiddenPhoneMapper;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
+import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.HiddenPhone;
 import io.openvidu.server.common.pojo.HiddenPhoneExample;
 import io.openvidu.server.common.pojo.UserGroupVo;
@@ -37,6 +38,25 @@ public class HiddenPhoneManageImpl implements HiddenPhoneManage {
             return;
         }
         for (UserGroupVo userGroupVo : list) {
+            if (needHiddleUuids.contains(userGroupVo.getUuid())) {
+                userGroupVo.setPhone("");
+            }
+        }
+    }
+
+    @Override
+    public void hiddenPhone2(List<AllUserInfo> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+
+        List<String> collect = list.stream().map(AllUserInfo::getUuid).collect(Collectors.toList());
+        Set<String> needHiddleUuids = getNeedHiddenUuids(collect);
+
+        if (needHiddleUuids.isEmpty()) {
+            return;
+        }
+        for (AllUserInfo userGroupVo : list) {
             if (needHiddleUuids.contains(userGroupVo.getUuid())) {
                 userGroupVo.setPhone("");
             }
