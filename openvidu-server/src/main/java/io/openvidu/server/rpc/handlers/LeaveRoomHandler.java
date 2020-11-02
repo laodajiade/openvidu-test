@@ -103,8 +103,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                 && StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().needToPublish()) {
             session.putPartOnWallAutomatically(sessionManager);
         }
-        //del accessIn privateId
-        cacheManage.delAccessInParticipantPrivateId(rpcConnection.getUserUuid());
         rpcConnection.setReconnected(false);
     }
 }
