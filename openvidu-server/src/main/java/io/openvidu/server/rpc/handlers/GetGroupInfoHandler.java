@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.manage.HiddenPhoneManage;
 import io.openvidu.server.common.pojo.UserDevice;
 import io.openvidu.server.common.pojo.UserGroupVo;
 import io.openvidu.server.core.RespResult;
@@ -13,6 +14,7 @@ import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -27,6 +29,10 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
+
+
+    @Autowired
+    private HiddenPhoneManage hiddenPhoneManage;
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
@@ -53,6 +59,9 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
                 }
             }
         }
+
+        hiddenPhoneManage.hiddenPhone(userGroups);
+
         PageInfo<UserGroupVo> pageInfo = new PageInfo<>(userGroups);
         resp.put(ProtocolElements.PAGENUM, pageNum);
         resp.put(ProtocolElements.PAGESIZE, pageSize);
