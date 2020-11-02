@@ -11,6 +11,7 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -24,6 +25,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class GetPresetPositionsHandler extends RpcAbstractHandler {
+
+    @Value("${preset.thumbnail.url}")
+    private String thumbnailUrl;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -43,7 +47,7 @@ public class GetPresetPositionsHandler extends RpcAbstractHandler {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("index",preset.getIndex());
                 jsonObject.addProperty("configInfo",preset.getConfigInfo());
-                jsonObject.addProperty("thumbnailUrl",preset.getThumbnailUrl());
+                jsonObject.addProperty("thumbnailUrl",thumbnailUrl + preset.getThumbnailUrl());
                 jsonArray.add(jsonObject);
             });
         }

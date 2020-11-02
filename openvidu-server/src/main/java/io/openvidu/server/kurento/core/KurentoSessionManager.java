@@ -153,6 +153,8 @@ public class KurentoSessionManager extends SessionManager {
 
 			existingParticipants = getParticipants(sessionId);
 			participant.setApplicationContext(applicationContext);
+			//set the part order
+			kSession.setMajorPartsOrder(participant);
 			// 第一个入会者是主持人，所有权限都打开
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
@@ -163,7 +165,7 @@ public class KurentoSessionManager extends SessionManager {
 				} else {
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
 					participant.setMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
-					if (existingParticipants.size() > 6 && preset.getQuietStatusInRoom().equals(SessionPresetEnum.smart)) {
+					if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1)  && preset.getQuietStatusInRoom().equals(SessionPresetEnum.smart)) {
 						participant.setMicStatus(ParticipantMicStatus.off);
 					}
 					participant.setVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
@@ -175,8 +177,7 @@ public class KurentoSessionManager extends SessionManager {
 			if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode()) && kSession.needToChangePartRoleAccordingToLimit(participant)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
-			//set the part order
-			kSession.setMajorPartsOrder(participant);
+
 			// change the part role according to the sfu limit
 			if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
@@ -369,7 +370,7 @@ public class KurentoSessionManager extends SessionManager {
 		SdpType sdpType = kurentoOptions.isOffer ? SdpType.OFFER : SdpType.ANSWER;
 		KurentoSession kSession = kParticipant.getSession();
 
-		kParticipant.createPublishingEndpoint(mediaOptions);
+		kParticipant.createPublishingEndpoint(mediaOptions, participant);
 
 		/*
 		 * for (MediaElement elem : kurentoOptions.mediaElements) {

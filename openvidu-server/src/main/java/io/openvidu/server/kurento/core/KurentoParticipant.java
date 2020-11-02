@@ -142,12 +142,19 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
-	public void createPublishingEndpoint(MediaOptions mediaOptions) {
-		publisher.createEndpoint(publisherLatch);
+	public void createPublishingEndpoint(MediaOptions mediaOptions, Participant participant) {
+		if (OpenViduRole.SUBSCRIBER.equals(participant.getRole())) {
+			// Initialize a PublisherEndpoint
+			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setCompositeService(this.session.compositeService);
+		}
+		this.publisher.createEndpoint(publisherLatch);
 		if (getPublisher().getEndpoint() == null) {
 			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
 		}
-		publisher.setMediaOptions(mediaOptions);
+		this.publisher.setMediaOptions(mediaOptions);
 
 		String publisherStreamId;
 		if (StringUtils.isEmpty(this.publisherStreamId)) {
@@ -500,8 +507,7 @@ public class KurentoParticipant extends Participant {
 			if (Objects.nonNull(publisher)) {
 				publisher.closeAudioComposite();
 				releaseElement(getParticipantPublicId(), publisher.getEndpoint());
-
-				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
+//				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
 			}
 			this.streaming = false;
 			this.session.deregisterPublisher();
