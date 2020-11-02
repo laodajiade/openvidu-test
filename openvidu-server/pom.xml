@@ -50,6 +50,7 @@
 		<start-class>io.openvidu.server.OpenViduServer</start-class>
 		<!-- dependencies version -->
 		<version.com.grithub.pagehelper>1.2.10</version.com.grithub.pagehelper>
+		<version.com.sensedigit.kurento-jsonrpc-client>1.0.0</version.com.sensedigit.kurento-jsonrpc-client>
 		<version.com.sensedigit.kurento-jsonrpc-server>1.0.0</version.com.sensedigit.kurento-jsonrpc-server>
 		<version.com.sensedigit.xxl-job-core>2.1.3</version.com.sensedigit.xxl-job-core>
 		<version.com.sensedigit.cock-crow>1.0.0</version.com.sensedigit.cock-crow>
@@ -211,10 +212,8 @@
 
 	<dependencies>
 		<dependency>
-			<!--<groupId>com.geedow</groupId>-->
 			<groupId>com.sensedigit</groupId>
 			<artifactId>kurento-jsonrpc-server</artifactId>
-			<!--<version>${version.com.geedow.kurento-jsonrpc-server}</version>-->
 			<version>${version.com.sensedigit.kurento-jsonrpc-server}</version>
 			<exclusions>
 				<exclusion>
@@ -229,7 +228,16 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<artifactId>kurento-jsonrpc-client</artifactId>
+					<groupId>org.kurento</groupId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.sensedigit</groupId>
+			<artifactId>kurento-jsonrpc-client</artifactId>
+			<version>${version.com.sensedigit.kurento-jsonrpc-client}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.openvidu</groupId>
@@ -239,6 +247,10 @@
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>kurento-jsonrpc-client</artifactId>
+					<groupId>org.kurento</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
