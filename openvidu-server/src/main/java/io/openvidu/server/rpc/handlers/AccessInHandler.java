@@ -133,6 +133,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                     request.getId(), object, errCode);
             return;
         }
+
         Long userId = Long.valueOf(String.valueOf(userInfo.get("userId")));
         String project = !StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT;
         // set necessary into rpc connection
@@ -143,6 +144,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setTerminalType(terminalType);
         rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
         rpcConnection.setUserId(userId);
+        Corporation corporation = corporationMapper.selectByCorpProject(project);
+        rpcConnection.setCorpId(corporation.getId());
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
         }
@@ -161,7 +164,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
-        Corporation corporation = corporationMapper.selectByCorpProject(project);
         object.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(),DateUtil.DEFAULT_YEAR_MONTH_DAY));
         object.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 

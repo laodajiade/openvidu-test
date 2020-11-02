@@ -147,9 +147,15 @@
     from sd_user_group sug
     left join sd_user su on sug.user_id = su.id
     where sug.group_id IN
-    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+    <foreach collection="groupIds" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=BIGINT}
     </foreach>
+    <if test="notInUser != null and notInUser.size() != 0" >
+      AND su.id NOT IN
+      <foreach collection="notInUser" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
     order by sug.sort_number desc, sug.id asc
   </select>
 

@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
+import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.UserDevice;
 import io.openvidu.server.common.pojo.UserGroupVo;
 import io.openvidu.server.core.RespResult;
@@ -21,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author geedow
@@ -34,6 +36,9 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
     @Autowired
     private HiddenPhoneManage hiddenPhoneManage;
 
+    @Autowired
+    private HiddenUserHelper hiddenUserHelper;
+
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
         Long groupId = getLongParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
@@ -42,7 +47,9 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
         List<Long> groupIds = new ArrayList<>();
         groupIds.add(groupId);
         PageHelper.startPage(pageNum, pageSize);
-        List<UserGroupVo> userGroups = userGroupMapper.selectListByGroupid(groupIds);
+
+        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
+        List<UserGroupVo> userGroups = userGroupMapper.selectListByGroupid(groupIds, notInUser);
 
         JSONObject resp = new JSONObject();
         if (!CollectionUtils.isEmpty(userGroups)) {

@@ -58,6 +58,7 @@ public class RpcConnection {
 	private Long createTime;
 	private String ability;
 	private JsonObject terminalConfig;
+	private Long corpId;
 
 	@Getter
 	@Setter
@@ -191,5 +192,13 @@ public class RpcConnection {
 
 	public void setCreateTime(Long createTime) {
 		this.createTime = createTime;
+	}
+
+	public Long getCorpId() {
+		return corpId;
+	}
+
+	public void setCorpId(Long corpId) {
+		this.corpId = corpId;
 	}
 }

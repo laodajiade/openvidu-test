@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.openvidu.server.common.dao.HiddenUserGroupMapper">
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.HiddenUserGroup">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="corp_id" jdbcType="BIGINT" property="corpId" />
+    <result column="hidden_type" jdbcType="INTEGER" property="hiddenType" />
+    <result column="gtm_create" jdbcType="TIMESTAMP" property="gtmCreate" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, corp_id, hidden_type, gtm_create
+  </sql>
+  <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.HiddenUserGroupExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from sd_hidden_user_group
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sd_hidden_user_group
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sd_hidden_user_group
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="io.openvidu.server.common.pojo.HiddenUserGroupExample">
+    delete from sd_hidden_user_group
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.HiddenUserGroup" useGeneratedKeys="true">
+    insert into sd_hidden_user_group (corp_id, hidden_type, gtm_create
+      )
+    values (#{corpId,jdbcType=BIGINT}, #{hiddenType,jdbcType=INTEGER}, #{gtmCreate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.HiddenUserGroup" useGeneratedKeys="true">
+    insert into sd_hidden_user_group
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="corpId != null">
+        corp_id,
+      </if>
+      <if test="hiddenType != null">
+        hidden_type,
+      </if>
+      <if test="gtmCreate != null">
+        gtm_create,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="corpId != null">
+        #{corpId,jdbcType=BIGINT},
+      </if>
+      <if test="hiddenType != null">
+        #{hiddenType,jdbcType=INTEGER},
+      </if>
+      <if test="gtmCreate != null">
+        #{gtmCreate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="io.openvidu.server.common.pojo.HiddenUserGroupExample" resultType="java.lang.Long">
+    select count(*) from sd_hidden_user_group
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update sd_hidden_user_group
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.corpId != null">
+        corp_id = #{record.corpId,jdbcType=BIGINT},
+      </if>
+      <if test="record.hiddenType != null">
+        hidden_type = #{record.hiddenType,jdbcType=INTEGER},
+      </if>
+      <if test="record.gtmCreate != null">
+        gtm_create = #{record.gtmCreate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update sd_hidden_user_group
+    set id = #{record.id,jdbcType=BIGINT},
+      corp_id = #{record.corpId,jdbcType=BIGINT},
+      hidden_type = #{record.hiddenType,jdbcType=INTEGER},
+      gtm_create = #{record.gtmCreate,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.HiddenUserGroup">
+    update sd_hidden_user_group
+    <set>
+      <if test="corpId != null">
+        corp_id = #{corpId,jdbcType=BIGINT},
+      </if>
+      <if test="hiddenType != null">
+        hidden_type = #{hiddenType,jdbcType=INTEGER},
+      </if>
+      <if test="gtmCreate != null">
+        gtm_create = #{gtmCreate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.HiddenUserGroup">
+    update sd_hidden_user_group
+    set corp_id = #{corpId,jdbcType=BIGINT},
+      hidden_type = #{hiddenType,jdbcType=INTEGER},
+      gtm_create = #{gtmCreate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

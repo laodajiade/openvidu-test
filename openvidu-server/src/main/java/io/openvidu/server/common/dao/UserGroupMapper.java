@@ -3,8 +3,10 @@ package io.openvidu.server.common.dao;
 import io.openvidu.server.common.pojo.Group;
 import io.openvidu.server.common.pojo.UserGroup;
 import io.openvidu.server.common.pojo.UserGroupVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserGroupMapper {
 
@@ -12,7 +14,7 @@ public interface UserGroupMapper {
 
     int deleteByPrimaryKey(Long id);
 
-    List<UserGroupVo> selectListByGroupid(List<Long> groupIds);
+    List<UserGroupVo> selectListByGroupid(@Param("groupIds") List<Long> groupIds, @Param("notInUser") Set<Long> notInUser);
 
     List<UserGroup> selectListByUserId(Long userId);
 
@@ -21,7 +23,6 @@ public interface UserGroupMapper {
     int deleteByGroupAndUserId(Long groupId, Long userId);
 
     int deleteByUserId(Long userId);
-
 
 
     List<UserGroup> selectListByGroupids(Long orgId);
