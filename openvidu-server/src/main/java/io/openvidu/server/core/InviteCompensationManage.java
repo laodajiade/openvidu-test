@@ -70,6 +70,7 @@ public class InviteCompensationManage {
                     scheduler.disable();
                 }
                 String participantPrivateId = cacheManage.getAccessInParticipantPrivateId(account);
+                log.info("Close Room cancelInvite participantPrivateId:{}",participantPrivateId);
                 if (StringUtils.isNotEmpty(participantPrivateId)) {
                     log.info("Close Room CANCELINVITE_NOTIFY_METHOD account:{}", account);
                     notificationService.sendNotification(participantPrivateId,
