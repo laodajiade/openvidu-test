@@ -5,5 +5,7 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "ruid":"a86a73f9-5b7a-4675-9e85-da1b8d8988c0"
+  "ruid":"a86a73f9-5b7a-4675-9e85-da1b8d8988c0",
+  "pageNum":1,
+  "pageSize":2
 }

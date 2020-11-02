@@ -1,5 +1,7 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
@@ -19,8 +21,11 @@ public class GetMeetingHisDetailHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String ruid = getStringParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_RUID_PARAM);
+        int pageNum = getIntParam(request, ProtocolElements.PAGENUM);
+        int pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
         JsonObject respObj = new JsonObject();
         JsonArray parts = new JsonArray();
+        Page<Object> page = PageHelper.startPage(pageNum, pageSize);
 
         // query part history
         ConferencePartHistory search = new ConferencePartHistory();
@@ -43,6 +48,11 @@ public class GetMeetingHisDetailHandler extends RpcAbstractHandler {
         }
 
         respObj.add("participants", parts);
+
+        respObj.addProperty(ProtocolElements.PAGENUM, pageNum);
+        respObj.addProperty(ProtocolElements.PAGESIZE, pageSize);
+        respObj.addProperty(ProtocolElements.TOTAL, page.getTotal());
+        respObj.addProperty(ProtocolElements.PAGES, page.getPages());
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
     }
 }
