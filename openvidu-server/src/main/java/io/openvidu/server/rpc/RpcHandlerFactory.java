@@ -299,6 +299,14 @@ public class RpcHandlerFactory {
     private GetCorpInfoHandler getCorpInfoHandler;
     @Resource
     private GetMeetingHisDetailHandler getMeetingHisDetailHandler;
+    @Resource
+    private SetPresetPositionHandler setPresetPositionHandler;
+    @Resource
+    private DiscardPresetPositionsHandler discardPresetPositionsHandler;
+    @Resource
+    private GetPresetPositionsHandler getPresetPositionsHandler;
+    @Resource
+    private AdjustToPresetPositionHandler adjustToPresetPositionHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -410,6 +418,10 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_ICE_SERVER_LIST,                           getIceServerListHandler);
         handlersMap.put(ProtocolElements.GET_CORP_INFO,                                 getCorpInfoHandler);
         handlersMap.put(ProtocolElements.GET_MEETING_HIS_DETAIL_METHOD,                 getMeetingHisDetailHandler);
+        handlersMap.put(ProtocolElements.SET_PRESET_POSITION_METHOD,                    setPresetPositionHandler);
+        handlersMap.put(ProtocolElements.DISCARDPRESETPOSITIONS_METHOD,                 discardPresetPositionsHandler);
+        handlersMap.put(ProtocolElements.GETPRESETPOSITIONS_METHOD,                     getPresetPositionsHandler);
+        handlersMap.put(ProtocolElements.ADJUSTTOPRESETPOSITION_METHOD,                 adjustToPresetPositionHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
