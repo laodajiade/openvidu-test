@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
+import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -19,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 
 @Slf4j
@@ -28,6 +30,9 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
 
     @Autowired
     private HiddenPhoneManage hiddenPhoneManage;
+
+    @Autowired
+    private HiddenUserHelper hiddenUserHelper;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -53,7 +58,9 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
             }
             PageHelper.startPage(pageNum, pageSize);
         }
-        List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId);
+
+        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
+        List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId, notInUser);
 
         hiddenPhoneManage.hiddenPhone2(allUserInfos);
 

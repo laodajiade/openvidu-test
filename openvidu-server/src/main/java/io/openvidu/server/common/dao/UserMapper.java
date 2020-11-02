@@ -4,8 +4,10 @@ import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.SoftUser;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserMapper {
 
@@ -39,7 +41,7 @@ public interface UserMapper {
 
     List<User> selectUserByUuidList(List<String> uuids);
 
-    List<AllUserInfo> selectAllUserList(Long deptId);
+    List<AllUserInfo> selectAllUserList(@Param("deptId") Long deptId, @Param("notInUser") Set<Long> notInUser);
 
     List<AllUserInfo> selectAllUserByUuidList(List<String> uuids);
 

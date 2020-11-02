@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
+import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.UserDept;
@@ -36,6 +37,9 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
     @Autowired
     private HiddenPhoneManage hiddenPhoneManage;
 
+    @Autowired
+    private HiddenUserHelper hiddenUserHelper;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
 
@@ -59,6 +63,7 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
             }
         }
 
+
         if (!CollectionUtils.isEmpty(uuids)) {
             List<AllUserInfo> users = userMapper.selectAllUserByUuidList(uuids);
             // 去重
@@ -70,6 +75,9 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
                 list.addAll(users);
             }
         }
+
+        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
+        list.removeIf(u -> notInUser.contains(u.getUserId()));
 
         list.sort((u1, u2) -> (int) (u1.getUserId() - u2.getUserId()));
 

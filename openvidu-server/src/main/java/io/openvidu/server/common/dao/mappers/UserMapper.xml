@@ -281,6 +281,12 @@
     INNER JOIN sd_user_dev ud ON ud.serial_number = d.serial_number
     INNER JOIN sd_user u ON u.id = ud.user_id
     WHERE d.dept_id = #{deptId,jdbcType=BIGINT}
+    <if test="notInUser !=null and notInUser.size() != 0">
+      AND u.id NOT IN
+      <foreach collection="notInUser" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
     union
     select
     su.username userName,
@@ -295,6 +301,12 @@
     and su.title is null
     and su.uuid <![CDATA[ <> 'administrator' ]]>
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
+    <if test="notInUser !=null and notInUser.size() != 0">
+      AND su.id NOT IN
+      <foreach collection="notInUser" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
     order by sort_number desc
   </select>
 
