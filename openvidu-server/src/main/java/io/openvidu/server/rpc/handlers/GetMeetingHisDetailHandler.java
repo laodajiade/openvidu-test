@@ -20,6 +20,7 @@ public class GetMeetingHisDetailHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String ruid = getStringParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_RUID_PARAM);
+        String minParam = getStringParam(request, ProtocolElements.GETMEETINGSRECORDDETAIL_MIX_PARAM);
         int pageNum = getIntParam(request, ProtocolElements.PAGENUM);
         int pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
         JsonObject respObj = new JsonObject();
@@ -29,6 +30,7 @@ public class GetMeetingHisDetailHandler extends RpcAbstractHandler {
         // query part history
         ConferencePartHistory search = new ConferencePartHistory();
         search.setRuid(ruid);
+        search.setRuid(minParam);
         search.setStatus(ParticipantStatusEnum.LEAVE.getStatus());
         List<ConferencePartHistory> confPartHistoryList = roomManage.getConfHistoryRecordsByCondition(search);
         if (!CollectionUtils.isEmpty(confPartHistoryList)) {
