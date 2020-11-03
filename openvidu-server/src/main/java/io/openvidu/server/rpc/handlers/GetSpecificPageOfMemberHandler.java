@@ -7,9 +7,11 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
+import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
 import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.Department;
+import io.openvidu.server.common.pojo.dto.HiddenSpecifyVisibleDTO;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -34,12 +36,29 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
     @Autowired
     private HiddenUserHelper hiddenUserHelper;
 
+    @Autowired
+    private HiddenSpecifyVisibleManage hiddenSpecifyVisibleManage;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         boolean isChooseAll = getBooleanParam(request, "isChooseAll");
         Long deptId = getLongParam(request, "deptId");
         Integer pageNum = getIntOptionalParam(request, "pageNum");
         Integer pageSize = getIntOptionalParam(request, "pageSize");
+
+        HiddenSpecifyVisibleDTO specifyVisibleRule = hiddenSpecifyVisibleManage.getSpecifyVisibleRule(rpcConnection.getUserUuid(),
+                rpcConnection.getUserId(), rpcConnection.getCorpId());
+        // 全部隐藏，直接返回空列表
+        if (specifyVisibleRule.getType() == 0) {
+            JsonObject respJson = new JsonObject();
+            respJson.addProperty("total", 0);
+            respJson.addProperty("pages", 0);
+            respJson.addProperty("pageNum", pageNum);
+            respJson.addProperty("pageSize", pageSize);
+            respJson.add("list", new JsonArray());
+            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
+            return;
+        }
 
         if (deptId.equals(0L)) {
             Department department = departmentMapper.selectRootDept(rpcConnection.getProject());
@@ -60,7 +79,7 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
         }
 
         Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
-        List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId, notInUser);
+        List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId, notInUser, specifyVisibleRule.getVisibleUser());
 
         hiddenPhoneManage.hiddenPhone2(allUserInfos);
 

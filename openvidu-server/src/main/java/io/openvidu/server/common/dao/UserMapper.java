@@ -41,7 +41,7 @@ public interface UserMapper {
 
     List<User> selectUserByUuidList(List<String> uuids);
 
-    List<AllUserInfo> selectAllUserList(@Param("deptId") Long deptId, @Param("notInUser") Set<Long> notInUser);
+    List<AllUserInfo> selectAllUserList(@Param("deptId") Long deptId, @Param("notInUser") Set<Long> notInUser, @Param("visibleUser") Set<Long> visibleUser);
 
     List<AllUserInfo> selectAllUserByUuidList(List<String> uuids);
 

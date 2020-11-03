@@ -287,6 +287,12 @@
         #{item,jdbcType=BIGINT}
       </foreach>
     </if>
+    <if test="visibleUser !=null and visibleUser.size() != 0">
+      AND u.id IN
+      <foreach collection="visibleUser" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
     union
     select
     su.username userName,
@@ -304,6 +310,12 @@
     <if test="notInUser !=null and notInUser.size() != 0">
       AND su.id NOT IN
       <foreach collection="notInUser" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
+    <if test="visibleUser !=null and visibleUser.size() != 0">
+      AND su.id IN
+      <foreach collection="visibleUser" index="index" item="item" separator="," open="(" close=")">
         #{item,jdbcType=BIGINT}
       </foreach>
     </if>
