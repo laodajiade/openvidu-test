@@ -73,7 +73,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (appointConferenceManage.isConflict(params)) {
             return RespResult.fail(ErrorCodeEnum.APPOINT_CONFERENCE_CONFLICT);
         }
-
+        params.setUserId(rpcConnection.getUserId());
         // 保存预约会议
         appointConferenceManage.insert(params, rpcConnection);
         List<User> users = userManage.queryByUuidList(params.getParticipants());

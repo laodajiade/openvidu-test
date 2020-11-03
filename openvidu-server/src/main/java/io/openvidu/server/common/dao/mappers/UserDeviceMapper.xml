@@ -18,10 +18,10 @@
     from sd_user_dev
     where id = #{id,jdbcType=BIGINT}
   </select>
-  <select id="selectByCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.UserDevice">
+  <select id="selectByCondition" resultType="io.openvidu.server.common.pojo.UserDevice" parameterType="io.openvidu.server.common.pojo.UserDevice">
     select
-    sud.id,sud.user_id userId,sud.serial_number serialNumber,sud.project,sud.create_time createTime,
-    sud.update_time updateTime,sd.device_name deviceName
+    sud.id,sud.user_id as userId,sud.serial_number as serialNumber,sud.project,sud.create_time as createTime,
+    sud.update_time as updateTime,sd.device_name as deviceName
     from sd_user_dev sud
     left join sd_device sd on sud.serial_number = sd.serial_number
     <where>
