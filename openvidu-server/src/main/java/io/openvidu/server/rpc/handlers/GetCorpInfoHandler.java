@@ -35,7 +35,7 @@ public class GetCorpInfoHandler extends RpcAbstractHandler {
             respObj.addProperty("validPeriod",
                     ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 
-            respObj.addProperty("totalStorageSpace", openviduConfig.getCommonStorageLimit());
+            respObj.addProperty("totalStorageSpace", conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).toString());
             List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(
                     ConferenceRecordSearch.builder().project(rpcConnection.getProject()).build());
             long usedSpaceSize = roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();

@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -82,7 +81,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
                 .project(rpcConnection.getProject()).build());
         long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
-        long remainStorageSpace = new BigDecimal(openviduConfig.getCommonStorageLimit()).longValue() * 1024 * 1024 - usedSpaceSize;
+        long remainStorageSpace = conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).longValue() * 1024 * 1024 - usedSpaceSize;
         if (remainStorageSpace <= lowerLimit) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.RECORD_STORAGE_EXHAUSTED);
