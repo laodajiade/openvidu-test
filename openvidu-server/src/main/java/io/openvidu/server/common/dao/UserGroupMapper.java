@@ -14,7 +14,8 @@ public interface UserGroupMapper {
 
     int deleteByPrimaryKey(Long id);
 
-    List<UserGroupVo> selectListByGroupid(@Param("groupIds") List<Long> groupIds, @Param("notInUser") Set<Long> notInUser);
+    List<UserGroupVo> selectListByGroupid(@Param("groupIds") List<Long> groupIds, @Param("notInUser") Set<Long> notInUser,
+                                          @Param("visibleUsers") Set<Long> visibleUsers);
 
     List<UserGroup> selectListByUserId(Long userId);
 

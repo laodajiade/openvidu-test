@@ -156,6 +156,12 @@
         #{item,jdbcType=BIGINT}
       </foreach>
     </if>
+    <if test="visibleUsers != null and visibleUsers.size() != 0" >
+      AND su.id IN
+      <foreach collection="visibleUsers" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
     order by sug.sort_number desc, sug.id asc
   </select>
 

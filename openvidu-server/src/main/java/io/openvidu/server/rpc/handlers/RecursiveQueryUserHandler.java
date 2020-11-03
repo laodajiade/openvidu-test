@@ -4,10 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
+import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
 import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.UserDept;
+import io.openvidu.server.common.pojo.dto.SpecifyVisibleRule;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.service.UserDeptService;
@@ -40,11 +42,24 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
     @Autowired
     private HiddenUserHelper hiddenUserHelper;
 
+    @Autowired
+    private HiddenSpecifyVisibleManage hiddenSpecifyVisibleManage;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
 
-        List<Long> deptIds = getLongListParam(request,"deptIds");
-        List<String> uuids = getStringListParam(request,"uuids");
+        List<Long> deptIds = getLongListParam(request, "deptIds");
+        List<String> uuids = getStringListParam(request, "uuids");
+
+        SpecifyVisibleRule specifyVisibleRule = hiddenSpecifyVisibleManage.getSpecifyVisibleRule2(rpcConnection.getUserUuid(), rpcConnection.getUserId(), rpcConnection.getCorpId());
+        // 全部隐藏，直接返回空列表
+        if (specifyVisibleRule.getType() == 0) {
+            JsonObject respJson = new JsonObject();
+            respJson.add("list", new JsonArray());
+            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
+            return;
+        }
+
         List<AllUserInfo> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(deptIds)) {
 
@@ -79,6 +94,11 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
         Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
         list.removeIf(u -> notInUser.contains(u.getUserId()));
 
+        // 仅可见
+        if (specifyVisibleRule.getType() == 1) {
+            list.removeIf(user -> !specifyVisibleRule.getVisibleUser().contains(user.getUserId()));
+        }
+
         list.sort((u1, u2) -> (int) (u1.getUserId() - u2.getUserId()));
 
         hiddenPhoneManage.hiddenPhone2(list);
@@ -86,20 +106,20 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
         JsonArray jsonArray = new JsonArray();
         list.forEach(e -> {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("uuid",e.getUuid());
-            jsonObject.addProperty("userName",e.getUserName());
-            jsonObject.addProperty("phone",e.getPhone());
-            jsonObject.addProperty("type",e.getType());
+            jsonObject.addProperty("uuid", e.getUuid());
+            jsonObject.addProperty("userName", e.getUserName());
+            jsonObject.addProperty("phone", e.getPhone());
+            jsonObject.addProperty("type", e.getType());
             if (e.getType().equals(0)) {
-                jsonObject.addProperty("status",cacheManage.getTerminalStatus(e.getUuid()));
+                jsonObject.addProperty("status", cacheManage.getTerminalStatus(e.getUuid()));
             } else {
                 String deviceStatus = Objects.isNull(e.getSerialNumber()) ? null : cacheManage.getDeviceStatus(e.getSerialNumber());
-                jsonObject.addProperty("status",Objects.isNull(deviceStatus) ? DeviceStatus.offline.name() : deviceStatus);
+                jsonObject.addProperty("status", Objects.isNull(deviceStatus) ? DeviceStatus.offline.name() : deviceStatus);
             }
             jsonArray.add(jsonObject);
         });
         JsonObject respJson = new JsonObject();
-        respJson.add("list",jsonArray);
+        respJson.add("list", jsonArray);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
 }
