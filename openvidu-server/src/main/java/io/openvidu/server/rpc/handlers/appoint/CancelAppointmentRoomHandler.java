@@ -14,6 +14,7 @@ import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcConnection;
+import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service(ProtocolElements.CANCEL_APPOINTMENT_ROOM_METHOD)
+@Slf4j
 public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler<JsonObject> {
 
 
@@ -77,7 +79,8 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         // 销毁未活跃的房间
         Session sessionNotActive = sessionManager.getSessionNotActive(appointConference.getRoomId());
-        if (sessionNotActive != null && sessionNotActive.getRuid().equals(ruid)) {
+        log.info("not active session exist:{} ,ruid={}", sessionNotActive != null, sessionNotActive == null ? "" : sessionNotActive.getRuid());
+        if (sessionNotActive != null && Objects.equals(sessionNotActive.getRuid(), ruid)) {
             sessionManager.closeSessionAndEmptyCollections(sessionNotActive, EndReason.closeSessionByModerator);
         }
 

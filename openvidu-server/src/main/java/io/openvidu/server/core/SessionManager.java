@@ -922,6 +922,7 @@ public abstract class SessionManager {
 		log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
 		Session session = storeSessionNotActiveWhileRoomCreated(roomId);
 		session.setConference(conference);
+		session.setRuid(conference.getRuid());
 	}
 
 	public abstract void startRecording(String sessionId);
