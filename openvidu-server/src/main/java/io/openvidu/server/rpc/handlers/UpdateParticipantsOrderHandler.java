@@ -33,7 +33,7 @@ public class UpdateParticipantsOrderHandler extends RpcAbstractHandler {
                 JsonObject orderPart = jsonElement.getAsJsonObject();
                 partOrderMap.putIfAbsent(orderPart.get("account").getAsString(), orderPart.get("order").getAsInt());
             }
-            sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap,sessionManager);
+            sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, orderedParts);
         }
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

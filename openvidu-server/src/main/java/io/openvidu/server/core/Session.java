@@ -722,7 +722,7 @@ public class Session implements SessionInterface {
 		return result;
 	}
 
-	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap,SessionManager sessionManager) {
+	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager, JsonArray orderedPartsArray) {
 		int lineOrder = openviduConfig.getSfuPublisherSizeLimit() - 1;
 		RpcNotificationService notificationService = sessionManager.notificationService;
 		Set<Participant> participants = getMajorPartEachConnect();
@@ -790,10 +790,12 @@ public class Session implements SessionInterface {
 			}
 			//send notify web
 			Participant thorPart = getThorPart();
+			JsonObject partOrderWebNotifyParam = new JsonObject();
+			partOrderWebNotifyParam.add("orderedParts", orderedPartsArray);
 			if (Objects.nonNull(thorPart)) {
 				// send part order in session changed notification
 				notificationService.sendNotification(thorPart.getParticipantPrivateId(),
-						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
+						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderWebNotifyParam);
 			}
 			// send notify
 			participants.forEach(participant -> {
