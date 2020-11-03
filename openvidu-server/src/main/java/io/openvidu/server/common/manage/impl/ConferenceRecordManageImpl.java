@@ -285,7 +285,7 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
     public BigDecimal getCorpRecordStorage(String project) {
         Corporation corporation = corporationMapper.selectByCorpProject(project);
         return new BigDecimal(Objects.nonNull(corporation) && Objects.nonNull(corporation.getRecordingCapacity()) ?
-                corporation.getRecordingCapacity() : 0).setScale(2, RoundingMode.UP);
+                corporation.getRecordingCapacity() * 1024 : 0).setScale(2, RoundingMode.UP);
     }
 
 }

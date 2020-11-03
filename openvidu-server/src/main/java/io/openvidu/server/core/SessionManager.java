@@ -824,7 +824,7 @@ public abstract class SessionManager {
 		params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUuid());
 
 		boolean sendChangeRole;
-		if (sendChangeRole = (targetPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit())) {
+		if (sendChangeRole = (targetPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1)) {
 			targetPart.changePartRole(OpenViduRole.PUBLISHER);
 		}
 		JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(targetPart,
