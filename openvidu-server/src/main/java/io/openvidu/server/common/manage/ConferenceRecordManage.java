@@ -8,6 +8,7 @@ import io.openvidu.server.common.pojo.RoomRecordSummary;
 import io.openvidu.server.kurento.core.KurentoSession;
 import org.kurento.client.MediaEvent;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ConferenceRecordManage {
@@ -37,4 +38,5 @@ public interface ConferenceRecordManage {
 
     void updatePreRecordErrorStatus(ConferenceRecord record);
 
+    BigDecimal getCorpRecordStorage(String project);
 }

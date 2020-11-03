@@ -19,6 +19,8 @@ public class Corporation {
 
     private Integer capacity;
 
+    private Integer recordingCapacity;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date activationDate;
 

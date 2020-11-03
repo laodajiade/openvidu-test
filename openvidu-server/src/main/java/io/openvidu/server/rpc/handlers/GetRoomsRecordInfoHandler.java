@@ -9,7 +9,6 @@ import io.openvidu.server.common.pojo.RoomRecordSummary;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -55,7 +54,7 @@ public class GetRoomsRecordInfoHandler extends RpcAbstractHandler {
                         .project(rpcConnection.getProject()).build());
         long usedSpaceSize = roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
         JsonObject resp = new JsonObject();
-        resp.addProperty("totalStorageSpace", openviduConfig.getCommonStorageLimit());
+        resp.addProperty("totalStorageSpace", conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).toString());
         resp.addProperty("usedStorageSpace",
                 new BigDecimal(usedSpaceSize).divide(bigDecimalMB, 2, BigDecimal.ROUND_UP).toString());
         resp.addProperty("total", page.getTotal());

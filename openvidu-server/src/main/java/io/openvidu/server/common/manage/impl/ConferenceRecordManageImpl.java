@@ -7,16 +7,14 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.dao.ConferenceRecordInfoMapper;
 import io.openvidu.server.common.dao.ConferenceRecordMapper;
+import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.dao.RoomRecordSummaryMapper;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.RecordState;
 import io.openvidu.server.common.enums.YesNoEnum;
 import io.openvidu.server.common.kafka.RecordingKafkaProducer;
 import io.openvidu.server.common.manage.ConferenceRecordManage;
-import io.openvidu.server.common.pojo.ConferenceRecord;
-import io.openvidu.server.common.pojo.ConferenceRecordInfo;
-import io.openvidu.server.common.pojo.ConferenceRecordSearch;
-import io.openvidu.server.common.pojo.RoomRecordSummary;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -52,6 +53,9 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
 
     @Resource
     private RecordingKafkaProducer recordingKafkaProducer;
+
+    @Resource
+    private CorporationMapper corporationMapper;
 
     @Value("${recording.path}")
     private String recordingPath;
@@ -275,6 +279,13 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
                 .append("/")
                 .append(roomId)
                 .append("/").toString();
+    }
+
+    @Override
+    public BigDecimal getCorpRecordStorage(String project) {
+        Corporation corporation = corporationMapper.selectByCorpProject(project);
+        return new BigDecimal(Objects.nonNull(corporation) && Objects.nonNull(corporation.getRecordingCapacity()) ?
+                corporation.getRecordingCapacity() : 0).setScale(2, RoundingMode.UP);
     }
 
 }
