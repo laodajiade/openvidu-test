@@ -42,7 +42,7 @@ public class CorpServiceExpiredNotifyHandler {
         params.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 
         rpcNotificationService.getRpcConnections().stream()
-                .filter(rpcConnection -> Objects.equals(rpcConnection.getProject(), corporation.getProject()))
+                .filter(rpcConnection -> !Objects.isNull(rpcConnection) && Objects.equals(rpcConnection.getProject(), corporation.getProject()))
                 .forEach(rpcConnection -> rpcNotificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
                         ProtocolElements.CORP_INFO_MODIFIED_NOTIFY_METHOD, params)
                 );

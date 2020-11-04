@@ -14,7 +14,6 @@ import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -39,8 +38,7 @@ public class CorpExpireSchedule {
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void doProcess() {
-        Date tomorrow = DateUtils.addDays(new Date(), 1);
-        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(tomorrow, "yyyy-MM-dd"));
+        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
 
         if (corporations.isEmpty()) {
             cacheManage.dropCorpExpiredCollect();
