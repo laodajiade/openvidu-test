@@ -1287,7 +1287,8 @@ public class KurentoSessionManager extends SessionManager {
 				speakerPart = participant;
 			}
 
-			if (participant.getRole().isController() && participant.getRole().needToPublish()) {
+			if (participant.getRole().isController() && participant.getRole().needToPublish()
+					&& participant.getStreamType().isSelfStream()) {
 				moderatorPart = participant;
 			}
 		}
