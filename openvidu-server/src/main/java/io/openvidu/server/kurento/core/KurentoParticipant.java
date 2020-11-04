@@ -143,7 +143,7 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public void createPublishingEndpoint(MediaOptions mediaOptions, Participant participant) {
-		if (OpenViduRole.SUBSCRIBER.equals(participant.getRole())) {
+		if (Objects.isNull(this.publisher)) {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
@@ -460,6 +460,13 @@ public class KurentoParticipant extends Participant {
 
 	public void addIceCandidate(String endpointName, IceCandidate iceCandidate) {
 		if (this.getParticipantPublicId().equals(endpointName)) {
+			if (Objects.isNull(this.publisher)) {
+				// Initialize a PublisherEndpoint
+				this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+						this.session.getPipeline(), this.openviduConfig);
+
+				this.publisher.setCompositeService(this.session.compositeService);
+			}
 			this.publisher.addIceCandidate(iceCandidate);
 		} else {
 			this.getNewOrExistingSubscriber(endpointName).addIceCandidate(iceCandidate);
