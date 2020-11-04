@@ -213,7 +213,7 @@ public abstract class SessionManager {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
 			log.error("Session:{} not found.", sessionId);
-			return null;
+			return Collections.emptySet();
 		}
 		Set<Participant> participants = session.getParticipants();
 		participants.removeIf(Participant::isClosed);
