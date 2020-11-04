@@ -8,19 +8,14 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -47,7 +42,7 @@ public class CorpServiceExpiredNotifyHandler {
         params.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 
         rpcNotificationService.getRpcConnections().stream()
-                .filter(rpcConnection -> rpcConnection.getProject().equals(corporation.getProject()))
+                .filter(rpcConnection -> Objects.equals(rpcConnection.getProject(), corporation.getProject()))
                 .forEach(rpcConnection -> rpcNotificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
                         ProtocolElements.CORP_INFO_MODIFIED_NOTIFY_METHOD, params)
                 );
