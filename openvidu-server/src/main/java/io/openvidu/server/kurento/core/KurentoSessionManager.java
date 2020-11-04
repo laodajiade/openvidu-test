@@ -179,7 +179,9 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			// change the part role according to the sfu limit
-			if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1) {
+			if (StreamType.MAJOR.equals(participant.getStreamType()) && ConferenceModeEnum.SFU.equals(kSession.getConferenceMode())
+					&& participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1
+					&& !participant.getRole().equals(OpenViduRole.MODERATOR)) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			// deal the default subtitle config

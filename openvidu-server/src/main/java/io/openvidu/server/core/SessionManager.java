@@ -803,7 +803,7 @@ public abstract class SessionManager {
 			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUuid());
 
 			boolean sendChangeRole;
-			if (sendChangeRole = (existSpeakerPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit())) {
+			if (sendChangeRole = (existSpeakerPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1)) {
 				existSpeakerPart.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(existSpeakerPart,
