@@ -25,6 +25,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
@@ -155,6 +156,10 @@ public class AppointConferenceJobHandler {
 
             // 是否自动呼叫、房间是否被使用中
             if (!isRoomInUse(appointConference.getRoomId())) {
+                SessionPreset preset = new SessionPreset(null, null, null,
+                        appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
+                sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
+
                 // change the conference status
                 Conference conference = constructConf(appointConference);
                 conferenceMapper.insertSelective(conference);
