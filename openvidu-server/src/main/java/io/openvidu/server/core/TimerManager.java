@@ -78,7 +78,9 @@ public class TimerManager {
         private Runnable pollingNotify = new Runnable() {
             @Override
             public void run() {
-                dealPollingCheck(sessionManager.getSession(roomId),notificationService);
+                if (Objects.nonNull(sessionManager)) {
+                    dealPollingCheck(sessionManager.getSession(roomId),notificationService);
+                }
             }
         };
 

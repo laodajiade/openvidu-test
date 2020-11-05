@@ -213,7 +213,7 @@ public abstract class SessionManager {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
 			log.error("Session:{} not found.", sessionId);
-			return null;
+			return Collections.emptySet();
 		}
 		Set<Participant> participants = session.getParticipants();
 		participants.removeIf(Participant::isClosed);
@@ -744,7 +744,13 @@ public abstract class SessionManager {
 	}
 
 	public void dealSessionClose(String sessionId, EndReason endReason) {
-		this.getSession(sessionId).getParticipants().forEach(p -> {
+		Session session = this.getSession(sessionId);
+		if (Objects.isNull(session)) {
+			return;
+		} else {
+			session.setClosing(true);
+		}
+		session.getParticipants().forEach(p -> {
 			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
 			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
 			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
@@ -803,7 +809,7 @@ public abstract class SessionManager {
 			params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUuid());
 
 			boolean sendChangeRole;
-			if (sendChangeRole = (existSpeakerPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit())) {
+			if (sendChangeRole = (existSpeakerPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1)) {
 				existSpeakerPart.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(existSpeakerPart,

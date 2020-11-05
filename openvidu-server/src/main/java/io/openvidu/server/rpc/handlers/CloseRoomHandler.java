@@ -8,6 +8,8 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.core.SessionPreset;
+import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +72,14 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         cancelAllInviteCompensation(sessionId);
         // TODO: compatible to the delay of leaving room
         this.sessionManager.updateConferenceInfo(sessionId);
+
+        //close room stopPolling
+        SessionPreset sessionPreset = session.getPresetInfo();
+        sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+        timerManager.stopPollingCompensation(sessionId);
+        //send notify
+        session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                ProtocolElements.STOP_POLLING_NODIFY_METHOD, request.getParams()));
 
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
         rpcConnection.setReconnected(false);

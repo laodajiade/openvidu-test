@@ -607,17 +607,8 @@ public class Session implements SessionInterface {
 	public void setMajorPartsOrder (Participant participant) {
 
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-			int order;
-			if (!CollectionUtils.isEmpty(reconnectPartOrderMap) && reconnectPartOrderMap.containsKey(participant.getUuid())) {
-				order = reconnectPartOrderMap.get(participant.getUuid());
-			} else {
-				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-					order = 0;
-					roomParticipants.incrementAndGet();
-				} else {
-					order = roomParticipants.incrementAndGet();
-				}
-			}
+			int order = roomParticipants.incrementAndGet();
+
 			participant.setOrder(order);
 			log.info("ParticipantName:{} join session:{} and after set majorPart order:{}",
 					participant.getParticipantName(), sessionId, order);

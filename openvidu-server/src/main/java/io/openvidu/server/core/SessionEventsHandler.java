@@ -165,6 +165,7 @@ public class SessionEventsHandler {
             }
             participantJson.addProperty("isVoiceMode", existingParticipant.getVoiceMode().equals(VoiceMode.on));
 			participantJson.addProperty("order",existingParticipant.getOrder());
+			participantJson.addProperty("pushStreamStatus",existingParticipant.getPushStreamStatus().name());
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
@@ -222,6 +223,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		roomInfoJson.addProperty("subtitleConfig", session.getSubtitleConfig().name());
 		roomInfoJson.addProperty("order",participant.getOrder());
+		roomInfoJson.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
 		roomInfoJson.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
 		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
 			roomInfoJson.add("extraInfo", session.getSubtitleExtraConfig());
