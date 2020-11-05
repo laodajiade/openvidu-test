@@ -744,7 +744,13 @@ public abstract class SessionManager {
 	}
 
 	public void dealSessionClose(String sessionId, EndReason endReason) {
-		this.getSession(sessionId).getParticipants().forEach(p -> {
+		Session session = this.getSession(sessionId);
+		if (Objects.isNull(session)) {
+			return;
+		} else {
+			session.setClosing(true);
+		}
+		session.getParticipants().forEach(p -> {
 			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
 			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
 			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
