@@ -96,6 +96,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		RpcConnection rpcConnection = notificationService.addTransaction(transaction, request);
 		request.setSessionId(rpcConnection.getParticipantPrivateId());
 
+		RpcAbstractHandler rpcAbstractHandler = rpcHandlerFactory.getRpcHandler(request.getMethod());
+		if (Objects.isNull(rpcAbstractHandler)) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.UNRECOGNIZED_API);
+			return;
+		}
+
 		String sessionId = rpcConnection.getSessionId();
 		if (sessionId == null && !ProtocolElements.FILTERS.contains(request.getMethod())) {
 			log.warn(
@@ -113,12 +120,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 
 		transaction.startAsync();
-		RpcAbstractHandler rpcAbstractHandler = rpcHandlerFactory.getRpcHandler(request.getMethod());
-		if (Objects.isNull(rpcAbstractHandler)) {
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.UNRECOGNIZED_API);
-			return;
-		}
 		rpcAbstractHandler.handRpcRequest(rpcConnection, request);
 	}
 

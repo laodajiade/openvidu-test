@@ -15,7 +15,7 @@ public class GetConferenceScheduleAdminHandler extends GetConferenceScheduleHand
 
     @Override
     protected List<ConferenceHisResp> pending(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
-        return new Pending(null, params).getList();
+        return new Pending(null, rpcConnection.getProject(), params).getList();
     }
 
 }

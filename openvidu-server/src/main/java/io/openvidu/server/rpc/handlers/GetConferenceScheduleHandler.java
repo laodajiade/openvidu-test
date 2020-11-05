@@ -65,7 +65,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
     }
 
     protected List<ConferenceHisResp> pending(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
-        return new Pending(rpcConnection.getUserId(), params).getList();
+        return new Pending(rpcConnection.getUserId(), rpcConnection.getProject(), params).getList();
     }
 
 
@@ -101,10 +101,12 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
 
     class Pending {
         Long userId;
+        String project;
         GetConferenceScheduleVO vo;
 
-        public Pending(Long userId, GetConferenceScheduleVO vo) {
+        public Pending(Long userId, String projcet, GetConferenceScheduleVO vo) {
             this.vo = vo;
+            this.project = projcet;
             this.userId = userId;
         }
 
@@ -115,6 +117,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         private List<ConferenceHisResp> pendingAboutAppointment() {
             AppointConference appointConference = new AppointConference();
             appointConference.setUserId(userId);
+            appointConference.setProject(this.project);
 
             if (StringUtils.isNotBlank(vo.getDate())) {
                 try {
