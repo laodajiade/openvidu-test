@@ -78,13 +78,15 @@ public class TimerManager {
         private Runnable pollingNotify = new Runnable() {
             @Override
             public void run() {
-                if (Objects.nonNull(sessionManager)) {
-                    dealPollingCheck(sessionManager.getSession(roomId),notificationService);
-                }
+                dealPollingCheck(sessionManager.getSession(roomId),notificationService);
             }
         };
 
         public void dealPollingCheck(Session session, RpcNotificationService notificationService) {
+            if (Objects.isNull(session)) {
+                log.info("start polling undo when session is null");
+                return;
+            }
             Set<Participant> pollingPartSet = session.getPartsExcludeModeratorAndSpeaker();
             if (!CollectionUtils.isEmpty(pollingPartSet)) {
 
