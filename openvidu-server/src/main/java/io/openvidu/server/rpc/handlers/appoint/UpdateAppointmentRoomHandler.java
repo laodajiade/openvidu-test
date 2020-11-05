@@ -64,6 +64,8 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             return RespResult.fail(ErrorCodeEnum.REQUEST_PARAMS_ERROR);
         }
 
+        params.setUserId(appt.getUserId());
+
         // 检验容量
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
         params.setRoomCapacity(corporation.getCapacity());
