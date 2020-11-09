@@ -143,6 +143,12 @@
       <if test="updateTime != null" >
         update_time,
       </if>
+      <if test="moderatorUuid != null" >
+        moderator_uuid,
+      </if>
+      <if test="roomIdType != null" >
+        room_id_type,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -189,6 +195,12 @@
       </if>
       <if test="updateTime != null" >
         #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="moderatorUuid != null" >
+        #{moderatorUuid,jdbcType=TIMESTAMP},
+      </if>
+      <if test="roomIdType != null" >
+        #{roomIdType,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>

@@ -12,10 +12,7 @@ import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
-import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.AutoInviteEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
 import io.openvidu.server.common.manage.UserManage;
@@ -319,6 +316,8 @@ public class AppointConferenceJobHandler {
         conference.setConferenceDesc(ac.getConferenceDesc());
         conference.setModeratorUuid(ac.getModeratorUuid());
         conference.setProject(ac.getProject());
+        conference.setModeratorUuid(ac.getModeratorUuid());
+        conference.setRoomIdType(RoomIdTypeEnums.random.name());
         return conference;
     }
 
