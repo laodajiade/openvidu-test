@@ -203,6 +203,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
                     }
                 }
+
+                // random room moderator
+                if (Objects.equals(conference.get(0).getModeratorUuid(), rpcConnection.getUserUuid())) {
+                    role = OpenViduRole.MODERATOR;
+                    clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
+                }
+
                 clientMetadata = clientMetadataObj.toString();
 
                 // check ever already exits share part

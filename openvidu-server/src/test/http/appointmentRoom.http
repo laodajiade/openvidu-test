@@ -24,8 +24,36 @@ Content-Type: application/json
 > {% client.global.set("global.ruid",response.body.result.ruid) %}
 
 ###
-# 删除预约会议
-POST http://localhost:4443/dev/test?id={{uuid}}&method=cancelAppointmentRoom
+
+# 创建随机个人的会议室
+POST http://localhost:4443/dev/test?id={{uuid}}&method=createAppointmentRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "autoCall": true,
+  "desc": "test desc16:45",
+  "duration": 60,
+  "participants": [
+    "80101900005",
+    "80101900006",
+    "80101900007"
+  ],
+  "password": "",
+  "roomId": "",
+  "roomIdType": "random",
+  "startTime": 0,
+  "subject": "test create random appointment"
+}
+
+> {% client.global.set("global.ruid",response.body.result.ruid) %}
+
+
+###
+# 获取详情
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getAppointmentRoomDetails
 Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json
@@ -35,8 +63,9 @@ Content-Type: application/json
 }
 
 ###
-# 获取详情
-POST http://localhost:4443/dev/test?id={{uuid}}&method=getAppointmentRoomDetails
+
+# 删除预约会议
+POST http://localhost:4443/dev/test?id={{uuid}}&method=cancelAppointmentRoom
 Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json

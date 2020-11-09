@@ -21,10 +21,11 @@
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
     <result column="concurrent_number" property="concurrentNumber" jdbcType="INTEGER" />
+    <result column="room_id_type" property="roomIdType" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
-    status, password, moderator_password, invite_limit, create_time, update_time, project, concurrent_number
+    status, password, moderator_uuid, moderator_password, invite_limit, create_time, update_time, project, concurrent_number, room_id_type
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
       select
@@ -86,11 +87,12 @@
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Conference" >
     insert into sd_conference (id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time,
-      end_time, status, password, moderator_password, project
+      end_time, status, password, moderator_password, project, room_id_type, moderator_uuid
       )
     values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
       #{conferenceDesc,jdbcType=VARCHAR}, #{conferenceMode,jdbcType=TINYINT}, #{userId,jdbcType=BIGINT}, #{startTime,jdbcType=TIMESTAMP},
-      #{endTime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},#{moderatorPassword,jdbcType=VARCHAR},#{project,jdbcType=VARCHAR}
+      #{endTime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},#{moderatorPassword,jdbcType=VARCHAR},#{project,jdbcType=VARCHAR},
+      #{roomIdType,jdbcType=VARCHAR}, #{moderatorUuid,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Conference" >

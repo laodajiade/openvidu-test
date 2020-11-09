@@ -43,4 +43,6 @@ public class Conference {
     private String moderatorPassword;
 
     private Integer concurrentNumber;
+
+    private String roomIdType;
 }

@@ -241,6 +241,7 @@ public class ProtocolElements {
 	public static final String CREATE_ROOM_QUIET_STATUS_PARAM = "quietStatusInRoom";
 	public static final String CREATE_ROOM_CONFERENCE_MODE_PARAM = "conferenceMode";
 	public static final String CREATE_ROOM_RUID_PARAM = "ruid";
+	public static final String CREATE_ROOM_ID_TYPE_PARAM = "roomIdType";
 
 	public static final String SHARE_SCREEN_METHOD = "shareScreen";
 	public static final String SHARE_ROOM_ID_PARAM = "roomId";

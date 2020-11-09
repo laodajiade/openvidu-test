@@ -166,6 +166,14 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsString();
     }
 
+    public static String getStringOptionalParam(Request<JsonObject> request, String key,String defaultValue) {
+        if (request.getParams() == null || request.getParams().get(key) == null || "".equals(request.getParams().get(key).getAsString())) {
+            return defaultValue;
+        }
+
+        return request.getParams().get(key).getAsString();
+    }
+
     public static boolean getBooleanParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
@@ -306,14 +314,6 @@ public abstract class RpcAbstractHandler {
             List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
 
             if (conferences != null && !conferences.isEmpty()) {
-                /*if (sessionId.equals(userUuid)) {
-                    // force close previous room when sessionId is userUuid.
-                    log.warn("conference:{} will be force closed.", sessionId);
-                    // TODO
-                    conferences.forEach(conference -> sessionManager.endConferenceInfo(conference));
-                    cleanSession(sessionId, "", false, EndReason.forceCloseSessionByUser);
-                    return false;
-                }*/
                 conferences.forEach(conference -> {
                     Session session = sessionManager.getSession(conference.getRoomId());
                     if (Objects.nonNull(session) && !session.isClosed()) {

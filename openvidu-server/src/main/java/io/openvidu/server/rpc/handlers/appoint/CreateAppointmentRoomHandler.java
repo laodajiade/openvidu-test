@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
@@ -13,6 +14,7 @@ import io.openvidu.server.domain.resp.AppointmentRoomResp;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
+import io.openvidu.server.utils.RandomRoomIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +38,17 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Resource
     private CorporationMapper corporationMapper;
 
+    @Autowired
+    private RandomRoomIdGenerator randomRoomIdGenerator;
 
     @Override
     public RespResult<AppointmentRoomResp> doProcess(RpcConnection rpcConnection, Request<AppointmentRoomVO> request, AppointmentRoomVO params) {
 
         BindValidate.notEmpty(params::getParticipants);
 
-        //Conference conference = appointConferenceManage.constructConf(rpcConnection, request);
+        if (RoomIdTypeEnums.random == params.getRoomIdType()) {
+            params.setRoomId(randomRoomIdGenerator.offerRoomId());
+        }
 
         // 会议开始时间校验
         if (params.getStartTime() != 0 && System.currentTimeMillis() > params.getStartTime()) {

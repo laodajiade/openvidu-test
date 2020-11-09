@@ -237,6 +237,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty(ProtocolElements.SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM,participant.getPreset().getAllowPartOperSpeaker().name());
 		roomInfoJson.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 		roomInfoJson.addProperty("automatically", session.isAutomatically());
+        roomInfoJson.addProperty("roomIdType", conference.getRoomIdType());
 		roomInfoJson.addProperty(ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM,participant.getPreset().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
