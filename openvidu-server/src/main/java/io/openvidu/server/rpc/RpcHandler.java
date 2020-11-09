@@ -18,8 +18,6 @@
 package io.openvidu.server.rpc;
 
 import com.google.gson.JsonObject;
-import io.openvidu.client.OpenViduException;
-import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
@@ -76,22 +74,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (ProtocolElements.ACCESS_IN_METHOD.equals(request.getMethod())) {
 			notificationService.newRpcConnection(transaction, request);
 		} else if (notificationService.getRpcConnection(participantPrivateId) == null) {
-			// Throw exception if any method is called before 'joinRoom'
+			// return errorCode:11007("please access in first") if any method is called before 'accessIn'
 			log.warn(
 					"No connection found for participant with privateId {} when trying to execute method '{}'. " +
 							"Method 'Session.connect()' must be the first operation called in any session", participantPrivateId, request.getMethod());
-			throw new OpenViduException(Code.TRANSPORT_ERROR_CODE,
-					"No connection found for participant with privateId " + participantPrivateId
-							+ ". Method 'Session.connect()' must be the first operation called in any session");
+			notificationService.sendRespWithConnTransaction(transaction, request.getId(), ErrorCodeEnum.ACCESS_IN_NEEDED);
+			return;
 		}
-
-		// Authorization Check
-        /*if (authorizationManage.checkIfOperationPermitted(request.getMethod(), rpcConnection)) {
-            assert rpcConnection != null;
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PERMISSION_LIMITED);
-            return;
-        }*/
 
 		RpcConnection rpcConnection = notificationService.addTransaction(transaction, request);
 		request.setSessionId(rpcConnection.getParticipantPrivateId());
@@ -107,10 +96,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		if (sessionId == null && !ProtocolElements.FILTERS.contains(request.getMethod())) {
 			log.warn(
 					"No session information found for participant with privateId {} when trying to execute method '{}'. " +
-							"Method 'Session.connect()' must be the first operation called in any session", participantPrivateId, request.getMethod());
-			throw new OpenViduException(Code.TRANSPORT_ERROR_CODE,
-					"No session information found for participant with privateId " + participantPrivateId
-							+ ". Method 'Session.connect()' must be the first operation called in any session");
+							"Method 'joinRoom' must be the first operation called in this case.", participantPrivateId, request.getMethod());
+			notificationService.sendErrorResponseWithDesc(participantPrivateId, request.getId(), null, ErrorCodeEnum.JOIN_ROOM_NEEDED);
+			return;
 		}
 
 		if (ProtocolElements.CORP_SERVICE_EXPIRED_FILTERS.contains(request.getMethod()) && cacheManage.getCorpExpired(rpcConnection.getProject())) {
