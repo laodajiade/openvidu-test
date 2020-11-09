@@ -428,6 +428,7 @@ public class ProtocolElements {
 	public static final String GET_NOT_FINISHED_ROOM_SHARESTATUS_PARAM = "shareStatus";
 	public static final String GET_NOT_FINISHED_ROOM_SPEAKERSTATUS_PARAM = "speakerStatus";
 	public static final String GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM = "handStatus";
+	public static final String GET_NOT_FINISHED_ROOM_MODERATOR_UUID_PARAM = "moderatorUuid";
 
 	public static final String USER_BREAK_LINE_METHOD = "userBreakLine";
 	public static final String USER_BREAK_LINE_CONNECTION_ID_PARAM = "connectionId";

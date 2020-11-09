@@ -40,6 +40,7 @@ public class GetNotFinishedRoomHandler extends RpcAbstractHandler {
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SPEAKERSTATUS_PARAM, String.valueOf(partInfo.get("speakerStatus")));
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM, String.valueOf(partInfo.get("handStatus")));
                 respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_SHARESTATUS_PARAM, String.valueOf(partInfo.get("shareStatus")));
+                respObj.addProperty(ProtocolElements.GET_NOT_FINISHED_ROOM_MODERATOR_UUID_PARAM, session.getConference().getModeratorUuid());
             }
         }
 
