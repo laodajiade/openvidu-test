@@ -27,12 +27,6 @@ import java.util.List;
 public class GetParticipateHistoryHandler extends ExRpcAbstractHandler<GetConferenceScheduleVO> {
 
     @Resource
-    private ConferenceMapper conferenceMapper;
-
-    @Autowired
-    private AppointConferenceMapper appointConferenceMapper;
-
-    @Resource
     private ConferencePartHistoryMapper conferencePartHistoryMapper;
 
 
