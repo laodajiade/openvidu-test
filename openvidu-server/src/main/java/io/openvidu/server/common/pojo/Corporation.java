@@ -26,4 +26,6 @@ public class Corporation {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date expireDate;
+
+    private Integer remainderDuration;
 }

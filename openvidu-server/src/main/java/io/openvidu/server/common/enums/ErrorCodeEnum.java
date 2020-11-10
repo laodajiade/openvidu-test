@@ -102,6 +102,7 @@ public enum ErrorCodeEnum {
     APPOINTMENT_CONFERENCE_HAS_FINISHED(13055,"预约会议已结束"),
     APPOINTMENT_CONFERENCE_DID_NOT_START(13056,"会议未开始"),
     JOIN_ROOM_NEEDED(13057,"请先加入房间"),
+    REMAINDER_DURATION_USE_UP(13058,"通话时长已用完，请联系管理员"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

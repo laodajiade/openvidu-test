@@ -300,4 +300,16 @@ public class CacheManageImpl implements CacheManage {
     public void publish(String channel, String message) {
         tokenStringTemplate.convertAndSend(channel, message);
     }
+
+    @Override
+    public void setCorpRemainDuration(String project,int remainderDuration) {
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_PREFIX_KEY + project;
+        roomRedisTemplate.opsForValue().set(key, remainderDuration);
+    }
+
+    @Override
+    public int getCorpRemainDuration(String project) {
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_PREFIX_KEY + project;
+        return (int)roomRedisTemplate.opsForValue().get(key);
+    }
 }

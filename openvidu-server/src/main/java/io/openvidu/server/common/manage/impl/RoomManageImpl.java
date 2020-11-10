@@ -5,6 +5,7 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.dao.CorpMcuConfigMapper;
+import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoomManage;
@@ -12,7 +13,9 @@ import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.CorpMcuConfig;
+import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.UserCorpInfo;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 import org.apache.commons.lang.StringUtils;
@@ -43,6 +46,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Resource
     private UserManage userManage;
+
+    @Resource
+    private CorporationMapper corporationMapper;
 
 
     @Override
@@ -103,7 +109,15 @@ public class RoomManageImpl implements RoomManage {
         int duration = (int) ((endTime.getTime() - createdAt) / 60000);
         update.setDuration(duration == 0 ? 1 : duration);
         conferencePartHistoryMapper.updatePartHistroy(update);
-
+        UserCorpInfo userCorpInfo = corporationMapper.getUserCorpInfo(uuid);
+        Corporation corporation = new Corporation();
+        if (Objects.nonNull(userCorpInfo.getRemainderDuration())) {
+            int remainderDuration = userCorpInfo.getRemainderDuration() - duration;
+            corporation.setRemainderDuration(remainderDuration);
+            corporation.setProject(userCorpInfo.getProject());
+            corporationMapper.updateCorpRemainderDuration(corporation);
+            cacheManage.setCorpRemainDuration(userCorpInfo.getProject(), remainderDuration);
+        }
         cacheManage.delPartInfo(uuid);
     }
 
