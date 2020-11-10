@@ -14,6 +14,7 @@ import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.rpc.handlers.CloseRoomHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,11 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     private ConferenceMapper conferenceMapper;
 
     @Resource
-    ConferencePartHistoryMapper conferencePartHistoryMapper;
+    private ConferencePartHistoryMapper conferencePartHistoryMapper;
+
+
+    @Autowired
+    private CloseRoomHandler closeRoomHandler;
 
     @Transactional
     @Override
@@ -48,7 +53,8 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         String admin = getStringOptionalParam(request, "admin");
 
         if (!ruid.startsWith("appt-")) {
-            return delGeneral(rpcConnection, ruid, admin);
+            //return delGeneral(rpcConnection, ruid, admin);
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
         }
 
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
@@ -63,9 +69,9 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
 
-        // 删除会议
-        conferenceMapper.deleteByRuid(ruid);
-        conferencePartHistoryMapper.deleteByRuid(ruid);
+        // finish conference
+        // conferenceMapper.deleteByRuid(ruid);
+        // conferencePartHistoryMapper.deleteByRuid(ruid);
 
         // 获取定时任务的id
         List<Long> jobIds = conferenceJobManage.deleteConferenceJobByRuid(ruid);
@@ -82,6 +88,13 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         log.info("not active session exist:{} ,ruid={}", sessionNotActive != null, sessionNotActive == null ? "" : sessionNotActive.getRuid());
         if (sessionNotActive != null && Objects.equals(sessionNotActive.getRuid(), ruid)) {
             sessionManager.closeSessionAndEmptyCollections(sessionNotActive, EndReason.closeSessionByModerator);
+        }
+
+        // 结束会议
+        Session session = sessionManager.getSession(appointConference.getRoomId());
+        if (session != null && session.getConference().getRuid().equals(ruid)) {
+            log.info("close session with cancel appointment conference ,roomId = {} and ruid = {}", appointConference.getRoomId(), appointConference.getRuid());
+            closeRoomHandler.closeRoom(rpcConnection, session);
         }
 
         return RespResult.ok(new JsonObject());

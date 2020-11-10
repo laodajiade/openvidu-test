@@ -34,7 +34,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         if (Objects.isNull(session = sessionManager.getSession(sessionId)) || session.isClosed()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
-            return ;
+            return;
         }
 
         Participant participant = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
@@ -55,9 +55,17 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, errCode);
-            return ;
+            return;
         }
 
+        closeRoom(rpcConnection, session);
+
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+
+
+    public void closeRoom(RpcConnection rpcConnection, Session session) {
+        String sessionId = session.getSessionId();
         // set session status: closing
         session.setClosing(true);
         sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
@@ -66,7 +74,8 @@ public class CloseRoomHandler extends RpcAbstractHandler {
             RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
             if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
                 cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
-            }});
+            }
+        });
 
         //cancel invite
         cancelAllInviteCompensation(sessionId);
@@ -78,12 +87,12 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
         timerManager.stopPollingCompensation(sessionId);
         //send notify
+        JsonObject params = new JsonObject();
+        params.addProperty("roomId", sessionId);
         session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                ProtocolElements.STOP_POLLING_NODIFY_METHOD, request.getParams()));
+                ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
 
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
         rpcConnection.setReconnected(false);
-
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }
