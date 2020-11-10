@@ -149,6 +149,11 @@ public class KurentoParticipant extends Participant {
 					this.session.getPipeline(), this.openviduConfig);
 
 			this.publisher.setCompositeService(this.session.compositeService);
+		} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
+			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setCompositeService(this.session.compositeService);
 		}
 		this.publisher.createEndpoint(publisherLatch);
 		if (getPublisher().getEndpoint() == null) {

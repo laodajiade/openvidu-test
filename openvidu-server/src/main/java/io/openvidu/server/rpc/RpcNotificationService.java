@@ -217,4 +217,17 @@ public class RpcNotificationService {
 		return this.rpcConnections.values();
 	}
 
+	public void sendRespWithConnTransaction(Transaction t, Integer requestId, ErrorCodeEnum errorCode) {
+		String privateId = null;
+		try {
+			privateId = t.getSession().getSessionId();
+			t.sendError(errorCode.getCode(), errorCode.getMessage(), null);
+			log.info("WebSocket error response session #{} - Response transaction id:{} and error:{} {}",
+					privateId, requestId, errorCode.getCode(), errorCode.getMessage());
+
+			t.getSession().close();
+		} catch (Exception e) {
+			log.error("Exception sending error response to privateId ({})", privateId, e);
+		}
+	}
 }

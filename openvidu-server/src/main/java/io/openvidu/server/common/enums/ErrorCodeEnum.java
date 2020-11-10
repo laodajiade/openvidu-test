@@ -50,6 +50,7 @@ public enum ErrorCodeEnum {
     INVALID_METHOD_CALL(11003, "非法调用"),
     UNRECOGNIZED_API(11005, "非法API调用"),
     CORP_SERVICE_EXPIRED(11006, "服务已到期"),
+    ACCESS_IN_NEEDED(11007, "重新链接服务器中"),
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
@@ -100,6 +101,7 @@ public enum ErrorCodeEnum {
     APPOINTMENT_CONFERENCE_NOT_EXIST(13054,"预约会议不存在"),
     APPOINTMENT_CONFERENCE_HAS_FINISHED(13055,"预约会议已结束"),
     APPOINTMENT_CONFERENCE_DID_NOT_START(13056,"会议未开始"),
+    JOIN_ROOM_NEEDED(13057,"请先加入房间"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
