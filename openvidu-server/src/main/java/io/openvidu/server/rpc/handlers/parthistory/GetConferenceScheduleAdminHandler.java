@@ -1,4 +1,4 @@
-package io.openvidu.server.rpc.handlers;
+package io.openvidu.server.rpc.handlers.parthistory;
 
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.domain.vo.ConferenceHisResp;

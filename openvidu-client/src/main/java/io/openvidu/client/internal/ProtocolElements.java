@@ -769,6 +769,7 @@ public class ProtocolElements {
 	public static final String APPOINTMENT_CONFERENCE_CREATED_METHOD = "appointmentConferenceCreated";
 	public static final String GET_CONFERENCE_SCHEDULE_METHOD = "getConferenceSchedule";
 	public static final String GET_CONFERENCE_SCHEDULE_ADMIN_METHOD = "getConferenceScheduleAdmin";
+	public static final String GET_PARTICIPATE_HISTORY_METHOD = "getParticipateHistory";
 
 	public static final String GETMEETINGSRECORDS_METHOD = "getMeetingRecords";
 	public static final String GETMEETINGSRECORDS_SIZE_PARAM = "size";

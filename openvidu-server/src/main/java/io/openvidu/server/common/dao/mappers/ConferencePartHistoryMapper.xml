@@ -262,4 +262,12 @@
       from sd_appoint_part a inner join sd_user b on a.user_id = b.id
       where a.ruid=#{ruid}
     </select>
+
+    <select id="selectUserHistory" resultType="io.openvidu.server.domain.vo.PartHisResp">
+        select a.id, a.ruid, a.user_id as userId, UNIX_TIMESTAMP(a.start_time) * 1000 as startTime,
+            UNIX_TIMESTAMP(a.end_time)*1000 as endTime, a.duration, b.conference_subject as subject
+        from sd_conf_part_history a INNER join sd_conference b on a.ruid = b.ruid
+        where a.user_id = #{userId} and a.status = 1
+        order by a.start_time desc
+    </select>
 </mapper>

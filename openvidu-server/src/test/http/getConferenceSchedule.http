@@ -39,6 +39,18 @@ Content-Type: application/json
 }
 
 
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getParticipateHistory
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "pageNum" : 1,
+  "pageSize" : 20
+}
+
+
 ### 删除历史会议
 POST http://localhost:4443/dev/test?id={{uuid}}&method=deleteConferenceHistory
 Accept: */*

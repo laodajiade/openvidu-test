@@ -1,4 +1,4 @@
-package io.openvidu.server.rpc.handlers;
+package io.openvidu.server.rpc.handlers.parthistory;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;

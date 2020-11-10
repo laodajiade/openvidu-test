@@ -1,4 +1,4 @@
-package io.openvidu.server.rpc.handlers;
+package io.openvidu.server.rpc.handlers.parthistory;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
