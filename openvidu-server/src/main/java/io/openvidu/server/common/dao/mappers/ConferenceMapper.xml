@@ -343,7 +343,11 @@
     select
     <include refid="Base_Column_List"/>
     from sd_conference a
-    where a.`status`=2  and (a.user_id = #{userId} or a.ruid in ( select ruid from sd_conf_part_history  b where b.user_id = #{userId} ))
+    where a.`status`=2  and ( (a.user_id = #{userId} and del = 0) or a.ruid in ( select ruid from sd_conf_part_history b where b.user_id = #{userId} and del = 0))
     order by start_time desc
   </select>
+
+  <update id="softDeleteById">
+    update sd_conference set del = 1 where id = #{id}
+  </update>
 </mapper>

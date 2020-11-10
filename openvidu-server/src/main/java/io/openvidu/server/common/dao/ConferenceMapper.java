@@ -37,4 +37,6 @@ public interface ConferenceMapper {
     long selectConfRecordsCountByCondition(ConferenceSearch search);
 
     List<Conference> getFinishedList(Long userId);
+
+    void softDeleteById(Long id);
 }

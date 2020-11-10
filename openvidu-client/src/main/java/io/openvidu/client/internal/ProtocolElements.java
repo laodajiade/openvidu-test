@@ -522,6 +522,8 @@ public class ProtocolElements {
 	public static final String CANCEL_APPOINTMENT_ROOM_METHOD = "cancelAppointmentRoom";
 	public static final String GET_APPOINTMENT_ROOM_DETAILS_METHOD = "getAppointmentRoomDetails";
 
+	public static final String DELETE_CONFERENCE_HISTORY_METHOD = "deleteConferenceHistory";
+
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
 	public static final String PARTICIPANTJOINED_METHOD = "participantJoined";

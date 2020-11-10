@@ -37,3 +37,14 @@ Content-Type: application/json
   "pageNum" : 1,
   "pageSize" : 20
 }
+
+
+### 删除历史会议
+POST http://localhost:4443/dev/test?id={{uuid}}&method=deleteConferenceHistory
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid" : "e03b3eda-017e-401c-819e-0646e24eeb2e"
+}
