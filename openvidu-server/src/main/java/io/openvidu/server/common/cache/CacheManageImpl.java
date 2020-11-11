@@ -310,6 +310,10 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public int getCorpRemainDuration(String project) {
         String key = CacheKeyConstants.CORP_REMAINDER_DURATION_PREFIX_KEY + project;
-        return (int)roomRedisTemplate.opsForValue().get(key);
+        Object remainderDuration = roomRedisTemplate.opsForValue().get(key);
+        if (Objects.nonNull(remainderDuration)) {
+            return (int)remainderDuration;
+        }
+        return 0;
     }
 }
