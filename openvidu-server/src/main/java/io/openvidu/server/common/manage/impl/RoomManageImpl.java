@@ -18,6 +18,7 @@ import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.UserCorpInfo;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  * @author chosongi
  * @date 2020/5/27 16:37
  */
+@Slf4j
 @Service
 public class RoomManageImpl implements RoomManage {
 
@@ -112,7 +114,7 @@ public class RoomManageImpl implements RoomManage {
         UserCorpInfo userCorpInfo = corporationMapper.getUserCorpInfo(uuid);
         Corporation corporation = new Corporation();
         if (Objects.nonNull(userCorpInfo.getRemainderDuration())) {
-            int remainderDuration = userCorpInfo.getRemainderDuration() - duration;
+            int remainderDuration = userCorpInfo.getRemainderDuration() - (duration == 0 ? 1 : duration);
             corporation.setRemainderDuration(remainderDuration);
             corporation.setProject(userCorpInfo.getProject());
             corporationMapper.updateCorpRemainderDuration(corporation);
