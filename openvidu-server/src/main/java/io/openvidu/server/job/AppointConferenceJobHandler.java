@@ -15,28 +15,21 @@ import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
-import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.core.SessionPreset;
+import io.openvidu.server.core.*;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,9 +44,6 @@ public class AppointConferenceJobHandler {
 
     @Resource
     private CreateAppointmentRoomHandler createAppointmentRoomHandler;
-
-    @Resource
-    private UserManage userManage;
 
     @Resource
     private UserMapper userMapper;
@@ -140,7 +130,7 @@ public class AppointConferenceJobHandler {
                 return ReturnT.FAIL;
             }
 
-            if (appointConference.getStatus() == 2) {//会议已提前结束
+            if (appointConference.getStatus() != 0) {//会议已提前结束
                 crowOnceHelper.delCrowOnce(jobId);
                 return ReturnT.SUCCESS;
             }
@@ -165,7 +155,7 @@ public class AppointConferenceJobHandler {
                 log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
             }
 
-            if (isSameRoom(appointConference.getRoomId(), ruid)) {
+            if (isSameRoom(appointConference.getRoomId(), ruid) && appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
                 // sendNotify
                 List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
 
@@ -190,40 +180,86 @@ public class AppointConferenceJobHandler {
 
     }
 
-    @Scheduled(cron = "0 0/1 * * * ?")
-    public void fixEndAppointment() {
+    /**
+     * 1、预约会议到了结束时间，如果会议没人则关闭会议室，否则推送延迟结束广告
+     * 2、修复因异常重启等原因导致会议没有正常结束而导致状态不正确
+     */
+    @XxlJob("conferenceEndJobHandler")
+    public ReturnT<String> conferenceEndJobHandler(String param) {
         List<AppointConference> list = appointConferenceMapper.getMaybeEndAppointment();
         if (list.isEmpty()) {
-            return;
+            return ReturnT.SUCCESS;
         }
+        Collection<Session> sessions = sessionManager.getSessions();
+
+        for (Session session : sessions) {
+            Optional<AppointConference> first = list.stream().filter(appt -> session.getRuid().equals(appt.getRuid())).findFirst();
+            if (!first.isPresent()) {
+                continue;
+            }
+
+            list.removeIf(appt -> appt.getRuid().equals(session.getRuid()));
+
+            Set<Participant> participants = session.getParticipants();
+            if (participants.isEmpty()) {
+                // finish conference
+                log.info("conferenceEndJobHandler close session roomId = {}, ruid = {}", first.get().getRoomId(), first.get().getRuid());
+                sessionManager.closeSession(first.get().getRoomId(), EndReason.sessionClosedByServer);
+            } else {
+                // notify
+                if (session.isDelay()) {
+                    continue;
+                }
+
+                JsonObject params = new JsonObject();
+                params.addProperty("roomId", session.getSessionId());
+                params.addProperty("ruid", session.getRuid());
+                for (Participant participant : participants) {
+                    if (participant.getStreamType() == StreamType.MAJOR) {
+                        notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.ROOM_AUTO_DELAY_METHOD, params);
+                    }
+                }
+                log.info("conferenceEndJobHandler session delay roomId = {}, ruid = {}", session.getSessionId(), session.getRuid());
+                session.setDelay(true);
+            }
+        }
+
+
         Set<String> ruids = sessionManager.getSessions().stream().map(Session::getRuid).collect(Collectors.toSet());
 
         list.removeIf(appt -> ruids.contains(appt.getRuid()));
 
         if (list.size() == 0) {
-            return;
+            return ReturnT.SUCCESS;
         }
 
         for (AppointConference appointConference : list) {
-            log.info(" fix end appointment ruid= " + appointConference.getRuid());
-            Conference conference = conferenceMapper.selectByRuid(appointConference.getRuid());
-            if (conference == null) {
-                conference = constructConf(appointConference);
-                conference.setStartTime(appointConference.getEndTime());
-                conference.setEndTime(appointConference.getEndTime());
-                conference.setStatus(2);
-                conferenceMapper.insertSelective(conference);
-            } else {
-                conference.setEndTime(new Date());
-                conference.setStatus(2);
-                conferenceMapper.updateByPrimaryKey(conference);
-            }
-
-            appointConference.setStatus(2);
-            appointConferenceMapper.updateByPrimaryKey(appointConference);
+            finishConference(appointConference);
+            log.info("conferenceEndJobHandler finish session roomId = {}, ruid = {}", appointConference.getRoomId(), appointConference.getRuid());
         }
 
+        return ReturnT.SUCCESS;
     }
+
+    private void finishConference(AppointConference appointConference) {
+        log.info(" fix end appointment ruid= " + appointConference.getRuid());
+        Conference conference = conferenceMapper.selectByRuid(appointConference.getRuid());
+        if (conference == null) {
+            conference = constructConf(appointConference);
+            conference.setStartTime(appointConference.getEndTime());
+            conference.setEndTime(appointConference.getEndTime());
+            conference.setStatus(2);
+            conferenceMapper.insertSelective(conference);
+        } else {
+            conference.setEndTime(new Date());
+            conference.setStatus(2);
+            conferenceMapper.updateByPrimaryKey(conference);
+        }
+
+        appointConference.setStatus(2);
+        appointConferenceMapper.updateByPrimaryKey(appointConference);
+    }
+
 
     /**
      * 向与会人发出会议开始呼叫

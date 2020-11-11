@@ -79,6 +79,7 @@ public class Session implements SessionInterface {
 	protected int moderatorIndex = -1;
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
+	protected boolean delay = false;
 	protected boolean notifyCountdown10Min = false;
 	protected boolean notifyCountdown1Min = false;
 	protected Long startRecordingTime;
@@ -335,6 +336,14 @@ public class Session implements SessionInterface {
 	public int incDelayConfCnt() { return this.delayConfCnt++; }
 
 	public int getDelayConfCnt() { return this.delayConfCnt; }
+
+	public boolean isDelay() {
+		return delay;
+	}
+
+	public void setDelay(boolean delay) {
+		this.delay = delay;
+	}
 
 	public void setNotifyCountdown10Min(boolean notifyCountdown10Min) { this.notifyCountdown10Min = notifyCountdown10Min; }
 

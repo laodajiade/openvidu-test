@@ -801,6 +801,7 @@ public class ProtocolElements {
 	public static final String GET_CORP_INFO = "getCorpInfo";
 
 	public static final String STATISTICS_DURATION_METHOD = "statisticsDuration";
+	public static final String ROOM_AUTO_DELAY_METHOD = "roomAutoDelay";
 
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,

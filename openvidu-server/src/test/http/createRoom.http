@@ -20,3 +20,26 @@ Content-Type: application/json
   "useIdInRoom": "allParticipants",
   "videoStatusInRoom": "on"
 }
+
+###
+# create appointment roome
+POST http://localhost:4443/dev/test?id={{uuid}}&method=createRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "allowPartOperMic": "on",
+  "allowPartOperShare": "on",
+  "conferenceMode": "SFU",
+  "duration": 120,
+  "micStatusInRoom": "on",
+  "password": "",
+  "quietStatusInRoom": "smart",
+  "roomId": "{{global.roomId}}",
+  "ruid": "{{global.ruid}}",
+  "sharePowerInRoom": "on",
+  "subject": "80101900003的会议滴滴",
+  "useIdInRoom": "allParticipants",
+  "videoStatusInRoom": "on"
+}

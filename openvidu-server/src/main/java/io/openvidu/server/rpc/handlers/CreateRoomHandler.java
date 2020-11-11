@@ -2,13 +2,13 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -27,7 +27,12 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author geedow
@@ -43,6 +48,12 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     @Autowired
     private RandomRoomIdGenerator randomRoomIdGenerator;
 
+    @Autowired
+    private InviteParticipantHandler inviteParticipantHandler;
+
+    @Resource
+    private ConferencePartHistoryMapper conferencePartHistoryMapper;
+
     @Transactional
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -55,7 +66,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         String roomIdType = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal");
 
-        if (StringUtils.isEmpty(ruid) && ("random".equals(roomIdType) || StringUtils.isEmpty(sessionId))) {
+        if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random.name().equals(roomIdType) || StringUtils.isEmpty(sessionId))) {
             sessionId = randomRoomIdGenerator.offerRoomId();
         }
         //判断发起会议时是否超出企业人数上限
@@ -107,7 +118,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         }
 
         if (isExistingRoom(sessionId, rpcConnection.getUserUuid())) {
-            // 如果是预约会议则假装创建成功
+            // 如果是预约会议已开始则假装创建成功
             if (!StringUtils.isEmpty(ruid)) {
                 JsonObject respJson = new JsonObject();
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
@@ -121,6 +132,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             return;
         }
 
+        CountDownLatch countDownLatch = new CountDownLatch(1);
         if (sessionManager.isNewSessionIdValid(sessionId)) {
             Conference conference = new Conference();
             // if create appointment conference
@@ -131,6 +143,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 conference.setRuid(ruid);
                 roomSubject = appt.getConferenceSubject();
                 conference.setConferenceDesc(appt.getConferenceDesc());
+                final AppointConference finalAppt = appt;
+                new Thread(() -> this.inviteParticipant(countDownLatch, finalAppt)).start();
             } else {
                 conference.setRuid(UUID.randomUUID().toString());
             }
@@ -168,11 +182,51 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
             // store this inactive session
             sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
+            countDownLatch.countDown();
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
         } else {
             log.warn("conference:{} already exist.", sessionId);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
         }
+    }
+
+    public void inviteParticipant(CountDownLatch countDownLatch, AppointConference appt) {
+        if (!appt.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
+            return;
+        }
+
+        try {
+            if (countDownLatch.await(10, TimeUnit.SECONDS)) {
+                // wait 1 second
+                TimeUnit.SECONDS.sleep(1);
+
+                Map userInfo = cacheManage.getUserInfoByUUID(appt.getModeratorUuid());
+                Object username = userInfo.get("username");
+                String deviceName = userInfo.containsKey("deviceName") ? String.valueOf(userInfo.get("deviceName")) : null;
+
+                JsonObject params = new JsonObject();
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, appt.getRoomId());
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, appt.getModeratorUuid());
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? deviceName : username.toString());
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERICON_PARAM, "");
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, System.currentTimeMillis() + 60000);
+                if (!StringUtils.isEmpty(deviceName)) {
+                    params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
+                }
+
+                List<User> users = conferencePartHistoryMapper.selectUserByRuid(appt.getRuid());
+
+                List<String> targets = users.stream().map(User::getUuid).collect(Collectors.toList());
+                log.info("invite participant in create room, targets = {}", targets);
+                inviteParticipantHandler.inviteOnline(targets, params);
+            } else {
+                log.info("cancel invite participant in create room roomId = {}, ruid = {}", appt.getRoomId(), appt.getRuid());
+            }
+        } catch (InterruptedException e) {
+            log.error("create room inviteParticipant error", e);
+        }
+
+
     }
 }
