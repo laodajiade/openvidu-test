@@ -15,7 +15,6 @@ import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
-import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
@@ -51,9 +50,6 @@ public class AppointConferenceJobHandler {
 
     @Resource
     private CreateAppointmentRoomHandler createAppointmentRoomHandler;
-
-    @Resource
-    private UserManage userManage;
 
     @Resource
     private UserMapper userMapper;
@@ -140,7 +136,7 @@ public class AppointConferenceJobHandler {
                 return ReturnT.FAIL;
             }
 
-            if (appointConference.getStatus() == 2) {//会议已提前结束
+            if (appointConference.getStatus() != 0) {//会议已提前结束
                 crowOnceHelper.delCrowOnce(jobId);
                 return ReturnT.SUCCESS;
             }
@@ -165,7 +161,7 @@ public class AppointConferenceJobHandler {
                 log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
             }
 
-            if (isSameRoom(appointConference.getRoomId(), ruid)) {
+            if (isSameRoom(appointConference.getRoomId(), ruid) && appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
                 // sendNotify
                 List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
 

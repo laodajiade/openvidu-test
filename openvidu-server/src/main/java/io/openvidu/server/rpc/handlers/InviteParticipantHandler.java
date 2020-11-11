@@ -101,6 +101,12 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
         }
 
+        inviteOnline(targetIds, params);
+
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+
+    public void inviteOnline(List<String> targetIds, JsonObject params) {
         Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
         for (RpcConnection rpcConnect : rpcConnections) {
             if (!Objects.isNull(rpcConnect.getUserUuid())) {
@@ -115,7 +121,5 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                 }
             }
         }
-
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

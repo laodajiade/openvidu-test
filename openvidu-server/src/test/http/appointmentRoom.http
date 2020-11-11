@@ -1,5 +1,5 @@
 
-# 创建个人的会议室
+# 创建随机预约会议室
 POST http://localhost:4443/dev/test?id={{uuid}}&method=createAppointmentRoom
 Accept: */*
 Cache-Control: no-cache
@@ -16,12 +16,16 @@ Content-Type: application/json
     "80101900007"
   ],
   "password": "",
-  "roomId": "{{roomId}}",
+  "roomId": "",
   "startTime": 0,
+  "roomIdType": "random",
   "subject": "test create appt"
 }
 
-> {% client.global.set("global.ruid",response.body.result.ruid) %}
+> {%
+client.global.set("global.ruid",response.body.result.ruid)
+client.global.set("global.roomId",response.body.result.roomId)
+ %}
 
 ###
 
