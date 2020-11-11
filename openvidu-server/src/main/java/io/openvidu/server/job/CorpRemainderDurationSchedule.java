@@ -138,7 +138,7 @@ public class CorpRemainderDurationSchedule {
                             Collection<Session> sessions = sessionManager.getCorpSessions(corporation.getProject());
                             if (!CollectionUtils.isEmpty(sessions)) {
                                 JsonObject params = new JsonObject();
-                                params.addProperty("reason", "CallDurationUsedUp");
+                                params.addProperty("reason", "callDurationUsedUp");
                                 for (Session session : sessions) {
                                     Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
 
@@ -146,14 +146,19 @@ public class CorpRemainderDurationSchedule {
                                         if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) {
                                             return;
                                         }
-                                        notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
+                                        if (p.getProject().equals(session.getConference().getProject())) {
+                                            notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
+                                        } else {
+                                            notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
+                                        }
+
                                         RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
                                         if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
                                             cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
                                         }
                                     });
                                     sessionManager.stopRecording(session.getSessionId());
-                                    sessionManager.closeSession(session.getSessionId(), EndReason.CallDurationUsedUp);
+                                    sessionManager.closeSession(session.getSessionId(), EndReason.callDurationUsedUp);
                                 }
                             }
                         }
