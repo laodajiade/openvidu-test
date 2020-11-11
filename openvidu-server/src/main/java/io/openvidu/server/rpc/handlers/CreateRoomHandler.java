@@ -87,15 +87,11 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             }
         }
         //判断通话时长是否不足
-        Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(rpcConnection.getProject());
-        if (!map.isEmpty()) {
-            int remainderHour = map.get("remainderHour");
-            int remainderMinute = map.get("remainderMinute");
-            if (remainderHour <= 0 || remainderMinute <= 0) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-                return;
-            }
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+            return;
         }
 
         AppointConference appt = null;

@@ -69,6 +69,7 @@ public class StatisticsManageImpl implements StatisticsManage {
         Map<String,Integer> map = new HashMap<>(2);
         map.put("remainderHour",corporation.getRemainderDuration()/60);
         map.put("remainderMinute",corporation.getRemainderDuration()%60);
+        cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
         if (Objects.nonNull(corporation)) {
             int remainderDuration = corporation.getRemainderDuration();
             if (Objects.nonNull(remainderDuration)) {

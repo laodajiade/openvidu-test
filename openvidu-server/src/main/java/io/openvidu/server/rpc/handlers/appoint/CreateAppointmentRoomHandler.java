@@ -50,15 +50,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (RoomIdTypeEnums.random == params.getRoomIdType()) {
             params.setRoomId(randomRoomIdGenerator.offerRoomId());
         }
-        //判断通话时长是否不足
-        Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(rpcConnection.getProject());
-        if (!map.isEmpty()) {
-            int remainderHour = map.get("remainderHour");
-            int remainderMinute = map.get("remainderMinute");
-            if (remainderHour <= 0 || remainderMinute <= 0) {
-                return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-            }
-        }
+
         // 会议开始时间校验
         if (params.getStartTime() != 0 && System.currentTimeMillis() > params.getStartTime()) {
             return RespResult.fail(ErrorCodeEnum.START_TIME_LATE);
@@ -73,8 +65,12 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         params.setEndTime(params.getStartTime() + (params.getDuration() * 60000));
 
-        // 检验容量
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        //判断通话时长是否不足
+        if (corporation.getRemainderDuration() <= 0) {
+            return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+        }
+        // 检验容量
         params.setRoomCapacity(corporation.getCapacity());
         if (corporation.getCapacity() < params.getParticipants().size()) {
             return RespResult.fail(ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
