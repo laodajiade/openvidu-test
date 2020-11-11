@@ -1,7 +1,6 @@
 package io.openvidu.server.job;
 
 import com.google.gson.JsonObject;
-import com.oracle.tools.packager.Log;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.broker.CorpServiceExpiredNotifyHandler;
 import io.openvidu.server.common.broker.RedisPublisher;

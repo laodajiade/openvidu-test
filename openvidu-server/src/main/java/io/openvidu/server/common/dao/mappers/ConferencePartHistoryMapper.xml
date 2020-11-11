@@ -319,5 +319,4 @@
     and scph.project = #{project,jdbcType=VARCHAR}
   </select>
 
-
 </mapper>

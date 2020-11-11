@@ -47,4 +47,5 @@ public interface ConferencePartHistoryMapper {
     List<NotEndPartHistory> selectNotEndPartHistory();
 
     List<ConferencePartHistory> selectProcessPartHistory(@Param("project") String project);
+
 }

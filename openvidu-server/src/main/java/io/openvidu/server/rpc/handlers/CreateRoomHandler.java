@@ -75,7 +75,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 return;
             }
         }
-
         //判断通话时长是否不足
         Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(rpcConnection.getProject());
         if (!map.isEmpty()) {
