@@ -169,6 +169,18 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         }
                     }
                 }
+                //判断通话时长是否不足
+                Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(rpcConnection.getProject());
+                if (!map.isEmpty()) {
+                    int remainderHour = map.get("remainderHour");
+                    int remainderMinute = map.get("remainderMinute");
+                    if (remainderHour <= 0 || remainderMinute <= 0) {
+                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                                null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+                        return;
+                    }
+                }
+
 
                 try {
                     recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
@@ -240,6 +252,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setTerminalType(rpcConnection.getTerminalType());
                 participant.setUuid(rpcConnection.getUserUuid());
                 participant.setUsername(rpcConnection.getUsername());
+                participant.setProject(rpcConnection.getProject());
                 if (StringUtils.isEmpty(serialNumber)) {
                     if (UserType.register.equals(participant.getUserType())) {
                         User user = userMapper.selectByPrimaryKey(userId);

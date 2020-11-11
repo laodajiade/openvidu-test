@@ -72,6 +72,9 @@ public class Participant {
 	protected SessionPreset preset;
 	protected ParticipantJoinType joinType;
 	private String ability;
+	@Getter
+	@Setter
+	private String project;
 
 	@Getter
 	@Setter

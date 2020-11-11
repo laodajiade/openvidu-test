@@ -7,6 +7,7 @@ import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.StatisticsConferenceDaily;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author chosongi
@@ -20,4 +21,6 @@ public interface StatisticsManage {
     void insert(StatisticsConferenceDaily statisticsConferenceDaily);
 
     List<Corporation> selectCorporations();
+
+    Map<String,Integer> statisticsRemainderDuration(String project);
 }

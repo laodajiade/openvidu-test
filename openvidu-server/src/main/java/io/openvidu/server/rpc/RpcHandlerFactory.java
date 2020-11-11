@@ -307,6 +307,8 @@ public class RpcHandlerFactory {
     private GetPresetPositionsHandler getPresetPositionsHandler;
     @Resource
     private AdjustToPresetPositionHandler adjustToPresetPositionHandler;
+    @Resource
+    private StatisticsDurationHandler statisticsDurationHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -422,6 +424,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.DISCARDPRESETPOSITIONS_METHOD,                 discardPresetPositionsHandler);
         handlersMap.put(ProtocolElements.GETPRESETPOSITIONS_METHOD,                     getPresetPositionsHandler);
         handlersMap.put(ProtocolElements.ADJUSTTOPRESETPOSITION_METHOD,                 adjustToPresetPositionHandler);
+        handlersMap.put(ProtocolElements.STATISTICS_DURATION_METHOD,                    statisticsDurationHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

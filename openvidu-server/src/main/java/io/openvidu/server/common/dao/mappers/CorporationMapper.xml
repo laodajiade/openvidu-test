@@ -11,9 +11,10 @@
     <result column="recording_capacity" jdbcType="INTEGER" property="recordingCapacity" />
     <result column="activation_date" jdbcType="DATE" property="activationDate" />
     <result column="expire_date" jdbcType="DATE" property="expireDate" />
+    <result column="remainder_duration" jdbcType="INTEGER" property="remainderDuration" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, corp_name, project, create_time, update_time, capacity, recording_capacity, activation_date, expire_date
+    id, corp_name, project, create_time, update_time, capacity, recording_capacity, activation_date, expire_date, remainder_duration
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select
@@ -27,6 +28,12 @@
     from sd_corporation
     where project = #{project,jdbcType=VARCHAR}
     limit 1
+  </select>
+
+  <select id="selectAllCorp"  resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_corporation
   </select>
 
   <select id="listCorpExpire" resultType="io.openvidu.server.common.pojo.Corporation">
@@ -129,5 +136,19 @@
       expire_date = #{expireDate,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
+  <update id="updateCorpRemainderDuration" parameterType="io.openvidu.server.common.pojo.Corporation">
+    update sd_corporation
+    set remainder_duration = #{remainderDuration,jdbcType=INTEGER}
+    where project = #{project,jdbcType=VARCHAR}
+  </update>
+
+  <select id="getUserCorpInfo" parameterType="java.lang.String" resultType="io.openvidu.server.common.pojo.UserCorpInfo">
+    select sc.project,sc.remainder_duration remainderDuration
+    from sd_corporation sc
+    inner join sd_user su
+    on sc.project = su.project
+    where su.uuid = #{uuid,jdbcType=VARCHAR}
+  </select>
 
 </mapper>

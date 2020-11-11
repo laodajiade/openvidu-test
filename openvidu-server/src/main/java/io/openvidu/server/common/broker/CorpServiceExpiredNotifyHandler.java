@@ -2,6 +2,7 @@ package io.openvidu.server.common.broker;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -27,6 +28,9 @@ public class CorpServiceExpiredNotifyHandler {
     @Resource
     private RpcNotificationService rpcNotificationService;
 
+    @Resource
+    private CacheManage cacheManage;
+
     @Async
     public void notify(String message) {
         log.info("CorpServiceExpiredNotifyHandler corpId:" + message);
@@ -40,6 +44,11 @@ public class CorpServiceExpiredNotifyHandler {
         params.addProperty("project", corporation.getProject());
         params.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(), DateUtil.DEFAULT_YEAR_MONTH_DAY));
         params.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
+        int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
+        int remainderHour = remainderDuration/60;
+        int remainderMinute = remainderDuration%60;
+        params.addProperty("remainderHour",remainderHour);
+        params.addProperty("remainderMinute",remainderMinute);
 
         rpcNotificationService.getRpcConnections().stream()
                 .filter(rpcConnection -> !Objects.isNull(rpcConnection) && Objects.equals(rpcConnection.getProject(), corporation.getProject()))
