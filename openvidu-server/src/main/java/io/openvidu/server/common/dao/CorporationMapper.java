@@ -1,6 +1,7 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Corporation;
+import io.openvidu.server.common.pojo.UserCorpInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,11 @@ public interface CorporationMapper {
     int updateByPrimaryKey(Corporation record);
 
     List<Corporation> listCorpExpire(@Param("expire") String expire);
+
+    List<Corporation> selectAllCorp();
+
+    int updateCorpRemainderDuration(Corporation record);
+
+    UserCorpInfo getUserCorpInfo(String uuid);
 
 }

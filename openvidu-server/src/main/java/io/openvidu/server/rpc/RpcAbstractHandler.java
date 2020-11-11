@@ -126,6 +126,9 @@ public abstract class RpcAbstractHandler {
     protected PresetMapper presetMapper;
 
     @Resource
+    protected ConferencePartHistoryMapper conferencePartHistoryMapper;
+
+    @Resource
     protected InviteCompensationManage inviteCompensationManage;
 
     @Resource
@@ -133,6 +136,9 @@ public abstract class RpcAbstractHandler {
 
     @Autowired
     protected AppointConferenceManage appointConferenceManage;
+
+    @Autowired
+    protected StatisticsManage statisticsManage;
 
     protected BigDecimal bigDecimalMB = new BigDecimal(1024 * 1024);
 

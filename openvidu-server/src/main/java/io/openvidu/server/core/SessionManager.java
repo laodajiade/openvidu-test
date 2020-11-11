@@ -202,6 +202,11 @@ public abstract class SessionManager {
 		return allSessions;
 	}
 
+	public Collection<Session> getCorpSessions(String project) {
+		return sessions.values().stream().filter(session -> Objects.nonNull(session) && !session.isClosed()
+				&& session.getConference().getProject().equals(project)).collect(Collectors.toSet());
+	}
+
 	/**
 	 * Returns all the participants inside a session.
 	 *

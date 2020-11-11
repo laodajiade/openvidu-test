@@ -45,6 +45,8 @@ public class CacheKeyConstants {
 
     public static final String ACCESSIN_PRIVATEID_PREFIX_KEY = "accessIn:privateId:";
 
+    public static final String CORP_REMAINDER_DURATION_PREFIX_KEY = "remainder:duration:";
+
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
     }

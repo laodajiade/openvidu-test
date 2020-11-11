@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -49,7 +50,15 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (RoomIdTypeEnums.random == params.getRoomIdType()) {
             params.setRoomId(randomRoomIdGenerator.offerRoomId());
         }
-
+        //判断通话时长是否不足
+        Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(rpcConnection.getProject());
+        if (!map.isEmpty()) {
+            int remainderHour = map.get("remainderHour");
+            int remainderMinute = map.get("remainderMinute");
+            if (remainderHour <= 0 || remainderMinute <= 0) {
+                return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+            }
+        }
         // 会议开始时间校验
         if (params.getStartTime() != 0 && System.currentTimeMillis() > params.getStartTime()) {
             return RespResult.fail(ErrorCodeEnum.START_TIME_LATE);

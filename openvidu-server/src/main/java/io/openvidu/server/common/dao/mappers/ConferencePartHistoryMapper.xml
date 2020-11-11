@@ -247,6 +247,25 @@
     </where>
   </update>
 
+
+  <update id="updateNotEndPartHistroy" parameterType="java.util.List">
+    <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+      update sd_conf_part_history
+      <set>
+        <if test="item.status != null ">
+          status = #{item.status,jdbcType=TINYINT},
+        </if>
+        <if test="item.endTime != null ">
+          end_time = #{item.endTime,jdbcType=TIMESTAMP},
+        </if>
+        <if test="item.duration != null ">
+          duration = #{item.duration,jdbcType=INTEGER}
+        </if>
+      </set>
+      where ruid = #{item.ruid}
+    </foreach>
+  </update>
+
   <select id="selectConfPartHistoryByRuids" parameterType="java.util.List" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
@@ -257,17 +276,48 @@
     </foreach>
   </select>
 
-    <select id="selectUserByRuid" resultType="io.openvidu.server.common.pojo.User">
+  <select id="selectUserByRuid" resultType="io.openvidu.server.common.pojo.User">
       select b.id,b.uuid,b.username,b.type
       from sd_appoint_part a inner join sd_user b on a.user_id = b.id
       where a.ruid=#{ruid}
-    </select>
+  </select>
 
-    <select id="selectUserHistory" resultType="io.openvidu.server.domain.vo.PartHisResp">
+  <select id="selectUserHistory" resultType="io.openvidu.server.domain.vo.PartHisResp">
         select a.id, a.ruid, a.user_id as userId, UNIX_TIMESTAMP(a.start_time) * 1000 as startTime,
             UNIX_TIMESTAMP(a.end_time)*1000 as endTime, a.duration, b.conference_subject as subject
         from sd_conf_part_history a INNER join sd_conference b on a.ruid = b.ruid
         where a.user_id = #{userId} and a.status = 1
         order by a.start_time desc
-    </select>
+  </select>
+
+  <select id="selectStatisticsDuration" parameterType="java.lang.Object" resultType="io.openvidu.server.common.pojo.StatisticsDurationInfo">
+    select sc.room_id roomId,sc.conference_subject subject,UNIX_TIMESTAMP(scph.start_time) * 1000 createTime,scph.duration
+    from sd_conf_part_history scph
+    inner join sd_conference sc
+    on scph.ruid = sc.ruid
+    where scph.project = #{project,jdbcType=VARCHAR}
+    and scph.uuid  = #{uuid,jdbcType=VARCHAR}
+    and scph.status = 1
+    order by scph.start_time desc
+  </select>
+
+  <select id="selectNotEndPartHistory"  resultType="io.openvidu.server.common.pojo.NotEndPartHistory">
+    select DISTINCT sc.room_id roomId,sc.ruid,sc.project from sd_conf_part_history scph
+    left join sd_conference sc
+    on scph.ruid = sc.ruid
+    where scph.end_time is null
+    and scph.status = 0
+    and sc.status = 2
+  </select>
+
+  <select id="selectProcessPartHistory" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conf_part_history scph
+    where scph.end_time is null
+    and scph.status = 0
+    and scph.project = #{project,jdbcType=VARCHAR}
+  </select>
+
+
 </mapper>

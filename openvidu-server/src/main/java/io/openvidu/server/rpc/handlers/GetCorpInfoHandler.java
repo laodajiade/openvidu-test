@@ -1,6 +1,7 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.manage.StatisticsManage;
 import io.openvidu.server.common.pojo.ConferenceRecordSearch;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.RoomRecordSummary;
@@ -11,10 +12,12 @@ import io.openvidu.server.utils.LocalDateUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -23,6 +26,10 @@ import java.util.Objects;
  */
 @Service
 public class GetCorpInfoHandler extends RpcAbstractHandler {
+
+    @Resource
+    private StatisticsManage statisticsManage;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         JsonObject respObj = new JsonObject();
@@ -41,6 +48,10 @@ public class GetCorpInfoHandler extends RpcAbstractHandler {
             long usedSpaceSize = roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
             respObj.addProperty("usedStorageSpace",
                     new BigDecimal(usedSpaceSize).divide(bigDecimalMB, 2, BigDecimal.ROUND_UP).toString());
+
+            Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(corporation.getProject());
+            respObj.addProperty("remainderHour",map.get("remainderHour"));
+            respObj.addProperty("remainderMinute",map.get("remainderMinute"));
         }
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);

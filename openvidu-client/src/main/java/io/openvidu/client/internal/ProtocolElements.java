@@ -720,6 +720,7 @@ public class ProtocolElements {
 	public static final String PAGESIZE = "pageSize";
 	public static final String TOTAL = "total";
 	public static final String PAGES = "pages";
+	public static final String PAGELIST = "list";
 
 	public static final String UPDATE_PARTICIPANTS_ORDER_METHOD = "updateParticipantsOrder";
 	public static final String UPDATE_PARTICIPANTS_ORDER_ORDEREDPARTS_PARAM="orderedParts";
@@ -798,6 +799,8 @@ public class ProtocolElements {
 
 	public static final String GET_ICE_SERVER_LIST = "getIceServerList";
 	public static final String GET_CORP_INFO = "getCorpInfo";
+
+	public static final String STATISTICS_DURATION_METHOD = "statisticsDuration";
 
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,

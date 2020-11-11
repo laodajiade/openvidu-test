@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -71,6 +72,18 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+                return;
+            }
+        }
+
+        //判断通话时长是否不足
+        Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(rpcConnection.getProject());
+        if (!map.isEmpty()) {
+            int remainderHour = map.get("remainderHour");
+            int remainderMinute = map.get("remainderMinute");
+            if (remainderHour <= 0 || remainderMinute <= 0) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
                 return;
             }
         }
