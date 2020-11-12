@@ -25,6 +25,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -67,6 +68,8 @@ public class CorpRemainderDurationSchedule {
     @Autowired
     protected RpcNotificationService notificationService;
 
+    @Value("${duration.lessthan.tenhour}")
+    private int durationLessThanTenHour;
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void fixEndPartHistory(){
@@ -112,10 +115,10 @@ public class CorpRemainderDurationSchedule {
                     if (remainderDuration > 0) {
                         cacheManage.delCorpRemainDurationUsedUp(corporation.getProject());
                     }
-                    if (remainderDuration >= 10) {
+                    if (remainderDuration >= durationLessThanTenHour) {
                         cacheManage.delCorpRemainDurationLessTenHour(corporation.getProject());
                     }
-                    if (remainderDuration > 0 && remainderDuration < 10 ) {
+                    if (remainderDuration > 0 && remainderDuration < durationLessThanTenHour ) {
                         String durationLessTenHour = cacheManage.getCorpRemainDurationLessTenHour(corporation.getProject());
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationLessTenHour)) {
                             //获取企业管理员信息
