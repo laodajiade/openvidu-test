@@ -333,7 +333,7 @@ public class CacheManageImpl implements CacheManage {
     public void delCorpRemainDurationLessTenHour(String project) {
         Boolean exists;
         String key = CacheKeyConstants.CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY + project;
-        if (Objects.nonNull(exists = roomRedisTemplate.hasKey(key)) && exists) {
+        if (Objects.nonNull(exists = tokenStringTemplate.hasKey(key)) && exists) {
             tokenStringTemplate.delete(key);
         }
     }
@@ -354,7 +354,7 @@ public class CacheManageImpl implements CacheManage {
     public void delCorpRemainDurationUsedUp(String project) {
         Boolean exists;
         String key = CacheKeyConstants.CORP_REMAINDER_DURATION_USEDUP_PREFIX_KEY + project;
-        if (Objects.nonNull(exists = roomRedisTemplate.hasKey(key)) && exists) {
+        if (Objects.nonNull(exists = tokenStringTemplate.hasKey(key)) && exists) {
             tokenStringTemplate.delete(key);
         }
     }
