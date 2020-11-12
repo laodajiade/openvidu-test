@@ -316,4 +316,46 @@ public class CacheManageImpl implements CacheManage {
         }
         return 0;
     }
+
+    @Override
+    public void setCorpRemainDurationLessTenHour(String project) {
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY + project;
+        tokenStringTemplate.opsForValue().set(key, project);
+    }
+
+    @Override
+    public String getCorpRemainDurationLessTenHour(String project) {
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY + project;
+        return tokenStringTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public void delCorpRemainDurationLessTenHour(String project) {
+        Boolean exists;
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY + project;
+        if (Objects.nonNull(exists = tokenStringTemplate.hasKey(key)) && exists) {
+            tokenStringTemplate.delete(key);
+        }
+    }
+
+    @Override
+    public void setCorpRemainDurationUsedUp(String project) {
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_USEDUP_PREFIX_KEY + project;
+        tokenStringTemplate.opsForValue().set(key, project);
+    }
+
+    @Override
+    public String getCorpRemainDurationUsedUp(String project) {
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_USEDUP_PREFIX_KEY + project;
+        return tokenStringTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public void delCorpRemainDurationUsedUp(String project) {
+        Boolean exists;
+        String key = CacheKeyConstants.CORP_REMAINDER_DURATION_USEDUP_PREFIX_KEY + project;
+        if (Objects.nonNull(exists = tokenStringTemplate.hasKey(key)) && exists) {
+            tokenStringTemplate.delete(key);
+        }
+    }
 }

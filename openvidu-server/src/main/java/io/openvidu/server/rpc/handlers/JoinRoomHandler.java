@@ -212,7 +212,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // random room moderator
-                if (Objects.equals(conference.get(0).getModeratorUuid(), rpcConnection.getUserUuid())) {
+                if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && Objects.equals(conference.get(0).getModeratorUuid(), rpcConnection.getUserUuid())) {
                     role = OpenViduRole.MODERATOR;
                     clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
                 }

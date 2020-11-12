@@ -72,22 +72,20 @@ public class StatisticsManageImpl implements StatisticsManage {
         cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
         if (Objects.nonNull(corporation)) {
             int remainderDuration = corporation.getRemainderDuration();
-            if (Objects.nonNull(remainderDuration)) {
-                List<ConferencePartHistory> conferencePartHistories = conferencePartHistoryMapper.selectProcessPartHistory(project);
-                if (!CollectionUtils.isEmpty(conferencePartHistories)) {
-                    int totalUsedDuration = 0;
-                    Date currentDate = new Date();
-                    for (ConferencePartHistory conferencePartHistory : conferencePartHistories) {
-                        int usedDuration = (int) (currentDate.getTime() - conferencePartHistory.getStartTime().getTime())/6000;
-                        totalUsedDuration += usedDuration;
-                    }
-                    int remainderTotalDuration = remainderDuration - totalUsedDuration;
-                    int remainderHour = remainderTotalDuration/60;
-                    int remainderMinute = remainderTotalDuration%60;
-                    cacheManage.setCorpRemainDuration(project,remainderTotalDuration);
-                    map.put("remainderHour",remainderHour);
-                    map.put("remainderMinute",remainderMinute);
+            List<ConferencePartHistory> conferencePartHistories = conferencePartHistoryMapper.selectProcessPartHistory(project);
+            if (!CollectionUtils.isEmpty(conferencePartHistories)) {
+                int totalUsedDuration = 0;
+                Date currentDate = new Date();
+                for (ConferencePartHistory conferencePartHistory : conferencePartHistories) {
+                    int usedDuration = (int) (currentDate.getTime() - conferencePartHistory.getStartTime().getTime())/6000;
+                    totalUsedDuration += usedDuration;
                 }
+                int remainderTotalDuration = remainderDuration - totalUsedDuration;
+                int remainderHour = remainderTotalDuration/60;
+                int remainderMinute = remainderTotalDuration%60;
+                cacheManage.setCorpRemainDuration(project,remainderTotalDuration);
+                map.put("remainderHour",remainderHour);
+                map.put("remainderMinute",remainderMinute);
             }
         }
         return map;

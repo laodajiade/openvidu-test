@@ -25,6 +25,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -67,6 +68,8 @@ public class CorpRemainderDurationSchedule {
     @Autowired
     protected RpcNotificationService notificationService;
 
+    @Value("${duration.lessthan.tenhour}")
+    private int durationLessThanTenHour;
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void fixEndPartHistory(){
@@ -108,12 +111,16 @@ public class CorpRemainderDurationSchedule {
             corporations.forEach(corporation -> {
                 if (Objects.nonNull(corporation.getRemainderDuration())) {
                     Map<String,Integer> map = statisticsManage.statisticsRemainderDuration(corporation.getProject());
-                    if (!map.isEmpty()) {
-                        int remainderHour = map.get("remainderHour");
-                        int remainderMinute = map.get("remainderMinute");
-
-                        if (remainderHour > 0 && remainderHour < 10) {
-
+                    int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
+                    if (remainderDuration > 0) {
+                        cacheManage.delCorpRemainDurationUsedUp(corporation.getProject());
+                    }
+                    if (remainderDuration >= durationLessThanTenHour) {
+                        cacheManage.delCorpRemainDurationLessTenHour(corporation.getProject());
+                    }
+                    if (remainderDuration > 0 && remainderDuration < durationLessThanTenHour ) {
+                        String durationLessTenHour = cacheManage.getCorpRemainDurationLessTenHour(corporation.getProject());
+                        if (org.apache.commons.lang.StringUtils.isEmpty(durationLessTenHour)) {
                             //获取企业管理员信息
                             User adminUser = userManage.getAdminUserByProject(corporation.getProject());
                             if (!StringUtils.isEmpty(adminUser.getPhone())) {
@@ -128,12 +135,14 @@ public class CorpRemainderDurationSchedule {
                             } else {
                                 log.info("企业时长不足十小时,通知企业管理员uuid:{}, phone:{}",adminUser.getUuid() ,adminUser.getPhone());
                             }
-
                             //时长不足十小时通知
                             corpServiceExpiredNotifyHandler.notify(String.valueOf(corporation.getId()));
                         }
-                        //时长用完通知
-                        if (remainderHour <= 0 || remainderMinute <= 0) {
+                        cacheManage.setCorpRemainDurationLessTenHour(corporation.getProject());
+                    }
+                    if (remainderDuration <= 0) {
+                        String durationUsedUp = cacheManage.getCorpRemainDurationUsedUp(corporation.getProject());
+                        if (org.apache.commons.lang.StringUtils.isEmpty(durationUsedUp)) {
                             corpServiceExpiredNotifyHandler.notify(String.valueOf(corporation.getId()));
                             Collection<Session> sessions = sessionManager.getCorpSessions(corporation.getProject());
                             if (!CollectionUtils.isEmpty(sessions)) {
@@ -162,6 +171,7 @@ public class CorpRemainderDurationSchedule {
                                 }
                             }
                         }
+                        cacheManage.setCorpRemainDurationUsedUp(corporation.getProject());
                     }
                 }
             });
