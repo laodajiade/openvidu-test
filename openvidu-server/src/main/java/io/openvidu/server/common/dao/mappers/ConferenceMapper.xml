@@ -350,4 +350,10 @@
   <update id="softDeleteById">
     update sd_conference set del = 1 where id = #{id}
   </update>
+
+  <update id="changeRealStartTime">
+    update sd_conference
+    set start_time = (select min(start_time) from sd_conf_part_history  where ruid = #{ruid})
+    where ruid = #{ruid}
+  </update>
 </mapper>

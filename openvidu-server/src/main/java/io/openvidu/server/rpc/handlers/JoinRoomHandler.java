@@ -3,7 +3,6 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.*;
@@ -297,9 +296,14 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
                 }
 
+                // 预约会议实际时长从有人开始计算
+                if (StringUtils.startsWithIgnoreCase(ruid, "appt-")) {
+                    conferenceMapper.changeRealStartTime(ruid);
+                }
+
             }
         } catch (Exception e) {
-            log.error("Unknown error e:{}", e);
+            log.error("Unknown error ", e);
             if (isModerator(role)) {
                 sessionManager.cleanCacheCollections(sessionId);
             }

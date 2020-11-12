@@ -39,4 +39,6 @@ public interface ConferenceMapper {
     List<Conference> getFinishedList(Long userId);
 
     void softDeleteById(Long id);
+
+    void changeRealStartTime(String ruid);
 }
