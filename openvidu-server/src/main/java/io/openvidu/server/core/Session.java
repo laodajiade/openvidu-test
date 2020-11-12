@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -459,7 +458,7 @@ public class Session implements SessionInterface {
         checkClosed();
         return this.participants.values().stream()
                 .map(v -> v.get(StreamType.MAJOR.name()))
-                .filter(participant -> participant.getRole().needToPublish())
+                .filter(participant -> Objects.nonNull(participant.getRole()) && participant.getRole().needToPublish())
 				.sorted(Comparator.comparing(Participant::getOrder))
 				.collect(Collectors.toList());
 	}
