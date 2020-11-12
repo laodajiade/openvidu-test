@@ -145,6 +145,7 @@ public class CorpRemainderDurationSchedule {
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationUsedUp)) {
                             corpServiceExpiredNotifyHandler.notify(String.valueOf(corporation.getId()));
                             Collection<Session> sessions = sessionManager.getCorpSessions(corporation.getProject());
+                            log.info("remainder duration used up sessions:{}",sessions.size());
                             if (!CollectionUtils.isEmpty(sessions)) {
                                 JsonObject params = new JsonObject();
                                 params.addProperty("reason", "callDurationUsedUp");

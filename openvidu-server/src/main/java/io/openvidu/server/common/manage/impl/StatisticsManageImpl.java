@@ -81,6 +81,8 @@ public class StatisticsManageImpl implements StatisticsManage {
                     totalUsedDuration += usedDuration;
                 }
                 int remainderTotalDuration = remainderDuration - totalUsedDuration;
+                corporation.setRemainderDuration(remainderTotalDuration);
+                corporationMapper.updateCorpRemainderDuration(corporation);
                 int remainderHour = remainderTotalDuration/60;
                 int remainderMinute = remainderTotalDuration%60;
                 cacheManage.setCorpRemainDuration(project,remainderTotalDuration);
