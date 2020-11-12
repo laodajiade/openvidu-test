@@ -458,7 +458,8 @@ public class Session implements SessionInterface {
         checkClosed();
         return this.participants.values().stream()
                 .map(v -> v.get(StreamType.MAJOR.name()))
-                .filter(participant -> Objects.nonNull(participant.getRole()) && participant.getRole().needToPublish())
+                .filter(participant -> Objects.nonNull(participant) && participant.getRole().needToPublish()
+						&& participant.isStreaming())
 				.sorted(Comparator.comparing(Participant::getOrder))
 				.collect(Collectors.toList());
 	}
