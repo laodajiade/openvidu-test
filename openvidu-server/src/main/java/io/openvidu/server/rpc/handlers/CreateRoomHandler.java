@@ -22,11 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -177,7 +172,10 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             sessionManager.setPresetInfo(sessionId, preset);
 
             // store this inactive session
-            sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
+            Session session = sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
+            if (appt != null) {
+                session.setEndTime(appt.getEndTime().getTime());
+            }
             countDownLatch.countDown();
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
         } else {

@@ -150,7 +150,8 @@ public class AppointConferenceJobHandler {
                 // change the conference status
                 Conference conference = constructConf(appointConference);
                 conferenceMapper.insertSelective(conference);
-                sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
+                Session session = sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
+                session.setEndTime(appointConference.getEndTime().getTime());
             } else {
                 log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
             }

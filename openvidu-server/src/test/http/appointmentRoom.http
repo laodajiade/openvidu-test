@@ -8,8 +8,8 @@ Content-Type: application/json
 {
   "conferenceMode": "SFU",
   "autoCall": true,
-  "desc": "test desc16:45",
-  "duration": 60,
+  "desc": "test desc",
+  "duration": 1,
   "participants": [
     "80101900005",
     "80101900006",
@@ -19,7 +19,7 @@ Content-Type: application/json
   "roomId": "",
   "startTime": 0,
   "roomIdType": "random",
-  "subject": "test create appt"
+  "subject": "test random appt{{$randomInt}}"
 }
 
 > {%

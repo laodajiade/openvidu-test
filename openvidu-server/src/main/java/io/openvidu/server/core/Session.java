@@ -80,6 +80,7 @@ public class Session implements SessionInterface {
 	protected int delayConfCnt;
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean delay = false;
+	protected long endTime = Long.MAX_VALUE;
 	protected boolean notifyCountdown10Min = false;
 	protected boolean notifyCountdown1Min = false;
 	protected Long startRecordingTime;
@@ -1385,4 +1386,11 @@ public class Session implements SessionInterface {
 		return isRecording.get() && !closing && !closed;
 	}
 
+	public long getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
 }

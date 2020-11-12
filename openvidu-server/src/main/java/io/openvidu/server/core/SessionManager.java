@@ -929,12 +929,13 @@ public abstract class SessionManager {
 	}
 
 
-	public void storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
-		log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
-		Session session = storeSessionNotActiveWhileRoomCreated(roomId);
-		session.setConference(conference);
-		session.setRuid(conference.getRuid());
-	}
+	public Session storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
+        log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
+        Session session = storeSessionNotActiveWhileRoomCreated(roomId);
+        session.setConference(conference);
+        session.setRuid(conference.getRuid());
+        return session;
+    }
 
 	public abstract void startRecording(String sessionId);
 

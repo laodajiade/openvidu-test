@@ -285,8 +285,8 @@ public class KurentoSessionManager extends SessionManager {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"
-			if (remainingParticipants.isEmpty()) {
-			    session.setClosing(true);
+			if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+				session.setClosing(true);
 				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
 					// stop recording
 					log.info("Last participant left. Stopping recording of session {}", sessionId);
@@ -626,6 +626,7 @@ public class KurentoSessionManager extends SessionManager {
 		}
 		session = new KurentoSession(sessionNotActive, kms, kurentoSessionEventsHandler, kurentoEndpointConfig,
 				kmsManager.destroyWhenUnused());
+		session.setEndTime(sessionNotActive.getEndTime());
 
 		sessions.put(session.getSessionId(), session);
 		/*KurentoSession oldSession = (KurentoSession) sessions.putIfAbsent(session.getSessionId(), session);
