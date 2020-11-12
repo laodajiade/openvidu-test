@@ -232,14 +232,18 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             List<UserDept> userDepts = userDeptMapper.selectInUserId(userIds);
             Map<Long, Long> map = userDepts.stream().collect(Collectors.toMap(UserDept::getUserId, UserDept::getDeptId));
 
+            Set<Long> distinctSet = new HashSet<>();
             for (ConferencePartHistory partHistory : partHistories) {
-                JsonObject partInfo = new JsonObject();
-                partInfo.addProperty("account", partHistory.getUuid());
-                partInfo.addProperty("username", partHistory.getUsername());
-                partInfo.addProperty("userIcon", "");
-                partInfo.addProperty("orgId", map.get(partHistory.getUserId()));
 
-                partInfoArr.add(partInfo);
+                if (distinctSet.add(partHistory.getUserId())) {
+                    JsonObject partInfo = new JsonObject();
+                    partInfo.addProperty("account", partHistory.getUuid());
+                    partInfo.addProperty("username", partHistory.getUsername());
+                    partInfo.addProperty("userIcon", "");
+                    partInfo.addProperty("orgId", map.get(partHistory.getUserId()));
+
+                    partInfoArr.add(partInfo);
+                }
             }
 
             return partInfoArr;

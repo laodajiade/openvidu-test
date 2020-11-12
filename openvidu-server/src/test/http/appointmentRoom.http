@@ -17,6 +17,7 @@ Content-Type: application/json
   ],
   "password": "",
   "roomId": "",
+  "moderatorPassword": "654321",
   "startTime": 0,
   "roomIdType": "random",
   "subject": "test random appt{{$randomInt}}"
