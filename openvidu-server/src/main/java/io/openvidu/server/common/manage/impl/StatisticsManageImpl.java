@@ -77,7 +77,7 @@ public class StatisticsManageImpl implements StatisticsManage {
                 int totalUsedDuration = 0;
                 Date currentDate = new Date();
                 for (ConferencePartHistory conferencePartHistory : conferencePartHistories) {
-                    int usedDuration = (int) (currentDate.getTime() - conferencePartHistory.getStartTime().getTime())/6000;
+                    int usedDuration = (int) (currentDate.getTime() - conferencePartHistory.getStartTime().getTime())/60000;
                     totalUsedDuration += usedDuration;
                 }
                 int remainderTotalDuration = remainderDuration - totalUsedDuration;
