@@ -651,7 +651,8 @@ public class Session implements SessionInterface {
 						leavePart.getUuid(), leavePartOrder, participant.getUuid(), participant.getOrder());
 				int partOrder;
 				if ((partOrder = participant.getOrder()) > leavePartOrder) {
-					if (leavePartOrder <= lineOrder && partOrder == sfuLimit) {
+					if (leavePartOrder <= lineOrder && partOrder == sfuLimit
+							&& OpenViduRole.MODERATOR != participant.getRole()) {	// exclude the moderator
 						sub2PubPartRef.set(participant);
 					}
 					participant.setOrder(--partOrder);
@@ -666,7 +667,7 @@ public class Session implements SessionInterface {
 			boolean sendPartRoleChanged = Objects.nonNull(sub2PubPart = sub2PubPartRef.get());
 
 			// send notification
-			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged,notificationService);
+			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged, notificationService);
 		}
 	}
 
