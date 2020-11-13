@@ -4,8 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.EvictParticipantStrategy;
+import io.openvidu.server.common.manage.UserManage;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -42,6 +45,12 @@ public class UserDelHandler {
     private SessionManager sessionManager;
 
     @Resource
+    private CacheManage cacheManage;
+
+    @Resource
+    private UserManage userManage;
+
+    @Resource
     private RpcNotificationService rpcNotificationService;
 
     @PostConstruct
@@ -61,18 +70,20 @@ public class UserDelHandler {
         @Override
         public void run() {
             while (true) {
+                User user;
+                Long userId;
                 JsonObject delUserObj;
                 try {
                     delUserObj = gson.fromJson(delUserInfos.take(), JsonObject.class);
-                    if (delUserObj.has("userId")) {
-                        Long userId = delUserObj.get("userId").getAsLong();
+                    if (delUserObj.has("userId")
+                            && Objects.nonNull(user = userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong()))) {
                         // find the websocket connection with userId
                         RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
                                 .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId())
-                                        && !StringUtils.isEmpty(rpcConnection.getSerialNumber())
                                         && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType()))
                                 .max(Comparator.comparing(RpcConnection::getCreateTime))
                                 .orElse(null);
+
                         if (Objects.nonNull(delUserRpcConnection)) {
                             // check user deleted ever in conference
                             String sessionId;
@@ -99,6 +110,9 @@ public class UserDelHandler {
                         } else {
                             log.info("User:{} deleted did not access the signal server.", userId);
                         }
+
+                        // del user token info in cache
+                        cacheManage.delUserToken(user.getUuid());
                     } else {
                         log.error("Invalid user delete info:{}", delUserObj.toString());
                     }
