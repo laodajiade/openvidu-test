@@ -63,12 +63,11 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
             return RespResult.ok(resp);
         }
 
+        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
+
         List<Long> groupIds = new ArrayList<>();
         groupIds.add(groupId);
         PageHelper.startPage(pageNum, pageSize);
-
-        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
-
         List<UserGroupVo> userGroups = userGroupMapper.selectListByGroupid(groupIds, notInUser, specifyVisibleRule.getVisibleUser());
 
         if (!CollectionUtils.isEmpty(userGroups)) {

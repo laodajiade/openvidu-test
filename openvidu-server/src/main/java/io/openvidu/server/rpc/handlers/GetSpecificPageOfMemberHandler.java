@@ -67,6 +67,8 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
             }
         }
 
+        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
+
         if (isChooseAll) {
             PageHelper.startPage(1, Integer.MAX_VALUE);
         } else {
@@ -77,8 +79,6 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
             }
             PageHelper.startPage(pageNum, pageSize);
         }
-
-        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
         List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId, notInUser, specifyVisibleRule.getVisibleUser());
 
         hiddenPhoneManage.hiddenPhone2(allUserInfos);
