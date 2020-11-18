@@ -4,6 +4,7 @@ public class BrokerChannelConstans {
     public static final String DEVICE_UPGRADE_CHANNEL = "channel:device:upgrade";
     public static final String USER_DELETE_CHANNEL = "channel:user:delete";
     public static final String CORP_SERVICE_EXPIRED_CHANNEL = "channel:corp:expired";
+    public static final String CORP_INFO_MODIFIED_CHANNEL = "channel:corp:info:modified";
 
     public static final String SMS_DELIVERY_CHANNEL = "channel:sms:delivery";
 

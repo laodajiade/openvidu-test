@@ -25,6 +25,7 @@ public class RedisSubscriber {
                 UserDelHandler.accessOutDeletedUser(message);
                 break;
             case BrokerChannelConstans.CORP_SERVICE_EXPIRED_CHANNEL:
+            case BrokerChannelConstans.CORP_INFO_MODIFIED_CHANNEL:
                 corpServiceExpiredNotifyHandler.notify(message);
                 break;
             case BrokerChannelConstans.DEVICE_LOG_UPLOAD_CHANNEL:
