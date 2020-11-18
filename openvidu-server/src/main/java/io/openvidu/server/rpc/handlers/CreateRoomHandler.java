@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
@@ -39,6 +40,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
     @Autowired
     private AppointConferenceManage appointConferenceManage;
+
+    @Autowired
+    private AppointConferenceMapper appointConferenceMapper;
 
     @Autowired
     private RandomRoomIdGenerator randomRoomIdGenerator;
@@ -128,8 +132,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             Conference conference = new Conference();
             // if create appointment conference
             if (!StringUtils.isEmpty(ruid)) {
-                appt.setStatus(ConferenceStatus.PROCESS.getStatus());
-                appointConferenceManage.updateById(appt);
+                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid);
 
                 conference.setRuid(ruid);
                 roomSubject = appt.getConferenceSubject();

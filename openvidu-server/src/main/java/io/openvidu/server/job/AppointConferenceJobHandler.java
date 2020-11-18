@@ -152,6 +152,8 @@ public class AppointConferenceJobHandler {
                 conferenceMapper.insertSelective(conference);
                 Session session = sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
                 session.setEndTime(appointConference.getEndTime().getTime());
+
+                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid());
             } else {
                 log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
             }
@@ -322,15 +324,15 @@ public class AppointConferenceJobHandler {
     public boolean isSameRoom(String roomId, String ruid) {
         Session session = sessionManager.getSession(roomId);
         if (session != null && Objects.equals(session.getRuid(), ruid)) {
-            log.info("roomId={}, ruid={} is use and same", roomId, ruid);
+            log.info("roomId={}, ruid={} is used and same", roomId, ruid);
             return true;
         }
         Session sessionNotActive = sessionManager.getSessionNotActive(roomId);
         if (sessionNotActive != null && Objects.equals(sessionNotActive.getConference().getRuid(), ruid)) {
-            log.info("roomId={}, ruid={} is use and same", roomId, ruid);
+            log.info("roomId={}, ruid={} is used and same", roomId, ruid);
             return true;
         }
-        log.info("roomId={}, ruid={} is use and not same", roomId, ruid);
+        log.info("roomId={}, ruid={} is used and not same", roomId, ruid);
         return false;
     }
 
