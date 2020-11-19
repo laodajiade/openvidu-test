@@ -162,7 +162,7 @@
         #{item,jdbcType=BIGINT}
       </foreach>
     </if>
-    order by sug.sort_number desc, sug.id asc
+    order by sug.sort_number desc, su.id asc
   </select>
 
   <select id="selectListByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
