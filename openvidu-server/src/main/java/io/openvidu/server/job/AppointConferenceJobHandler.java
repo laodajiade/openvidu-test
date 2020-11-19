@@ -12,10 +12,7 @@ import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
-import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.AutoInviteEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
 import io.openvidu.server.common.manage.UserManage;
@@ -26,6 +23,7 @@ import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.core.SessionPreset;
+import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
@@ -156,7 +154,7 @@ public class AppointConferenceJobHandler {
 
             // 是否自动呼叫、房间是否被使用中
             if (!isRoomInUse(appointConference.getRoomId())) {
-                SessionPreset preset = new SessionPreset(null, null, null,
+                SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
                 sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
 

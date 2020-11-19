@@ -101,7 +101,7 @@ public class SessionPreset {
     }
 
     public SessionPreset() {
-        this.micStatusInRoom = SessionPresetEnum.off;
+        this.micStatusInRoom = SessionPresetEnum.on;
         this.videoStatusInRoom = SessionPresetEnum.on;
         this.sharePowerInRoom = SessionPresetEnum.off;
         this.roomSubject = "sudiRoom";
@@ -124,7 +124,7 @@ public class SessionPreset {
                          String allowPartOperMic,
                          String allowPartOperShare,
                          String quietStatusInRoom) {
-        this.micStatusInRoom = SessionPresetEnum.off;
+        this.micStatusInRoom = SessionPresetEnum.on;
         this.videoStatusInRoom = SessionPresetEnum.on;
         this.sharePowerInRoom = SessionPresetEnum.off;
         this.roomSubject = subject;
