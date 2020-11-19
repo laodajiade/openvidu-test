@@ -112,11 +112,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             //participant reconnect stop polling
                             if (Objects.nonNull(originalPart) && originalPart.getRole().isController()) {
                                 if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+                                    SessionPreset sessionPreset = session.getPresetInfo();
+                                    sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
                                     timerManager.stopPollingCompensation(sessionId);
                                     //send stop polling notify
                                     JsonObject notifyParam = new JsonObject();
                                     notifyParam.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, sessionId);
-                                    notificationService.sendNotification(originalPart.getParticipantPrivateId(),
+                                    notificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
                                             ProtocolElements.STOP_POLLING_NODIFY_METHOD, notifyParam);
                                 }
                             }
