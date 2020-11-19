@@ -10,6 +10,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.PageResult;
 import io.openvidu.server.core.RespResult;
+import io.openvidu.server.domain.AppointConferenceDTO;
 import io.openvidu.server.domain.vo.ConferenceHisResp;
 import io.openvidu.server.domain.vo.GetConferenceScheduleVO;
 import io.openvidu.server.exception.BindValidateException;
@@ -115,9 +116,10 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         }
 
         private List<ConferenceHisResp> pendingAboutAppointment() {
-            AppointConference appointConference = new AppointConference();
+            AppointConferenceDTO appointConference = new AppointConferenceDTO();
             appointConference.setUserId(userId);
             appointConference.setProject(this.project);
+            appointConference.setOnlyCreator(vo.getOnlyCreator() != null && vo.getOnlyCreator());
 
             if (StringUtils.isNotBlank(vo.getDate())) {
                 try {

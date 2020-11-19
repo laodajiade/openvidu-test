@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers.appoint;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
+import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
@@ -44,6 +45,9 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         AppointConference appt = appointConferenceManage.getByRuid(params.getRuid());
         if (appt == null) {
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
+        }
+        if (appt.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
         }
         if (appt.getStartTime().before(new Date())) {
             return RespResult.fail(ErrorCodeEnum.THE_CONFERENCE_HAS_STARTED);

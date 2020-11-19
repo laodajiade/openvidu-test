@@ -3,6 +3,8 @@ package io.openvidu.server.common.dao;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
 import java.util.List;
+
+import io.openvidu.server.domain.AppointConferenceDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -34,7 +36,7 @@ public interface AppointConferenceMapper {
 
     List<AppointConference> getConflictAppointConferenceList(AppointConference condition);
 
-    List<AppointConference> pendingAboutAppointment(AppointConference appointConference);
+    List<AppointConference> pendingAboutAppointment(AppointConferenceDTO appointConference);
 
     void changeStatusByRuid(@Param("status") int status, @Param("ruid") String ruid);
 

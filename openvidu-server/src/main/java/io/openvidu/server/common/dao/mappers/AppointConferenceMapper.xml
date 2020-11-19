@@ -446,7 +446,11 @@
     from sd_appoint_conference a where a.`status`!=2
       and project = #{project}
     <if test="userId != null">
-      and (a.user_id = #{userId} or a.ruid in ( select ruid from sd_appoint_part b where b.user_id =#{userId} ) )
+      and (a.user_id = #{userId}
+      <if test = "onlyCreator == null or onlyCreator == false">
+        or a.ruid in ( select ruid from sd_appoint_part b where b.user_id =#{userId} )
+      </if>
+      )
     </if>
     <if test="startTime != null">
       and a.start_time >= #{startTime,jdbcType=TIMESTAMP}

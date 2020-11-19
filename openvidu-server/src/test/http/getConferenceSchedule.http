@@ -20,7 +20,7 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "status" : "close",
+  "status" : "pending",
   "pageNum" : 1,
   "pageSize" : 20
 }
