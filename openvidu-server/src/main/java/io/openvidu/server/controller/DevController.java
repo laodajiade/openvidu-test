@@ -14,6 +14,8 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/dev")
 @Slf4j
@@ -34,7 +36,11 @@ public class DevController {
 
         RpcAbstractHandler rpcHandler = rpcHandlerFactory.getRpcHandler(method);
         String participantPrivateId = id;
-        RpcConnection connection = notificationService.getRpcConnections().stream().filter(c -> c.getUserUuid().equals(id)).findFirst().get();
+        Optional<RpcConnection> connectionOptional = notificationService.getRpcConnections().stream().filter(c -> c.getUserUuid().equals(id)).findFirst();
+        if (!connectionOptional.isPresent()) {
+            return new GsonBuilder().setPrettyPrinting().create().toJson(RespResult.fail(ErrorCodeEnum.USER_NOT_EXIST));
+        }
+        RpcConnection connection = connectionOptional.get();
         //RpcConnection connection = notificationService.getRpcConnection(participantPrivateId);
         RpcNotificationService notificationService = rpcHandler.getNotificationService();
         result = null;

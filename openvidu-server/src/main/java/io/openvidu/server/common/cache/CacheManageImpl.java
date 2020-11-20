@@ -1,5 +1,8 @@
 package io.openvidu.server.common.cache;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.AccessTypeEnum;
@@ -15,10 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -357,5 +357,18 @@ public class CacheManageImpl implements CacheManage {
         if (Objects.nonNull(exists = tokenStringTemplate.hasKey(key)) && exists) {
             tokenStringTemplate.delete(key);
         }
+    }
+
+    @Override
+    public JsonObject getMeetingQuality(String uuid) {
+        String key = CacheKeyConstants.MEETING_QUALITY_PREFIX_KEY + uuid;
+        Object o = roomRedisTemplate.opsForValue().get(key);
+        return o == null ? null : new JsonParser().parse(o.toString()).getAsJsonObject();
+    }
+
+    @Override
+    public void setMeetingQuality(String uuid, JsonObject object) {
+        String key = CacheKeyConstants.MEETING_QUALITY_PREFIX_KEY + uuid;
+        roomRedisTemplate.opsForValue().set(key, object.toString(), 6, TimeUnit.SECONDS);
     }
 }

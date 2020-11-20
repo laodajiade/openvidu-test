@@ -1,5 +1,6 @@
 package io.openvidu.server.common.cache;
 
+import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.rpc.RpcConnection;
 
@@ -104,4 +105,7 @@ public interface CacheManage {
 
     void delCorpRemainDurationUsedUp(String project);
 
+    JsonObject getMeetingQuality(String uuid);
+
+    void setMeetingQuality(String uuid,JsonObject object);
 }
