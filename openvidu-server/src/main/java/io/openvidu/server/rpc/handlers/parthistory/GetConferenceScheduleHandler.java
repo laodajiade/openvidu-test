@@ -132,7 +132,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
             }
 
 
-            List<AppointConference> appointConferenceList = appointConferenceMapper.pendingAboutAppointment(appointConference);
+            List<AppointConference> appointConferenceList = pendingAboutAppointment(appointConference);
 
 
             return transferResp(appointConferenceList);
@@ -163,6 +163,10 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
             }
 
             return list;
+        }
+
+        protected List<AppointConference> pendingAboutAppointment(AppointConferenceDTO appointConference) {
+            return appointConferenceMapper.pendingAboutAppointment(appointConference);
         }
     }
 

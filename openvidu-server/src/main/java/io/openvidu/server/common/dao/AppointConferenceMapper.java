@@ -38,6 +38,8 @@ public interface AppointConferenceMapper {
 
     List<AppointConference> pendingAboutAppointment(AppointConferenceDTO appointConference);
 
+    List<AppointConference> pendingAboutAppointmentAdmin(AppointConferenceDTO appointConference);
+
     void changeStatusByRuid(@Param("status") int status, @Param("ruid") String ruid);
 
     List<AppointConference> getMaybeEndAppointment();

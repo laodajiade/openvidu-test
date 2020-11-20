@@ -3,6 +3,7 @@ package io.openvidu.server.domain;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class AppointConferenceDTO {
@@ -31,6 +32,8 @@ public class AppointConferenceDTO {
      * 0=未开始 1=会议中  2=已结束
      */
     private Integer status;
+
+    private List<Long> deptLimit;
 
     private static final long serialVersionUID = 1L;
 }
