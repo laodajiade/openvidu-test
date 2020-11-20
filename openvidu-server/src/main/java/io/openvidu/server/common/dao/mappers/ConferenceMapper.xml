@@ -313,6 +313,14 @@
       <if test="to != null">
         and start_time &lt;= #{to,jdbcType=TIMESTAMP}
       </if>
+      <if test="limitDepts != null and limitDepts.size() != 0">
+        and user_id in (
+        select user_id from sd_user_dept where dept_id in
+        <foreach collection="limitDepts" index="index" item="item" separator="," open="(" close=")">
+          #{item,jdbcType=VARCHAR}
+        </foreach>
+        )
+      </if>
     </where>
     order by start_time desc
     limit #{limit,jdbcType=INTEGER} offset #{offset,jdbcType=BIGINT}
@@ -335,6 +343,14 @@
       </if>
       <if test="to != null">
         and start_time &lt;= #{to,jdbcType=TIMESTAMP}
+      </if>
+      <if test="limitDepts != null and limitDepts.size() != 0">
+        and user_id in (
+        select user_id from sd_user_dept where dept_id in
+        <foreach collection="limitDepts" index="index" item="item" separator="," open="(" close=")">
+          #{item,jdbcType=VARCHAR}
+        </foreach>
+        )
       </if>
     </where>
   </select>

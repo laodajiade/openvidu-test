@@ -6,11 +6,13 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.manage.RoleManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -20,6 +22,9 @@ import java.util.Objects;
 
 @Service
 public class GetMeetingRecordsHandler extends RpcAbstractHandler {
+
+    @Autowired
+    private RoleManage roleManage;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -42,6 +47,7 @@ public class GetMeetingRecordsHandler extends RpcAbstractHandler {
         search.setOffset((pageNum - 1) * size);
         if (!Objects.isNull(dateFrom)) search.setFrom(new Date(dateFrom));
         if (!Objects.isNull(dateTo)) search.setTo(new Date(dateTo));
+        search.setLimitDepts(roleManage.getDeptLimit(rpcConnection.getUserId()));
         List<Conference> records = conferenceMapper.selectPageRecordsByCondition(search);
 
         JsonObject respObj = new JsonObject();

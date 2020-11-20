@@ -104,7 +104,7 @@ public class DepartmentManageImpl implements DepartmentManage {
     }
 
     /**
-     * 递归获取 deptIds 下的所有子部门,并返回包含本部门已经子部门的id列表
+     * 递归获取 deptIds 下的所有子部门,并返回包含本部门以及子部门的id列表
      */
     @Override
     public List<Long> getAllChildDept(List<Long> deptIds) {

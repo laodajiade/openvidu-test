@@ -3,6 +3,7 @@ package io.openvidu.server.common.pojo;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ConferenceSearch {
@@ -14,4 +15,7 @@ public class ConferenceSearch {
     private long offset;
     private Date from;
     private Date to;
+
+    private List<Long> limitDepts;
+
 }
