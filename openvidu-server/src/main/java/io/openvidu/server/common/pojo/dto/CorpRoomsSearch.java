@@ -14,5 +14,6 @@ import java.util.List;
 @Builder
 public class CorpRoomsSearch {
     private String project;
-    private List<String> roomIds;
+    private String roomId;
+    private List<Long> limitDept;
 }

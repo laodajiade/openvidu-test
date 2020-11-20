@@ -4,11 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.PartRoleEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.manage.RoleManage;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.Role;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -16,33 +14,30 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
 @Service
 public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
+
+    @Autowired
+    private RoleManage roleManage;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringOptionalParam(request, ProtocolElements.GETALLROOMSOFCORP_ROOM_ID);
         JsonArray jsonArray = new JsonArray();
         JsonObject respObj = new JsonObject();
-        Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-        Role role = userManage.getUserRoleById(Long.valueOf(userInfo.get("roleId").toString()));
-        if (!role.getRoleName().equals(PartRoleEnum.admin.name())) {
-            log.warn("userId:{} roleName not admin", userInfo.get("userId"));
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PERMISSION_LIMITED);
-            return;
-        }
-
 
         CorpRoomsSearch search = CorpRoomsSearch.builder().project(rpcConnection.getProject())
-                .roomIds(roomManage.getSubRoomIds(roomId, getLongOptionalParam(request, "orgId"))).build();
+                .roomId(roomId)
+                .limitDept(roleManage.getDeptLimit(rpcConnection.getUserId())).build();
+
         List<Conference> list = roomManage.getAllRoomsOfCorp(search);
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(conference -> {
