@@ -39,8 +39,7 @@ public class HiddenUserHelper {
             }
 
             List<HiddenUser> hiddenUsers = this.listByHiddenUserGroupId(hiddenUserGroup.getId());
-            Set<Long> collect = hiddenUsers.stream().map(HiddenUser::getUserId).collect(Collectors.toSet());
-            notIn.addAll(collect);
+            hiddenUsers.forEach(u -> notIn.add(u.getUserId()));
         }
 
         return notIn;
