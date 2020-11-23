@@ -7,7 +7,8 @@ public enum TerminalTypeEnum {
     A("Android"),
     I("IOS"),
     W("Windows"),
-    M("Mac");
+    M("Mac"),
+    S("SIP");
 
     @Getter
     private String desc;
