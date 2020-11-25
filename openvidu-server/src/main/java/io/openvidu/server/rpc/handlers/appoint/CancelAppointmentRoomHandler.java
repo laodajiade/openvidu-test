@@ -6,6 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
+import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
@@ -69,9 +70,9 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
 
-        // finish conference
-        // conferenceMapper.deleteByRuid(ruid);
-        // conferencePartHistoryMapper.deleteByRuid(ruid);
+        if (appointConference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
+        }
 
         // 获取定时任务的id
         List<Long> jobIds = conferenceJobManage.deleteConferenceJobByRuid(ruid);
