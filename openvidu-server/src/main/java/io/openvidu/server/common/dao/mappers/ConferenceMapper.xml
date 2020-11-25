@@ -142,6 +142,9 @@
       <if test="inviteLimit != null" >
         invite_limit,
       </if>
+      <if test="project != null" >
+        project,
+      </if>
       <if test="createTime != null" >
         create_time,
       </if>
@@ -194,6 +197,9 @@
       </if>
       <if test="inviteLimit != null" >
         #{inviteLimit,jdbcType=TINYINT},
+      </if>
+      <if test="project != null" >
+        #{project,jdbcType=VARCHAR},
       </if>
       <if test="createTime != null" >
         #{createTime,jdbcType=TIMESTAMP},
