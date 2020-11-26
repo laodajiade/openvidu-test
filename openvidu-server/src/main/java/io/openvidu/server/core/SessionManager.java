@@ -750,6 +750,7 @@ public abstract class SessionManager {
 		} else {
 			session.setClosing(true);
 		}
+		stopRecording(sessionId);
 		session.getParticipants().forEach(p -> {
 			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
 			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
