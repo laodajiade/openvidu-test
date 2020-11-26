@@ -248,7 +248,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setUsername(rpcConnection.getUsername());
                 participant.setProject(rpcConnection.getProject());
                 if (StringUtils.isEmpty(serialNumber)) {
-                    if (UserType.register.equals(participant.getUserType())) {
+                    if (UserType.register.equals(participant.getUserType()) && TerminalTypeEnum.S != rpcConnection.getTerminalType()) {
                         User user = userMapper.selectByPrimaryKey(userId);
                         // User and dept info.
                         UserDeptSearch udSearch = new UserDeptSearch();
