@@ -672,7 +672,7 @@ public class Session implements SessionInterface {
 	}
 
 	private void notifyPartOrderOrRoleChanged(Participant sub2PubPart, boolean roleChanged, RpcNotificationService notificationService) {
-		Set<Participant> participants = getMajorPartEachConnect();
+		Set<Participant> participants = getMajorPartEachIncludeThorConnect();
 		// get part order info in session
 		JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
 

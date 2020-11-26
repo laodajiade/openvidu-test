@@ -48,7 +48,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         } else {
             sourcePart = session.getParticipantByUserId(Long.valueOf(sourceId));
         }
-        if (Objects.isNull(sourcePart) || OpenViduRole.SUBSCRIBER.equals(sourcePart.getRole())) {
+        if (Objects.isNull(sourcePart)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;

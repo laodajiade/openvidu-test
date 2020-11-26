@@ -79,7 +79,18 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
             jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->
                     StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
         }
-
+        Session notActiveSession = sessionManager.getSessionNotActive(conference.getRoomId());
+        if (Objects.nonNull(notActiveSession) && !notActiveSession.isClosed()) {
+            jsonObject = new JsonObject();
+            jsonObject.addProperty("roomId", conference.getRoomId());
+            jsonObject.addProperty("ruid", conference.getRuid());
+            jsonObject.addProperty("password", conference.getPassword());
+            jsonObject.addProperty("subject", conference.getConferenceSubject());
+            jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
+            jsonObject.addProperty("startTime", conference.getStartTime().getTime());
+            jsonObject.addProperty("joinNum", notActiveSession.getParticipants().stream().filter(participant ->
+                    StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
+        }
         return jsonObject;
     }
 }

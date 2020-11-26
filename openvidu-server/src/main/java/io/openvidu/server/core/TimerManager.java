@@ -98,45 +98,35 @@ public class TimerManager {
                 //notify current part:index=0 polling to
                 if (first == 0) {
                     JsonObject currentNotifyParam = new JsonObject();
-                    currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participant.getParticipantPublicId());
+                    currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
                     session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
                     first++;
                 }
-
+                //send notify polling check
+                JsonObject jsonCheckParam = new JsonObject();
+                jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
                 if (participant.isStreaming()) {
-                    log.info("polling check part:{} the index:{}", participant.getParticipantPublicId(), index);
-                    //send notify polling check
-                    JsonObject jsonCheckParam = new JsonObject();
-                    jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participant.getParticipantPublicId());
-                    session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.POLLING_CHECK_NOTIFY_METHOD, jsonCheckParam));
-
-                    int nextToIndex = index + 1;
-                    if (nextToIndex > participants.size() - 1) {
-                        nextToIndex = 0;
-                    }
-                    //notify next part polling to
-                    JsonObject nextNotifyParam = new JsonObject();
-                    nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participants.get(nextToIndex).getParticipantPublicId());
-                    session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
-                    index++;
+                    jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, true);
                 } else {
-                    //notify next part polling to
-                    int notifyIndex = index + 1;
-                    if (notifyIndex > participants.size() - 1) {
-                        notifyIndex = 0;
-                    }
-                    log.info("polling skip to next part:{}  the index:{}",participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
-                    JsonObject nextNotifyParam = new JsonObject();
-                    nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_METHOD, participants.get(notifyIndex).getParticipantPublicId());
-                    session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
-                    index++;
-                    dealPollingCheck(session,notificationService);
-
+                    jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, false);
                 }
+
+                log.info("polling check part:{} the index:{}", participant.getParticipantPublicId(), index);
+                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                        ProtocolElements.POLLING_CHECK_NOTIFY_METHOD, jsonCheckParam));
+
+                //notify next part polling to
+                int notifyIndex = index + 1;
+                if (notifyIndex > participants.size() - 1) {
+                    notifyIndex = 0;
+                }
+                log.info("advance notify next part:{} polling to the index:{}",participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
+                JsonObject nextNotifyParam = new JsonObject();
+                nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getParticipantPublicId());
+                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                        ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
+                index++;
             }
         }
 
