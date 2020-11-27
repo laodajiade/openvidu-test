@@ -1376,7 +1376,6 @@ public class KurentoSessionManager extends SessionManager {
 			    session = sessionOptional.get();
                 switch (jsonObject.get("method").getAsString()) {
                     case CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE:
-					case CommonConstants.RECORD_ERROR_EXCEPTION:
                         stopRecordAndNotify(session);
                         break;
                     case CommonConstants.RECORD_STOP_BY_MODERATOR:
@@ -1385,6 +1384,9 @@ public class KurentoSessionManager extends SessionManager {
                     case CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT:
                         sendStorageNotify(session);
                         break;
+					case CommonConstants.RECORD_REBUILD_TASK:
+						reStartRecord(session);
+						break;
                     default:
                         break;
                 }
