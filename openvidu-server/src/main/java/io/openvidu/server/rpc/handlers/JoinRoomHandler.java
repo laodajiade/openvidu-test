@@ -286,7 +286,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
             }
         } catch (Exception e) {
-            log.error("Unknown error e:{}", e);
+            log.error("joinRoom error ", e);
             if (isModerator(role)) {
                 sessionManager.cleanCacheCollections(sessionId);
             }
