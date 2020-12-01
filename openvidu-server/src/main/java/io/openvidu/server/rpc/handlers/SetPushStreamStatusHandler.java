@@ -34,7 +34,12 @@ public class SetPushStreamStatusHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
         }
-        Participant participant = session.getParticipantByUUID(uuid);
+        Participant participant = session.getParticipantByPublicId(connectionId);
+        if (Objects.isNull(participant)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+            return;
+        }
         participant.setPushStreamStatus(PushStreamStatusEnum.valueOf(status));
         //send notify
         session.getParticipants().forEach(part -> {

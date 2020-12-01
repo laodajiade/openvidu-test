@@ -139,6 +139,9 @@
       <if test="password != null" >
         password,
       </if>
+      <if test="project != null" >
+        project,
+      </if>
       <if test="inviteLimit != null" >
         invite_limit,
       </if>
@@ -194,6 +197,9 @@
       </if>
       <if test="password != null" >
         #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="project != null" >
+        #{project,jdbcType=VARCHAR},
       </if>
       <if test="inviteLimit != null" >
         #{inviteLimit,jdbcType=TINYINT},

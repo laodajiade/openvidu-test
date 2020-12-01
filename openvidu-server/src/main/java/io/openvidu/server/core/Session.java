@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -469,7 +468,8 @@ public class Session implements SessionInterface {
         checkClosed();
         return this.participants.values().stream()
                 .map(v -> v.get(StreamType.MAJOR.name()))
-                .filter(participant -> participant.getRole().needToPublish())
+                .filter(participant -> Objects.nonNull(participant) && participant.getRole().needToPublish()
+						&& participant.isStreaming())
 				.sorted(Comparator.comparing(Participant::getOrder))
 				.collect(Collectors.toList());
 	}
@@ -661,7 +661,8 @@ public class Session implements SessionInterface {
 						leavePart.getUuid(), leavePartOrder, participant.getUuid(), participant.getOrder());
 				int partOrder;
 				if ((partOrder = participant.getOrder()) > leavePartOrder) {
-					if (leavePartOrder <= lineOrder && partOrder == sfuLimit) {
+					if (leavePartOrder <= lineOrder && partOrder == sfuLimit
+							&& OpenViduRole.MODERATOR != participant.getRole()) {	// exclude the moderator
 						sub2PubPartRef.set(participant);
 					}
 					participant.setOrder(--partOrder);
@@ -676,12 +677,12 @@ public class Session implements SessionInterface {
 			boolean sendPartRoleChanged = Objects.nonNull(sub2PubPart = sub2PubPartRef.get());
 
 			// send notification
-			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged,notificationService);
+			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged, notificationService);
 		}
 	}
 
 	private void notifyPartOrderOrRoleChanged(Participant sub2PubPart, boolean roleChanged, RpcNotificationService notificationService) {
-		Set<Participant> participants = getMajorPartEachConnect();
+		Set<Participant> participants = getMajorPartEachIncludeThorConnect();
 		// get part order info in session
 		JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
 
