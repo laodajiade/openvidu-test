@@ -143,7 +143,7 @@ public class AppointConferenceJobHandler {
 
             // 是否自动呼叫、房间是否被使用中
             if (!isRoomInUse(appointConference.getRoomId())) {
-                SessionPreset preset = new SessionPreset(null, null, null,
+                SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
                 sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
 

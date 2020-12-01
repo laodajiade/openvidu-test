@@ -786,7 +786,8 @@ public class ProtocolElements {
 	public static final String START_POLLING_NOTIFY_METHOD = "startPollingNotify";
 	public static final String POLLING_TO_NOTIFY_METHOD = "pollingToNotify";
 	public static final String POLLING_CHECK_NOTIFY_METHOD = "pollingCheckNotify";
-	public static final String POLLING_CONNECTIONID_METHOD = "connectionId";
+	public static final String POLLING_CONNECTIONID_PARAM = "connectionId";
+	public static final String POLLING_ISCHECK_PARAM = "isCheck";
 
 	public static final String STOP_POLLING_METHOD = "stopPolling";
 	public static final String STOP_POLLING_ROOMID_PARAM = "roomId";

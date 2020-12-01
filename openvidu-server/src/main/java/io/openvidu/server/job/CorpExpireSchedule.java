@@ -2,6 +2,7 @@ package io.openvidu.server.job;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.broker.CorpServiceExpiredNotifyHandler;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
@@ -35,6 +36,18 @@ public class CorpExpireSchedule {
     protected RpcNotificationService notificationService;
     @Resource
     protected CacheManage cacheManage;
+
+    @Autowired
+    protected CorpServiceExpiredNotifyHandler corpServiceExpiredNotifyHandler;
+
+    /**
+     * 每天凌晨0点通知服务已到期
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void corpExpiredNotify() {
+        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
+        corporations.forEach(corp -> corpServiceExpiredNotifyHandler.notify(corp.getId().toString()));
+    }
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void doProcess() {
