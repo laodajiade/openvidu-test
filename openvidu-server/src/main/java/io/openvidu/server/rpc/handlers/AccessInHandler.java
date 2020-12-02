@@ -184,6 +184,8 @@ public class AccessInHandler extends RpcAbstractHandler {
                     || Objects.equals(DeviceStatus.upgrading.name(), deviceStatus)) {
                 return ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
             }
+        } else if (user.getType().equals(0)) {
+            return ErrorCodeEnum.SUCCESS;
         }
 
         // check HDC terminal necessary conditions
