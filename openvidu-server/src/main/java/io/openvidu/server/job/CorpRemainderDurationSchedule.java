@@ -145,17 +145,12 @@ public class CorpRemainderDurationSchedule {
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationUsedUp)) {
                             corpServiceExpiredNotifyHandler.notify(String.valueOf(corporation.getId()));
                             Collection<Session> sessions = sessionManager.getCorpSessions(corporation.getProject());
-                            log.info("remainder duration used up sessions:{}",sessions.size());
                             if (!CollectionUtils.isEmpty(sessions)) {
                                 JsonObject params = new JsonObject();
                                 params.addProperty("reason", "callDurationUsedUp");
                                 for (Session session : sessions) {
-                                    Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
-
+                                    Set<Participant> participants = sessionManager.getMajorParticipants(session.getSessionId());
                                     participants.forEach(p -> {
-                                        if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                                            return;
-                                        }
                                         if (p.getProject().equals(session.getConference().getProject())) {
                                             notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
                                         } else {
@@ -171,8 +166,8 @@ public class CorpRemainderDurationSchedule {
                                     sessionManager.closeSession(session.getSessionId(), EndReason.callDurationUsedUp);
                                 }
                             }
+                            cacheManage.setCorpRemainDurationUsedUp(corporation.getProject());
                         }
-                        cacheManage.setCorpRemainDurationUsedUp(corporation.getProject());
                     }
                 }
             });

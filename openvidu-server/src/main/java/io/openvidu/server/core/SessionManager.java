@@ -225,6 +225,18 @@ public abstract class SessionManager {
 		return participants;
 	}
 
+
+	public Set<Participant> getMajorParticipants(String sessionId) throws OpenViduException {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			log.error("Session:{} not found.", sessionId);
+			return Collections.emptySet();
+		}
+		Set<Participant> participants = session.getMajorPartEachIncludeThorConnect();
+		participants.removeIf(Participant::isClosed);
+		return participants;
+	}
+
 	public Participant getParticipantByPrivateAndPublicId(String sessionId, String participantPrivateId, String participantPublicId) throws OpenViduException {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
