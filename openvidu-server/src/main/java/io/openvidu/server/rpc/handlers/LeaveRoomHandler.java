@@ -53,7 +53,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                 return;
             }
         } catch (OpenViduException e) {
-            log.info("close previous participant info exception:{}", e);
+            log.info("close previous participant info exception", e);
             return;
         }
 
@@ -66,7 +66,11 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         String moderatePublicId = null;
         String speakerId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
+
+        // 如果是举手发言状态，则需要广播结束发言
         if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+            participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
+
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
@@ -89,9 +93,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
         }
 
-        if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-            participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
-        }
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
 
         if (!Objects.isNull(rpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(participant.getStreamType())) {

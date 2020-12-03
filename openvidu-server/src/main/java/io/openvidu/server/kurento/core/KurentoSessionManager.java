@@ -308,6 +308,10 @@ public class KurentoSessionManager extends SessionManager {
             updateRecording(session.getSessionId());
         }
 
+		if (session.isClosing()) {
+			closeSession(sessionId, EndReason.lastParticipantLeft);
+		}
+
 		return sessionClosedByLastParticipant;
 	}
 
@@ -772,10 +776,11 @@ public class KurentoSessionManager extends SessionManager {
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
 		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachIncludeThorConnect();
-		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
-                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
-			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
-		} else {
+//		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
+//                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
+//			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
+//		} else
+		{
 			// check if MAJOR is speaker
 			if (ParticipantHandStatus.speaker.equals(majorPart.getHandStatus())) {
 				JsonObject params = new JsonObject();

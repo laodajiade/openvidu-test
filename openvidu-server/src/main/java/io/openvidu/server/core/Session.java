@@ -858,6 +858,10 @@ public class Session implements SessionInterface {
 		this.closing = closing;
 	}
 
+	public boolean isClosing() {
+		return closing;
+	}
+
 	public boolean isLocking() {
 		return locking;
 	}
