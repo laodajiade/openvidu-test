@@ -1,7 +1,7 @@
 
 
 # 加入普通的会议室
-POST http://localhost:4443/dev/test?id=alibb100002&method=joinRoom
+POST http://localhost:4443/dev/test?id={{uuid}}&method=joinRoom
 Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json
@@ -12,13 +12,13 @@ Content-Type: application/json
   "duration": 120,
   "isReconnected": false,
   "joinType": "active",
-  "metadata": "{\"account\":alibb100002}",
+  "metadata": "{\"account\":{{uuid}}}",
   "micStatus": "on",
   "password": "",
   "platform": "windows",
-  "role": "MODERATOR",
+  "role": "ONLY_SHARE",
   "secret": "",
-  "session": "alibb100002",
+  "session": "80101900003",
   "streamType": "MAJOR",
   "useIdInRoom": "allParticipants",
   "videoStatus": "on"

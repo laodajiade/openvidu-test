@@ -627,8 +627,17 @@ public class Session implements SessionInterface {
 			if (participant.getRole() == OpenViduRole.ONLY_SHARE) {
 				order = roomNormalOrder.get() + onlyShareOrder.incrementAndGet();
 			} else {
-				// todo 这里可能会挤占掉原来的屏幕入会成员位置
 				order = roomNormalOrder.incrementAndGet();
+				// 如果有屏幕入会，则位置向后顺移
+				if (onlyShareOrder.get() > 0) {
+					Set<Participant> participants = getMajorPartEachConnect();
+					for (Participant p : participants) {
+						if (p.getRole() == OpenViduRole.ONLY_SHARE) {
+							p.setOrder(p.getOrder() + 1);
+							log.info("only_share participant order change, order = {}", p.getOrder());
+						}
+					}
+				}
 			}
 
 			participant.setOrder(order);
@@ -679,7 +688,8 @@ public class Session implements SessionInterface {
 				int partOrder;
 				if ((partOrder = participant.getOrder()) > leavePartOrder) {
 					if (leavePartOrder <= lineOrder && partOrder == sfuLimit
-							&& OpenViduRole.MODERATOR != participant.getRole()) {	// exclude the moderator
+							&& OpenViduRole.MODERATOR != participant.getRole()
+							&& OpenViduRole.ONLY_SHARE != participant.getRole()) {	// exclude the moderator and only_share
 						sub2PubPartRef.set(participant);
 					}
 					participant.setOrder(--partOrder);
