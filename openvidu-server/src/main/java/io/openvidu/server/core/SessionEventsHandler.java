@@ -211,6 +211,8 @@ public class SessionEventsHandler {
 			}
 		}
 
+		notifyUpdateOrder(participant, existingParticipants);
+
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
@@ -259,6 +261,31 @@ public class SessionEventsHandler {
         }
 		result.add("roomInfo", roomInfoJson);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
+	}
+
+	/**
+	 * 通知端上排序有发生改变
+	 */
+	private void notifyUpdateOrder(Participant participant, Set<Participant> existParticipants) {
+		if (ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+			return;
+		}
+		JsonObject notifyParam = new JsonObject();
+		JsonArray orderedParts = new JsonArray();
+		for (Participant exist : existParticipants) {
+			if (exist.getStreamType() == StreamType.MAJOR) {
+				JsonObject order = new JsonObject();
+				order.addProperty("account", exist.getUuid());
+				order.addProperty("order", exist.getOrder());
+				orderedParts.add(order);
+			}
+		}
+		notifyParam.add("orderedParts", orderedParts);
+
+		for (Participant exist : existParticipants) {
+			rpcNotificationService.sendNotification(exist.getParticipantPrivateId(),
+					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
+		}
 	}
 
 	public void onParticipantLeft(Participant participant, String sessionId, Set<Participant> remainingParticipants,
