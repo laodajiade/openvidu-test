@@ -16,6 +16,7 @@ import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.handlers.CloseRoomHandler;
+import io.openvidu.server.rpc.handlers.parthistory.DeleteConferenceHistoryHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,8 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Resource
     private ConferencePartHistoryMapper conferencePartHistoryMapper;
 
+    @Resource
+    private DeleteConferenceHistoryHandler deleteConferenceHistoryHandler;
 
     @Autowired
     private CloseRoomHandler closeRoomHandler;
@@ -54,8 +57,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         String admin = getStringOptionalParam(request, "admin");
 
         if (!ruid.startsWith("appt-")) {
-            //return delGeneral(rpcConnection, ruid, admin);
-            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
+            return deleteConferenceHistoryHandler.doProcess(rpcConnection, request, vo);
         }
 
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
