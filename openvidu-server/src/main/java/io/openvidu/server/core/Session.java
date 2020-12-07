@@ -103,7 +103,13 @@ public class Session implements SessionInterface {
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
 
 	private static AtomicInteger majorParts = new AtomicInteger(0);
-	protected AtomicInteger roomParticipants = new AtomicInteger(-1);
+
+	// 正常与会者的排序
+	protected AtomicInteger roomNormalOrder = new AtomicInteger(-1);
+
+	// 屏幕入会的排序
+	protected AtomicInteger onlyShareOrder = new AtomicInteger(0);
+
 	private final Object partOrderAdjustLock = new Object();
 
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
@@ -617,7 +623,13 @@ public class Session implements SessionInterface {
 	public void setMajorPartsOrder (Participant participant) {
 
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-			int order = roomParticipants.incrementAndGet();
+			int order;
+			if (participant.getRole() == OpenViduRole.ONLY_SHARE) {
+				order = roomNormalOrder.get() + onlyShareOrder.incrementAndGet();
+			} else {
+				// todo 这里可能会挤占掉原来的屏幕入会成员位置
+				order = roomNormalOrder.incrementAndGet();
+			}
 
 			participant.setOrder(order);
 			log.info("ParticipantName:{} join session:{} and after set majorPart order:{}",
@@ -641,8 +653,13 @@ public class Session implements SessionInterface {
 
     public void dealParticipantOrder(Participant leavePart, RpcNotificationService notificationService) {
 		if (StreamType.MAJOR.equals(leavePart.getStreamType()) && !OpenViduRole.THOR.equals(leavePart.getRole())) {
-			log.info("current participant leaveRoom roomParticipants size:{}", this.roomParticipants.decrementAndGet());
-			dealPartOrderInSessionAfterLeaving(leavePart,notificationService);
+			if (leavePart.getRole() == OpenViduRole.ONLY_SHARE) {
+				onlyShareOrder.decrementAndGet();
+			} else {
+				roomNormalOrder.decrementAndGet();
+			}
+			log.info("current participant leaveRoom roomParticipants size:{}", this.roomNormalOrder.get() + this.onlyShareOrder.get());
+			dealPartOrderInSessionAfterLeaving(leavePart, notificationService);
 		}
 	}
 
@@ -839,9 +856,9 @@ public class Session implements SessionInterface {
     	return majorParts.get();
 	}
 
-	public int getMajorPartOrder() {
-    	return roomParticipants.incrementAndGet();
-	}
+//	public int getMajorPartOrder() {
+//    	return roomParticipants.incrementAndGet();
+//	}
 
 	public boolean isClosed() {
 		return closed;

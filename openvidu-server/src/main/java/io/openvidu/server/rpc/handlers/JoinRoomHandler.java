@@ -222,7 +222,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // check ever already exits share part
                 Session session;
-                if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
+                if ((StreamType.SHARING.equals(streamType) || role == OpenViduRole.ONLY_SHARE) && Objects.nonNull(session = sessionManager.getSession(sessionId))
                         && Objects.nonNull(session.getParticipants().stream()
                         .filter(participant -> StreamType.SHARING.equals(participant.getStreamType())).findAny().orElse(null))) {
                     errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;

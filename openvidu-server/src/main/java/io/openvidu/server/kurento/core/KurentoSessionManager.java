@@ -122,7 +122,7 @@ public class KurentoSessionManager extends SessionManager {
 				Kms lessLoadedKms;
 				try {
 					lessLoadedKms = this.kmsManager.getLessLoadedKms();
-					if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.valueOf("0.0")) != 0) {
+					if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.parseDouble("0.0")) != 0) {
 						throw new NoSuchElementException();
 					}
 				} catch (NoSuchElementException e) {
@@ -161,6 +161,7 @@ public class KurentoSessionManager extends SessionManager {
 			// 第一个入会者是主持人，所有权限都打开
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
+				//todo 第一个未必是主持人
 				if (existingParticipants.isEmpty()) {
 					participant.setMicStatus(ParticipantMicStatus.on);
 					participant.setVideoStatus(ParticipantVideoStatus.on);

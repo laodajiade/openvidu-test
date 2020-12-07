@@ -70,7 +70,15 @@ public enum OpenViduRole {
 		public boolean isController() {
 			return true;
 		}
-	};
+	},
+
+	ONLY_SHARE{
+		@Override
+		public boolean needToPublish() {
+			return false;
+		}
+	},
+	;
 
 	public static final List<OpenViduRole> NON_PUBLISH_ROLES;
 
