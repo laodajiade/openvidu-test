@@ -162,17 +162,24 @@ public class KurentoSessionManager extends SessionManager {
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
 				//todo 第一个未必是主持人
-				if (existingParticipants.isEmpty()) {
+				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
 					participant.setMicStatus(ParticipantMicStatus.on);
 					participant.setVideoStatus(ParticipantVideoStatus.on);
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
 				} else {
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
-					participant.setMicStatus(ParticipantMicStatus.valueOf(preset.getMicStatusInRoom().name()));
-					if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1)  && preset.getQuietStatusInRoom().equals(SessionPresetEnum.smart)) {
+					if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
 						participant.setMicStatus(ParticipantMicStatus.off);
+					} else {
+						if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+							participant.setMicStatus(ParticipantMicStatus.off);
+						}
 					}
-					participant.setVideoStatus(ParticipantVideoStatus.valueOf(preset.getVideoStatusInRoom().name()));
+
+					if (OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+						participant.setMicStatus(ParticipantMicStatus.off);
+						participant.setVideoStatus(ParticipantVideoStatus.off);
+					}
 				}
 				participant.setRoomSubject(preset.getRoomSubject());
 			}
@@ -185,7 +192,7 @@ public class KurentoSessionManager extends SessionManager {
 			// change the part role according to the sfu limit
 			if (StreamType.MAJOR.equals(participant.getStreamType()) && ConferenceModeEnum.SFU.equals(kSession.getConferenceMode())
 					&& participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1
-					&& !participant.getRole().equals(OpenViduRole.MODERATOR)) {
+					&& !participant.getRole().equals(OpenViduRole.MODERATOR) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
 				participant.changePartRole(OpenViduRole.SUBSCRIBER);
 			}
 			// deal the default subtitle config
@@ -777,11 +784,10 @@ public class KurentoSessionManager extends SessionManager {
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
 		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachIncludeThorConnect();
-//		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
-//                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
-//			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
-//		} else
-		{
+		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
+                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
+			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
+		} else {
 			// check if MAJOR is speaker
 			if (ParticipantHandStatus.speaker.equals(majorPart.getHandStatus())) {
 				JsonObject params = new JsonObject();

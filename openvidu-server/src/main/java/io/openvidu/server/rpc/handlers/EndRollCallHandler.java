@@ -33,6 +33,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String targetConnectionId = null;
         Session conferenceSession = sessionManager.getSession(sessionId);
         Set<Participant> participants = conferenceSession.getParticipants();
+        Participant moderatorPart = conferenceSession.getParticipantByUUID(sourceId);
         Participant part = null;
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
@@ -50,11 +51,13 @@ public class EndRollCallHandler extends RpcAbstractHandler {
 
         if (part != null) {
             //when the part on wall,change role to SUBSCRIBER
-            if (part.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1) {
+            if (part.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1 && !OpenViduRole.ONLY_SHARE.equals(part.getRole())) {
                 part.changePartRole(OpenViduRole.SUBSCRIBER);
                 Session session = sessionManager.getSession(sessionId);
                 JsonArray changeRoleNotifiParam = session.getPartRoleChangedNotifyParamArr(part,
                         OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
+                //下墙处理音频及共享
+                sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
                 participants.forEach(participant -> {
                     if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                         this.notificationService.sendNotification(participant.getParticipantPrivateId(),

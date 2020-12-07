@@ -741,7 +741,7 @@ public class Session implements SessionInterface {
 		return result;
 	}
 
-	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager, JsonArray orderedPartsArray) {
+	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager, JsonArray orderedPartsArray, Participant thorParticipant) {
 		int lineOrder = openviduConfig.getSfuPublisherSizeLimit() - 1;
 		RpcNotificationService notificationService = sessionManager.notificationService;
 		Set<Participant> participants = getMajorPartEachConnect();
@@ -766,6 +766,22 @@ public class Session implements SessionInterface {
 								sub2PubPartSet.add(participant);
 							} else {
 								pub2SubPartSet.add(participant);
+								if (ParticipantMicStatus.on.equals(participant.getMicStatus())) {
+									participant.setMicStatus(ParticipantMicStatus.off);
+									JsonObject audioParams = new JsonObject();
+									JsonArray targetIds = new JsonArray();
+									targetIds.add(participant.getUuid());
+									audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM,thorParticipant.getSessionId());
+									audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM,thorParticipant.getUuid());
+									audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"on");
+									audioParams.add(ProtocolElements.SET_VIDEO_TARGETS_PARAM, targetIds);
+									getParticipants().forEach(part -> {
+										if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
+											notificationService.sendNotification(part.getParticipantPrivateId(),
+													ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
+										}
+									});
+								}
 							}
 						}
 					}
@@ -784,7 +800,7 @@ public class Session implements SessionInterface {
 				updatePartCacheInfo(sub2PubPart);
 			});
 
-			AtomicReference<String> sharePartPublicId = new AtomicReference<>();
+			AtomicReference<Participant> existsPart = new AtomicReference<>();
 			pub2SubPartSet.forEach(pub2SubPart -> {
 				pub2SubPart.changePartRole(OpenViduRole.SUBSCRIBER);
 				partRoleChangedArrParam.add(getPartRoleChangedNotifyParam(pub2SubPart, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER));
@@ -795,18 +811,21 @@ public class Session implements SessionInterface {
 				// check if exists sharing part
 				Participant sharePart;
 				if (Objects.nonNull(sharePart = getPartByPrivateIdAndStreamType(pub2SubPart.getParticipantPrivateId(), StreamType.SHARING))) {
-					sharePartPublicId.set(sharePart.getParticipantPublicId());
+					existsPart.set(sharePart);
 				}
 			});
 			boolean sendRoleChange = partRoleChangedArrParam.size() != 0;
-			boolean sendEvictShareWhenPub2Sub = !StringUtils.isEmpty(sharePartPublicId.get());
+			boolean sendEvictShareWhenPub2Sub = Objects.nonNull(existsPart.get());
 
 			// get part order info in session
 			JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
 			JsonObject evictShareNotifyParam = new JsonObject();
 			if (sendEvictShareWhenPub2Sub) {
-				evictShareNotifyParam.addProperty("connectionId", sharePartPublicId.get());
-				evictShareNotifyParam.addProperty("reason", EndReason.forceDisconnectByServer.name());
+				sessionManager.leaveRoom(existsPart.get(), null, EndReason.sessionClosedByServer, false);
+				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_ROOMID_PARAM, sessionId);
+				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_SOURCEID_PARAM, "");
+				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_TARGETID_PARAM, existsPart.get().getUuid());
+				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_OPERATION_PARAM, ParticipantShareStatus.off.name());
 			}
 			//send notify web
 			Participant thorPart = getThorPart();
@@ -832,7 +851,7 @@ public class Session implements SessionInterface {
 				// send evict sharing notify when there exists share part in pub2Subs.
 				if (sendEvictShareWhenPub2Sub) {
 					notificationService.sendNotification(participant.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTEVICTED_METHOD, evictShareNotifyParam);
+							ProtocolElements.SHARING_CONTROL_NOTIFY, evictShareNotifyParam);
 				}
 			});
 		}

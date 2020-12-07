@@ -37,6 +37,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
         String ruid = getStringOptionalParam(request, ProtocolElements.JOINROOM_RUID_PARAM);
         boolean isReconnected = getBooleanParam(request, ProtocolElements.JOINROOM_ISRECONNECTED_PARAM);
+        String micStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_MICSTATUS_PARAM);
+        String videoStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
@@ -124,6 +126,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                             //save previous order if reconnect
                             sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
+                        }
+                        //记录与会者断线前的音视频状态
+                        if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_MICSTATUS_PARAM))) {
+                            micStatus = partInfo.get(ProtocolElements.JOINROOM_MICSTATUS_PARAM).toString();
+                        }
+                        if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM))) {
+                            videoStatus = partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM).toString();
                         }
                         String roomId = partInfo.get("roomId").toString();
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
@@ -249,6 +258,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setUuid(rpcConnection.getUserUuid());
                 participant.setUsername(rpcConnection.getUsername());
                 participant.setProject(rpcConnection.getProject());
+                participant.setMicStatus(StringUtils.isEmpty(micStatus) ? ParticipantMicStatus.on : ParticipantMicStatus.valueOf(micStatus));
+                participant.setVideoStatus(StringUtils.isEmpty(videoStatus) ? ParticipantVideoStatus.on : ParticipantVideoStatus.valueOf(videoStatus));
                 if (StringUtils.isEmpty(serialNumber)) {
                     if (UserType.register.equals(participant.getUserType()) && TerminalTypeEnum.S != rpcConnection.getTerminalType()) {
                         User user = userMapper.selectByPrimaryKey(userId);

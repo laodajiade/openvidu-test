@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,8 @@ public class UpdateParticipantsOrderHandler extends RpcAbstractHandler {
                 JsonObject orderPart = jsonElement.getAsJsonObject();
                 partOrderMap.putIfAbsent(orderPart.get("account").getAsString(), orderPart.get("order").getAsInt());
             }
-            sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, orderedParts);
+            Participant thorPart = sessionManager.getSession(rpcConnection.getSessionId()).getThorPart();
+            sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, orderedParts, thorPart);
         }
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
