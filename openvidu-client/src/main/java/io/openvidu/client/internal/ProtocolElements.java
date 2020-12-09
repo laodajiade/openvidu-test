@@ -620,6 +620,9 @@ public class ProtocolElements {
 
 	public static final String UPLOADTERMINALINFO_METHOD = "uploadTerminalInfo";
 	public static final String UPLOADTERMINALINFO_ABILITY_PARAM = "ability";
+	public static final String UPLOADTERMINALINFO_FUNCTIONALITY_PARAM = "functionality";
+
+	public static final String TERMINAL_INOF_MODIFIED_NOTIFY_METHOD = "terminalInofModifiedNotify";
 
     public static final String GETSUBDEVORUSERBYDEPTIDS_METHOD = "getSubDevOrUserByDeptIds";
     public static final String GETSUBDEVORUSERBYDEPTIDS_ORGIDS_PARAM = "orgIds";

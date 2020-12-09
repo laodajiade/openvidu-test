@@ -74,6 +74,10 @@ public class Participant {
 	private String ability;
 	@Getter
 	@Setter
+	private String functionality;
+
+	@Getter
+	@Setter
 	private String project;
 
 	@Getter

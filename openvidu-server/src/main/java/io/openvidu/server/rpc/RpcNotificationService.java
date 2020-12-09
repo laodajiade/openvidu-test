@@ -21,19 +21,19 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.core.Participant;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public class RpcNotificationService {
 
@@ -165,6 +165,14 @@ public class RpcNotificationService {
 			log.error("Error closing session for participant with private id {}", participantPrivateId, e);
 		}
 		return null;
+	}
+
+	public void sendBatchNotification(Set<Participant> participants, final String method, final Object params) {
+		if (CollectionUtils.isEmpty(participants)) {
+			return;
+		}
+		List<String> participantPrivateIds = participants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+		sendBatchNotification(participantPrivateIds, method, params);
 	}
 
     public void sendBatchNotification(List<String> participantPrivateIds, final String method, final Object params) {

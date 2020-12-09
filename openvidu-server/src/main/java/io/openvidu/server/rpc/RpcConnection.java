@@ -57,6 +57,7 @@ public class RpcConnection {
 	private AccessTypeEnum accessType;
 	private Long createTime;
 	private String ability;
+	private String functionality;
 	private JsonObject terminalConfig;
 	private Long corpId;
 
@@ -157,6 +158,14 @@ public class RpcConnection {
 
 	public void setAbility(String ability) {
 		this.ability = ability;
+	}
+
+	public String getFunctionality() {
+		return functionality;
+	}
+
+	public void setFunctionality(String functionality) {
+		this.functionality = functionality;
 	}
 
 	public JsonObject getTerminalConfig() {
