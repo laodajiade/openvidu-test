@@ -329,7 +329,7 @@ public abstract class RpcAbstractHandler {
                 });
             }
         } catch (Exception e) {
-            log.info("exception {}", e);
+            log.info("isExistingRoom ", e);
         }
         return exitFlag.get();
     }
