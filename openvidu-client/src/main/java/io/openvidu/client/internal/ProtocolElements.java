@@ -76,6 +76,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
 	public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
 	public static final String JOINROOM_ABILITY_PARAM = "ability";
+	public static final String JOINROOM_FUNCTIONALITY_PARAM = "functionality";
 	public static final String JOINROOM_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String JOINROOM_PEERONLINESTATUS_PARAM = "onlineStatus";
 	public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
@@ -168,6 +169,7 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_DEVICEMODEL_PARAM = "deviceModel";
 	public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
 	public static final String ACCESS_IN_ABILITY_PARAM = "ability";
+	public static final String ACCESS_IN_FUNCTIONALITY_PARAM = "functionality";
 	public static final String ACCESS_IN_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String ACCESS_IN_CLIENTTIMESTAMP_PARAM = "clientTimestamp";
 	public static final String ACCESS_IN_SERVERTIMESTAMP_PARAM = "serverTimestamp";
@@ -540,6 +542,7 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_APP_SHOWNAME_PARAM = "appShowName";
     public static final String PARTICIPANTJOINED_APP_SHOWDESC_PARAM = "appShowDesc";
     public static final String PARTICIPANTJOINED_ABILITY_PARAM = "ability";
+    public static final String PARTICIPANTJOINED_FUNCTIONALITY_PARAM = "functionality";
     public static final String PARTICIPANTJOINED_TERMINALCONFIG_PARAM = "terminalConfig";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
 	public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";

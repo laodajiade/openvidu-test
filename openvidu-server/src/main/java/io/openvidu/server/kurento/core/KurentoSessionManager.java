@@ -161,7 +161,6 @@ public class KurentoSessionManager extends SessionManager {
 			// 第一个入会者是主持人，所有权限都打开
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
-				//todo 第一个未必是主持人
 				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
 					participant.setMicStatus(ParticipantMicStatus.on);
 					participant.setVideoStatus(ParticipantVideoStatus.on);

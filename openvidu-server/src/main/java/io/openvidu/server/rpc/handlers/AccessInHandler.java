@@ -54,6 +54,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 ? TerminalTypeEnum.valueOf(clientType) : null;
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
+        String functionality = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_FUNCTIONALITY_PARAM);
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
@@ -97,7 +98,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                 }
 
                 // update device info if necessary
-                checkDeviceInfoAndUpdate(device, deviceVersion, ability, deviceModel, mac, terminalConfig , rpcConnection);
+                checkDeviceInfoAndUpdate(device, deviceVersion, ability, functionality, deviceModel, mac, terminalConfig, rpcConnection);
 
                 // add deviceName into resp info
                 deviceName = device.getDeviceName();
@@ -253,7 +254,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         }
     }
 
-    private void checkDeviceInfoAndUpdate(Device device, String deviceVersion, String ability, String deviceModel, String mac, JsonElement terminalConfig, RpcConnection rpcConnection) {
+    private void checkDeviceInfoAndUpdate(Device device, String deviceVersion, String ability, String functionality,
+                                          String deviceModel, String mac, JsonElement terminalConfig, RpcConnection rpcConnection) {
         if (!Objects.equals(deviceVersion, device.getVersion())
                 || !Objects.equals(ability, device.getAbility())
                 || !Objects.equals(deviceModel, device.getDeviceModel())
@@ -270,6 +272,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
         rpcConnection.setUsername(device.getDeviceName());
         rpcConnection.setAbility(ability);
+        rpcConnection.setFunctionality(functionality);
         rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
     }
 

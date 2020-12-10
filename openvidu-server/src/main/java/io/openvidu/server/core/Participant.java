@@ -110,7 +110,7 @@ public class Participant {
     protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(Long userId, String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
-					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability) {
+					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability,String functionality) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;

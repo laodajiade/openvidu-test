@@ -110,6 +110,7 @@ public class SessionEventsHandler {
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
 				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
                 notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
+                notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
 				if (StreamType.MAJOR.equals(participant.getStreamType())) {
 					notifParams.addProperty("order", participant.getOrder());
 				}
@@ -159,6 +160,7 @@ public class SessionEventsHandler {
 								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
+                participantJson.addProperty(ProtocolElements.JOINROOM_FUNCTIONALITY_PARAM, rpc.getFunctionality());
 				if (!Objects.isNull(rpc.getTerminalConfig())) {
 					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
 				}

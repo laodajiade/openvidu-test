@@ -84,7 +84,7 @@ public class KurentoParticipant extends Participant {
 			RecordingManager recordingManager, LivingManager livingManager) {
 		super(participant.getUserId(),participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
-				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility());
+				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility(), participant.getFunctionality());
 		setMicStatus(participant.getMicStatus());
 		setVideoStatus(participant.getVideoStatus());
 		setSharePowerStatus(participant.getSharePowerStatus());
