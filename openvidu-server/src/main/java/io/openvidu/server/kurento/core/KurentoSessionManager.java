@@ -860,14 +860,22 @@ public class KurentoSessionManager extends SessionManager {
 		boolean hasAudio = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_HASAUDIO_PARAM);
 		boolean hasVideo = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_HASVIDEO_PARAM);
 
+		String videoStatus = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOSTATUS_PARAM);
+		String micStatus = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_MICSTATUS_PARAM);
 		Boolean audioActive = null, videoActive = null;
 		String typeOfVideo = null, videoDimensions = null;
 		Integer frameRate = null;
 		KurentoFilter kurentoFilter = null;
 
 		try {
-			audioActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
-			videoActive = RpcAbstractHandler.getBooleanParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
+			audioActive = RpcAbstractHandler.getBooleanOptionalParam(request, ProtocolElements.PUBLISHVIDEO_AUDIOACTIVE_PARAM);
+			if (!StringUtils.isEmpty(micStatus)) {
+				audioActive = ParticipantMicStatus.on.name().equals(micStatus);
+			}
+			videoActive = RpcAbstractHandler.getBooleanOptionalParam(request, ProtocolElements.PUBLISHVIDEO_VIDEOACTIVE_PARAM);
+			if (!StringUtils.isEmpty(videoStatus)) {
+				videoActive = ParticipantVideoStatus.on.name().equals(videoStatus);
+			}
 			typeOfVideo = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_TYPEOFVIDEO_PARAM);
 			if (Objects.isNull(typeOfVideo)) typeOfVideo = "CAMERA";
 			videoDimensions = RpcAbstractHandler.getStringOptionalParam(request, ProtocolElements.PUBLISHVIDEO_VIDEODIMENSIONS_PARAM);

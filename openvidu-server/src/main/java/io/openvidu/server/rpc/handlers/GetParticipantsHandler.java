@@ -108,6 +108,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
         userObj.addProperty("micStatus", kurentoParticipant.getMicStatus().name());
         userObj.addProperty("videoStatus", kurentoParticipant.getVideoStatus().name());
+        userObj.addProperty("speakerStatus", kurentoParticipant.getSpeakerStatus().name());
         userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(kurentoParticipant.getSpeakerStatus()));
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
         userObj.addProperty("order",participant.getOrder());
