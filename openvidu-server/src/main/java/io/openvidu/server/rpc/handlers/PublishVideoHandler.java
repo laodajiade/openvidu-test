@@ -57,7 +57,8 @@ public class PublishVideoHandler extends RpcAbstractHandler {
                 participant.changeMicStatus(options.isAudioActive() ? ParticipantMicStatus.on : ParticipantMicStatus.off);
                 sessionManager.publishVideo(participant, options, request.getId());
             } else {
-                log.error("Error: participant {} is not a publisher", participant.getParticipantPublicId());
+                log.error("Error: participant {} is not a publisher and role={} and streamType={}", participant.getParticipantPublicId()
+                        , participant.getRole(), participant.getStreamType());
                 throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,
                         "Unable to publish video. The user does not have a valid token");
             }
