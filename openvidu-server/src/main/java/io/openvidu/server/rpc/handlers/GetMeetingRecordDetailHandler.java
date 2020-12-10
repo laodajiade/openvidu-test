@@ -55,6 +55,7 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
                 partRecObj.addProperty("terminalType", conferencePartHistory.getTerminalType());
                 partRecObj.addProperty("host",
                         Objects.equals(conferencePartHistory.getUserId(), conference.getUserId()));
+                partRecObj.addProperty("onlyShare", String.valueOf(conferencePartHistory.getOnlyShare()));
                 parts.add(partRecObj);
             });
         }

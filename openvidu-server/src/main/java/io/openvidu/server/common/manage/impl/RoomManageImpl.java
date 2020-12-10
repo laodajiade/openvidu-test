@@ -81,6 +81,7 @@ public class RoomManageImpl implements RoomManage {
         history.setStartTime(new Date());
         history.setAccessKey(conference.getProject());
         history.setProject(conference.getProject());
+        history.setOnlyShare(OpenViduRole.ONLY_SHARE.equals(participant.getRole()) ? 1 : 0);
         conferencePartHistoryMapper.insert(history);
 
         // save part info in cache

@@ -37,4 +37,6 @@ public class ConferencePartHistory {
     private Date updateTime;
 
     private String mixParam;
+
+    private Integer onlyShare;
 }

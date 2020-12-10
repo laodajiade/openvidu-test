@@ -17,10 +17,11 @@
     <result column="project" property="project" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="only_share" property="onlyShare" jdbcType="TINYINT" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, user_id, uuid, username, user_type, terminal_type, status, start_time, end_time, duration, access_key, project, create_time,
-    update_time
+    update_time, only_share
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select
@@ -34,11 +35,11 @@
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.ConferencePartHistory" >
     insert into sd_conf_part_history (id, ruid, user_id,
-      uuid, username, user_type, terminal_type, status, start_time, end_time, access_key, project)
+      uuid, username, user_type, terminal_type, status, start_time, end_time, access_key, project, only_share)
     values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT},
       #{uuid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, #{userType,jdbcType=INTEGER}, #{terminalType,jdbcType=VARCHAR},
       #{status,jdbcType=TINYINT}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
-      #{accessKey,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR})
+      #{accessKey,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR}, #{onlyShare,jdbcType=TINYINT})
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.ConferencePartHistory" >
     insert into sd_conf_part_history
@@ -219,6 +220,7 @@
         and (username like CONCAT('%',#{mixParam},'%') or uuid like CONCAT('%',#{mixParam},'%'))
       </if>
     </where>
+    order by only_share
   </select>
 
   <update id="updatePartHistroy" parameterType="io.openvidu.server.common.pojo.ConferencePartHistory">
