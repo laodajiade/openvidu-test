@@ -61,6 +61,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private HubPort recordHubPort = null;
 	private HubPort liveHubPort = null;
 
+	private HubPort sipCompositeHubPort = null;
+
 	// Audio composite.
 	private Composite audioComposite = null;
 	private final Object audioCompositeCreateLock = new Object();
@@ -130,6 +132,11 @@ public class PublisherEndpoint extends MediaEndpoint {
 	public HubPort createLiveHubPort(Composite composite) {
 		liveHubPort = new HubPort.Builder(composite).build();
 		return liveHubPort;
+	}
+
+	public HubPort createSipCompositeHubPort(Composite composite) {
+		sipCompositeHubPort = new HubPort.Builder(composite).build();
+		return sipCompositeHubPort;
 	}
 
 	public void connectAudioIn(MediaElement sink) {
@@ -584,17 +591,19 @@ public class PublisherEndpoint extends MediaEndpoint {
 			prevId = getPrevious(prevId);
 		}
 
-		internalSinkConnect(current, passThru);
-		KurentoParticipant kurentoParticipant;
-		if ((kurentoParticipant = (KurentoParticipant) getOwner()).getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-			if (TerminalTypeEnum.S != kurentoParticipant.getTerminalType()) {
-				internalSinkConnect(current, majorShareHubPort, MediaType.VIDEO);
-			} else {
-				// cancel the limit of AUDIO when terminal type is SIP
-				internalSinkConnect(current, majorShareHubPort);
-
-				// change the link order and unify the capability of both two points
-				internalSinkConnect(majorShareHubPort, current);
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) getOwner();
+		if (TerminalTypeEnum.S != kurentoParticipant.getTerminalType()) {
+			internalSinkConnect(current, passThru);
+		} else if (ConferenceModeEnum.SFU == kurentoParticipant.getSession().getConferenceMode()) {	// SIP terminal && SFU
+			internalSinkConnect(current, passThru);
+			// change the link order and unify the capability(send recv) of both two points
+			internalSinkConnect(sipCompositeHubPort, current);
+		}
+		if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
+			internalSinkConnect(current, majorShareHubPort, MediaType.VIDEO);
+			if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {
+				// change the link order and unify the capability(send recv) of both two points
+				internalSinkConnect(majorShareHubPort, current, MediaType.VIDEO);
 			}
 		}
 
@@ -717,6 +726,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	public HubPort getLiveHubPort() {
 		return liveHubPort;
+	}
+
+	public HubPort getSipCompositeHubPort() {
+		return sipCompositeHubPort;
 	}
 
 	@Override

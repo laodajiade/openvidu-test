@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class StatusEvent {
+    private String sessionId;
     private String uuid;
     private String field;
     private String updateStatus;

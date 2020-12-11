@@ -42,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -1446,5 +1447,88 @@ public class Session implements SessionInterface {
 
 	public void setEndTime(long endTime) {
 		this.endTime = endTime;
+	}
+
+	public void updateSipComposite() {
+		int mcuNum = 0;
+		JsonArray hubPortIds = new JsonArray(3);
+		Participant moderator = null, speaker = null;
+		Set<Participant> participants = getParticipants();
+		KurentoSession kurentoSession = (KurentoSession) this;
+		if (!CollectionUtils.isEmpty(participants)) {
+			for (Participant participant : participants) {
+				if (OpenViduRole.MODERATOR == participant.getRole() && StreamType.MAJOR == participant.getStreamType()) {
+					moderator = participant;
+				}
+				if (StreamType.SHARING == participant.getStreamType()) {
+					mcuNum = getSipCompositeElements(kurentoSession, participant, hubPortIds, mcuNum);
+				}
+				if (StreamType.MAJOR == participant.getStreamType() && ParticipantHandStatus.speaker == participant.getHandStatus()) {
+					speaker = participant;
+				}
+			}
+
+			// set composite order
+			if (Objects.nonNull(speaker)) {
+				mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);
+			}
+			if (Objects.nonNull(moderator)) {
+				mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
+			}
+
+			if (mcuNum > 0) {
+				try {
+					kurentoSession.getKms().getKurentoClient()
+							.sendJsonRpcRequest(composeLayoutRequestForSip(kurentoSession.getPipeline().getId(),
+									sessionId, hubPortIds, LayoutModeEnum.getLayoutMode(mcuNum)));
+				} catch (IOException e) {
+					log.error("Send Sip Composite Layout Exception:\n", e);
+				}
+			}
+		}
+	}
+
+	private int getSipCompositeElements(KurentoSession kurentoSession, Participant participant, JsonArray hubPortIds, int mcuNum) {
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+		if (Objects.isNull(kurentoParticipant.getPublisher().getSipCompositeHubPort())) {
+			kurentoParticipant.getPublisher().createSipCompositeHubPort(kurentoSession.getSipComposite());
+		}
+		hubPortIds.add(kurentoParticipant.getPublisher().getSipCompositeHubPort().getId());
+		return ++mcuNum;
+	}
+
+	private Request<JsonObject> composeLayoutRequestForSip(String pipelineId, String sessionId, JsonArray hubPortIds, LayoutModeEnum layoutMode) {
+		Request<JsonObject> kmsRequest = new Request<>();
+		JsonObject params = new JsonObject();
+		params.addProperty("object", pipelineId);
+		params.addProperty("operation", "setLayout");
+		params.addProperty("sessionId", sessionId);
+
+		// construct composite layout info
+		JsonArray layoutInfos = new JsonArray(3);
+		JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutMode);
+		AtomicInteger index = new AtomicInteger(0);
+		layoutCoordinates.forEach(coordinates -> {
+			if (index.get() < layoutMode.getMode()) {
+				JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
+				elementsLayout.addProperty("connectionId", "connectionId");
+				elementsLayout.addProperty("streamType", "streamType");
+				elementsLayout.addProperty("object", hubPortIds.get(index.get()).getAsString());
+				elementsLayout.addProperty("hasVideo", true);
+				elementsLayout.addProperty("onlineStatus", "online");
+
+				index.incrementAndGet();
+				layoutInfos.add(elementsLayout);
+			}
+		});
+
+		JsonObject operationParams = new JsonObject();
+		operationParams.add("layoutInfo", layoutInfos);
+		params.add("operationParams", operationParams);
+		kmsRequest.setMethod("invoke");
+		kmsRequest.setParams(params);
+		log.info("send setLayout params:{}", params);
+
+		return kmsRequest;
 	}
 }

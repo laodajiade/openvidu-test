@@ -58,6 +58,8 @@ public class KurentoSession extends Session {
 
 	public CompositeService compositeService;
 
+	private Composite sipComposite;
+
 	private Object pipelineCreateLock = new Object();
 	private Object pipelineReleaseLock = new Object();
 	private final Object joinOrLeaveLock = new Object();
@@ -202,6 +204,7 @@ public class KurentoSession extends Session {
 
 			participants.clear();
             compositeService.closeMajorShareComposite();
+            sipComposite.release();
 			closePipeline(null);
 
 			log.debug("Session {} closed", this.sessionId);
@@ -312,6 +315,15 @@ public class KurentoSession extends Session {
 				}
 			});
 		}
+	}
+
+	public Composite createSipComposite() {
+		sipComposite = new Composite.Builder(pipeline).build();
+		return sipComposite;
+	}
+
+	public Composite getSipComposite() {
+		return sipComposite;
 	}
 
 	private void closePipeline(Runnable callback) {

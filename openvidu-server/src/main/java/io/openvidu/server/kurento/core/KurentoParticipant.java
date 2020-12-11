@@ -24,11 +24,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.OperationMode;
-import io.openvidu.server.common.enums.StreamModeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.VoiceMode;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
@@ -185,6 +181,10 @@ public class KurentoParticipant extends Participant {
 
 //			this.publisher.getMajorShareHubPort().setName(getParticipantName());
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
+		} else if (TerminalTypeEnum.S == getTerminalType()) {
+			Composite sipComposite = this.session.createSipComposite();
+			this.publisher.createSipCompositeHubPort(sipComposite);
+			new Thread(() -> this.session.updateSipComposite());
 		}
 
 		this.publisher.setEndpointName(publisherStreamId);

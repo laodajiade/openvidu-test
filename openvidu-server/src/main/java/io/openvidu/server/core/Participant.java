@@ -220,7 +220,7 @@ public class Participant {
         setHandStatus(handStatus);
         if (StreamType.MAJOR.equals(streamType)) {
 			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
+					.sessionId(sessionId).uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
 		}
     }
 
@@ -234,7 +234,7 @@ public class Participant {
         setMicStatus(micStatus);
 		if (StreamType.MAJOR.equals(streamType)) {
 			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
+					.sessionId(sessionId).uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
 		}
     }
 
@@ -248,7 +248,7 @@ public class Participant {
 		setVideoStatus(status);
 		if (StreamType.MAJOR.equals(streamType)) {
 			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
+					.sessionId(sessionId).uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
 		}
 	}
 
@@ -278,7 +278,7 @@ public class Participant {
         setSpeakerStatus(status);
 		if (StreamType.MAJOR.equals(streamType)) {
 			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
+					.sessionId(sessionId).uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
 		}
     }
 
@@ -292,7 +292,7 @@ public class Participant {
         setShareStatus(status);
 		if (StreamType.MAJOR.equals(streamType)) {
 			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
+					.sessionId(sessionId).uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
 		}
     }
 
