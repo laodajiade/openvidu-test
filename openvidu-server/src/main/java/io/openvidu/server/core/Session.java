@@ -467,7 +467,8 @@ public class Session implements SessionInterface {
 				.filter(participant -> Objects.nonNull(participant)
 						&& !Objects.equals(OpenViduRole.THOR, participant.getRole())
 						&& !Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
-						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole()))
+						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
+						&& !Objects.equals(OpenViduRole.ONLY_SHARE, participant.getRole()))
 				.collect(Collectors.toSet());
 	}
 
