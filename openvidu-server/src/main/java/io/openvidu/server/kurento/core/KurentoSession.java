@@ -204,7 +204,9 @@ public class KurentoSession extends Session {
 
 			participants.clear();
             compositeService.closeMajorShareComposite();
-            sipComposite.release();
+            if (Objects.nonNull(sipComposite)) {
+				sipComposite.release();
+			}
 			closePipeline(null);
 
 			log.debug("Session {} closed", this.sessionId);
