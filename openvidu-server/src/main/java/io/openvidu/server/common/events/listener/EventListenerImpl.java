@@ -5,6 +5,7 @@ import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
 import io.openvidu.server.common.events.StatusEvent;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -38,7 +39,7 @@ public class EventListenerImpl {
 
         if ("handStatus".equals(statusEvent.getField()) || "shareStatus".equals(statusEvent.getField())) {
             Session session = sessionManager.getSession(statusEvent.getSessionId());
-            if (Objects.nonNull(session)) {
+            if (Objects.nonNull(session) && Objects.nonNull(((KurentoSession) session).getSipComposite())) {
                 session.updateSipComposite();
             }
         }

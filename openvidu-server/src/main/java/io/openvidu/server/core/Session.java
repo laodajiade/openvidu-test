@@ -1475,7 +1475,7 @@ public class Session implements SessionInterface {
 			if (Objects.nonNull(moderator)) {
 				mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
 			}
-
+			log.info("SIP MCU composite number:{} and composite hub port ids:{}", mcuNum, hubPortIds.toString());
 			if (mcuNum > 0) {
 				try {
 					kurentoSession.getKms().getKurentoClient()
@@ -1489,10 +1489,13 @@ public class Session implements SessionInterface {
 	}
 
 	private int getSipCompositeElements(KurentoSession kurentoSession, Participant participant, JsonArray hubPortIds, int mcuNum) {
+		HubPort hubPort = null;
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
-		if (Objects.isNull(kurentoParticipant.getPublisher().getSipCompositeHubPort())) {
+		if (Objects.isNull(hubPort = kurentoParticipant.getPublisher().getSipCompositeHubPort())) {
 			kurentoParticipant.getPublisher().createSipCompositeHubPort(kurentoSession.getSipComposite());
 		}
+		kurentoParticipant.getPublisher().getEndpoint().connect(hubPort);
+//		kurentoParticipant.getPublisher().internalSinkConnect(kurentoParticipant.getPublisher().getEndpoint(), hubPort);
 		hubPortIds.add(kurentoParticipant.getPublisher().getSipCompositeHubPort().getId());
 		return ++mcuNum;
 	}
@@ -1527,7 +1530,7 @@ public class Session implements SessionInterface {
 		params.add("operationParams", operationParams);
 		kmsRequest.setMethod("invoke");
 		kmsRequest.setParams(params);
-		log.info("send setLayout params:{}", params);
+		log.info("send sip composite setLayout params:{}", params);
 
 		return kmsRequest;
 	}
