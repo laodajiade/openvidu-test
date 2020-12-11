@@ -877,14 +877,6 @@ public abstract class SessionManager {
 			}
 			JsonArray targetIds = new JsonArray();
 			targetIds.add(targetPart.getUuid());
-			if (ParticipantMicStatus.off.equals(targetPart.getMicStatus())) {
-				JsonObject audioParams = new JsonObject();
-				audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM,conferenceSession.getSessionId());
-				audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM,moderatorPart.getUuid());
-				audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"on");
-				audioParams.add(ProtocolElements.SET_VIDEO_TARGETS_PARAM, targetIds);
-				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
-			}
 			if (ParticipantSpeakerStatus.off.equals(targetPart.getSpeakerStatus())) {
 				JsonObject audioSpeakerParams = new JsonObject();
 				audioSpeakerParams.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM,conferenceSession.getSessionId());
@@ -894,7 +886,6 @@ public abstract class SessionManager {
 				this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, audioSpeakerParams);
 			}
 		});
-		targetPart.setMicStatus(ParticipantMicStatus.on);
 		targetPart.setSpeakerStatus(ParticipantSpeakerStatus.on);
 	}
 
@@ -907,7 +898,7 @@ public abstract class SessionManager {
 			targetIds.add(participant.getUuid());
 			audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, sessionId);
 			audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM, moderatorPart.getUuid());
-			audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"on");
+			audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"off");
 			audioParams.add(ProtocolElements.SET_VIDEO_TARGETS_PARAM, targetIds);
 		}
 		//判断是否存在共享
@@ -922,12 +913,12 @@ public abstract class SessionManager {
 			stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_OPERATION_PARAM, ParticipantShareStatus.off.name());
 		}
 		getParticipants(sessionId).forEach(part ->{
-			if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+			if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
 				if (micStatusFlag) {
-					this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
+					this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
 				}
 				if (existsSharingFlag) {
-					this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+					this.notificationService.sendNotification(part.getParticipantPrivateId(),
 							ProtocolElements.SHARING_CONTROL_NOTIFY, stopSharingParams);
 				}
 			}
