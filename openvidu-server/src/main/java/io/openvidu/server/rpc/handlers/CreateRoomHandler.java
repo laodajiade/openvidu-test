@@ -208,6 +208,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? deviceName : username.toString());
                 params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERICON_PARAM, "");
                 params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, System.currentTimeMillis() + 60000);
+                params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SUBJECT_PARAM, appt.getConferenceSubject());
                 if (!StringUtils.isEmpty(deviceName)) {
                     params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
                 }

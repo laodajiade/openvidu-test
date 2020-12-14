@@ -284,6 +284,7 @@ public class AppointConferenceJobHandler {
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, String.valueOf(moderator.getUuid()));
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, StringUtils.isEmpty(moderator.getUsername()) ? moderator.getDeviceName() : moderator.getUsername());
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_AUTO_INVITE_PARAM, conference.getAutoInvite());
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SUBJECT_PARAM, conference.getConferenceSubject());
         params.addProperty("ruid", conference.getRuid());
         if (!StringUtils.isEmpty(conference.getPassword())) {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_PASSWORD_PARAM, conference.getPassword());

@@ -335,6 +335,7 @@ public class ProtocolElements {
 	public static final String INVITE_PARTICIPANT_USERNAME_PARAM = "username";
 	public static final String INVITE_PARTICIPANT_DEVICE_NAME_PARAM = "deviceName";
 	public static final String INVITE_PARTICIPANT_EXPIRETIME_PARAM = "expireTime";
+	public static final String INVITE_PARTICIPANT_SUBJECT_PARAM = "subject";
 	public static final String INVITE_PARTICIPANT_USERICON_PARAM = "userIcon";
 	public static final String INVITE_PARTICIPANT_AUTO_INVITE_PARAM = "autoInvite";
 	public static final String INVITE_PARTICIPANT_PASSWORD_PARAM = "password";

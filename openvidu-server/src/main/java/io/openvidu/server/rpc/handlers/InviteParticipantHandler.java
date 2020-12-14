@@ -88,6 +88,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? deviceName : username.toString());
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERICON_PARAM, userIcon);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, expireTime);
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SUBJECT_PARAM, preset.getRoomSubject());
         if (!StringUtils.isEmpty(deviceName)) {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
         }
