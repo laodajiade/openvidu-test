@@ -145,6 +145,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setTerminalType(terminalType);
         rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
         rpcConnection.setUserId(userId);
+        rpcConnection.setDeviceVersion(deviceVersion);
         Corporation corporation = corporationMapper.selectByCorpProject(project);
         rpcConnection.setCorpId(corporation.getId());
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
@@ -274,7 +275,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setAbility(ability);
         rpcConnection.setFunctionality(functionality);
         rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
-        rpcConnection.setDeviceVersion(deviceVersion);
     }
 
 }
