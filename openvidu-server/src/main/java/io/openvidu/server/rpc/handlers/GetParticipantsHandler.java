@@ -62,7 +62,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     JsonObject connectIdStreamTypeObj = jsonElement.getAsJsonObject();
                     if (StreamType.MAJOR.name().equals(connectIdStreamTypeObj.get("streamType").getAsString())
                             && Objects.nonNull(participant = connectIdPartMap.remove(connectIdStreamTypeObj.get("connectionId").getAsString()))) {
-                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
                         if (Objects.nonNull(userObj)) {
                             jsonArray.add(userObj);
                         }
@@ -72,7 +72,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 if (!connectIdPartMap.isEmpty()) {
                     Collection<Participant> remainParts = connectIdPartMap.values();
                     for (Participant participant : remainParts) {
-                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
                         if (Objects.nonNull(userObj)) {
                             jsonArray.add(userObj);
                         }
@@ -80,7 +80,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 }
             } else {
                 needReturnParts.stream().sorted(Comparator.comparing(Participant::getOrder).reversed()).forEach(participant -> {
-                    JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap);
+                    JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
                     if (Objects.nonNull(userObj)) {
                         jsonArray.add(userObj);
                     }
@@ -93,7 +93,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
 
-    private static JsonObject getPartInfo(Participant participant, Map<String, UserDeviceDeptInfo> connectIdUserInfoMap) {
+    private static JsonObject getPartInfo(Participant participant, Map<String, UserDeviceDeptInfo> connectIdUserInfoMap, RpcConnection rpcConnection) {
         JsonObject userObj = new JsonObject();
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         userObj.addProperty("connectionId", kurentoParticipant.getParticipantPublicId());
@@ -113,7 +113,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
         userObj.addProperty("order",participant.getOrder());
         userObj.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
-
+        userObj.addProperty("versionCode", rpcConnection.getVersionCode());
         if (UserType.register.equals(kurentoParticipant.getUserType())) {
             // get user&dept&device from connectIdUserInfoMap
             UserDeviceDeptInfo userDeviceDeptInfo;

@@ -73,6 +73,10 @@ public class RpcConnection {
 	@Setter
 	private String username;
 
+	@Getter
+	@Setter
+	private String versionCode;
+
 	public RpcConnection(Session session) {
 		this.session = session;
 		this.transactions = new ConcurrentHashMap<>();

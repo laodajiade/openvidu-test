@@ -145,6 +145,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setTerminalType(terminalType);
         rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
         rpcConnection.setUserId(userId);
+        rpcConnection.setVersionCode(deviceVersion);
         Corporation corporation = corporationMapper.selectByCorpProject(project);
         rpcConnection.setCorpId(corporation.getId());
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
