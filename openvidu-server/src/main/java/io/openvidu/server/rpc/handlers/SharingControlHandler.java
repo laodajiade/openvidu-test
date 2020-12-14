@@ -26,6 +26,7 @@ public class SharingControlHandler extends RpcAbstractHandler {
         String targetId = getStringParam(request, ProtocolElements.SHARING_CONTROL_TARGETID_PARAM);
         String operation = getStringParam(request, ProtocolElements.SHARING_CONTROL_OPERATION_PARAM);
         getStringParam(request, ProtocolElements.SHARING_CONTROL_SOURCEID_PARAM);
+        Integer mode = getIntOptionalParam(request, ProtocolElements.SHARING_CONTROL_MODE_PARAM);
         ParticipantShareStatus shareStatus = ParticipantShareStatus.valueOf(operation);
 
         if (!OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(sessionId,
@@ -35,6 +36,8 @@ public class SharingControlHandler extends RpcAbstractHandler {
             return;
         }
 
+        JsonObject notifyObj = request.getParams().deepCopy();
+        notifyObj.addProperty("mode", Objects.isNull(mode) ? 0 : mode);
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
@@ -43,7 +46,7 @@ public class SharingControlHandler extends RpcAbstractHandler {
                 }
                 if (Objects.equals(StreamType.MAJOR, p.getStreamType()))
                     this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.SHARING_CONTROL_NOTIFY, request.getParams());
+                            ProtocolElements.SHARING_CONTROL_NOTIFY, notifyObj);
             });
         }
 

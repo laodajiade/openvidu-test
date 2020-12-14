@@ -839,6 +839,7 @@ public class Session implements SessionInterface {
 				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_SOURCEID_PARAM, "");
 				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_TARGETID_PARAM, existsPart.get().getUuid());
 				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_OPERATION_PARAM, ParticipantShareStatus.off.name());
+				evictShareNotifyParam.addProperty(ProtocolElements.SHARING_CONTROL_MODE_PARAM, 0);
 			}
 			//send notify web
 			Participant thorPart = getThorPart();
