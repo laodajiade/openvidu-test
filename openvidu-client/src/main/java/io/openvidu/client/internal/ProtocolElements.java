@@ -398,6 +398,7 @@ public class ProtocolElements {
 	public static final String SHARING_CONTROL_SOURCEID_PARAM = "sourceId";
 	public static final String SHARING_CONTROL_TARGETID_PARAM = "targetId";
 	public static final String SHARING_CONTROL_OPERATION_PARAM = "operation";
+	public static final String SHARING_CONTROL_MODE_PARAM = "mode";
 
 	public static final String SHARING_CONTROL_NOTIFY = "sharingControlNotify";
 

@@ -911,6 +911,7 @@ public abstract class SessionManager {
 			stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_SOURCEID_PARAM, "");
 			stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_TARGETID_PARAM, sharePart.getUuid());
 			stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_OPERATION_PARAM, ParticipantShareStatus.off.name());
+			stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_MODE_PARAM, 0);
 		}
 		getParticipants(sessionId).forEach(part ->{
 			if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
