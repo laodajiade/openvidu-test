@@ -16,4 +16,5 @@ public class UserDeviceDeptInfo {
     private String serialNumber;
     private String deviceName;
     private String deviceModel;
+    private String deviceVersion;
 }

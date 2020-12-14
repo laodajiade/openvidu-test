@@ -73,9 +73,9 @@ public class RpcConnection {
 	@Setter
 	private String username;
 
-	@Getter
 	@Setter
-	private String versionCode;
+	@Getter
+	private String deviceVersion;
 
 	public RpcConnection(Session session) {
 		this.session = session;
