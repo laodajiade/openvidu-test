@@ -274,6 +274,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setAbility(ability);
         rpcConnection.setFunctionality(functionality);
         rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
+        rpcConnection.setDeviceVersion(deviceVersion);
     }
 
 }

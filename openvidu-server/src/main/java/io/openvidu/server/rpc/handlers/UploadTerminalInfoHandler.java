@@ -42,6 +42,7 @@ public class UploadTerminalInfoHandler extends RpcAbstractHandler {
                 // notify
                 JsonObject params = request.getParams();
                 params.addProperty("uuid", rpcConnection.getUserUuid());
+                params.addProperty("deviceVersion", rpcConnection.getDeviceVersion());
                 Set<Participant> participants = session.getParticipants();
                 notificationService.sendBatchNotification(participants, ProtocolElements.TERMINAL_INOF_MODIFIED_NOTIFY_METHOD, params);
             } else {

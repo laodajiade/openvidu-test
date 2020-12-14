@@ -168,6 +168,7 @@ public class SessionEventsHandler {
             participantJson.addProperty("isVoiceMode", existingParticipant.getVoiceMode().equals(VoiceMode.on));
 			participantJson.addProperty("order",existingParticipant.getOrder());
 			participantJson.addProperty("pushStreamStatus",existingParticipant.getPushStreamStatus().name());
+			participantJson.addProperty("deviceVersion", rpc.getDeviceVersion());
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,

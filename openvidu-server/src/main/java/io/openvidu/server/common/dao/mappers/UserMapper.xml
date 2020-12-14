@@ -63,7 +63,8 @@
         ud.dept_name AS deptName,
         d.serial_number AS serialNumber,
         d.device_name AS deviceName,
-        d.device_model AS deviceModel
+        d.device_model AS deviceModel,
+        d.device_version as deviceVersion
     FROM
         sd_user u
     LEFT JOIN sd_user_dept sud ON u.id = sud.user_id
