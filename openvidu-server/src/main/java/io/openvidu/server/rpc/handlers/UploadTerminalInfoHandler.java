@@ -44,7 +44,7 @@ public class UploadTerminalInfoHandler extends RpcAbstractHandler {
                 params.addProperty("uuid", rpcConnection.getUserUuid());
                 params.addProperty("deviceVersion", rpcConnection.getDeviceVersion());
                 Set<Participant> participants = session.getParticipants();
-                notificationService.sendBatchNotification(participants, ProtocolElements.TERMINAL_INOF_MODIFIED_NOTIFY_METHOD, params);
+                notificationService.sendBatchNotification(participants, ProtocolElements.TERMINAL_INFO_MODIFIED_NOTIFY_METHOD, params);
             } else {
                 log.error("NOT FIND THE PARTICIPANT WHEN UPLOAD TERMINAL INFO.");
             }
