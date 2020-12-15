@@ -57,7 +57,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                         .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
+                                && !OpenViduRole.THOR.equals(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
                     tsArray.add(t);
@@ -70,7 +70,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
             accountTargets.forEach(account -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                         .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
+                                && !OpenViduRole.THOR.equals(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
                     accountArr.add(account);
