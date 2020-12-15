@@ -17,6 +17,8 @@ public class StringUtil {
 
     private static final String  passwordRegs = "^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$";
 
+    public static final String SPECIFIED_VERSION = "1.3.2";
+
     public static void assertNotEmpty(String param, String paramName) {
         if (param == null)
             throw new NullPointerException("Parameter Is Null:" + paramName);
@@ -102,4 +104,13 @@ public class StringUtil {
         return new StringBuffer().append(serialNumber).append("/").append(newFileName).toString();
 
     }
+
+    public static String checkVersionReg(String version){
+        return version.replaceAll("\\(.*\\)","").trim();
+    }
+
+    public static boolean compareVersion(String version1,String version2){
+        return version1.compareTo(version2) > 0;
+    }
+
 }

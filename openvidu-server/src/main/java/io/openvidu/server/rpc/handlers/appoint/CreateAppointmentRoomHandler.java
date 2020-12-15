@@ -15,10 +15,12 @@ import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
 import io.openvidu.server.utils.RandomRoomIdGenerator;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
@@ -66,9 +68,12 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         params.setEndTime(params.getStartTime() + (params.getDuration() * 60000));
 
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        //判断通话时长是否不足
-        if (corporation.getRemainderDuration() <= 0) {
-            return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+        String version = rpcConnection.getDeviceVersion();
+        if (!StringUtils.isEmpty(version) && StringUtil.compareVersion(StringUtil.checkVersionReg(version), StringUtil.SPECIFIED_VERSION)) {
+            //判断通话时长是否不足
+            if (corporation.getRemainderDuration() <= 0) {
+                return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+            }
         }
         // 检验容量
         params.setRoomCapacity(corporation.getCapacity());

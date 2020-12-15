@@ -93,6 +93,10 @@ public interface CacheManage {
 
     int getCorpRemainDuration(String project);
 
+    void setAdvanceCutDuration(String project,int advanceDuration);
+
+    int getAdvanceCutDuration(String project);
+
     void setCorpRemainDurationLessTenHour(String project);
 
     String getCorpRemainDurationLessTenHour(String project);

@@ -318,6 +318,22 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
+    public void setAdvanceCutDuration(String project,int advanceDuration) {
+        String key = CacheKeyConstants.CORP_ADVANCE_DURATION_PREFIX_KEY + project;
+        roomRedisTemplate.opsForValue().set(key, advanceDuration, 60, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public int getAdvanceCutDuration(String project) {
+        String key = CacheKeyConstants.CORP_ADVANCE_DURATION_PREFIX_KEY + project;
+        Object advanceDuration = roomRedisTemplate.opsForValue().get(key);
+        if (Objects.nonNull(advanceDuration)) {
+            return (int)advanceDuration;
+        }
+        return 0;
+    }
+
+    @Override
     public void setCorpRemainDurationLessTenHour(String project) {
         String key = CacheKeyConstants.CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY + project;
         tokenStringTemplate.opsForValue().set(key, project);

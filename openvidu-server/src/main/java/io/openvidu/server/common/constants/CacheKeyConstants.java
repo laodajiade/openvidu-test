@@ -46,6 +46,7 @@ public class CacheKeyConstants {
     public static final String ACCESSIN_PRIVATEID_PREFIX_KEY = "accessIn:privateId:";
 
     public static final String CORP_REMAINDER_DURATION_PREFIX_KEY = "remainder:duration:";
+    public static final String CORP_ADVANCE_DURATION_PREFIX_KEY = "advance:duration:";
     public static final String CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY = "duration:lessenhour:";
     public static final String CORP_REMAINDER_DURATION_USEDUP_PREFIX_KEY = "duration:runout:";
 
