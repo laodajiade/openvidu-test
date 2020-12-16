@@ -447,7 +447,7 @@
     and project = #{project}
     <if test="userId != null">
       and (a.user_id = #{userId}
-      <if test = "onlyCreator !=null and onlyCreator == true">
+      <if test = "onlyCreator == null or onlyCreator == false">
         or a.ruid in ( select ruid from sd_appoint_part b where b.user_id =#{userId} )
       </if>
       )
