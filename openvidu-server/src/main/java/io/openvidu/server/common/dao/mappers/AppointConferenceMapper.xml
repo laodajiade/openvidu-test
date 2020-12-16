@@ -472,7 +472,7 @@
 
   <select id="pendingAboutAppointmentAdmin" resultMap="BaseResultMap">
     select
-    `ruid`, `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, duration,`room_capacity`,`user_id`
+    <include refid="Base_Column_List"/>
     from sd_appoint_conference a where a.`status`!=2
     and project = #{project}
     <if test="startTime != null">
@@ -481,17 +481,6 @@
     <if test="endTime != null">
       and #{endTime,jdbcType=TIMESTAMP} >= a.start_time
     </if>
-    <if test="deptLimit != null and deptLimit.size > 0">
-      and user_id in (
-      select user_id from sd_user_dept where dept_id in
-      <foreach collection="deptLimit" index="index" item="item" separator="," open="(" close=")">
-        #{item,jdbcType=VARCHAR}
-      </foreach>
-      )
-    </if>
-    UNION
-    select `ruid`,  `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, 0 as duration,`room_capacity`,`user_id`
-    from sd_conference where `status`!=2 and ruid not like 'appt-%'
     <if test="deptLimit != null and deptLimit.size > 0">
       and user_id in (
       select user_id from sd_user_dept where dept_id in
