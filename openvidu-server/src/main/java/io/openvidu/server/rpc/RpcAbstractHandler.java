@@ -129,6 +129,9 @@ public abstract class RpcAbstractHandler {
     protected ConferencePartHistoryMapper conferencePartHistoryMapper;
 
     @Resource
+    protected RoleMapper roleMapper;
+
+    @Resource
     protected InviteCompensationManage inviteCompensationManage;
 
     @Resource
