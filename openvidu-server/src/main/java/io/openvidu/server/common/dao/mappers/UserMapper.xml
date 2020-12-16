@@ -304,7 +304,7 @@
     sort_number
     from sd_user_dept sud
     inner join sd_user su on sud.user_id = su.id
-    where su.type = 0
+    where (su.type = 0 or su.type = 2)
     and su.title is null
     and su.uuid <![CDATA[ <> 'administrator' ]]>
     and sud.dept_id  = #{deptId,jdbcType=BIGINT}
@@ -350,7 +350,7 @@
     su.id userId
     from sd_user_dept sud
     inner join sd_user su on sud.user_id = su.id
-    where su.type = 0
+    where (su.type = 0 or su.type = 2)
     and su.title is null
     and su.uuid <![CDATA[ <> 'administrator' ]]>
     and su.uuid in
@@ -386,7 +386,7 @@
     su.id userId
     from sd_user_dept sud
     inner join sd_user su on sud.user_id = su.id
-    where su.type = 0
+    where (su.type = 0 or su.type = 2)
     and su.title is null
     and su.uuid <![CDATA[ <> 'administrator' ]]>
     and su.id in

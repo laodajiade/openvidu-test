@@ -110,7 +110,7 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
             jsonObject.addProperty("userName", e.getUserName());
             jsonObject.addProperty("phone", e.getPhone());
             jsonObject.addProperty("type", e.getType());
-            if (e.getType().equals(0)) {
+            if (e.getType().equals(0) || e.getType().equals(2)) {
                 jsonObject.addProperty("status", cacheManage.getTerminalStatus(e.getUuid()));
             } else {
                 String deviceStatus = Objects.isNull(e.getSerialNumber()) ? null : cacheManage.getDeviceStatus(e.getSerialNumber());
