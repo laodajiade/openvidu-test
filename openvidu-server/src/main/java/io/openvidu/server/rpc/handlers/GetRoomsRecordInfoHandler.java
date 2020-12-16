@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.ConferenceRecordSearch;
 import io.openvidu.server.common.pojo.RoomRecordSummary;
+import io.openvidu.server.common.pojo.UserDept;
+import io.openvidu.server.common.pojo.UserDeptSearch;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
@@ -24,11 +26,15 @@ public class GetRoomsRecordInfoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         int pageNum,size;
+        UserDeptSearch userDeptSearch = new UserDeptSearch();
+        userDeptSearch.setUserId(rpcConnection.getUserId());
+        UserDept userDept = userDeptMapper.selectBySearchCondition(userDeptSearch);
+        Integer deptLimitRole = roleMapper.getDeptLimitByUserId(rpcConnection.getUserId());
         ConferenceRecordSearch search = ConferenceRecordSearch.builder()
                 .project(rpcConnection.getProject())
                 .size(size = getIntParam(request, "size"))
                 .pageNum(pageNum = getIntParam(request, "pageNum"))
-                .roomIds(roomManage.getSubRoomIds(getStringOptionalParam(request, "roomId"), getLongOptionalParam(request, "orgId")))
+                .roomIds(roomManage.getSubRoomIds(getStringOptionalParam(request, "roomId"), deptLimitRole == 0 ? null : userDept.getDeptId()))
                 .roomSubject(getStringOptionalParam(request, "roomSubject"))
                 .build();
 
