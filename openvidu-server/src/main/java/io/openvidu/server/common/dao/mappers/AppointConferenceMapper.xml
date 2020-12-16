@@ -442,8 +442,8 @@
 
   <select id="pendingAboutAppointment" resultMap="BaseResultMap">
     select
-    <include refid="Base_Column_List"/>
-    from sd_appoint_conference a where a.`status`!=2
+    `ruid`, `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, duration,`room_capacity`,`user_id`
+    from sd_appoint_conference a where a.`status` != 2
     and project = #{project}
     <if test="userId != null">
       and (a.user_id = #{userId}
@@ -458,12 +458,21 @@
     <if test="endTime != null">
       and #{endTime,jdbcType=TIMESTAMP} >= a.start_time
     </if>
+
+    UNION
+
+    select `ruid`,  `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, 0 as duration,`room_capacity`,`user_id`
+    from sd_conference where `status`!=2 and ruid not like 'appt-%'
+    <if test="userId != null">
+      and user_id = #{userId}
+    </if>
+
     order by start_time asc
   </select>
 
   <select id="pendingAboutAppointmentAdmin" resultMap="BaseResultMap">
     select
-    <include refid="Base_Column_List"/>
+    `ruid`, `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, duration,`room_capacity`,`user_id`
     from sd_appoint_conference a where a.`status`!=2
     and project = #{project}
     <if test="startTime != null">
@@ -472,6 +481,17 @@
     <if test="endTime != null">
       and #{endTime,jdbcType=TIMESTAMP} >= a.start_time
     </if>
+    <if test="deptLimit != null and deptLimit.size > 0">
+      and user_id in (
+      select user_id from sd_user_dept where dept_id in
+      <foreach collection="deptLimit" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=VARCHAR}
+      </foreach>
+      )
+    </if>
+    UNION
+    select `ruid`,  `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, 0 as duration,`room_capacity`,`user_id`
+    from sd_conference where `status`!=2 and ruid not like 'appt-%'
     <if test="deptLimit != null and deptLimit.size > 0">
       and user_id in (
       select user_id from sd_user_dept where dept_id in

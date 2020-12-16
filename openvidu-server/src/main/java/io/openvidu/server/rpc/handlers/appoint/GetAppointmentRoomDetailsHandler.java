@@ -215,7 +215,9 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             } else {
                 appointConfObj.addProperty("autoCall", false);
             }
-            appointConfObj.addProperty("duration", (conference.getEndTime().getTime() - conference.getStartTime().getTime()) / 60000);
+
+            Date endTime = Optional.ofNullable(conference.getEndTime()).orElse(new Date());
+            appointConfObj.addProperty("duration", (endTime.getTime() - conference.getStartTime().getTime()) / 60000);
 
 
             return appointConfObj;

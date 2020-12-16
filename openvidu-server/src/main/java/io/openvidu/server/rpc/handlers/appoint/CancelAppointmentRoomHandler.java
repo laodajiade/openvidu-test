@@ -57,7 +57,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         String admin = getStringOptionalParam(request, "admin");
 
         if (!ruid.startsWith("appt-")) {
-            return deleteConferenceHistoryHandler.doProcess(rpcConnection, request, vo);
+            return cancelGeneralConference(rpcConnection, request, vo, ruid);
         }
 
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
@@ -103,20 +103,27 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         return RespResult.ok(new JsonObject());
     }
 
-    public RespResult<?> delGeneral(RpcConnection rpcConnection, String ruid, String admin) {
+    /**
+     * 取消一般会议
+     */
+    private RespResult<?> cancelGeneralConference(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject vo, String ruid) {
         Conference conference = conferenceMapper.selectByRuid(ruid);
-
         if (conference == null) {
             return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
         }
-
-        // 权限校验
-        if (!Objects.equals(rpcConnection.getUserId(), conference.getUserId()) && !"admin".equals(admin)) {
-            return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
+        if (conference.getStatus() == ConferenceStatus.PROCESS.getStatus()) {
+            if (!conference.getModeratorUuid().equals(rpcConnection.getUserUuid())) {
+                return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
+            }
+            // 结束会议
+            Session session = sessionManager.getSession(conference.getRoomId());
+            if (session != null && session.getConference().getRuid().equals(ruid)) {
+                log.info("close session with cancel general conference ,roomId = {} and ruid = {}", conference.getRoomId(), conference.getRuid());
+                closeRoomHandler.closeRoom(rpcConnection, session);
+                return RespResult.ok(new JsonObject());
+            }
         }
-
-        conferenceMapper.deleteByRuid(ruid);
-        conferencePartHistoryMapper.deleteByRuid(ruid);
-        return RespResult.ok(new JsonObject());
+        return deleteConferenceHistoryHandler.doProcess(rpcConnection, request, vo);
     }
+
 }

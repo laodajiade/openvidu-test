@@ -30,6 +30,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -154,7 +155,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                 resp.setDesc(appointConference.getConferenceDesc());
                 resp.setModeratorUuid(appointConference.getModeratorUuid());
                 resp.setStartTime(appointConference.getStartTime().getTime() + "");
-                resp.setEndTime((appointConference.getEndTime().getTime() + ""));
+                resp.setEndTime(appointConference.getEndTime() == null ? "" : (appointConference.getEndTime().getTime() + ""));
                 resp.setDuration(appointConference.getDuration());
                 resp.setRoomCapacity(appointConference.getRoomCapacity());
                 resp.setCreatorUserId(appointConference.getUserId());
