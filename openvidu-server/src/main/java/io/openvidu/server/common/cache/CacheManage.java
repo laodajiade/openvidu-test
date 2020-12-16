@@ -112,4 +112,6 @@ public interface CacheManage {
     JsonObject getMeetingQuality(String uuid);
 
     void setMeetingQuality(String uuid,JsonObject object);
+
+    boolean checkDuplicationSendPhone(String phone, String usage);
 }

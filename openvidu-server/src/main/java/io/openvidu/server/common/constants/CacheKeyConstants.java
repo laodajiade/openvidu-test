@@ -52,6 +52,8 @@ public class CacheKeyConstants {
 
     public static final String MEETING_QUALITY_PREFIX_KEY = "meeting:quality:uuid:";
 
+    public static final String CHECK_DUPLICATION_SEND_PHONE_PREFIX_KEY = "check:duplication:phone:";
+
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
     }

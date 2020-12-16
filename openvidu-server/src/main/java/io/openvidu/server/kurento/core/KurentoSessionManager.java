@@ -1453,7 +1453,13 @@ public class KurentoSessionManager extends SessionManager {
         smsObj.addProperty("phoneNumber", adminUser.getPhone());
         smsObj.add("content", contentObj);
         smsObj.addProperty("smsType", "RecordStorage");
-        redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
+
+		if (!cacheManage.checkDuplicationSendPhone(adminUser.getPhone(), "RecordStorage")) {
+			log.info("duplication send phone msg smsObj = {}", smsObj.toString());
+			return;
+		}
+
+		redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
     }
 
     private void changeRoomRecordStatusAndNotify(Session session) {

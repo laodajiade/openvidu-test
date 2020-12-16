@@ -387,4 +387,14 @@ public class CacheManageImpl implements CacheManage {
         String key = CacheKeyConstants.MEETING_QUALITY_PREFIX_KEY + uuid;
         roomRedisTemplate.opsForValue().set(key, object.toString(), 6, TimeUnit.SECONDS);
     }
+
+    /**
+     * 避免多次发送手机短信
+     */
+    @Override
+    public boolean checkDuplicationSendPhone(String phone, String usage) {
+        String key = CacheKeyConstants.CHECK_DUPLICATION_SEND_PHONE_PREFIX_KEY + phone + ":" + usage;
+        Boolean result = tokenStringTemplate.opsForValue().setIfAbsent(key, phone, 5, TimeUnit.MINUTES);
+        return result != null && result;
+    }
 }
