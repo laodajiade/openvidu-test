@@ -75,8 +75,10 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
             // sendNotify
             sendConferenceToBeginNotify(vo, uuidSet);
         }
-        // 保存ruid和jobId关系
-        conferenceJobManage.batchInsert(list);
+        if (!list.isEmpty()) {
+            // 保存ruid和jobId关系
+            conferenceJobManage.batchInsert(list);
+        }
     }
 
     public void sendAppointmentConferenceCreatedNotify(AppointmentRoomVO vo, Set<String> uuidSet) {

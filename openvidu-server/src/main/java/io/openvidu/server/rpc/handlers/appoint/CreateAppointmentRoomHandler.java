@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -44,6 +45,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Autowired
     private RandomRoomIdGenerator randomRoomIdGenerator;
 
+    @Transactional
     @Override
     public RespResult<AppointmentRoomResp> doProcess(RpcConnection rpcConnection, Request<AppointmentRoomVO> request, AppointmentRoomVO params) {
 
