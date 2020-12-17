@@ -22,7 +22,10 @@ public enum StreamType {
         public boolean isSelfStream() {
             return false;
         }
-    };
+    },
+
+    SUPER
+    ;
 
     public boolean isSelfStream() {
         return true;
