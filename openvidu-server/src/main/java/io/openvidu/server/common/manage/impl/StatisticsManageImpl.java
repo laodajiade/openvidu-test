@@ -69,7 +69,7 @@ public class StatisticsManageImpl implements StatisticsManage {
 
         Map<String,Integer> map = new HashMap<>(2);
         int remainderDuration = cacheManage.getCorpRemainDuration(project);
-        if (remainderDuration == 0) {
+        if (remainderDuration <= 0) {
             Corporation corporation = corporationMapper.selectByCorpProject(project);
             cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
             remainderDuration = corporation.getRemainderDuration();
