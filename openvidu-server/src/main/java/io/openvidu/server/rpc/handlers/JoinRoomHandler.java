@@ -43,7 +43,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
-
+        VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
 
         try {
@@ -111,6 +111,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     if (!partInfo.isEmpty() && Objects.nonNull(session)) {
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
                             Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
+                            //记录断线时的语音模式状态
+                            voiceMode = originalPart.getVoiceMode();
                             //participant reconnect stop polling
                             if (Objects.nonNull(originalPart) && originalPart.getRole().isController()) {
                                 if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
@@ -265,6 +267,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setProject(rpcConnection.getProject());
                 participant.setMicStatus(StringUtils.isEmpty(micStatus) ? ParticipantMicStatus.on : ParticipantMicStatus.valueOf(micStatus));
                 participant.setVideoStatus(StringUtils.isEmpty(videoStatus) ? ParticipantVideoStatus.on : ParticipantVideoStatus.valueOf(videoStatus));
+                participant.setVoiceMode(voiceMode);
                 if (StringUtils.isEmpty(serialNumber)) {
                     if (UserType.register.equals(participant.getUserType()) && TerminalTypeEnum.S != rpcConnection.getTerminalType()) {
                         User user = userMapper.selectByPrimaryKey(userId);
