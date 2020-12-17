@@ -123,7 +123,7 @@ public class CorpRemainderDurationSchedule {
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationLessTenHour)) {
                             //获取企业管理员信息
                             User adminUser = userManage.getAdminUserByProject(corporation.getProject());
-                            if (!StringUtils.isEmpty(adminUser.getPhone())) {
+                            if (Objects.nonNull(adminUser) && !StringUtils.isEmpty(adminUser.getPhone())) {
                                 JsonObject smsObj = new JsonObject();
                                 JsonObject contentObj = new JsonObject();
                                 contentObj.addProperty("project", corporation.getProject());
