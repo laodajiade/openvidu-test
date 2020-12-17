@@ -102,6 +102,7 @@ public class KurentoParticipant extends Participant {
 		setApplicationContext(participant.getApplicationContext());
 		setOrder(participant.getOrder());
 		setProject(participant.getProject());
+		setVoiceMode(participant.getVoiceMode());
 
 		this.endpointConfig = endpointConfig;
 		this.openviduConfig = openviduConfig;
