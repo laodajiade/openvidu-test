@@ -44,11 +44,11 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
                         request.getId(), null, ErrorCodeEnum.DEVICE_NOT_FOUND);
                 return;
             } else {
-                rootDept = departmentMapper.selectByPrimaryKey(deviceDept.getDeptId());
+                rootDept = departmentMapper.selectRootDept(rpcConnection.getProject());
             }
         } else {
             // request not from vhd device
-            rootDept = departmentMapper.selectRootDeptByUuid(rpcConnection.getUserUuid());
+            rootDept = departmentMapper.selectRootDept(rpcConnection.getProject());
         }
 
         List<DepartmentTree> deptList = departmentMapper.selectByCorpId(rootDept.getCorpId());
@@ -67,4 +67,5 @@ public class GetDepartmentTreeHandler extends RpcAbstractHandler {
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
 
     }
+
 }
