@@ -36,7 +36,7 @@
     from sd_corporation
   </select>
 
-  <select id="listCorpExpire" resultType="io.openvidu.server.common.pojo.Corporation">
+  <select id="listCorpExpire"  resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from sd_corporation
