@@ -118,9 +118,10 @@ public class RoomManageImpl implements RoomManage {
             Corporation corporation = new Corporation();
             corporation.setRemainderDuration(remainderDuration);
             corporation.setProject(userCorpInfo.getProject());
-            int advanceCutDuration = cacheManage.getAdvanceCutDuration(userCorpInfo.getProject());
             corporationMapper.updateCorpRemainderDuration(corporation);
-            cacheManage.setCorpRemainDuration(userCorpInfo.getProject(), remainderDuration + advanceCutDuration);
+            int advanceCutDuration = cacheManage.getAdvanceCutDuration(userCorpInfo.getProject());
+            cacheManage.setCorpRemainDuration(userCorpInfo.getProject(), remainderDuration - advanceCutDuration);
+            cacheManage.delAdvanceCutDuration(userCorpInfo.getProject());
         }
         cacheManage.delPartInfo(uuid);
     }

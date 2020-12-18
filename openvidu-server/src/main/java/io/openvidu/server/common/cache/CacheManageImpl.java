@@ -1,6 +1,5 @@
 package io.openvidu.server.common.cache;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
@@ -320,7 +319,7 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public void setAdvanceCutDuration(String project,int advanceDuration) {
         String key = CacheKeyConstants.CORP_ADVANCE_DURATION_PREFIX_KEY + project;
-        roomRedisTemplate.opsForValue().set(key, advanceDuration, 60, TimeUnit.SECONDS);
+        roomRedisTemplate.opsForValue().set(key, advanceDuration);
     }
 
     @Override
@@ -331,6 +330,15 @@ public class CacheManageImpl implements CacheManage {
             return (int)advanceDuration;
         }
         return 0;
+    }
+
+    @Override
+    public void delAdvanceCutDuration(String project) {
+        String key = CacheKeyConstants.CORP_ADVANCE_DURATION_PREFIX_KEY + project;
+        Boolean exists;
+        if (Objects.nonNull(exists = tokenStringTemplate.hasKey(key)) && exists) {
+            tokenStringTemplate.delete(key);
+        }
     }
 
     @Override
