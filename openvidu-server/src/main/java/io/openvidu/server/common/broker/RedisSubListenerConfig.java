@@ -25,6 +25,7 @@ public class RedisSubListenerConfig {
         container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.DEVICE_UPGRADE_CHANNEL));
         container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.USER_DELETE_CHANNEL));
         container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.CORP_SERVICE_EXPIRED_CHANNEL));
+        container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.CORP_INFO_MODIFIED_CHANNEL));
         container.addMessageListener(listenerAdapter, new PatternTopic(BrokerChannelConstans.DEVICE_LOG_UPLOAD_CHANNEL));
         log.info("Meeting Control Center now subscribe to the redis channel ==> {}", BrokerChannelConstans.DEVICE_UPGRADE_CHANNEL);
         return container;
