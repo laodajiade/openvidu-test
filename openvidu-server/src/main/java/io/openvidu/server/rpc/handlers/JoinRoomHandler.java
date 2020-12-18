@@ -88,9 +88,17 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
+                // if participant is moderator, change his role
+                if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)
+                        && Objects.equals(conference.get(0).getModeratorUuid(), rpcConnection.getUserUuid())
+                ) {
+                    role = OpenViduRole.MODERATOR;
+                }
+
                 // verify conference password
                 if (StreamType.MAJOR.equals(streamType) && !Objects.equals(joinType, ParticipantJoinType.invited.name())
-                        && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password) && StringUtils.isEmpty(moderatorPassword)) {
+                        && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)
+                        && StringUtils.isEmpty(moderatorPassword) && OpenViduRole.MODERATOR != role) {
                     log.error("invalid room password:{}", password);
                     errCode = ErrorCodeEnum.CONFERENCE_PASSWORD_ERROR;
                     break;
@@ -228,11 +236,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
-                // random room moderator
-                if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && Objects.equals(conference.get(0).getModeratorUuid(), rpcConnection.getUserUuid())) {
-                    role = OpenViduRole.MODERATOR;
-                    clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
-                }
+                clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
 
                 clientMetadata = clientMetadataObj.toString();
 
