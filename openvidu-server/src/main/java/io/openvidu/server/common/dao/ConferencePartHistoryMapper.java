@@ -48,4 +48,6 @@ public interface ConferencePartHistoryMapper {
 
     List<ConferencePartHistory> selectProcessPartHistory(@Param("project") String project);
 
+    List<ConferencePartHistory> getConfRecordDetail(ConferencePartHistory search);
+
 }

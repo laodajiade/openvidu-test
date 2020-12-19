@@ -173,4 +173,9 @@ public class RoomManageImpl implements RoomManage {
         return StringUtils.isNotEmpty(roomId) ? Collections.singletonList(roomId) :
                 (Objects.nonNull(orgId) ? userManage.getSubUserByDeptId(orgId).stream().map(User::getUuid).collect(Collectors.toList()) : null);
     }
+
+    @Override
+    public List<ConferencePartHistory> getConfRecordDetail(ConferencePartHistory search) {
+        return conferencePartHistoryMapper.getConfRecordDetail(search);
+    }
 }

@@ -43,7 +43,8 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
         if (StringUtils.isNotEmpty(mixParam)) {
             search.setMixParam(mixParam);
         }
-        List<ConferencePartHistory> confPartHistoryList = roomManage.getConfHistoryRecordsByCondition(search);
+        //List<ConferencePartHistory> confPartHistoryList = roomManage.getConfHistoryRecordsByCondition(search);
+        List<ConferencePartHistory> confPartHistoryList = roomManage.getConfRecordDetail(search);
         if (!CollectionUtils.isEmpty(confPartHistoryList)) {
             confPartHistoryList.forEach(conferencePartHistory -> {
                 JsonObject partRecObj = new JsonObject();

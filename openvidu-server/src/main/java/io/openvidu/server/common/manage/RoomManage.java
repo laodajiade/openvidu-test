@@ -31,4 +31,6 @@ public interface RoomManage {
     void storeConcurrentNumber(Conference conference);
 
     List<String> getSubRoomIds(String roomId, Long orgId);
+
+    List<ConferencePartHistory> getConfRecordDetail(ConferencePartHistory search);
 }
