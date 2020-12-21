@@ -157,7 +157,7 @@ public class KurentoSessionManager extends SessionManager {
 			existingParticipants = getParticipants(sessionId);
 			participant.setApplicationContext(applicationContext);
 			//set the part order
-			kSession.setMajorPartsOrder(participant);
+			kSession.setMajorPartsOrder(participant, rpcNotificationService);
 			// 第一个入会者是主持人，所有权限都打开
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
