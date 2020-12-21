@@ -100,7 +100,7 @@ public class KurentoSessionManager extends SessionManager {
 	protected TimerManager timerManager;
 
 	@Override
-	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
+	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId, Boolean isReconnected) {
 		Set<Participant> existingParticipants = null;
 		try {
 
@@ -162,8 +162,8 @@ public class KurentoSessionManager extends SessionManager {
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
 				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-					participant.setMicStatus(ParticipantMicStatus.on);
-					participant.setVideoStatus(ParticipantVideoStatus.on);
+					participant.setMicStatus(isReconnected ? participant.getMicStatus() : ParticipantMicStatus.on);
+					participant.setVideoStatus(isReconnected ? participant.getVideoStatus() : ParticipantVideoStatus.on);
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
 				} else {
 					participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));

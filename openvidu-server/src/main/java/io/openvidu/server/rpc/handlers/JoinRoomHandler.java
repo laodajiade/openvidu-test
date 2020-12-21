@@ -9,7 +9,6 @@ import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
@@ -145,6 +144,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM))) {
                             videoStatus = partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM).toString();
                         }
+                        isReconnected = true;
                         String roomId = partInfo.get("roomId").toString();
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
                                 !sessionId.equals(roomId) ? Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)
@@ -300,7 +300,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 rpcConnection.setSessionId(sessionId);
 
-                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId(), isReconnected);
             } while (false);
 
             rpcConnection.setReconnected(false);
