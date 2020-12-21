@@ -433,6 +433,18 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
+
+	public Set<Participant> getMajorPartExcludeModeratorConnect() {
+		checkClosed();
+		return this.participants.values().stream()
+				.map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant)
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole())
+						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
+						&& !Objects.equals(OpenViduRole.ONLY_SHARE, participant.getRole()))
+				.collect(Collectors.toSet());
+	}
+
 	public Set<Participant> getMajorPartAllOrSpecificConnect(String userUuid) {
 		checkClosed();
 		return org.apache.commons.lang.StringUtils.isEmpty(userUuid) ? this.participants.values().stream()
@@ -623,7 +635,7 @@ public class Session implements SessionInterface {
     	return false;
 	}
 
-	public void setMajorPartsOrder (Participant participant) {
+	public void setMajorPartsOrder (Participant participant, RpcNotificationService rpcNotificationService) {
 
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			int order;
@@ -631,6 +643,22 @@ public class Session implements SessionInterface {
 				order = roomNormalOrder.get() + onlyShareOrder.incrementAndGet();
 			} else {
 				order = roomNormalOrder.incrementAndGet();
+				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+					order = 0;
+					Set<Participant> participants = getMajorPartExcludeModeratorConnect();
+					if (!CollectionUtils.isEmpty(participants)) {
+						for (Participant p : participants) {
+							p.setOrder(p.getOrder() + 1);
+							log.info("moderator reconnect or join again major participant order change, order = {}", p.getOrder());
+							// 推送流变订阅流
+							if (p.getOrder() == openviduConfig.getSfuPublisherSizeLimit() && p.getRole() == OpenViduRole.PUBLISHER) {
+								log.info("moderator reconnect or join again participant:{} current order:{} and role set {}", p.getUuid(), p.getOrder(), OpenViduRole.SUBSCRIBER);
+								p.setRole(OpenViduRole.SUBSCRIBER);
+								downWallNotifyPartOrderOrRoleChanged(p, true, rpcNotificationService);
+							}
+						}
+					}
+				}
 				// 如果有屏幕入会，则位置向后顺移
 				if (onlyShareOrder.get() > 0) {
 					Set<Participant> participants = getMajorPartEachConnect();
@@ -710,6 +738,26 @@ public class Session implements SessionInterface {
 			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged, notificationService);
 		}
 	}
+
+	private void downWallNotifyPartOrderOrRoleChanged(Participant participant, boolean roleChanged, RpcNotificationService notificationService) {
+		Set<Participant> participants = getMajorPartEachIncludeThorConnect();
+		// get part order info in session
+		JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
+
+		JsonArray pubToSubChangedParam = roleChanged ?
+				getPartRoleChangedNotifyParamArr(participant, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER) : null;
+		participants.forEach(p -> {
+			// send part order in session changed notification
+			notificationService.sendNotification(p.getParticipantPrivateId(),
+					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
+			if (roleChanged) {
+				// send part role changed notification
+				notificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, pubToSubChangedParam);
+			}
+		});
+	}
+
 
 	private void notifyPartOrderOrRoleChanged(Participant sub2PubPart, boolean roleChanged, RpcNotificationService notificationService) {
 		Set<Participant> participants = getMajorPartEachIncludeThorConnect();
