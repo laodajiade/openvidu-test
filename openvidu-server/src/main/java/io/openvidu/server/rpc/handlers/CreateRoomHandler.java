@@ -65,6 +65,11 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         String roomIdType = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal");
 
+        // 解决端上的可能会将非预约会议的ruid当做预约会议来创建，所以特殊处理一下
+        if (!StringUtils.isEmpty(ruid) && !ruid.contains("appt-")) {
+            ruid = "";
+        }
+
         if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random.name().equals(roomIdType) || StringUtils.isEmpty(sessionId))) {
             sessionId = randomRoomIdGenerator.offerRoomId();
         }
@@ -215,7 +220,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
                 List<User> users = conferencePartHistoryMapper.selectUserByRuid(appt.getRuid());
 
-                List<String> targets = users.stream().map(User::getUuid).collect(Collectors.toList());
+                List<String> targets = users.stream().filter(user -> !appt.getModeratorUuid().equals(user.getUuid()))
+                        .map(User::getUuid).collect(Collectors.toList());
                 log.info("invite participant in create room, targets = {}", targets);
                 inviteParticipantHandler.inviteOnline(targets, params);
             } else {

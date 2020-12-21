@@ -9,7 +9,6 @@ import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
@@ -116,7 +115,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     Session session = sessionManager.getSession(sessionId);
-                    if (!partInfo.isEmpty() && Objects.nonNull(session)) {
+                    if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(partInfo.get("roomId").toString())) {
+                        log.info("remove previous participant if reconnect " + partInfo.toString());
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
                             Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
                             //记录断线时的语音模式状态
@@ -147,8 +147,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         }
                         String roomId = partInfo.get("roomId").toString();
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
-                                !sessionId.equals(roomId) ? Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)
-                                        : Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                                Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                    }
+                    if (!partInfo.isEmpty() && !sessionId.equals(partInfo.get("roomId").toString())) {
+                        log.info("参会者加入不同的会议室，踢出上个会议室,{},{},{}", partInfo.get("roomId").toString(), rpcConnection.getUserUuid(), sessionId);
+                        sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), rpcConnection.getUserUuid(),
+                                Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
                     }
                 }
 
