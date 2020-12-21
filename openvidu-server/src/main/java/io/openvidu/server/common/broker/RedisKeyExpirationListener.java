@@ -44,7 +44,7 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
             RpcConnection rpcConnection = notificationService.getRpcConnection(privateId);
             if (Objects.nonNull(rpcConnection)) {
                 sessionManager.evictParticipantWhenDisconnect(rpcConnection,
-                        Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                        Arrays.asList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
             } else {
                 log.info("RpcConnection:{} already been closed.", privateId);
             }
