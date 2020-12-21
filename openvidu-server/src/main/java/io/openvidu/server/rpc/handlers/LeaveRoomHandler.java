@@ -15,7 +15,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author geedow
@@ -44,8 +47,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     if (!partInfo.isEmpty()) {
-                        sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(),
-                                rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
+                        sessionManager.evictParticipantByUUID(sessionId,
+                                rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
                     }
                 }
 
