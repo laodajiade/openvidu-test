@@ -119,24 +119,29 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         log.info("remove previous participant if reconnect " + partInfo.toString());
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
                             Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
-                            //记录断线时的语音模式状态
-                            voiceMode = originalPart.getVoiceMode();
-                            //participant reconnect stop polling
-                            if (Objects.nonNull(originalPart) && originalPart.getRole().isController()) {
-                                if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
-                                    SessionPreset sessionPreset = session.getPresetInfo();
-                                    sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-                                    timerManager.stopPollingCompensation(sessionId);
-                                    //send stop polling notify
-                                    JsonObject notifyParam = new JsonObject();
-                                    notifyParam.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, sessionId);
-                                    notificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
-                                            ProtocolElements.STOP_POLLING_NODIFY_METHOD, notifyParam);
+                            if (originalPart != null) {
+                                //记录断线时的语音模式状态
+                                voiceMode = originalPart.getVoiceMode();
+                                //participant reconnect stop polling
+                                if (Objects.nonNull(originalPart) && originalPart.getRole().isController()) {
+                                    if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+                                        SessionPreset sessionPreset = session.getPresetInfo();
+                                        sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+                                        timerManager.stopPollingCompensation(sessionId);
+                                        //send stop polling notify
+                                        JsonObject notifyParam = new JsonObject();
+                                        notifyParam.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, sessionId);
+                                        notificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
+                                                ProtocolElements.STOP_POLLING_NODIFY_METHOD, notifyParam);
+                                    }
                                 }
+
+                                //save previous order if reconnect
+                                sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
+                            }else{
+                                log.warn("reconnect warn,because originalPart is null"); // todo yy 重点监听下这个日志输出,按流程不应该会是null
                             }
 
-                            //save previous order if reconnect
-                            sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
                         }
                         //记录与会者断线前的音视频状态
                         if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_MICSTATUS_PARAM))) {
