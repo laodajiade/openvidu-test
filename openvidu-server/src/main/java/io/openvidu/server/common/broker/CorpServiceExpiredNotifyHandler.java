@@ -44,6 +44,7 @@ public class CorpServiceExpiredNotifyHandler {
         params.addProperty("project", corporation.getProject());
         params.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(), DateUtil.DEFAULT_YEAR_MONTH_DAY));
         params.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
+
         int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
         int remainderHour = remainderDuration/60;
         int remainderMinute = remainderDuration%60;

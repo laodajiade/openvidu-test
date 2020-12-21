@@ -190,15 +190,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         }
                     }
                 }
-                String version = rpcConnection.getDeviceVersion();
-                if (!StringUtils.isEmpty(version) && StringUtil.compareVersion(StringUtil.checkVersionReg(version), StringUtil.SPECIFIED_VERSION)) {
-                    //判断通话时长是否不足
-                    Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-                    if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
-                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                                null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-                        return;
-                    }
+                //判断通话时长是否不足
+                Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+                if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+                    notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                            null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+                    return;
                 }
 
 

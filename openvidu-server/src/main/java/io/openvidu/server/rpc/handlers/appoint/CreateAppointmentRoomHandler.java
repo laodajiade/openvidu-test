@@ -70,12 +70,9 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         params.setEndTime(params.getStartTime() + (params.getDuration() * 60000));
 
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        String version = rpcConnection.getDeviceVersion();
-        if (!StringUtils.isEmpty(version) && StringUtil.compareVersion(StringUtil.checkVersionReg(version), StringUtil.SPECIFIED_VERSION)) {
-            //判断通话时长是否不足
-            if (corporation.getRemainderDuration() <= 0) {
-                return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-            }
+        //判断通话时长是否不足
+        if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+            return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
         }
         // 检验容量
         params.setRoomCapacity(corporation.getCapacity());

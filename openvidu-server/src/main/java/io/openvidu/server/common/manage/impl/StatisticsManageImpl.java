@@ -19,7 +19,6 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author chosongi
@@ -82,14 +81,16 @@ public class StatisticsManageImpl implements StatisticsManage {
             for (ConferencePartHistory conferencePartHistory : conferencePartHistories) {
                 totalUsedDuration ++;
             }
-            cacheManage.setAdvanceCutDuration(project, totalUsedDuration);
             int remainderTotalDuration = remainderDuration - totalUsedDuration;
-            log.info("在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}",totalUsedDuration,remainderDuration);
+            log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}",project, totalUsedDuration, remainderDuration);
             int remainderHour = remainderTotalDuration/60;
             int remainderMinute = remainderTotalDuration%60;
             cacheManage.setCorpRemainDuration(project,remainderTotalDuration);
             map.put("remainderHour",remainderHour);
             map.put("remainderMinute",remainderMinute);
+        } else {
+            Corporation corporation = corporationMapper.selectByCorpProject(project);
+            cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
         }
         return map;
     }

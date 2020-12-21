@@ -113,15 +113,15 @@ public class RoomManageImpl implements RoomManage {
         update.setDuration(duration == 0 ? 1 : duration);
         conferencePartHistoryMapper.updatePartHistroy(update);
         UserCorpInfo userCorpInfo = corporationMapper.getUserCorpInfo(uuid);
-        if (Objects.nonNull(userCorpInfo.getRemainderDuration())) {
+        if (Objects.nonNull(userCorpInfo)) {
             int remainderDuration = userCorpInfo.getRemainderDuration() - (duration == 0 ? 1 : duration);
             Corporation corporation = new Corporation();
             corporation.setRemainderDuration(remainderDuration);
             corporation.setProject(userCorpInfo.getProject());
             corporationMapper.updateCorpRemainderDuration(corporation);
-            int advanceCutDuration = cacheManage.getAdvanceCutDuration(userCorpInfo.getProject());
-            cacheManage.setCorpRemainDuration(userCorpInfo.getProject(), remainderDuration - advanceCutDuration);
-            cacheManage.delAdvanceCutDuration(userCorpInfo.getProject());
+            if (duration == 0) {
+                cacheManage.setCorpRemainDuration(userCorpInfo.getProject(), cacheManage.getCorpRemainDuration(userCorpInfo.getProject()) - 1);
+            }
         }
         cacheManage.delPartInfo(uuid);
     }
