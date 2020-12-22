@@ -115,7 +115,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     Session session = sessionManager.getSession(sessionId);
-                    if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(partInfo.get("roomId").toString())) {
+                    String roomId = Objects.isNull(partInfo.get("roomId")) ? null : partInfo.get("roomId").toString();
+                    if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(roomId)) {
                         log.info("remove previous participant if reconnect " + partInfo.toString());
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
                             Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
@@ -151,13 +152,14 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             videoStatus = partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM).toString();
                         }
                         isReconnected = true;
-                        String roomId = partInfo.get("roomId").toString();
+
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
                                 Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
                     }
-                    if (!partInfo.isEmpty() && !sessionId.equals(partInfo.get("roomId").toString())) {
-                        log.info("参会者加入不同的会议室，踢出上个会议室,{},{},{}", partInfo.get("roomId").toString(), rpcConnection.getUserUuid(), sessionId);
-                        sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), rpcConnection.getUserUuid(),
+
+                    if (!partInfo.isEmpty() && Objects.nonNull(roomId) && !sessionId.equals(roomId)) {
+                        log.info("参会者加入不同的会议室，踢出上个会议室,{},{},{}", roomId, rpcConnection.getUserUuid(), sessionId);
+                        sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
                                 Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
                     }
                 }
