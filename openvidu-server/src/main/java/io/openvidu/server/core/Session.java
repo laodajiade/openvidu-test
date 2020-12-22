@@ -834,7 +834,7 @@ public class Session implements SessionInterface {
 									targetIds.add(participant.getUuid());
 									audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM,thorParticipant.getSessionId());
 									audioParams.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM,thorParticipant.getUuid());
-									audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"on");
+									audioParams.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM,"off");
 									audioParams.add(ProtocolElements.SET_VIDEO_TARGETS_PARAM, targetIds);
 									getParticipants().forEach(part -> {
 										if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
