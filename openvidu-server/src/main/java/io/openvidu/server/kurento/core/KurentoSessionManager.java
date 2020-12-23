@@ -1442,30 +1442,34 @@ public class KurentoSessionManager extends SessionManager {
                 .forEach(participant ->
                         rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
 
-        // send sms to admin user
-        String project = session.getConference().getProject();
-        User adminUser = userManage.getAdminUserByProject(project);
-        if (StringUtils.isEmpty(adminUser.getPhone())) {
-            return;
-        }
+		sendChnMsg(session, "RecordStorage");
+	}
 
-        JsonObject smsObj = new JsonObject();
-        JsonObject contentObj = new JsonObject();
-        contentObj.addProperty("project", project);
-
-        smsObj.addProperty("phoneNumber", adminUser.getPhone());
-        smsObj.add("content", contentObj);
-        smsObj.addProperty("smsType", "RecordStorage");
-
-		if (!cacheManage.checkDuplicationSendPhone(adminUser.getPhone(), "RecordStorage")) {
-			log.info("duplication send phone msg smsObj = {}", smsObj.toString());
+	private void sendChnMsg(Session session, String usage) {
+		// send sms to admin user
+		String project = session.getConference().getProject();
+		User adminUser = userManage.getAdminUserByProject(project);
+		if (StringUtils.isEmpty(adminUser.getPhone())) {
 			return;
 		}
 
-		redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
-    }
+		JsonObject smsObj = new JsonObject();
+		JsonObject contentObj = new JsonObject();
+		contentObj.addProperty("project", project);
 
-    private void changeRoomRecordStatusAndNotify(Session session) {
+		smsObj.addProperty("phoneNumber", adminUser.getPhone());
+		smsObj.add("content", contentObj);
+		smsObj.addProperty("smsType", usage);
+
+		if (!cacheManage.checkDuplicationSendPhone(adminUser.getPhone(), usage)) {
+			log.info("duplication send phone msg smsObj = {}", smsObj.toString());
+			return;
+		}
+		log.info("send phone msg smsObj = {}", smsObj.toString());
+		redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
+	}
+
+	private void changeRoomRecordStatusAndNotify(Session session) {
         if (session.sessionAllowedToStopRecording()) {
             JsonObject notify = new JsonObject();
             notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_MODERATOR);
@@ -1491,6 +1495,7 @@ public class KurentoSessionManager extends SessionManager {
         } else {
             log.warn("Fail to stop the record and ruid:{}", session.getRuid());
         }
+		sendChnMsg(session, "StorageFillIn");
     }
 
 }

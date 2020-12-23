@@ -11,10 +11,13 @@
     <result column="recording_capacity" jdbcType="INTEGER" property="recordingCapacity" />
     <result column="activation_date" jdbcType="DATE" property="activationDate" />
     <result column="expire_date" jdbcType="DATE" property="expireDate" />
+    <result column="recording_activation_date" jdbcType="DATE" property="recordingActivationDate" />
+    <result column="recording_expire_date" jdbcType="DATE" property="recordingExpireDate" />
     <result column="remainder_duration" jdbcType="INTEGER" property="remainderDuration" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, corp_name, project, create_time, update_time, capacity, recording_capacity, activation_date, expire_date, remainder_duration
+    id, corp_name, project, create_time, update_time, capacity, recording_capacity, activation_date, expire_date, remainder_duration,
+    recording_activation_date, recording_expire_date
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select

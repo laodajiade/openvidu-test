@@ -8,6 +8,7 @@ import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +33,8 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     private static final long lowerLimit = 20 * 1024 * 1024;
 
     private static final long upperLimit = 100 * 1024 * 1024;
+
+    protected static final long ONE_DAY_MILLIS = 24 * 60 * 60 * 1000;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -72,6 +76,14 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         if (!participant.getRole().isController()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
+        // 录制服务是否启用（在有效期内）
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        if ((corporation.getRecordingExpireDate().getTime() + ONE_DAY_MILLIS) < System.currentTimeMillis()) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.RECORD_SERVICE_INVALID);
             return;
         }
 

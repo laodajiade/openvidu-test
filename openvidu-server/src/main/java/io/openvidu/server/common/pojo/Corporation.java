@@ -27,5 +27,11 @@ public class Corporation {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date expireDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date recordingActivationDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date recordingExpireDate;
+
     private Integer remainderDuration;
 }
