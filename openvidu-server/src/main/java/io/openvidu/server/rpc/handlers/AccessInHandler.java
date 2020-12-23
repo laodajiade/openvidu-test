@@ -12,17 +12,16 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.LocalDateUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -214,27 +213,34 @@ public class AccessInHandler extends RpcAbstractHandler {
                             thorPart.getParticipantPrivateId(), thorPart.getRole().name(), thorPart.getUserId());
                     return ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
                 }
+            } else {
+                return dealWithoutThorOrHdcNotInRoom(userUuid, forceLogin, notificationService, rpcConnection);
             }
         } else {    // HDC terminal not in room
-            RpcConnection preLoginThorConnect = notificationService.getRpcConnections().stream()
-                    .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection)
-                            && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
-                            && Objects.equals(userUuid, rpcConn.getUserUuid()))
-                    .max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
-
-            if (Objects.nonNull(preLoginThorConnect)) {
-                if (forceLogin) {
-                    notificationService.sendNotification(preLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
-                    leaveRoomAfterConnClosed(preLoginThorConnect.getParticipantPrivateId(), EndReason.sessionClosedByServer);
-                    notificationService.closeRpcSession(preLoginThorConnect.getParticipantPrivateId());
-                } else {
-                    log.info("preLoginThorConnect privateId:{}, uuid:{}, accessType:{}",
-                            preLoginThorConnect.getParticipantPrivateId(), preLoginThorConnect.getUserUuid(), preLoginThorConnect.getAccessType().name());
-                    return ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
-                }
-            }
+            return dealWithoutThorOrHdcNotInRoom(userUuid, forceLogin, notificationService, rpcConnection);
         }
 
+        return ErrorCodeEnum.SUCCESS;
+    }
+
+    private ErrorCodeEnum dealWithoutThorOrHdcNotInRoom(String userUuid, Boolean forceLogin, RpcNotificationService notificationService, RpcConnection rpcConnection) {
+        RpcConnection preLoginThorConnect = notificationService.getRpcConnections().stream()
+                .filter(rpcConn -> !Objects.equals(rpcConn, rpcConnection)
+                        && Objects.equals(AccessTypeEnum.web, rpcConn.getAccessType())
+                        && Objects.equals(userUuid, rpcConn.getUserUuid()))
+                .max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
+
+        if (Objects.nonNull(preLoginThorConnect)) {
+            if (forceLogin) {
+                notificationService.sendNotification(preLoginThorConnect.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                leaveRoomAfterConnClosed(preLoginThorConnect.getParticipantPrivateId(), EndReason.sessionClosedByServer);
+                notificationService.closeRpcSession(preLoginThorConnect.getParticipantPrivateId());
+            } else {
+                log.info("preLoginThorConnect privateId:{}, uuid:{}, accessType:{}",
+                        preLoginThorConnect.getParticipantPrivateId(), preLoginThorConnect.getUserUuid(), preLoginThorConnect.getAccessType().name());
+                return ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+            }
+        }
         return ErrorCodeEnum.SUCCESS;
     }
 
