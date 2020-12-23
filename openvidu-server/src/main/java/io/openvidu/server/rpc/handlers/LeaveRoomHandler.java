@@ -104,12 +104,12 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         SessionPreset preset = session.getPresetInfo();
         if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && !OpenViduRole.MODERATOR.equals(participant.getRole())) {
             //获取当前轮询信息
-            TimerManager.PollingCompensationScheduler pollingCompensationScheduler = timerManager.getPollingCompensationScheduler(sessionId);
-            int pollingOrder = pollingCompensationScheduler.getOrder();
-            int index = pollingCompensationScheduler.getIndex();
+            Map<String,Integer> map = timerManager.getPollingCompensationScheduler(sessionId);
+            int pollingOrder = map.get("order");
+            int index = map.get("index");
             if (participant.getOrder() == pollingOrder) {
                 timerManager.leaveRoomStopPolling(sessionId);
-                timerManager.startPollingCompensationWhenLeaveRoom(sessionId, preset.getPollingIntervalTime(), index);
+                timerManager.startPollingCompensation(sessionId, preset.getPollingIntervalTime(), index);
             }
         } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && OpenViduRole.MODERATOR.equals(participant.getRole())) {
             //close room stopPolling

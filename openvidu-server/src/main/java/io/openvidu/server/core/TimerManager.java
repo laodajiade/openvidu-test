@@ -12,7 +12,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,23 +39,15 @@ public class TimerManager {
     private static ConcurrentHashMap<String, PollingCompensationScheduler> map = new ConcurrentHashMap<>();
 
 
-    public void startPollingCompensation(String roomId, int intervalTime) {
+    public void startPollingCompensation(String roomId, int intervalTime, int index) {
         map.computeIfAbsent(roomId, accountKey -> {
-            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, 0);
+            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, index);
             scheduler.startPollingTask();
             log.info("start polling in room:{},intervalTime:{}", roomId, intervalTime);
             return scheduler;
         });
     }
 
-    public void startPollingCompensationWhenLeaveRoom(String roomId, int intervalTime, int index) {
-        map.computeIfAbsent(roomId, accountKey -> {
-            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, index);
-            scheduler.startPollingTask();
-            log.info("participant leaveRoom start polling again in room:{},intervalTime:{}", roomId, intervalTime);
-            return scheduler;
-        });
-    }
 
     public void stopPollingCompensation(String roomId) {
         PollingCompensationScheduler scheduler = map.remove(roomId);
@@ -67,16 +61,20 @@ public class TimerManager {
         PollingCompensationScheduler scheduler = map.remove(roomId);
         if (Objects.nonNull(scheduler)) {
             log.info("leaveRoom stop polling Task roomId:{}", roomId);
-            scheduler.leaveRoomDisable();
+            scheduler.disable();
         }
     }
 
-    public PollingCompensationScheduler getPollingCompensationScheduler(String roomId) {
-        return map.remove(roomId);
+    public Map<String,Integer> getPollingCompensationScheduler(String roomId) {
+        PollingCompensationScheduler scheduler = map.remove(roomId);
+        Map<String,Integer> schedulerMap = new HashMap<>(2);
+        schedulerMap.put("index",scheduler.getIndex());
+        schedulerMap.put("order",scheduler.getOrder());
+        return schedulerMap;
     }
 
 
-    public class PollingCompensationScheduler{
+    class PollingCompensationScheduler{
         private int index;
         private int first = 0;
         private String roomId;
@@ -177,14 +175,7 @@ public class TimerManager {
         void disable() {
             if (pollingTask != null) {
                 pollingTask.cancel(false);
-                index = 0;
                 first = 0;
-            }
-        }
-
-        void leaveRoomDisable() {
-            if (pollingTask != null) {
-                pollingTask.cancel(false);
             }
         }
     }

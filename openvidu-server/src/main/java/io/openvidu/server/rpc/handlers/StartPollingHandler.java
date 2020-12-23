@@ -58,7 +58,7 @@ public class StartPollingHandler extends RpcAbstractHandler {
         }
         preset.setPollingStatusInRoom(SessionPresetEnum.on);
         preset.setPollingIntervalTime(Integer.valueOf(time));
-        timerManager.startPollingCompensation(roomId, Integer.parseInt(time));
+        timerManager.startPollingCompensation(roomId, Integer.parseInt(time), 0);
         //send notify
         session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                 ProtocolElements.START_POLLING_NOTIFY_METHOD, request.getParams()));
