@@ -39,9 +39,18 @@ public class TimerManager {
 
     public void startPollingCompensation(String roomId, int intervalTime) {
         map.computeIfAbsent(roomId, accountKey -> {
-            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime);
+            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, 0);
             scheduler.startPollingTask();
             log.info("start polling in room:{},intervalTime:{}", roomId, intervalTime);
+            return scheduler;
+        });
+    }
+
+    public void startPollingCompensationWhenLeaveRoom(String roomId, int intervalTime, int index) {
+        map.computeIfAbsent(roomId, accountKey -> {
+            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, index);
+            scheduler.startPollingTask();
+            log.info("participant leaveRoom start polling again in room:{},intervalTime:{}", roomId, intervalTime);
             return scheduler;
         });
     }
@@ -54,12 +63,41 @@ public class TimerManager {
         }
     }
 
+    public void leaveRoomStopPolling(String roomId) {
+        PollingCompensationScheduler scheduler = map.remove(roomId);
+        if (Objects.nonNull(scheduler)) {
+            log.info("leaveRoom stop polling Task roomId:{}", roomId);
+            scheduler.leaveRoomDisable();
+        }
+    }
 
-    class PollingCompensationScheduler{
-        private int index = 0;
+    public PollingCompensationScheduler getPollingCompensationScheduler(String roomId) {
+        return map.remove(roomId);
+    }
+
+
+    public class PollingCompensationScheduler{
+        private int index;
         private int first = 0;
         private String roomId;
         private int intervalTime;
+        private int order;
+
+        public int getOrder() {
+            return order;
+        }
+
+        public void setOrder(int order) {
+            this.order = order;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
 
         public int getIntervalTime(int intervalTime){
             if (intervalTime < 10 || intervalTime > 60) {
@@ -68,9 +106,10 @@ public class TimerManager {
             return intervalTime;
         }
 
-        public PollingCompensationScheduler(String roomId, int intervalTime){
+        public PollingCompensationScheduler(String roomId, int intervalTime, int index){
             this.roomId = roomId;
             this.intervalTime = intervalTime;
+            this.index = index;
         }
 
         private ScheduledFuture<?> pollingTask;
@@ -107,12 +146,13 @@ public class TimerManager {
                 JsonObject jsonCheckParam = new JsonObject();
                 jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
                 if (participant.isStreaming()) {
+                    setOrder(participant.getOrder());
                     jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, true);
                 } else {
                     jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, false);
                 }
 
-                log.info("polling check part:{} the index:{}", participant.getParticipantPublicId(), index);
+                log.info("roomId:{} polling check part:{} the index:{}", session.getSessionId(), participant.getParticipantPublicId(), index);
                 session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.POLLING_CHECK_NOTIFY_METHOD, jsonCheckParam));
 
@@ -121,7 +161,7 @@ public class TimerManager {
                 if (notifyIndex > participants.size() - 1) {
                     notifyIndex = 0;
                 }
-                log.info("advance notify next part:{} polling to the index:{}",participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
+                log.info("roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
                 JsonObject nextNotifyParam = new JsonObject();
                 nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getParticipantPublicId());
                 session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
@@ -139,6 +179,12 @@ public class TimerManager {
                 pollingTask.cancel(false);
                 index = 0;
                 first = 0;
+            }
+        }
+
+        void leaveRoomDisable() {
+            if (pollingTask != null) {
+                pollingTask.cancel(false);
             }
         }
     }
