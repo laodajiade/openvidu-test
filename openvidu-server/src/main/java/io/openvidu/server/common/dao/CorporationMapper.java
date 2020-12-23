@@ -28,6 +28,8 @@ public interface CorporationMapper {
 
     List<Corporation> listCorpExpire(@Param("expire") String expire);
 
+    List<Corporation> listByCorpRecordExpireDay(@Param("expire") String expire);
+
     List<Corporation> selectAllCorp();
 
     int updateCorpRemainderDuration(Corporation record);

@@ -271,4 +271,20 @@
       #{item,jdbcType=BIGINT}
     </foreach>
   </select>
+
+  <select id="selectByProject" resultType="io.openvidu.server.common.pojo.ConferenceRecordInfo">
+    SELECT
+    cri.id,
+    cri.ruid,
+    cri.record_name AS recordName,
+    cri.record_size AS recordSize,
+    cri.start_time AS startTime,
+    cri.end_time AS endTime,
+    cri.record_url AS recordUrl,
+    cr.`status` AS finishedStatus
+    FROM
+    sd_conference_record_info cri
+    INNER JOIN sd_conference_record cr ON cr.ruid = cri.ruid
+    where cr.project = #{project}
+  </select>
 </mapper>

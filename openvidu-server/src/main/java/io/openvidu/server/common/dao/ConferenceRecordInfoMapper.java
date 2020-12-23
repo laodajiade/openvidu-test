@@ -29,4 +29,5 @@ public interface ConferenceRecordInfoMapper {
 
     List<ConferenceRecordInfo> selectByIds(List<Long> ids);
 
+    List<ConferenceRecordInfo> selectByProject(String project);
 }

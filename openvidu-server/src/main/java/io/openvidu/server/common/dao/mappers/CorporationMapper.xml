@@ -46,6 +46,13 @@
     where #{expire} > expire_date
   </select>
 
+  <select id="listByCorpRecordExpireDay" resultType="io.openvidu.server.common.pojo.Corporation">
+    select
+    <include refid="Base_Column_List" />
+    from sd_corporation
+    where #{expire} = recording_expire_date
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from sd_corporation
     where id = #{id,jdbcType=BIGINT}
