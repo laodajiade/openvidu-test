@@ -61,7 +61,7 @@ public class TimerManager {
         PollingCompensationScheduler scheduler = map.remove(roomId);
         if (Objects.nonNull(scheduler)) {
             log.info("leaveRoom stop polling Task roomId:{}", roomId);
-            scheduler.disable();
+            scheduler.leaveRoomDisable();
         }
     }
 
@@ -176,6 +176,12 @@ public class TimerManager {
             if (pollingTask != null) {
                 pollingTask.cancel(false);
                 first = 0;
+            }
+        }
+
+        void leaveRoomDisable() {
+            if (pollingTask != null) {
+                pollingTask.cancel(false);
             }
         }
     }

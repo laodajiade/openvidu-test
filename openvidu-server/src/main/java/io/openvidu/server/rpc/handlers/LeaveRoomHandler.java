@@ -102,7 +102,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
         //判断轮询是否开启
         SessionPreset preset = session.getPresetInfo();
-        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && !OpenViduRole.MODERATOR.equals(participant.getRole())) {
+        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.MODERATOR.equals(participant.getRole()) ) {
             //获取当前轮询信息
             Map<String,Integer> map = timerManager.getPollingCompensationScheduler(sessionId);
             int pollingOrder = map.get("order");

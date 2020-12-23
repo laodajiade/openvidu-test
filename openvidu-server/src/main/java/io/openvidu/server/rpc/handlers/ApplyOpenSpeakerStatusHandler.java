@@ -34,8 +34,11 @@ public class ApplyOpenSpeakerStatusHandler extends RpcAbstractHandler {
         }
         JsonObject notifyObj = request.getParams().deepCopy();
         notifyObj.addProperty(ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_USERNAME_PARAM,session.getParticipantByUUID(sourceId).getUsername());
-        this.notificationService.sendNotification(session.getModeratorOrThorPart().getParticipantPrivateId(),
+        this.notificationService.sendNotification(session.getThorPart().getParticipantPrivateId(),
                 ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD, notifyObj);
+        this.notificationService.sendNotification(session.getModeratorPart().getParticipantPrivateId(),
+                ProtocolElements.APPLY_OPEN_SPEAKER_STATUS_METHOD, notifyObj);
+
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

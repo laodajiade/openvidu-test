@@ -39,4 +39,6 @@ public class ConferencePartHistory {
     private String mixParam;
 
     private Integer onlyShare;
+
+    private String phone;
 }

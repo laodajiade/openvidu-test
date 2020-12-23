@@ -49,6 +49,7 @@ public class GetMeetingRecordDetailHandler extends RpcAbstractHandler {
             confPartHistoryList.forEach(conferencePartHistory -> {
                 JsonObject partRecObj = new JsonObject();
                 partRecObj.addProperty("account", conferencePartHistory.getUuid());
+                partRecObj.addProperty("phone", conferencePartHistory.getPhone());
                 partRecObj.addProperty("username", conferencePartHistory.getUsername());
                 partRecObj.addProperty("userType", conferencePartHistory.getUserType().compareTo(0) == 0 ?
                         UserType.register.name() : UserType.tourist.name());

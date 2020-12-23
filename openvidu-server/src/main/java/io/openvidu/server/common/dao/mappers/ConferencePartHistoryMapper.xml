@@ -325,7 +325,7 @@
 
 
   <select id="getConfRecordDetail" parameterType="io.openvidu.server.common.pojo.ConferencePartHistory" resultType="io.openvidu.server.common.pojo.ConferencePartHistory">
-    select if(su.type = 0, su.phone, scph.uuid) uuid,scph.username,scph.user_type userType,scph.start_time startTime,
+    select scph.uuid,su.phone,scph.username,scph.user_type userType,scph.start_time startTime,
     scph.terminal_type terminalType,scph.user_id userId,scph.only_share onlyShare
     from sd_conf_part_history scph
     inner join sd_user su on scph.uuid = su.uuid
