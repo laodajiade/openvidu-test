@@ -7,6 +7,7 @@ import com.sensegigit.cockcrow.CrowOnceHelper;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
@@ -217,11 +218,10 @@ public class AppointConferenceJobHandler {
                 JsonObject params = new JsonObject();
                 params.addProperty("roomId", session.getSessionId());
                 params.addProperty("ruid", session.getRuid());
-                for (Participant participant : participants) {
-                    if (participant.getStreamType() == StreamType.MAJOR) {
-                        notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.ROOM_AUTO_DELAY_METHOD, params);
-                    }
-                }
+
+                Optional<Participant> moderator = participants.stream().filter(participant -> participant.getStreamType() == StreamType.MAJOR && participant.getRole() == OpenViduRole.MODERATOR)
+                        .findAny();
+                moderator.ifPresent(participant -> notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.ROOM_AUTO_DELAY_METHOD, params));
                 log.info("conferenceEndJobHandler session delay roomId = {}, ruid = {}", session.getSessionId(), session.getRuid());
                 session.setDelay(true);
             }
