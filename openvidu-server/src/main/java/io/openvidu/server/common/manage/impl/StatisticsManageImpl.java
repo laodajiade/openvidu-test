@@ -82,7 +82,7 @@ public class StatisticsManageImpl implements StatisticsManage {
                 totalUsedDuration ++;
             }
             int remainderTotalDuration = remainderDuration - totalUsedDuration;
-            log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}",project, totalUsedDuration, remainderDuration);
+            log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}",project, totalUsedDuration, remainderTotalDuration);
             int remainderHour = remainderTotalDuration/60;
             int remainderMinute = remainderTotalDuration%60;
             cacheManage.setCorpRemainDuration(project,remainderTotalDuration);
