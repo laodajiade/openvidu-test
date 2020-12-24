@@ -786,7 +786,6 @@ public abstract class SessionManager {
 		Set<Participant> participants = conferenceSession.getParticipants();
 		Participant moderatorPart = conferenceSession.getModeratorPart();
 		boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
-
 		String sourceConnectionId;
 		String targetConnectionId;
 		Participant existSpeakerPart = null;
@@ -803,9 +802,6 @@ public abstract class SessionManager {
 			return;
 		}
 
-		assert targetPart != null;
-		targetPart.changeHandStatus(ParticipantHandStatus.speaker);
-		targetConnectionId = targetPart.getParticipantPublicId();
 		if (Objects.isNull(existSpeakerPart)) {
 			// switch layout
 			if (conferenceSession.getMajorShareMixLinkedArr().size() > 0) {
@@ -839,6 +835,10 @@ public abstract class SessionManager {
 					OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER) : null;
 			sendEndRollCallNotify(participants, params, sendChangeRole, changeRoleNotifiParam);
 		}
+
+		assert targetPart != null;
+		targetPart.changeHandStatus(ParticipantHandStatus.speaker);
+		targetConnectionId = targetPart.getParticipantPublicId();
 
 		if (isMcu) {
 			// change conference layout
