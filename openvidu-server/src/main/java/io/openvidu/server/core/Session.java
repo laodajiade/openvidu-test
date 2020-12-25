@@ -651,7 +651,8 @@ public class Session implements SessionInterface {
 							p.setOrder(p.getOrder() + 1);
 							log.info("moderator reconnect or join again major participant order change, order = {}", p.getOrder());
 							// 推送流变订阅流
-							if (p.getOrder() == openviduConfig.getSfuPublisherSizeLimit() && p.getRole() == OpenViduRole.PUBLISHER) {
+							if (p.getOrder() == openviduConfig.getSfuPublisherSizeLimit() && p.getRole() == OpenViduRole.PUBLISHER
+									&& !ParticipantHandStatus.speaker.equals(p.getHandStatus())) {
 								log.info("moderator reconnect or join again participant:{} current order:{} and role set {}", p.getUuid(), p.getOrder(), OpenViduRole.SUBSCRIBER);
 								p.setRole(OpenViduRole.SUBSCRIBER);
 								downWallNotifyPartOrderOrRoleChanged(p, true, rpcNotificationService);
