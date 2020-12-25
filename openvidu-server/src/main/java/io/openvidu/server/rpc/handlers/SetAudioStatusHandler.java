@@ -56,32 +56,58 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
 
         JsonArray tsArray = new JsonArray();
         if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
-            targetIds.forEach(t -> {
-                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
-                                && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
-                if (Objects.nonNull(part)) {
-                    part.changeMicStatus(micStatus);
-                    tsArray.add(t);
-                }
+            if (ParticipantMicStatus.on.equals(micStatus)) {
+                targetIds.forEach(t -> {
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                            .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                                    && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
+                                    && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
+                    if (Objects.nonNull(part)) {
+                        part.changeMicStatus(micStatus);
+                        tsArray.add(t);
+                    }
 
-            });
+                });
+            } else {
+                targetIds.forEach(t -> {
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                            .filter(s -> Objects.equals(t, s.getUserId().toString())
+                                            && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().orElse(null);
+                    if (Objects.nonNull(part)) {
+                        part.changeMicStatus(micStatus);
+                        tsArray.add(t);
+                    }
+
+                });
+            }
+
         }
 
         JsonArray accountArr = new JsonArray();
         if (!Objects.isNull(accountTargets) && !accountTargets.isEmpty()) {
-            accountTargets.forEach(account -> {
-                KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
-                                && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
-                if (Objects.nonNull(part)) {
-                    part.changeMicStatus(micStatus);
-                    accountArr.add(account);
-                }
+            if (ParticipantMicStatus.on.equals(micStatus)) {
+                accountTargets.forEach(account -> {
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                            .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                                    && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
+                                    && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
+                    if (Objects.nonNull(part)) {
+                        part.changeMicStatus(micStatus);
+                        accountArr.add(account);
+                    }
+                });
+            } else {
+                accountTargets.forEach(account -> {
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
+                            .filter(s -> Objects.equals(account, s.getUuid())
+                                    && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().orElse(null);
+                    if (Objects.nonNull(part)) {
+                        part.changeMicStatus(micStatus);
+                        accountArr.add(account);
+                    }
+                });
+            }
 
-            });
         }
 
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
