@@ -113,8 +113,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
         userObj.addProperty("order",participant.getOrder());
         userObj.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
-        userObj.addProperty("ability",participant.getAbility());
-        userObj.addProperty("functionality",participant.getFunctionality());
+        userObj.addProperty("ability", rpcConnection.getAbility());
+        userObj.addProperty("functionality", rpcConnection.getFunctionality());
         if (UserType.register.equals(kurentoParticipant.getUserType())) {
             // get user&dept&device from connectIdUserInfoMap
             UserDeviceDeptInfo userDeviceDeptInfo;
