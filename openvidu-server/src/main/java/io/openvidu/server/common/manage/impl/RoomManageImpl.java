@@ -109,17 +109,17 @@ public class RoomManageImpl implements RoomManage {
         update.setStatus(ParticipantStatusEnum.LEAVE.getStatus());
         Date endTime = new Date();
         update.setEndTime(endTime);
-        int duration = (int) ((endTime.getTime() - createdAt) / 60000);
-        update.setDuration(duration == 0 ? 1 : duration);
+        int duration = (int) Math.ceil(((endTime.getTime() - createdAt) * 1.0 / 60000));
+        update.setDuration(duration);
         conferencePartHistoryMapper.updatePartHistroy(update);
         UserCorpInfo userCorpInfo = corporationMapper.getUserCorpInfo(uuid);
         if (Objects.nonNull(userCorpInfo)) {
-            int remainderDuration = userCorpInfo.getRemainderDuration() - (duration == 0 ? 1 : duration);
+            int remainderDuration = userCorpInfo.getRemainderDuration() - duration;
             Corporation corporation = new Corporation();
             corporation.setRemainderDuration(remainderDuration);
             corporation.setProject(userCorpInfo.getProject());
             corporationMapper.updateCorpRemainderDuration(corporation);
-            if (duration == 0) {
+            if (duration == 1) {
                 cacheManage.setCorpRemainDuration(userCorpInfo.getProject(), cacheManage.getCorpRemainDuration(userCorpInfo.getProject()) - 1);
             }
         }

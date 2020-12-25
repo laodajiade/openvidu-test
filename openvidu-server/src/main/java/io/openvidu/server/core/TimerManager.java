@@ -48,6 +48,22 @@ public class TimerManager {
         });
     }
 
+    public void leaveRoomStartPollingAgainCompensation(String roomId, int intervalTime, int index) {
+        log.info("leaveRoomStartPollingAgainCompensation roomId:{} intervalTime:{} index:{}", roomId, intervalTime, index);
+        PollingCompensationScheduler pollingCompensationScheduler = map.remove(roomId);
+        log.info("pollingCompensationScheduler is {}", Objects.isNull(pollingCompensationScheduler));
+        if (Objects.isNull(pollingCompensationScheduler)) {
+            log.info("leaveRoom stop polling Task roomId:{}", roomId);
+            pollingCompensationScheduler.leaveRoomDisable();
+        }
+        map.computeIfAbsent(roomId, accountKey -> {
+            PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, index);
+            scheduler.startPollingTask();
+            log.info("leaveRoom start polling in room:{},intervalTime:{}", roomId, intervalTime);
+            return scheduler;
+        });
+    }
+
 
     public void stopPollingCompensation(String roomId) {
         PollingCompensationScheduler scheduler = map.remove(roomId);
@@ -59,7 +75,7 @@ public class TimerManager {
 
     public void leaveRoomStopPolling(String roomId) {
         PollingCompensationScheduler scheduler = map.remove(roomId);
-        if (Objects.nonNull(scheduler)) {
+        if (!Objects.isNull(scheduler)) {
             log.info("leaveRoom stop polling Task roomId:{}", roomId);
             scheduler.leaveRoomDisable();
         }

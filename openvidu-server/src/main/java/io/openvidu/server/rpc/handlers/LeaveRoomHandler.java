@@ -100,27 +100,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
 
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
-        //判断轮询是否开启
-        SessionPreset preset = session.getPresetInfo();
-        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.MODERATOR.equals(participant.getRole()) ) {
-            //获取当前轮询信息
-            Map<String,Integer> map = timerManager.getPollingCompensationScheduler(sessionId);
-            int pollingOrder = map.get("order");
-            int index = map.get("index");
-            if (participant.getOrder() == pollingOrder) {
-                timerManager.leaveRoomStopPolling(sessionId);
-                timerManager.startPollingCompensation(sessionId, preset.getPollingIntervalTime(), index);
-            }
-        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && OpenViduRole.MODERATOR.equals(participant.getRole())) {
-            //close room stopPolling
-            preset.setPollingStatusInRoom(SessionPresetEnum.off);
-            timerManager.stopPollingCompensation(sessionId);
-            //send notify
-            JsonObject params = new JsonObject();
-            params.addProperty("roomId", sessionId);
-            session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                    ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
-        }
+
         if (!Objects.isNull(rpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }

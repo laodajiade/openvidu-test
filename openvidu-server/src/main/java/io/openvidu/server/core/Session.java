@@ -740,13 +740,13 @@ public class Session implements SessionInterface {
 	}
 
 	private void downWallNotifyPartOrderOrRoleChanged(Participant participant, boolean roleChanged, RpcNotificationService notificationService) {
-		Set<Participant> participants = getMajorPartEachIncludeThorConnect();
+		Set<Participant> participants = getMajorPartEachConnect();
 		// get part order info in session
 		JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
 
 		JsonArray pubToSubChangedParam = roleChanged ?
 				getPartRoleChangedNotifyParamArr(participant, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER) : null;
-		participants.forEach(p -> {
+		getMajorPartEachIncludeThorConnect().forEach(p -> {
 			// send part order in session changed notification
 			notificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
@@ -760,14 +760,14 @@ public class Session implements SessionInterface {
 
 
 	private void notifyPartOrderOrRoleChanged(Participant sub2PubPart, boolean roleChanged, RpcNotificationService notificationService) {
-		Set<Participant> participants = getMajorPartEachIncludeThorConnect();
+		Set<Participant> participants = getMajorPartEachConnect();
 		// get part order info in session
 		JsonObject partOrderNotifyParam = getPartSfuOrderInfo(participants);
 
 		JsonArray subToPubChangedParam = roleChanged ?
 				getPartRoleChangedNotifyParamArr(sub2PubPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
 
-		participants.forEach(participant -> {
+		getMajorPartEachIncludeThorConnect().forEach(participant -> {
 			// send part order in session changed notification
 			notificationService.sendNotification(participant.getParticipantPrivateId(),
 					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);

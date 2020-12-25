@@ -184,17 +184,18 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断发起会议时是否超出企业人数上限
-                if (StreamType.MAJOR.equals(streamType)) {
+                if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(sessionManager.getSession(sessionId))) {
+                    String project  = sessionManager.getSession(sessionId).getConference().getProject();
                     Collection<Session> sessions = sessionManager.getSessions();
                     if (Objects.nonNull(sessions)) {
                         AtomicInteger limitCapacity = new AtomicInteger();
                         sessions.forEach(e -> {
-                            if (rpcConnection.getProject().equals(e.getConference().getProject())) {
+                            if (project.equals(e.getConference().getProject())) {
                                 limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
                             }
                         });
                         //query sd_corporation info
-                        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+                        Corporation corporation = corporationMapper.selectByCorpProject(project);
                         if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
                             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                                     null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
@@ -203,11 +204,14 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断通话时长是否不足
-                Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-                if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
-                    notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-                    return;
+                if (!Objects.isNull(sessionManager.getSession(sessionId))) {
+                    String project  = sessionManager.getSession(sessionId).getConference().getProject();
+                    Corporation corporation = corporationMapper.selectByCorpProject(project);
+                    if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                                null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+                        return;
+                    }
                 }
 
 
