@@ -61,13 +61,19 @@ public class SetRollCallHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.PARTICIPANT_DOWN_HAND_NOW);
             return;
         }
-        sessionManager.setRollCallInSession(conferenceSession, targetPart);
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
+        ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart);
+        if (ErrorCodeEnum.SET_ROLL_CALL_SAME_PART.equals(errorCode)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SET_ROLL_CALL_SAME_PART);
+            return;
+        }
         // update recording
         if (conferenceSession.ableToUpdateRecord()) {
             sessionManager.updateRecording(conferenceSession.getSessionId());
         }
+
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
 }

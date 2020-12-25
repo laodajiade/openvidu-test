@@ -782,7 +782,8 @@ public abstract class SessionManager {
 		this.closeSession(sessionId, endReason);
 	}
 
-	public void setRollCallInSession(Session conferenceSession, Participant targetPart) {
+	public ErrorCodeEnum setRollCallInSession(Session conferenceSession, Participant targetPart) {
+		ErrorCodeEnum errorCode = ErrorCodeEnum.SUCCESS;
 		Set<Participant> participants = conferenceSession.getParticipants();
 		Participant moderatorPart = conferenceSession.getModeratorPart();
 		boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
@@ -799,7 +800,7 @@ public abstract class SessionManager {
 
 		// do nothing when set roll call to the same speaker
 		if (Objects.equals(existSpeakerPart, targetPart)) {
-			return;
+			return ErrorCodeEnum.SET_ROLL_CALL_SAME_PART;
 		}
 
 		if (Objects.isNull(existSpeakerPart)) {
@@ -896,6 +897,7 @@ public abstract class SessionManager {
 		});
 		targetPart.setSpeakerStatus(ParticipantSpeakerStatus.on);
 		targetPart.setMicStatus(ParticipantMicStatus.on);
+		return errorCode;
 	}
 
 	public void setMicStatusAndDealExistsSharing(Participant participant, Participant moderatorPart, String sessionId) {

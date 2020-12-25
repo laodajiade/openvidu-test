@@ -105,6 +105,7 @@ public enum ErrorCodeEnum {
     REMAINDER_DURATION_USE_UP(13058,"通话时长已用完，请联系管理员"),
     UPLOAD_MEETING_QUALITY_TIMEOUT(13059,"会议质量上报超时"),
     RECORD_SERVICE_INVALID(13062,"存储服务未启用或已到期"),
+    SET_ROLL_CALL_SAME_PART(13063,"不能点名同一个人"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
