@@ -51,8 +51,7 @@ public class TimerManager {
     public void leaveRoomStartPollingAgainCompensation(String roomId, int intervalTime, int index) {
         log.info("leaveRoomStartPollingAgainCompensation roomId:{} intervalTime:{} index:{}", roomId, intervalTime, index);
         PollingCompensationScheduler pollingCompensationScheduler = map.remove(roomId);
-        log.info("pollingCompensationScheduler is {}", Objects.isNull(pollingCompensationScheduler));
-        if (Objects.isNull(pollingCompensationScheduler)) {
+        if (!Objects.isNull(pollingCompensationScheduler)) {
             log.info("leaveRoom stop polling Task roomId:{}", roomId);
             pollingCompensationScheduler.leaveRoomDisable();
         }
@@ -73,16 +72,8 @@ public class TimerManager {
         }
     }
 
-    public void leaveRoomStopPolling(String roomId) {
-        PollingCompensationScheduler scheduler = map.remove(roomId);
-        if (!Objects.isNull(scheduler)) {
-            log.info("leaveRoom stop polling Task roomId:{}", roomId);
-            scheduler.leaveRoomDisable();
-        }
-    }
-
     public Map<String,Integer> getPollingCompensationScheduler(String roomId) {
-        PollingCompensationScheduler scheduler = map.remove(roomId);
+        PollingCompensationScheduler scheduler = map.get(roomId);
         Map<String,Integer> schedulerMap = new HashMap<>(2);
         schedulerMap.put("index",scheduler.getIndex());
         schedulerMap.put("order",scheduler.getOrder());
