@@ -54,6 +54,8 @@ public class CacheKeyConstants {
 
     public static final String CHECK_DUPLICATION_SEND_PHONE_PREFIX_KEY = "check:duplication:phone:";
 
+    public static final String CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY = "conference:lease:heartbeat:";
+
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
     }

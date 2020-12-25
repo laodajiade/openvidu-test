@@ -64,7 +64,7 @@ public class SessionEventsHandler {
 	protected OpenviduConfig openviduConfig;
 
 	@Autowired
-	protected CacheManage cacheManage;
+	public CacheManage cacheManage;
 
 	@Autowired
 	protected SessionManager sessionManager;

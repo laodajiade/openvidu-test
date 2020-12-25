@@ -257,7 +257,7 @@
       update sd_conf_part_history
       <set>
         <if test="item.status != null ">
-          status = #{item.status,jdbcType=TINYINT},
+          `status` = #{item.status,jdbcType=TINYINT},
         </if>
         <if test="item.endTime != null ">
           end_time = #{item.endTime,jdbcType=TIMESTAMP},

@@ -383,4 +383,11 @@
     set start_time = (select min(start_time) from sd_conf_part_history  where ruid = #{ruid})
     where ruid = #{ruid}
   </update>
+
+  <select id="getNotFinishConference" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference a
+    where a.`status` != 2
+  </select>
 </mapper>

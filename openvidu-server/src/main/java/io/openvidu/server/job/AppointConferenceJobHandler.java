@@ -190,6 +190,16 @@ public class AppointConferenceJobHandler {
      */
     @XxlJob("conferenceEndJobHandler")
     public ReturnT<String> conferenceEndJobHandler(String param) {
+        conferenceEndJobHandler0(param);
+        fixFinishConferenceStatus();
+        return ReturnT.SUCCESS;
+    }
+
+    /**
+     * 1、预约会议到了结束时间，如果会议没人则关闭会议室，否则推送延迟结束广告
+     * 2、修复因异常重启等原因导致会议没有正常结束而导致状态不正确
+     */
+    private ReturnT<String> conferenceEndJobHandler0(String param) {
         List<AppointConference> list = appointConferenceMapper.getMaybeEndAppointment();
         if (list.isEmpty()) {
             return ReturnT.SUCCESS;
@@ -263,6 +273,27 @@ public class AppointConferenceJobHandler {
         appointConferenceMapper.updateByPrimaryKey(appointConference);
     }
 
+
+    private void fixFinishConferenceStatus() {
+        List<Conference> list = conferenceMapper.getNotFinishConference();
+        list.removeIf(conference -> conference.getRuid().startsWith("appt-"));//去掉预约会议
+        if (list.isEmpty()) {
+            return;
+        }
+
+        for (Conference conference : list) {
+            if (!cacheManage.checkRoomLease(conference.getRoomId(), conference.getRuid())) {
+                finishConference(conference);
+            }
+        }
+    }
+
+    private void finishConference(Conference conference) {
+        log.info(" fix end conference ruid= " + conference.getRuid());
+        conference.setEndTime(new Date());
+        conference.setStatus(2);
+        conferenceMapper.updateByPrimaryKey(conference);
+    }
 
     /**
      * 向与会人发出会议开始呼叫

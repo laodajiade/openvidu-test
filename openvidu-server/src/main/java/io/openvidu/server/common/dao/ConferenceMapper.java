@@ -41,4 +41,6 @@ public interface ConferenceMapper {
     void softDeleteById(Long id);
 
     void changeRealStartTime(String ruid);
+
+    List<Conference> getNotFinishConference();
 }

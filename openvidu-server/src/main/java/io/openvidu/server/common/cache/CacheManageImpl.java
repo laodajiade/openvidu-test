@@ -405,4 +405,18 @@ public class CacheManageImpl implements CacheManage {
         Boolean result = tokenStringTemplate.opsForValue().setIfAbsent(key, phone, 5, TimeUnit.MINUTES);
         return result != null && result;
     }
+
+    @Override
+    public void roomLease(String sessionId, String ruid) {
+        String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
+        roomRedisTemplate.opsForValue().set(key, ruid);
+        roomRedisTemplate.expire(key, 1, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public boolean checkRoomLease(String sessionId, String ruid) {
+        String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
+        String ruidValue = (String) roomRedisTemplate.opsForValue().get(key);
+        return ruidValue != null && Objects.equals(ruid, ruidValue);
+    }
 }

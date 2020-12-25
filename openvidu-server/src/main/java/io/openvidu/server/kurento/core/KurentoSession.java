@@ -65,6 +65,18 @@ public class KurentoSession extends Session {
 	private final Object joinOrLeaveLock = new Object();
 	private boolean destroyKurentoClient;
 
+	// 服务崩溃或者kill -9等方式非正常关机会导致
+	private Thread leaseThread = new Thread(() -> {
+		while (!closed) {
+			try {
+				kurentoSessionHandler.cacheManage.roomLease(sessionId,ruid);
+				TimeUnit.SECONDS.sleep(20);
+			} catch (InterruptedException e) {
+				return;
+			}
+		}
+	});
+
 	public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
 
 	public KurentoSession(Session sessionNotActive, Kms kms, KurentoSessionEventsHandler kurentoSessionHandler,
@@ -76,6 +88,7 @@ public class KurentoSession extends Session {
 		this.kurentoEndpointConfig = kurentoEndpointConfig;
 		this.compositeService = new CompositeService(sessionNotActive);
 		log.debug("New SESSION instance with id '{}'", sessionId);
+		this.leaseThread.start();
 	}
 
 	@Override

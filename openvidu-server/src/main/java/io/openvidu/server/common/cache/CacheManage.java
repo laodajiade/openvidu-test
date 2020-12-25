@@ -116,4 +116,8 @@ public interface CacheManage {
     void setMeetingQuality(String uuid,JsonObject object);
 
     boolean checkDuplicationSendPhone(String phone, String usage);
+
+    void roomLease(String sessionId, String ruid);
+
+    boolean checkRoomLease(String sessionId, String ruid);
 }

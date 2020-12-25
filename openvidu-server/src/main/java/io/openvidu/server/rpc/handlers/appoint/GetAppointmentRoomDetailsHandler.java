@@ -191,6 +191,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("conferenceMode", ConferenceModeEnum.parse(conference.getConferenceMode()).name());
             appointConfObj.addProperty("roomCapacity", conference.getRoomCapacity());
             appointConfObj.addProperty("startTime", String.valueOf(conference.getStartTime().getTime()));
+            appointConfObj.addProperty("endTime", conference.getEndTime() == null ? "" : String.valueOf(conference.getEndTime().getTime()));
             appointConfObj.addProperty("desc", conference.getConferenceDesc());
             appointConfObj.addProperty("moderatorRoomId", conference.getModeratorUuid());
             // 会议发起人
