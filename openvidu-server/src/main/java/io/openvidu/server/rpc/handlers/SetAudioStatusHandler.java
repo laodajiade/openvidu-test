@@ -59,6 +59,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                         .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                                && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeMicStatus(micStatus);
@@ -73,6 +74,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             accountTargets.forEach(account -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                         .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                                && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
                                 && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeMicStatus(micStatus);
