@@ -115,7 +115,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     Session session = sessionManager.getSession(sessionId);
-                    String roomId = Objects.isNull(partInfo.get("roomId")) ? null : partInfo.get("roomId").toString();
+                    String roomId = Objects.isNull(!partInfo.isEmpty() ? partInfo.get("roomId") : null) ? null : partInfo.get("roomId").toString();
                     if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(roomId)) {
                         log.info("remove previous participant if reconnect " + partInfo.toString());
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
