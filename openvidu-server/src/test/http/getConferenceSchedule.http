@@ -1,11 +1,11 @@
 # 获取会议历史
-POST http://localhost:4443/dev/test?id={{uuid}}&method=getConferenceSchedule
+POST http://localhost:4443/dev/test?id=80101900002&method=getConferenceSchedule
 Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "date" : "2020-11-10",
+  "date" : "2020-12-28",
   "status" : "pending",
   "pageNum" : 1,
   "pageSize" : 20

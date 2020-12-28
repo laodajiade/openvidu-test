@@ -466,6 +466,12 @@
     <if test="userId != null">
       and user_id = #{userId}
     </if>
+    <if test="startTime != null">
+      and start_time >= #{startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="endTime != null">
+      and #{endTime,jdbcType=TIMESTAMP} >= start_time
+    </if>
 
     order by start_time asc
   </select>
