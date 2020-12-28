@@ -151,7 +151,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM))) {
                             videoStatus = partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM).toString();
                         }
-                        isReconnected = true;
 
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
                                 Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
@@ -249,7 +248,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
-                clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
+                clientMetadataObj.addProperty("role", role.name());
 
                 clientMetadata = clientMetadataObj.toString();
 
@@ -316,7 +315,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 rpcConnection.setSessionId(sessionId);
 
-                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId(), isReconnected);
+                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
             } while (false);
 
             rpcConnection.setReconnected(false);
