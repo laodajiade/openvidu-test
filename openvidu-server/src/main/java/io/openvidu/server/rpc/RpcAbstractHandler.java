@@ -8,6 +8,7 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.*;
 import io.openvidu.server.common.pojo.Conference;
@@ -296,23 +297,10 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key);
     }
 
-    protected String generalRoomId() {
-        String sessionId = "";
-        int tryCnt = 10;
-        while (tryCnt-- > 0) {
-            sessionId = StringUtil.createSessionId();
-            if (isExistingRoom(sessionId, "")) {
-                log.warn("conference:{} already exist.", sessionId);
-                continue;
-            }
-            log.info("general sessionId:{}", sessionId);
-            break;
+    protected boolean isExistingRoom(String sessionId, String roomIdType, RpcConnection rpcConnection) {
+        if (RoomIdTypeEnums.random.name().equals(roomIdType) && Objects.nonNull(rpcConnection.getSessionId())) {
+            sessionId = rpcConnection.getSessionId();
         }
-
-        return sessionId;
-    }
-
-    protected boolean isExistingRoom(String sessionId, String userUuid) {
         // verify room id ever exists
         ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);
@@ -326,7 +314,7 @@ public abstract class RpcAbstractHandler {
                 conferences.forEach(conference -> {
                     Session session = sessionManager.getSession(conference.getRoomId());
                     if (Objects.nonNull(session) && !session.isClosed()) {
-                        log.warn("conference:{} already exist.", sessionId);
+                        log.warn("conference:{} already exist.", session.getSessionId());
                         exitFlag.set(true);
                     }
                 });

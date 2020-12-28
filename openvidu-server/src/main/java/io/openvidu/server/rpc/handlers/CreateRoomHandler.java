@@ -117,7 +117,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             moderatorUuid = appt.getModeratorUuid();
         }
 
-        if (isExistingRoom(sessionId, rpcConnection.getUserUuid())) {
+        if (isExistingRoom(sessionId, roomIdType, rpcConnection)) {
             // 如果是预约会议已开始则假装创建成功
             if (!StringUtils.isEmpty(ruid)) {
                 JsonObject respJson = new JsonObject();
