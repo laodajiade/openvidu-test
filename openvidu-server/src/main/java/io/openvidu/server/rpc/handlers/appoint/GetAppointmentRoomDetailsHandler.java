@@ -5,10 +5,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
-import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
@@ -101,6 +98,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("autoCall", appointConference.getAutoInvite() == 1);// 参数设置
             appointConfObj.addProperty("roomCapacity", appointConference.getRoomCapacity());
             appointConfObj.addProperty("startTime", String.valueOf(appointConference.getStartTime().getTime()));
+            appointConfObj.addProperty("endTime", appointConference.getEndTime() == null ? "" : String.valueOf(appointConference.getEndTime().getTime()));
             appointConfObj.addProperty("duration", appointConference.getDuration());
             appointConfObj.addProperty("desc", appointConference.getConferenceDesc());
             appointConfObj.addProperty("moderatorRoomId", appointConference.getModeratorUuid());
@@ -118,6 +116,8 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("password", appointConference.getPassword());
             appointConfObj.addProperty("moderatorPassword", appointConference.getModeratorPassword());
             appointConfObj.addProperty("status", appointConference.getStatus());
+            appointConfObj.addProperty("roomIdType", Objects.equals(appointConference.getRoomId(), creator.getUuid()) ?
+                    RoomIdTypeEnums.personal.name() : RoomIdTypeEnums.random.name());
 
             appointConfObj.add("participants", constructAppointPartsInfo(parts));
 
@@ -207,6 +207,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("password", conference.getPassword());
             appointConfObj.addProperty("moderatorPassword", conference.getModeratorPassword());
             appointConfObj.addProperty("status", conference.getStatus());
+            appointConfObj.addProperty("roomIdType", conference.getRoomIdType());
 
             appointConfObj.add("participants", constructAppointPartsInfo(participants));
 

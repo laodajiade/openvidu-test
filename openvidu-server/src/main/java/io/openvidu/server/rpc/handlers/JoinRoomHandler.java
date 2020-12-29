@@ -49,14 +49,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
             do {
                 // verify room join type
                 String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
-                if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(streamType) &&
-                        SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
-                    if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
-                        log.error("disable participant active join room:{}", sessionId);
-                        errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
-                        break;
-                    }
-                }
+
 
                 ConferenceSearch search = new ConferenceSearch();
                 search.setRoomId(sessionId);
@@ -68,6 +61,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         if (ac != null && ac.getStartTime().after(new Date())) {
                             log.error("can not find roomId:{} and appointment conference {} did not start", sessionId, ruid);
                             errCode = ErrorCodeEnum.APPOINTMENT_CONFERENCE_DID_NOT_START;
+                            break;
+                        }
+                    } else if (!StringUtils.isEmpty(ruid)) {
+                        Conference conference0 = conferenceMapper.selectByRuid(ruid);
+                        if (conference0 != null && conference0.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
+                            errCode = ErrorCodeEnum.CONFERENCE_IS_FINISHED;
                             break;
                         }
                     }
@@ -92,6 +91,15 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         && Objects.equals(conference.get(0).getModeratorUuid(), rpcConnection.getUserUuid())
                 ) {
                     role = OpenViduRole.MODERATOR;
+                }
+
+                if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(streamType) &&
+                        SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom()) ) {
+                    if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
+                        log.error("disable participant active join room:{}", sessionId);
+                        errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+                        break;
+                    }
                 }
 
                 // verify conference password

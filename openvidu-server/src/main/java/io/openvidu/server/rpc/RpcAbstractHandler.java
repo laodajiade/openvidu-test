@@ -297,10 +297,7 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key);
     }
 
-    protected boolean isExistingRoom(String sessionId, String roomIdType, RpcConnection rpcConnection) {
-        if (RoomIdTypeEnums.random.name().equals(roomIdType) && Objects.nonNull(rpcConnection.getSessionId())) {
-            sessionId = rpcConnection.getSessionId();
-        }
+    protected boolean isExistingRoom(String sessionId) {
         // verify room id ever exists
         ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(sessionId);

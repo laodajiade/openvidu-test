@@ -65,14 +65,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         String roomIdType = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal");
 
-        // 解决端上的可能会将非预约会议的ruid当做预约会议来创建，所以特殊处理一下
-        if (!StringUtils.isEmpty(ruid) && !ruid.contains("appt-")) {
-            ruid = "";
-        }
 
-        if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random.name().equals(roomIdType) || StringUtils.isEmpty(sessionId))) {
-            sessionId = randomRoomIdGenerator.offerRoomId();
-        }
         //判断发起会议时是否超出企业人数上限
         Collection<Session> sessions = sessionManager.getSessions();
         if (Objects.nonNull(sessions)) {
@@ -100,7 +93,10 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
         AppointConference appt = null;
         String moderatorUuid = rpcConnection.getUserUuid();
-        if (!StringUtils.isEmpty(ruid)) {
+
+        if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random.name().equals(roomIdType) || StringUtils.isEmpty(sessionId))) {
+            sessionId = randomRoomIdGenerator.offerRoomId();
+        } else if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-")) {
             appt = appointConferenceManage.getByRuid(ruid);
             if (appt == null) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -113,15 +109,32 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 return;
             }
             sessionId = appt.getRoomId();
-            roomIdType = "random";
+            roomIdType = RoomIdTypeEnums.random.name();
             moderatorUuid = appt.getModeratorUuid();
+        } else if (!StringUtils.isEmpty(ruid)) {
+            Conference conference = conferenceMapper.selectByRuid(ruid);
+            if (conference == null) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                return;
+            }
+            if (conference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_IS_FINISHED);
+                return;
+            }
+            sessionId = conference.getRoomId();
+            roomIdType = conference.getRoomIdType();
         }
 
-        if (isExistingRoom(sessionId, roomIdType, rpcConnection)) {
+        if (isExistingRoom(sessionId)) {
             // 如果是预约会议已开始则假装创建成功
             if (!StringUtils.isEmpty(ruid)) {
                 JsonObject respJson = new JsonObject();
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
+                Session session = sessionManager.getSession(sessionId);
+                respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, session.getRuid());
+                log.info("param ruid={}, actual ruid = {}", ruid, session.getRuid());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
                 return;
             }
@@ -136,7 +149,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         if (sessionManager.isNewSessionIdValid(sessionId)) {
             Conference conference = new Conference();
             // if create appointment conference
-            if (!StringUtils.isEmpty(ruid)) {
+            if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-")) {
                 appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid);
 
                 conference.setRuid(ruid);
