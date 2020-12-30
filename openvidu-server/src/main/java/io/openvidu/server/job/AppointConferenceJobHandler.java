@@ -289,7 +289,13 @@ public class AppointConferenceJobHandler {
     }
 
     private void finishConference(Conference conference) {
-        log.info(" fix end conference ruid= " + conference.getRuid());
+        log.info("fix end conference ruid = " + conference.getRuid());
+
+        if (System.currentTimeMillis() - conference.getStartTime().getTime() <= 60000) {
+            log.info("Conference survival time is less than 1 minute, ruid = {}", conference.getRuid());
+            return;
+        }
+
         conference.setEndTime(new Date());
         conference.setStatus(2);
         conferenceMapper.updateByPrimaryKey(conference);
