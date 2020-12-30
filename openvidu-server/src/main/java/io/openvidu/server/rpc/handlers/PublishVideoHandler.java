@@ -53,8 +53,6 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
             if (sessionManager.isPublisherInSession(rpcConnection.getSessionId(), participant,preset.getPollingStatusInRoom())) {
                 MediaOptions options = sessionManager.generateMediaOptions(request);
-                participant.changeVideoStatus(options.isVideoActive() ? ParticipantVideoStatus.on : ParticipantVideoStatus.off);
-                participant.changeMicStatus(options.isAudioActive() ? ParticipantMicStatus.on : ParticipantMicStatus.off);
                 sessionManager.publishVideo(participant, options, request.getId());
             } else {
                 log.error("Error: participant {} is not a publisher and role={} and streamType={}", participant.getParticipantPublicId()
