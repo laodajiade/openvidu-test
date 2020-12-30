@@ -85,7 +85,13 @@ public class AppointConferenceJobHandler {
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
         if (Objects.isNull(appointConference)) {
             log.error("conferenceToBeginJobHandler conference not exist, ruid:{}", ruid);
+            crowOnceHelper.delCrowOnce(jobId);
             return ReturnT.FAIL;
+        }
+        // 会议提前开始，不在提醒
+        if (appointConference.getStatus() != ConferenceStatus.NOT_YET.getStatus()) {
+            crowOnceHelper.delCrowOnce(jobId);
+            return ReturnT.SUCCESS;
         }
 
         // sendMessage
