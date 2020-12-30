@@ -72,12 +72,25 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                 targetIds.forEach(t -> {
                     KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
                             .filter(s -> Objects.equals(t, s.getUserId().toString())
-                                            && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().orElse(null);
+                                    && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().orElse(null);
                     if (Objects.nonNull(part)) {
                         part.changeMicStatus(micStatus);
                         tsArray.add(t);
                     }
 
+                });
+            }
+
+        } else {
+            Set<Participant> participants = session.getMajorPartExcludeModeratorConnect();
+            if (!CollectionUtils.isEmpty(participants)) {
+                participants.forEach(participant -> {
+                    if (ParticipantMicStatus.on.equals(micStatus) && !OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+                        participant.changeMicStatus(micStatus);
+                    }
+                    if (ParticipantMicStatus.off.equals(micStatus)) {
+                        participant.changeMicStatus(micStatus);
+                    }
                 });
             }
 
@@ -108,6 +121,18 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                 });
             }
 
+        } else {
+            Set<Participant> participants = session.getMajorPartExcludeModeratorConnect();
+            if (!CollectionUtils.isEmpty(participants)) {
+                participants.forEach(participant -> {
+                    if (ParticipantMicStatus.on.equals(micStatus) && !OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+                        participant.changeMicStatus(micStatus);
+                    }
+                    if (ParticipantMicStatus.off.equals(micStatus)) {
+                        participant.changeMicStatus(micStatus);
+                    }
+                });
+            }
         }
 
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
