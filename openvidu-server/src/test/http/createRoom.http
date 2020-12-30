@@ -11,12 +11,13 @@ Content-Type: application/json
   "conferenceMode": "SFU",
   "duration": 120,
   "micStatusInRoom": "on",
+  "moderatorPassword": "211896",
   "password": "",
   "quietStatusInRoom": "smart",
-  "roomId": "{{roomId}}",
-  "ruid": "appt-e38e20479d9d41c08d6c3185425bca62",
+  "roomId": "80103600002",
+  "roomIdType": "personal",
   "sharePowerInRoom": "on",
-  "subject": "80101900003的会议滴滴",
+  "subject": "0002的会议",
   "useIdInRoom": "allParticipants",
   "videoStatusInRoom": "on"
 }

@@ -70,8 +70,9 @@ public class KurentoSession extends Session {
 		log.info("room lease thead start,roomId={},ruid={}", sessionId, ruid);
 		while (!closed) {
 			try {
+				TimeUnit.SECONDS.sleep(3);
 				kurentoSessionHandler.cacheManage.roomLease(sessionId,ruid);
-				TimeUnit.SECONDS.sleep(20);
+				TimeUnit.SECONDS.sleep(17);
 			} catch (InterruptedException e) {
 				return;
 			}
