@@ -589,10 +589,10 @@ public class Session implements SessionInterface {
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
-	public Participant getModeratorOrThorPart() {
+	public List<Participant> getModeratorAndThorPart() {
 		checkClosed();
 		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && participant.getRole().isController()).findAny().orElse(null);
+				.filter(participant -> Objects.nonNull(participant) && participant.getRole().isController()).collect(Collectors.toList());
 	}
 
 	public Participant getThorPart() {
