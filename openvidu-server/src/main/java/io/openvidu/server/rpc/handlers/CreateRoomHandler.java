@@ -120,7 +120,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             }
             if (conference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.CONFERENCE_IS_FINISHED);
+                        null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
                 return;
             }
             sessionId = conference.getRoomId();
