@@ -66,7 +66,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     } else if (!StringUtils.isEmpty(ruid)) {
                         Conference conference0 = conferenceMapper.selectByRuid(ruid);
                         if (conference0 != null && conference0.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
-                            errCode = ErrorCodeEnum.CONFERENCE_IS_FINISHED;
+                            errCode = ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED;
                             break;
                         }
                     }
