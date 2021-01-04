@@ -142,11 +142,11 @@ public class AppointConferenceJobHandler {
                 return ReturnT.SUCCESS;
             }
 
-            if (appointConference.getAutoInvite().intValue() != AutoInviteEnum.AUTO_INVITE.getValue().intValue()) {
-                // 删除定时任务
-                crowOnceHelper.delCrowOnce(jobId);
-                return ReturnT.SUCCESS;
-            }
+//            if (appointConference.getAutoInvite().intValue() != AutoInviteEnum.AUTO_INVITE.getValue().intValue()) {
+//                // 删除定时任务
+//                crowOnceHelper.delCrowOnce(jobId);
+//                return ReturnT.SUCCESS;
+//            }
 
             // 是否自动呼叫、房间是否被使用中
             if (!isRoomInUse(appointConference.getRoomId())) {
@@ -162,7 +162,8 @@ public class AppointConferenceJobHandler {
 
                 appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid());
             } else {
-                log.info("conferenceBeginJobHandler non invite:{}", JSON.toJSONString(appointConference));
+                log.info("conferenceBeginJobHandler in use:{}", JSON.toJSONString(appointConference));
+                //todo 修改定时任务在下一分钟
             }
 
             if (isSameRoom(appointConference.getRoomId(), ruid) && appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
