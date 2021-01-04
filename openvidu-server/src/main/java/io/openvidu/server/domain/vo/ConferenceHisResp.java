@@ -66,4 +66,6 @@ public class ConferenceHisResp {
 
     private String creatorUserIcon;
 
+    private Integer status;
+
 }

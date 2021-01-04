@@ -131,11 +131,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                     throw new BindValidateException("date parse error date=" + vo.getDate());
                 }
             }
-
-
             List<AppointConference> appointConferenceList = pendingAboutAppointment(appointConference);
-
-
             return transferResp(appointConferenceList);
         }
 
@@ -159,6 +155,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                 resp.setDuration(appointConference.getDuration());
                 resp.setRoomCapacity(appointConference.getRoomCapacity());
                 resp.setCreatorUserId(appointConference.getUserId());
+                resp.setStatus(appointConference.getStatus());
 
                 list.add(resp);
             }
@@ -209,6 +206,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                 // resp.setDuration(conference.getDuration()); 暂时没有
                 resp.setRoomCapacity(conference.getRoomCapacity());
                 resp.setCreatorUserId(conference.getUserId());
+                resp.setStatus(conference.getStatus());
                 list.add(resp);
             }
 

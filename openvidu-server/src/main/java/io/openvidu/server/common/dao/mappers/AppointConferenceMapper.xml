@@ -442,7 +442,7 @@
 
   <select id="pendingAboutAppointment" resultMap="BaseResultMap">
     select
-    `ruid`, `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, duration,`room_capacity`,`user_id`
+    `ruid`, `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, duration,`room_capacity`,`user_id`, `status`
     from sd_appoint_conference a where a.`status` != 2
     and project = #{project}
     <if test="userId != null">
@@ -461,7 +461,7 @@
 
     UNION
 
-    select `ruid`,  `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, 0 as duration,`room_capacity`,`user_id`
+    select `ruid`,  `room_id`, `conference_subject`, `conference_desc`, `moderator_uuid`,`start_time`, `end_time`, 0 as duration,`room_capacity`,`user_id`, `status`
     from sd_conference where `status`!=2 and ruid not like 'appt-%'
     <if test="userId != null">
       and user_id = #{userId}
