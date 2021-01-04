@@ -13,20 +13,21 @@ import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.resp.AppointmentRoomResp;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.BeiJingZoneOffset;
 import io.openvidu.server.utils.BindValidate;
+import io.openvidu.server.utils.LocalDateTimeUtils;
 import io.openvidu.server.utils.RandomRoomIdGenerator;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -45,6 +46,8 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Autowired
     private RandomRoomIdGenerator randomRoomIdGenerator;
 
+    private static final long ONE_YEAR = 1000L * 60 * 60 * 24 * 366;
+
     @Transactional
     @Override
     public RespResult<AppointmentRoomResp> doProcess(RpcConnection rpcConnection, Request<AppointmentRoomVO> request, AppointmentRoomVO params) {
@@ -53,6 +56,14 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         if (RoomIdTypeEnums.random == params.getRoomIdType()) {
             params.setRoomId(randomRoomIdGenerator.offerRoomId());
+        }
+
+        if (params.getStartTime() != 0) {
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(params.getStartTime()), BeiJingZoneOffset.of());
+            if (localDateTime.getYear() == 2020) {
+                localDateTime = localDateTime.plusYears(1);
+                params.setStartTime(LocalDateTimeUtils.toEpochMilli(localDateTime));
+            }
         }
 
         // 会议开始时间校验
