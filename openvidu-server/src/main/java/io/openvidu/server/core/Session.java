@@ -1511,6 +1511,7 @@ public class Session implements SessionInterface {
 					moderator = participant;
 				}
 				if (StreamType.SHARING == participant.getStreamType()) {
+					log.info("sip found sharing");
 					mcuNum = getSipCompositeElements(kurentoSession, participant, hubPortIds, mcuNum);
 				}
 				if (StreamType.MAJOR == participant.getStreamType() && ParticipantHandStatus.speaker == participant.getHandStatus()) {
@@ -1520,9 +1521,11 @@ public class Session implements SessionInterface {
 
 			// set composite order
 			if (Objects.nonNull(speaker)) {
+				log.info("sip found speaker");
 				mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);
 			}
 			if (Objects.nonNull(moderator)) {
+				log.info("sip found moderator");
 				mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
 			}
 			log.info("SIP MCU composite number:{} and composite hub port ids:{}", mcuNum, hubPortIds.toString());
@@ -1535,6 +1538,8 @@ public class Session implements SessionInterface {
 					log.error("Send Sip Composite Layout Exception:\n", e);
 				}
 			}
+		} else {
+			log.warn("participants is empty");
 		}
 	}
 
@@ -1542,7 +1547,7 @@ public class Session implements SessionInterface {
 		HubPort hubPort = null;
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 		if (Objects.isNull(hubPort = kurentoParticipant.getPublisher().getSipCompositeHubPort())) {
-			kurentoParticipant.getPublisher().createSipCompositeHubPort(kurentoSession.getSipComposite());
+			hubPort = kurentoParticipant.getPublisher().createSipCompositeHubPort(kurentoSession.getSipComposite());
 		}
 		kurentoParticipant.getPublisher().getEndpoint().connect(hubPort);
 //		kurentoParticipant.getPublisher().internalSinkConnect(kurentoParticipant.getPublisher().getEndpoint(), hubPort);
