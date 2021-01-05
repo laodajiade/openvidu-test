@@ -103,9 +103,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
 
         //判断轮询是否开启
         SessionPreset preset = session.getPresetInfo();
-        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.MODERATOR.equals(participant.getRole()) ) {
+        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.MODERATOR.equals(participant.getRole())) {
             //获取当前轮询信息
-            Map<String,Integer> map = timerManager.getPollingCompensationScheduler(sessionId);
+            Map<String, Integer> map = timerManager.getPollingCompensationScheduler(sessionId);
             int pollingOrder = map.get("order");
             int index = map.get("index");
             if (participant.getOrder() == pollingOrder) {
@@ -131,5 +131,12 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             session.putPartOnWallAutomatically(sessionManager);
         }
         rpcConnection.setReconnected(false);
+
+        // 针对1.3.5以下的客户端，可能只退出一个主流而不退其他子流，需要平台强行踢出
+        if (participant.getStreamType() == StreamType.MAJOR) {
+            sessionManager.evictParticipantByUUID(sessionId,
+                    rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+        }
+
     }
 }
