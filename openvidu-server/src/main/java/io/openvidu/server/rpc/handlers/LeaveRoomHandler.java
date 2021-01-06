@@ -133,7 +133,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         rpcConnection.setReconnected(false);
 
         // 针对1.3.5以下的客户端，可能只退出一个主流而不退其他子流，需要平台强行踢出
-        if (participant.getStreamType() == StreamType.MAJOR) {
+        if (participant.getStreamType() == StreamType.MAJOR && rpcConnection.getAccessType() != AccessTypeEnum.web) {
             sessionManager.evictParticipantByUUID(sessionId,
                     rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
         }
