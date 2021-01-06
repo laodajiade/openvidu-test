@@ -111,7 +111,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("creatorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
             appointConfObj.addProperty("creatorUserIcon", "");
 
-            appointConfObj.addProperty("isStart", appointConference.getStartTime().before(new Date()));
+            appointConfObj.addProperty("isStart", appointConference.getStatus() != 0 || appointConference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", appointConference.getProject());
             appointConfObj.addProperty("password", appointConference.getPassword());
             appointConfObj.addProperty("moderatorPassword", appointConference.getModeratorPassword());
@@ -202,7 +202,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("createorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
             appointConfObj.addProperty("creatorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
             appointConfObj.addProperty("creatorUserIcon", "");
-            appointConfObj.addProperty("isStart", conference.getStartTime().before(new Date()));
+            appointConfObj.addProperty("isStart", conference.getStatus() != 0 ||conference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", conference.getProject());
             appointConfObj.addProperty("password", conference.getPassword());
             appointConfObj.addProperty("moderatorPassword", conference.getModeratorPassword());

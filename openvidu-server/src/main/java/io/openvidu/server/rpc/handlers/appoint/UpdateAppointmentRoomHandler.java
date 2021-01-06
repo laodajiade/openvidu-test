@@ -50,7 +50,7 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (appt.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
         }
-        if (appt.getStartTime().before(new Date())) {
+        if (appt.getStatus() != 0 || appt.getStartTime().before(new Date())) {
             return RespResult.fail(ErrorCodeEnum.THE_CONFERENCE_HAS_STARTED);
         }
 
