@@ -4,7 +4,6 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.manage.RoleManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.domain.AppointConferenceDTO;
-import io.openvidu.server.domain.vo.ConferenceHisResp;
 import io.openvidu.server.domain.vo.GetConferenceScheduleVO;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +20,21 @@ public class GetConferenceScheduleAdminHandler extends GetConferenceScheduleHand
     private RoleManage roleManage;
 
     @Override
-    protected List<ConferenceHisResp> pending(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
+    protected ISchedule getInstance(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
         return new Pending(null, rpcConnection.getProject(), params) {
             @Override
             protected List<AppointConference> pendingAboutAppointment(AppointConferenceDTO appointConference) {
-                List<Long> deptLimit = roleManage.getDeptLimit(rpcConnection.getUserId());
-                appointConference.setDeptLimit(deptLimit);
                 return appointConferenceMapper.pendingAboutAppointmentAdmin(appointConference);
             }
-        }.getList();
+
+            @Override
+            protected AppointConferenceDTO getAppointConferenceDTO() {
+                AppointConferenceDTO appointConferenceDTO = super.getAppointConferenceDTO();
+                List<Long> deptLimit = roleManage.getDeptLimit(rpcConnection.getUserId());
+                appointConferenceDTO.setDeptLimit(deptLimit);
+                return appointConferenceDTO;
+            }
+        };
     }
 
 }

@@ -28,9 +28,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,29 +52,24 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         BindValidate.notNull(params::getPageNum);
         BindValidate.notNull(params::getPageSize);
 
-        List<ConferenceHisResp> conferences;
-
-        Page<Object> page = PageHelper.startPage(params.getPageNum(), params.getPageSize());
-
-        if ("pending".equals(params.getStatus())) {
-            conferences = pending(rpcConnection, params);
-        } else {
-            conferences = new Finished(rpcConnection.getUserId(), params).getList();
-        }
-
-        fetchUpCreator(conferences);
-        return RespResult.ok(new PageResult<>(conferences, page));
+        PageResult<ConferenceHisResp> result = getInstance(rpcConnection, params).getList();
+        fetchUpCreator(result.getList());
+        return RespResult.ok(result);
     }
 
-    protected List<ConferenceHisResp> pending(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
-        return new Pending(rpcConnection.getUserId(), rpcConnection.getProject(), params).getList();
+    protected ISchedule getInstance(RpcConnection rpcConnection, GetConferenceScheduleVO params) {
+        if ("pending".equals(params.getStatus())) {
+            return new Pending(rpcConnection.getUserId(), rpcConnection.getProject(), params);
+        } else {
+            return new Finished(rpcConnection.getUserId(), params);
+        }
     }
 
 
     /**
      * 补全创建人
      */
-    protected void fetchUpCreator(List<ConferenceHisResp> list) {
+    private void fetchUpCreator(Collection<ConferenceHisResp> list) {
 
         if (CollectionUtils.isEmpty(list)) {
             return;
@@ -100,23 +95,30 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         }
     }
 
+    interface ISchedule {
+        PageResult<ConferenceHisResp> getList();
+    }
 
-    class Pending {
+    class Pending implements ISchedule {
         Long userId;
         String project;
         GetConferenceScheduleVO vo;
 
-        public Pending(Long userId, String projcet, GetConferenceScheduleVO vo) {
+        public Pending(Long userId, String project, GetConferenceScheduleVO vo) {
             this.vo = vo;
-            this.project = projcet;
+            this.project = project;
             this.userId = userId;
         }
 
-        public List<ConferenceHisResp> getList() {
-            return pendingAboutAppointment();
+        @Override
+        public PageResult<ConferenceHisResp> getList() {
+            AppointConferenceDTO appointConference = getAppointConferenceDTO();
+            Page<Object> page = PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
+            List<AppointConference> appointConferenceList = pendingAboutAppointment(appointConference);
+            return new PageResult<>(transferResp(appointConferenceList), page);
         }
 
-        private List<ConferenceHisResp> pendingAboutAppointment() {
+        protected AppointConferenceDTO getAppointConferenceDTO() {
             AppointConferenceDTO appointConference = new AppointConferenceDTO();
             appointConference.setUserId(userId);
             appointConference.setProject(this.project);
@@ -131,8 +133,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                     throw new BindValidateException("date parse error date=" + vo.getDate());
                 }
             }
-            List<AppointConference> appointConferenceList = pendingAboutAppointment(appointConference);
-            return transferResp(appointConferenceList);
+            return appointConference;
         }
 
         private List<ConferenceHisResp> transferResp(List<AppointConference> appointConferenceList) {
@@ -168,7 +169,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
         }
     }
 
-    class Finished {
+    class Finished implements ISchedule {
 
         Long userId;
         GetConferenceScheduleVO vo;
@@ -178,8 +179,11 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
             this.userId = userId;
         }
 
-        public List<ConferenceHisResp> getList() {
-            return finishedAboutConference();
+        @Override
+        public PageResult<ConferenceHisResp> getList() {
+            Page<Object> page = PageHelper.startPage(vo.getPageNum(), vo.getPageSize());
+            List<ConferenceHisResp> list = finishedAboutConference();
+            return new PageResult<>(list, page);
         }
 
         private List<ConferenceHisResp> finishedAboutConference() {
