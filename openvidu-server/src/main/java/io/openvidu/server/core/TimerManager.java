@@ -57,6 +57,7 @@ public class TimerManager {
         }
         map.computeIfAbsent(roomId, accountKey -> {
             PollingCompensationScheduler scheduler = new PollingCompensationScheduler(roomId, intervalTime, index);
+            scheduler.setFirst(1);
             scheduler.startPollingTask();
             log.info("leaveRoom start polling in room:{},intervalTime:{}", roomId, intervalTime);
             return scheduler;
@@ -88,6 +89,14 @@ public class TimerManager {
         private int intervalTime;
         private int order;
 
+        public int getFirst() {
+            return first;
+        }
+
+        public void setFirst(int first) {
+            this.first = first;
+        }
+
         public int getOrder() {
             return order;
         }
@@ -105,8 +114,8 @@ public class TimerManager {
         }
 
         public int getIntervalTime(int intervalTime){
-            if (intervalTime < 10 || intervalTime > 60) {
-                intervalTime = 10;
+            if (intervalTime < 0 || intervalTime > 60) {
+                intervalTime = 5;
             }
             return intervalTime;
         }
