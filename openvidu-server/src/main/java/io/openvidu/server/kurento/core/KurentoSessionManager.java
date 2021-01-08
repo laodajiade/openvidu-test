@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class KurentoSessionManager extends SessionManager {
 
@@ -1335,7 +1336,12 @@ public class KurentoSessionManager extends SessionManager {
             if (ConferenceModeEnum.SFU == kurentoSession.getConferenceMode()) {
                 List<Participant> parts = kurentoSession.getOrderedMajorAndOnWallParts();
                 recordingProperties.setLayoutMode(parts.size());
-                for (Participant participant : parts) {
+                if (Objects.nonNull(speakerPart)) {
+					passThruList.add(constructPartRecordInfo(speakerPart,order));
+					order++;
+				}
+				List<Participant> notSpeakerParts = parts.stream().filter(participant -> !ParticipantHandStatus.speaker.equals(participant.getHandStatus())).collect(Collectors.toList());
+                for (Participant participant : notSpeakerParts) {
                     passThruList.add(constructPartRecordInfo(participant, order));
                     order++;
                 }
@@ -1386,6 +1392,10 @@ public class KurentoSessionManager extends SessionManager {
 	private JsonObject constructPartRecordInfo(Participant part, int order) {
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
 		log.info("construct participant:{} record info.", part.getParticipantPublicId());
+		PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
+		if (Objects.isNull(publisherEndpoint)) {
+			kurentoParticipant.downWallCreatePublisher();
+		}
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("passThruId", kurentoParticipant.getPublisher().getPassThru().getId());
 		jsonObject.addProperty("order", order);
