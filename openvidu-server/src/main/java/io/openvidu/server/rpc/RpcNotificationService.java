@@ -214,7 +214,7 @@ public class RpcNotificationService {
 	}
 
 	public void showRpcConnections() {
-		log.info("<PRIVATE_ID, RPC_CONNECTION>: {}", this.rpcConnections.toString());
+		log.info("online rpcConnections: {}", this.rpcConnections.size());
 	}
 
 	public RpcConnection getRpcConnection(String participantPrivateId) {
