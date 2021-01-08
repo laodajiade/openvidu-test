@@ -31,6 +31,19 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 
         Session conferenceSession = sessionManager.getSession(sessionId);
         Participant targetPart = conferenceSession.getParticipantByUUID(targetId);
+
+        if (targetPart == null) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    new JsonObject(),ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+            return;
+        }
+        Participant moderatorPart = conferenceSession.getModeratorPart();
+        if (moderatorPart == null) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    new JsonObject(),ErrorCodeEnum.MODERATOR_NOT_FOUND);
+            return;
+        }
+
         // check if target participant is SUBSCRIBER
         if (OpenViduRole.SUBSCRIBER.equals(targetPart.getRole())
                 && Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {

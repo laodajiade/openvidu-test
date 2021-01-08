@@ -786,6 +786,9 @@ public abstract class SessionManager {
 		ErrorCodeEnum errorCode = ErrorCodeEnum.SUCCESS;
 		Set<Participant> participants = conferenceSession.getParticipants();
 		Participant moderatorPart = conferenceSession.getModeratorPart();
+		if (moderatorPart == null) {
+			return ErrorCodeEnum.MODERATOR_NOT_FOUND;
+		}
 		boolean isMcu = Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU);
 		String sourceConnectionId;
 		String targetConnectionId;
