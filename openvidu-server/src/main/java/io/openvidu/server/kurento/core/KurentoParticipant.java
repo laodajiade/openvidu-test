@@ -140,6 +140,17 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
+	public void downWallCreatePublisher() {
+		log.info("#####create publisher when down wall and id:{}", getParticipantName());
+		if ((Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
+			// Initialize a PublisherEndpoint
+			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setCompositeService(this.session.compositeService);
+		}
+	}
+
 	public void createPublishingEndpoint(MediaOptions mediaOptions, Participant participant) {
 		if (Objects.isNull(this.publisher)) {
 			// Initialize a PublisherEndpoint
