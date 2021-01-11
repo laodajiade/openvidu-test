@@ -17,6 +17,7 @@
 
 package io.openvidu.server.rpc;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
@@ -24,6 +25,7 @@ import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.manage.AuthorizationManage;
+import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -105,6 +107,17 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.CORP_SERVICE_EXPIRED);
 			return;
+		}
+
+		// 如果是会控,且终端主持人退出了会议，报错MODERATOR_NOT_FOUND
+		if (rpcConnection.getAccessType() == AccessTypeEnum.web &&
+				ProtocolElements.THOR_IF_MODERATOR_NOT_FOUND_FILTERS.contains(request.getMethod())) {
+			Participant moderatorPart = sessionManager.getModeratorPart(sessionId);
+			if (moderatorPart == null) {
+				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.MODERATOR_NOT_FOUND);
+				return;
+			}
 		}
 
 		transaction.startAsync();
