@@ -290,7 +290,7 @@ public class KurentoSessionManager extends SessionManager {
 
 		// adjust order notify after onLeft
 		session.dealParticipantOrder(participant,rpcNotificationService);
-		if (!EndReason.sessionClosedByServerApi.equals(reason)) {
+		if (!EndReason.sessionClosedByServer.equals(reason)) {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"
@@ -715,7 +715,7 @@ public class KurentoSessionManager extends SessionManager {
 									ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
 
 			// evict same privateId parts
-			evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies);
+			evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.lastParticipantLeft);
 		}
 	}
 
@@ -726,7 +726,7 @@ public class KurentoSessionManager extends SessionManager {
             Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(privateId);
             if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
                 // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies);
+                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.sessionClosedByServer);
             }
         }
     }
@@ -738,7 +738,7 @@ public class KurentoSessionManager extends SessionManager {
             Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(uuid);
             if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
                 // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies);
+                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.sessionClosedByServer);
             }
         }
     }
@@ -772,7 +772,7 @@ public class KurentoSessionManager extends SessionManager {
 		}
 	}
 
-	private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies) {
+	private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
 		// check if include moderator
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
@@ -843,7 +843,7 @@ public class KurentoSessionManager extends SessionManager {
 
 			// evict participants
             samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
-                    null, EndReason.sessionClosedByServer));
+                    null, reason));
 
             // deal auto on wall
             session.putPartOnWallAutomatically(this);
