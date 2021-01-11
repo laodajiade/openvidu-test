@@ -400,7 +400,7 @@ public class AppointConferenceJobHandler {
         conference.setConferenceDesc(ac.getConferenceDesc());
         conference.setModeratorUuid(ac.getModeratorUuid());
         conference.setProject(ac.getProject());
-        conference.setModeratorUuid(ac.getModeratorUuid());
+        conference.setModeratorPassword(ac.getModeratorPassword());
         conference.setRoomIdType(RoomIdTypeEnums.random.name());
         return conference;
     }

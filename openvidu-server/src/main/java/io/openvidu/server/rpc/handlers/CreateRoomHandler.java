@@ -111,6 +111,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             sessionId = appt.getRoomId();
             roomIdType = RoomIdTypeEnums.random.name();
             moderatorUuid = appt.getModeratorUuid();
+            moderatorPassword = appt.getModeratorPassword();
         } else if (!StringUtils.isEmpty(ruid)) {
             Conference conference = conferenceMapper.selectByRuid(ruid);
             if (conference == null) {
@@ -149,11 +150,13 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         if (sessionManager.isNewSessionIdValid(sessionId)) {
             Conference conference = new Conference();
             // if create appointment conference
-            if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-")) {
+            if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-") && appt != null) {
                 appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid);
 
                 conference.setRuid(ruid);
                 roomSubject = appt.getConferenceSubject();
+                moderatorUuid = appt.getModeratorUuid();
+                moderatorPassword = appt.getModeratorPassword();
                 conference.setConferenceDesc(appt.getConferenceDesc());
                 final AppointConference finalAppt = appt;
                 new Thread(() -> this.inviteParticipant(countDownLatch, finalAppt)).start();
