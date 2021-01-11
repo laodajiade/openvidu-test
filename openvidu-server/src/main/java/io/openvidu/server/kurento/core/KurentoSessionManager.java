@@ -290,7 +290,7 @@ public class KurentoSessionManager extends SessionManager {
 
 		// adjust order notify after onLeft
 		session.dealParticipantOrder(participant,rpcNotificationService);
-		if (!EndReason.sessionClosedByServer.equals(reason)) {
+		if (!EndReason.sessionClosedByServerApi.equals(reason)) {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"

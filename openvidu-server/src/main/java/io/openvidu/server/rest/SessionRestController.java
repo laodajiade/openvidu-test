@@ -221,7 +221,7 @@ public class SessionRestController {
 		} else {
 			Session sessionNotActive = this.sessionManager.getSessionNotActive(sessionId);
 			if (sessionNotActive != null) {
-				this.sessionManager.closeSessionAndEmptyCollections(sessionNotActive, EndReason.sessionClosedByServer);
+				this.sessionManager.closeSessionAndEmptyCollections(sessionNotActive, EndReason.sessionClosedByServerApi);
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
