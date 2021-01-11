@@ -1393,13 +1393,13 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
 		log.info("construct participant:{} record info.", part.getParticipantPublicId());
 		PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
-		if (Objects.isNull(publisherEndpoint)) {
-			kurentoParticipant.downWallCreatePublisher();
-		}
 		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("passThruId", kurentoParticipant.getPublisher().getPassThru().getId());
-		jsonObject.addProperty("order", order);
-		jsonObject.addProperty("osd", part.getUsername());
+		if (Objects.nonNull(publisherEndpoint) && Objects.nonNull(publisherEndpoint.getPassThru())) {
+			jsonObject.addProperty("passThruId", kurentoParticipant.getPublisher().getPassThru().getId());
+			jsonObject.addProperty("order", order);
+			jsonObject.addProperty("osd", part.getUsername());
+
+		}
 		return jsonObject;
 	}
 
