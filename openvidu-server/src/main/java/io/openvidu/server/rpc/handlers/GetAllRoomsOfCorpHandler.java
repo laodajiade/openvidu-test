@@ -7,6 +7,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoleManage;
 import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -17,6 +18,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +71,13 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
                 jsonObject.addProperty("moderatorUserId", moderator.getUserId());
                 jsonObject.addProperty("moderatorToken", cacheManage.getUserInfoByUUID(moderator.getUuid()).get("token").toString());
             } else {
-                return null;
+                User user = userMapper.selectByPrimaryKey(conference.getUserId());
+                if (Objects.nonNull(user)) {
+                    jsonObject.addProperty("moderatorAccount", user.getUuid());
+                    jsonObject.addProperty("moderatorUserId", user.getId());
+                    jsonObject.addProperty("moderatorToken", Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid())) && Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid()).get("token")) ?
+                            cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString() : null);
+                }
             }
             jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->
                     StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
