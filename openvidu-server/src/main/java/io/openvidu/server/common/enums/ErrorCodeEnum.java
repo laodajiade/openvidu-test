@@ -107,6 +107,9 @@ public enum ErrorCodeEnum {
     RECORD_SERVICE_INVALID(13062,"存储服务未启用或已到期"),
     SET_ROLL_CALL_SAME_PART(13063,"不能点名同一个人"),
     MODERATOR_NOT_FOUND(13065,"主持人已离会，请稍后再试"),
+    IM_ALL_LIMIT(13066,"当前会议禁止聊天"),
+    IM_ONLY_PUBLISH(13066,"当前会议仅允许公开聊天"),
+    IM_ONLY_TO_MODERATOR(13066,"当前会议仅允许私聊主持人"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

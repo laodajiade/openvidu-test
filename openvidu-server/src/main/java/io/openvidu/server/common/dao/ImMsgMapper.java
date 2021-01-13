@@ -2,11 +2,12 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.ImMsg;
 import io.openvidu.server.common.pojo.ImMsgExample;
+
+import java.util.Date;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Mapper
 @Repository
@@ -23,7 +24,6 @@ public interface ImMsgMapper {
 
     List<ImMsg> selectByExample(ImMsgExample example);
 
-
     ImMsg selectByPrimaryKey(Long id);
 
     int updateByExampleSelective(@Param("record") ImMsg record, @Param("example") ImMsgExample example);
@@ -38,4 +38,7 @@ public interface ImMsgMapper {
         List<ImMsg> list = selectByExample(example);
         return list.size() == 0 ? null : list.get(0);
     }
+
+    List<ImMsg> getImgHistory(@Param("ruid") String ruid, @Param("userId") Long userId,
+                              @Param("timestamp") Date timestamp, @Param("reverse") int reverse);
 }

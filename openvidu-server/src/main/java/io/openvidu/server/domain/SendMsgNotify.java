@@ -4,12 +4,18 @@ import io.openvidu.server.domain.vo.SendMsgVO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class SendMsgNotify extends SendMsgVO {
 
     private Long msgId;
 
-    private String senderUsername;
+    private ImUser sender;
+
+    private List<ImUser> reciver;
 
 }
+
+

@@ -435,6 +435,76 @@ public class ImMsgExample {
             return (Criteria) this;
         }
 
+        public Criteria andContentIsNull() {
+            addCriterion("content is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentIsNotNull() {
+            addCriterion("content is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentEqualTo(String value) {
+            addCriterion("content =", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentNotEqualTo(String value) {
+            addCriterion("content <>", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentGreaterThan(String value) {
+            addCriterion("content >", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentGreaterThanOrEqualTo(String value) {
+            addCriterion("content >=", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentLessThan(String value) {
+            addCriterion("content <", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentLessThanOrEqualTo(String value) {
+            addCriterion("content <=", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentLike(String value) {
+            addCriterion("content like", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentNotLike(String value) {
+            addCriterion("content not like", value, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentIn(List<String> values) {
+            addCriterion("content in", values, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentNotIn(List<String> values) {
+            addCriterion("content not in", values, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentBetween(String value1, String value2) {
+            addCriterion("content between", value1, value2, "content");
+            return (Criteria) this;
+        }
+
+        public Criteria andContentNotBetween(String value1, String value2) {
+            addCriterion("content not between", value1, value2, "content");
+            return (Criteria) this;
+        }
+
         public Criteria andMsgTypeIsNull() {
             addCriterion("msg_type is null");
             return (Criteria) this;
@@ -685,6 +755,216 @@ public class ImMsgExample {
             return (Criteria) this;
         }
 
+        public Criteria andSenderUuidIsNull() {
+            addCriterion("sender_uuid is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidIsNotNull() {
+            addCriterion("sender_uuid is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidEqualTo(String value) {
+            addCriterion("sender_uuid =", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidNotEqualTo(String value) {
+            addCriterion("sender_uuid <>", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidGreaterThan(String value) {
+            addCriterion("sender_uuid >", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidGreaterThanOrEqualTo(String value) {
+            addCriterion("sender_uuid >=", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidLessThan(String value) {
+            addCriterion("sender_uuid <", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidLessThanOrEqualTo(String value) {
+            addCriterion("sender_uuid <=", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidLike(String value) {
+            addCriterion("sender_uuid like", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidNotLike(String value) {
+            addCriterion("sender_uuid not like", value, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidIn(List<String> values) {
+            addCriterion("sender_uuid in", values, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidNotIn(List<String> values) {
+            addCriterion("sender_uuid not in", values, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidBetween(String value1, String value2) {
+            addCriterion("sender_uuid between", value1, value2, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUuidNotBetween(String value1, String value2) {
+            addCriterion("sender_uuid not between", value1, value2, "senderUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameIsNull() {
+            addCriterion("sender_username is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameIsNotNull() {
+            addCriterion("sender_username is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameEqualTo(String value) {
+            addCriterion("sender_username =", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameNotEqualTo(String value) {
+            addCriterion("sender_username <>", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameGreaterThan(String value) {
+            addCriterion("sender_username >", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameGreaterThanOrEqualTo(String value) {
+            addCriterion("sender_username >=", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameLessThan(String value) {
+            addCriterion("sender_username <", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameLessThanOrEqualTo(String value) {
+            addCriterion("sender_username <=", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameLike(String value) {
+            addCriterion("sender_username like", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameNotLike(String value) {
+            addCriterion("sender_username not like", value, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameIn(List<String> values) {
+            addCriterion("sender_username in", values, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameNotIn(List<String> values) {
+            addCriterion("sender_username not in", values, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameBetween(String value1, String value2) {
+            addCriterion("sender_username between", value1, value2, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderUsernameNotBetween(String value1, String value2) {
+            addCriterion("sender_username not between", value1, value2, "senderUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeIsNull() {
+            addCriterion("sender_terminal_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeIsNotNull() {
+            addCriterion("sender_terminal_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeEqualTo(String value) {
+            addCriterion("sender_terminal_type =", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeNotEqualTo(String value) {
+            addCriterion("sender_terminal_type <>", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeGreaterThan(String value) {
+            addCriterion("sender_terminal_type >", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeGreaterThanOrEqualTo(String value) {
+            addCriterion("sender_terminal_type >=", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeLessThan(String value) {
+            addCriterion("sender_terminal_type <", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeLessThanOrEqualTo(String value) {
+            addCriterion("sender_terminal_type <=", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeLike(String value) {
+            addCriterion("sender_terminal_type like", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeNotLike(String value) {
+            addCriterion("sender_terminal_type not like", value, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeIn(List<String> values) {
+            addCriterion("sender_terminal_type in", values, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeNotIn(List<String> values) {
+            addCriterion("sender_terminal_type not in", values, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeBetween(String value1, String value2) {
+            addCriterion("sender_terminal_type between", value1, value2, "senderTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andSenderTerminalTypeNotBetween(String value1, String value2) {
+            addCriterion("sender_terminal_type not between", value1, value2, "senderTerminalType");
+            return (Criteria) this;
+        }
+
         public Criteria andRevicerUserIdIsNull() {
             addCriterion("revicer_user_id is null");
             return (Criteria) this;
@@ -745,73 +1025,213 @@ public class ImMsgExample {
             return (Criteria) this;
         }
 
-        public Criteria andContentIsNull() {
-            addCriterion("content is null");
+        public Criteria andRevicerUuidIsNull() {
+            addCriterion("revicer_uuid is null");
             return (Criteria) this;
         }
 
-        public Criteria andContentIsNotNull() {
-            addCriterion("content is not null");
+        public Criteria andRevicerUuidIsNotNull() {
+            addCriterion("revicer_uuid is not null");
             return (Criteria) this;
         }
 
-        public Criteria andContentEqualTo(String value) {
-            addCriterion("content =", value, "content");
+        public Criteria andRevicerUuidEqualTo(String value) {
+            addCriterion("revicer_uuid =", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentNotEqualTo(String value) {
-            addCriterion("content <>", value, "content");
+        public Criteria andRevicerUuidNotEqualTo(String value) {
+            addCriterion("revicer_uuid <>", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentGreaterThan(String value) {
-            addCriterion("content >", value, "content");
+        public Criteria andRevicerUuidGreaterThan(String value) {
+            addCriterion("revicer_uuid >", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentGreaterThanOrEqualTo(String value) {
-            addCriterion("content >=", value, "content");
+        public Criteria andRevicerUuidGreaterThanOrEqualTo(String value) {
+            addCriterion("revicer_uuid >=", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentLessThan(String value) {
-            addCriterion("content <", value, "content");
+        public Criteria andRevicerUuidLessThan(String value) {
+            addCriterion("revicer_uuid <", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentLessThanOrEqualTo(String value) {
-            addCriterion("content <=", value, "content");
+        public Criteria andRevicerUuidLessThanOrEqualTo(String value) {
+            addCriterion("revicer_uuid <=", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentLike(String value) {
-            addCriterion("content like", value, "content");
+        public Criteria andRevicerUuidLike(String value) {
+            addCriterion("revicer_uuid like", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentNotLike(String value) {
-            addCriterion("content not like", value, "content");
+        public Criteria andRevicerUuidNotLike(String value) {
+            addCriterion("revicer_uuid not like", value, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentIn(List<String> values) {
-            addCriterion("content in", values, "content");
+        public Criteria andRevicerUuidIn(List<String> values) {
+            addCriterion("revicer_uuid in", values, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentNotIn(List<String> values) {
-            addCriterion("content not in", values, "content");
+        public Criteria andRevicerUuidNotIn(List<String> values) {
+            addCriterion("revicer_uuid not in", values, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentBetween(String value1, String value2) {
-            addCriterion("content between", value1, value2, "content");
+        public Criteria andRevicerUuidBetween(String value1, String value2) {
+            addCriterion("revicer_uuid between", value1, value2, "revicerUuid");
             return (Criteria) this;
         }
 
-        public Criteria andContentNotBetween(String value1, String value2) {
-            addCriterion("content not between", value1, value2, "content");
+        public Criteria andRevicerUuidNotBetween(String value1, String value2) {
+            addCriterion("revicer_uuid not between", value1, value2, "revicerUuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameIsNull() {
+            addCriterion("revicer_username is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameIsNotNull() {
+            addCriterion("revicer_username is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameEqualTo(String value) {
+            addCriterion("revicer_username =", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameNotEqualTo(String value) {
+            addCriterion("revicer_username <>", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameGreaterThan(String value) {
+            addCriterion("revicer_username >", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameGreaterThanOrEqualTo(String value) {
+            addCriterion("revicer_username >=", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameLessThan(String value) {
+            addCriterion("revicer_username <", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameLessThanOrEqualTo(String value) {
+            addCriterion("revicer_username <=", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameLike(String value) {
+            addCriterion("revicer_username like", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameNotLike(String value) {
+            addCriterion("revicer_username not like", value, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameIn(List<String> values) {
+            addCriterion("revicer_username in", values, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameNotIn(List<String> values) {
+            addCriterion("revicer_username not in", values, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameBetween(String value1, String value2) {
+            addCriterion("revicer_username between", value1, value2, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerUsernameNotBetween(String value1, String value2) {
+            addCriterion("revicer_username not between", value1, value2, "revicerUsername");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeIsNull() {
+            addCriterion("revicer_terminal_type is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeIsNotNull() {
+            addCriterion("revicer_terminal_type is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeEqualTo(String value) {
+            addCriterion("revicer_terminal_type =", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeNotEqualTo(String value) {
+            addCriterion("revicer_terminal_type <>", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeGreaterThan(String value) {
+            addCriterion("revicer_terminal_type >", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeGreaterThanOrEqualTo(String value) {
+            addCriterion("revicer_terminal_type >=", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeLessThan(String value) {
+            addCriterion("revicer_terminal_type <", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeLessThanOrEqualTo(String value) {
+            addCriterion("revicer_terminal_type <=", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeLike(String value) {
+            addCriterion("revicer_terminal_type like", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeNotLike(String value) {
+            addCriterion("revicer_terminal_type not like", value, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeIn(List<String> values) {
+            addCriterion("revicer_terminal_type in", values, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeNotIn(List<String> values) {
+            addCriterion("revicer_terminal_type not in", values, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeBetween(String value1, String value2) {
+            addCriterion("revicer_terminal_type between", value1, value2, "revicerTerminalType");
+            return (Criteria) this;
+        }
+
+        public Criteria andRevicerTerminalTypeNotBetween(String value1, String value2) {
+            addCriterion("revicer_terminal_type not between", value1, value2, "revicerTerminalType");
             return (Criteria) this;
         }
 

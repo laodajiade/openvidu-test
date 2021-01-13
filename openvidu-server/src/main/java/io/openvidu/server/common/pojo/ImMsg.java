@@ -27,6 +27,11 @@ public class ImMsg implements Serializable {
     private Date timestamp;
 
     /**
+     * 内容
+     */
+    private String content;
+
+    /**
      * 消息类型：0: 表示文本消息，1: 表示图片，2: 表示语音，3: 表示视频，4: 表示文件
      */
     private Integer msgType;
@@ -44,14 +49,33 @@ public class ImMsg implements Serializable {
     private Long senderUserId;
 
     /**
+     * 发送者的uuid
+     */
+    private String senderUuid;
+
+    /**
+     * 发送者的name
+     */
+    private String senderUsername;
+
+    private String senderTerminalType;
+
+    /**
      * 接收者的userid
      */
     private Long revicerUserId;
 
     /**
-     * 内容
+     * 接收者的uuid
      */
-    private String content;
+    private String revicerUuid;
+
+    /**
+     * 接收者的name
+     */
+    private String revicerUsername;
+
+    private String revicerTerminalType;
 
     /**
      * 扩展字段

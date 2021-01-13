@@ -5,6 +5,7 @@ import io.openvidu.server.exception.BindValidateException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class BindValidate {
@@ -54,6 +55,20 @@ public class BindValidate {
         if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
             throw new BindValidateException(jsonPath + " 不能为 empty");
         }
+    }
+
+    /**
+     * 如果matchCondition的条件为true，则校验supplier
+     *
+     * @param matchCondition 前置条件
+     * @param supplier       校验条件
+     */
+    //todo yy 如果有时间可以试试用 Predicate代替 Supplier<Boolean>
+    public static void notEmptyIfMatch(Supplier<Boolean> matchCondition, BindSupplier<?> supplier) {
+        if (matchCondition == null || !matchCondition.get()) {
+            return;
+        }
+        notEmpty(supplier);
     }
 
     private static void throwBindValidateException(BindSupplier<?> supplier, String s) {
