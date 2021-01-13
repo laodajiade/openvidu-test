@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.JpushMessageMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.JpushMessage" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="msg_content" property="msgContent" jdbcType="VARCHAR" />
+    <result column="msg_type" property="msgType" jdbcType="TINYINT" />
+    <result column="read_type" property="readType" jdbcType="TINYINT" />
+    <result column="ruid" property="ruid" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, uuid, msg_content, msg_type, read_type, ruid, create_time
+  </sql>
+
+  <insert id="insertMsg" parameterType="io.openvidu.server.common.pojo.JpushMessage" >
+    insert into sd_jpush_message
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="uuid != null" >
+        uuid,
+      </if>
+      <if test="msgContent != null" >
+        msg_content,
+      </if>
+      <if test="msgType != null" >
+        msg_type,
+      </if>
+      <if test="readType != null" >
+        read_type,
+      </if>
+      <if test="ruid != null" >
+        ruid,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="uuid != null" >
+        #{uuid,jdbcType=VARCHAR},
+      </if>
+      <if test="msgContent != null" >
+        #{msgContent,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null" >
+        #{msgType,jdbcType=TINYINT},
+      </if>
+      <if test="readType != null" >
+        #{readType,jdbcType=TINYINT},
+      </if>
+      <if test="ruid != null" >
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="selectBySerialNumberAndIndex" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_preset_info
+    where deleted = 0
+    and preset_index = #{index,jdbcType=INTEGER}
+    and serial_number = #{serialNumber,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectList" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_preset_info
+    where deleted = 0
+    and serial_number = #{serialNumber,jdbcType=VARCHAR}
+  </select>
+
+  <update id="deleteByIndexs" >
+    update sd_preset_info
+    set deleted = 1,
+    update_time = now()
+    where serial_number = #{serialNumber,jdbcType=VARCHAR}
+    and preset_index in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </update>
+
+  <update id="update" parameterType="io.openvidu.server.common.pojo.Preset">
+    update sd_preset_info
+    <set>
+      <if test="serialNumber != null and serialNumber !=''">
+        serial_number = #{serialNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="index != null ">
+        preset_index = #{index,jdbcType=INTEGER},
+      </if>
+      <if test="configInfo != null and configInfo !=''">
+        config_info = #{configInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="thumbnailUrl != null and thumbnailUrl !=''">
+        thumbnail_url = #{thumbnailUrl,jdbcType=VARCHAR},
+      </if>
+      update_time = now()
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+</mapper>
