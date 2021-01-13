@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,6 +48,11 @@ public class GetMsgHistoryHandler extends ExRpcAbstractHandler<GetMsgHistoryVO> 
             sendMsgNotify.setSenderAccount(imMsg.getSenderUuid());
             sendMsgNotify.setSender(new ImUser(imMsg.getSenderUuid(), imMsg.getSenderUsername(), imMsg.getSenderTerminalType()));
             sendMsgNotify.setTimestamp(imMsg.getTimestamp().getTime());
+
+            if (sendMsgNotify.getOperate() == 0) {
+                sendMsgNotify.setReciver(Collections.singletonList(
+                        new ImUser(imMsg.getRevicerUuid(), imMsg.getRevicerUsername(), imMsg.getRevicerTerminalType())));
+            }
 
             sendMsgNotify.setClientMsgId(null);
             return sendMsgNotify;
