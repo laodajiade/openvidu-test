@@ -530,6 +530,10 @@ public class ProtocolElements {
 
 	public static final String DELETE_CONFERENCE_HISTORY_METHOD = "deleteConferenceHistory";
 
+	public static final String SEND_MSG_METHOD = "sendMsg";
+	public static final String NOTIFY_SEND_MSG_METHOD = "notifySendMsg";
+	public static final String GET_MSG_HISTORY_METHOD = "getMsgHistory";
+
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
 	public static final String PARTICIPANTJOINED_METHOD = "participantJoined";

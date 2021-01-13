@@ -38,6 +38,14 @@ public class BindValidate {
         }
     }
 
+    public static void notEmpty(BindSupplier<?>... suppliers) {
+        if (suppliers == null) {
+            throw new BindValidateException(" 参数错误");
+        }
+        for (BindSupplier<?> supplier : suppliers) {
+            notEmpty(supplier);
+        }
+    }
 
     public static void notEmpty(JsonObject param, String jsonPath) {
         if (!param.has(jsonPath)) {
