@@ -46,7 +46,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         if (session == null || !session.getRuid().equals(params.getRuid())) {
             return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
         }
-        Participant participant = sessionManager.getParticipant(roomId, rpcConnection.getParticipantPrivateId());
+        Participant participant = session.getParticipantByUUID(rpcConnection.getUserUuid());
         if (participant == null) {
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
@@ -129,10 +129,11 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         imMsg.setSenderUserId(rpcConnection.getUserId());
         imMsg.setSenderUuid(rpcConnection.getUserUuid());
         imMsg.setSenderUsername(rpcConnection.getUsername());
-        imMsg.setSenderTerminalType(rpcConnection.getTerminalType().name());
         imMsg.setContent(params.getContent());
         imMsg.setExt(params.getExt());
 
+        Participant sendParticipant = session.getParticipantByUUID(rpcConnection.getUserUuid());
+        imMsg.setSenderTerminalType(sendParticipant.getTerminalType().name());
         if (params.getOperate() == 0) {
             BindValidate.notEmpty(params::getReciverAccount);
             String reciverUuid = params.getReciverAccount().get(0);
