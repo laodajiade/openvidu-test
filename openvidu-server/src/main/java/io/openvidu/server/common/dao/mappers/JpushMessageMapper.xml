@@ -64,52 +64,44 @@
     </trim>
   </insert>
 
-  <select id="selectBySerialNumberAndIndex" resultMap="BaseResultMap">
+  <select id="getJpushMsgList" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
-    from sd_preset_info
-    where deleted = 0
-    and preset_index = #{index,jdbcType=INTEGER}
-    and serial_number = #{serialNumber,jdbcType=VARCHAR}
+    from sd_jpush_message
+    where uuid = #{uuid,jdbcType=VARCHAR}
+    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) <![CDATA[<=]]> date(create_time)
+    order by create_time desc
   </select>
 
-  <select id="selectList" resultMap="BaseResultMap">
+  <select id="getNotReadMsgCount" resultType="java.lang.Integer">
     select
-    <include refid="Base_Column_List" />
-    from sd_preset_info
-    where deleted = 0
-    and serial_number = #{serialNumber,jdbcType=VARCHAR}
+    count(*)
+    from sd_jpush_message
+    where read_type = 0
+    and uuid = #{uuid,jdbcType=VARCHAR}
   </select>
 
-  <update id="deleteByIndexs" >
-    update sd_preset_info
-    set deleted = 1,
-    update_time = now()
-    where serial_number = #{serialNumber,jdbcType=VARCHAR}
-    and preset_index in
-    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
-      #{item,jdbcType=BIGINT}
-    </foreach>
-  </update>
+  <delete id="delJpushMsg" >
+    delete from sd_jpush_message
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </delete>
 
-  <update id="update" parameterType="io.openvidu.server.common.pojo.Preset">
-    update sd_preset_info
+  <update id="updateJpushMsg" parameterType="java.lang.Object">
+    update sd_jpush_message
     <set>
-      <if test="serialNumber != null and serialNumber !=''">
-        serial_number = #{serialNumber,jdbcType=VARCHAR},
-      </if>
-      <if test="index != null ">
-        preset_index = #{index,jdbcType=INTEGER},
-      </if>
-      <if test="configInfo != null and configInfo !=''">
-        config_info = #{configInfo,jdbcType=VARCHAR},
-      </if>
-      <if test="thumbnailUrl != null and thumbnailUrl !=''">
-        thumbnail_url = #{thumbnailUrl,jdbcType=VARCHAR},
+      <if test="readType != null ">
+        read_type = #{readType,jdbcType=INTEGER},
       </if>
       update_time = now()
     </set>
-    where id = #{id,jdbcType=BIGINT}
+    where read_type = 0
+    and uuid = #{uuid,jdbcType=VARCHAR}
+    <if test="list != null and list.size > 0">
+      AND id in
+      <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
   </update>
 
 </mapper>
