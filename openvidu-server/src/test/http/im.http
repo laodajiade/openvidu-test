@@ -32,3 +32,15 @@ Content-Type: application/json
   "ruid": "f337d770-612d-4e7c-8f42-cb72d5899b56",
   "limit": 10
 }
+
+###
+
+POST http://localhost:4443/dev/test?id={{uuid}}&method=setImMode
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "{{roomId}}",
+  "operate": 2
+}

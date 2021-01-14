@@ -533,6 +533,8 @@ public class ProtocolElements {
 	public static final String SEND_MSG_METHOD = "sendMsg";
 	public static final String NOTIFY_SEND_MSG_METHOD = "notifySendMsg";
 	public static final String GET_MSG_HISTORY_METHOD = "getMsgHistory";
+	public static final String SET_IM_MODE_METHOD = "setImMode";
+	public static final String NOTIFY_SET_IM_MODE_METHOD = "notifySetImMode";
 
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 

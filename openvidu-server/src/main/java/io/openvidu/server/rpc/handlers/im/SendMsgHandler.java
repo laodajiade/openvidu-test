@@ -24,7 +24,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
@@ -77,16 +76,16 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
     }
 
     private void validateImMode(SendMsgVO params, Session session) {
-        if (session.getImMode() == IMModeEnum.NOT_LIMIT.getMode()) {
+        if (session.getPresetInfo().getImMode() == IMModeEnum.NOT_LIMIT.getMode()) {
             return;
         }
-        if (session.getImMode() == IMModeEnum.ALL_LIMIT.getMode()) {
+        if (session.getPresetInfo().getImMode() == IMModeEnum.ALL_LIMIT.getMode()) {
             throw new BizException(ErrorCodeEnum.IM_ALL_LIMIT);
         }
-        if (session.getImMode() == IMModeEnum.ONLY_PUBLISH.getMode() && params.getOperate() != 1) {
+        if (session.getPresetInfo().getImMode() == IMModeEnum.ONLY_PUBLISH.getMode() && params.getOperate() != 1) {
             throw new BizException(ErrorCodeEnum.IM_ONLY_PUBLISH);
         }
-        if (session.getImMode() == IMModeEnum.ONLY_TO_MODERATOR.getMode() && params.getOperate() != 0
+        if (session.getPresetInfo().getImMode() == IMModeEnum.ONLY_TO_MODERATOR.getMode() && params.getOperate() != 0
                 && Objects.equals(session.getConference().getModeratorUuid(), params.getReciverAccount().get(0))) {
             throw new BizException(ErrorCodeEnum.IM_ONLY_TO_MODERATOR);
         }

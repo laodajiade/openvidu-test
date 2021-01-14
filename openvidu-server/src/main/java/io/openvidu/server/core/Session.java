@@ -119,10 +119,6 @@ public class Session implements SessionInterface {
 	private JsonObject subtitleExtraConfig = null;
 	protected ConcurrentHashMap<String,Integer> reconnectPartOrderMap = new ConcurrentHashMap<>();
 
-	@Getter
-	@Setter
-	private Integer imMode = IMModeEnum.NOT_LIMIT.getMode();
-
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
 		this.startTime = previousSession.getStartTime();

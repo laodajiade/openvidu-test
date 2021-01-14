@@ -1,5 +1,8 @@
 package io.openvidu.server.core;
 
+import io.openvidu.server.common.enums.IMModeEnum;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.util.StringUtils;
 
 import java.util.Objects;
@@ -31,6 +34,10 @@ public class SessionPreset {
     private SessionPresetEnum pollingStatusInRoom = SessionPresetEnum.off;
 
     private Integer pollingIntervalTime;
+
+    @Getter
+    @Setter
+    private Integer imMode = IMModeEnum.NOT_LIMIT.getMode();
 
     public void setMicStatusInRoom(SessionPresetEnum micStatusInRoom) { this.micStatusInRoom = micStatusInRoom; }
 
