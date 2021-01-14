@@ -217,6 +217,10 @@ public class OpenviduConfig {
 	@Value("${media.profile.spec.type}")
 	private String mediaProfileSpecType;
 
+	@Getter
+	@Value("${conference.invite.url}")
+	private String conferenceInviteUrl;
+
 	@Resource
 	private KmsRegistrationManage kmsRegistrationManage;
 

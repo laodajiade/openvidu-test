@@ -193,6 +193,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
             SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                     roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
+            preset.setConInviteUrl(openviduConfig.getConferenceInviteUrl() + StringUtil.getNonce(8));
             sessionManager.setPresetInfo(sessionId, preset);
 
             // store this inactive session
