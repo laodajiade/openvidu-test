@@ -110,7 +110,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
 
         if (params.getOperate() == 0) {
             notification.setParticipantIds(params.getReciverAccount());
-            sendMsgNotify.setReciver(Collections.singletonList(new ImUser(imMsg.getRevicerUuid(),
+            sendMsgNotify.setRecivers(Collections.singletonList(new ImUser(imMsg.getRevicerUuid(),
                     imMsg.getRevicerUsername(), imMsg.getRevicerTerminalType())));
         } else {
             notification.withParticipantIds(imMsg.getRoomId(), sessionManager);

@@ -14,7 +14,7 @@ public class SendMsgNotify extends SendMsgVO {
 
     private ImUser sender;
 
-    private List<ImUser> reciver;
+    private List<ImUser> recivers;
 
 }
 

@@ -50,7 +50,7 @@ public class GetMsgHistoryHandler extends ExRpcAbstractHandler<GetMsgHistoryVO> 
             sendMsgNotify.setTimestamp(imMsg.getTimestamp().getTime());
 
             if (sendMsgNotify.getOperate() == 0) {
-                sendMsgNotify.setReciver(Collections.singletonList(
+                sendMsgNotify.setRecivers(Collections.singletonList(
                         new ImUser(imMsg.getRevicerUuid(), imMsg.getRevicerUsername(), imMsg.getRevicerTerminalType())));
             }
 
