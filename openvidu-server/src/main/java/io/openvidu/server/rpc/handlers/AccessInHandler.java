@@ -57,6 +57,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        String registrationId = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_REGISTRATION_ID_TYPE);
         String deviceName = null;
         Map userInfo = null;
         JsonObject object = new JsonObject();
@@ -132,6 +133,10 @@ public class AccessInHandler extends RpcAbstractHandler {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(),
                     request.getId(), object, errCode);
             return;
+        }
+        if (!StringUtils.isEmpty(registrationId)) {
+            cacheManage.updateTokenInfo(uuid, ProtocolElements.ACCESS_IN_REGISTRATION_ID_TYPE, registrationId);
+            cacheManage.updateTokenInfo(uuid, ProtocolElements.ACCESS_IN_CLIENT_TYPE, clientType);
         }
 
         Long userId = Long.valueOf(String.valueOf(userInfo.get("userId")));

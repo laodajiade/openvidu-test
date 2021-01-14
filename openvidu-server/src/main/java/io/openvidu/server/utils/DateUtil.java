@@ -14,6 +14,7 @@ public class DateUtil {
 
     public static final String FORMAT_YEAR_MONTH_DAY = "yyyyMMdd";
     public static final String DEFAULT_YEAR_MONTH_DAY = "yyyy-MM-dd";
+    public static final String DEFAULT_MONTH_DAY_HOUR_MIN = "MM-dd HH:mm";
 
     /**
      * 获取结束时间
@@ -62,4 +63,9 @@ public class DateUtil {
         return calendar.getTime();
     }
 
+
+    public static void main(String[] args) {
+        System.out.println(getTimeOfDate(System.currentTimeMillis()));
+        System.out.println(getDateFormat(new Date(), DEFAULT_MONTH_DAY_HOUR_MIN));
+    }
 }

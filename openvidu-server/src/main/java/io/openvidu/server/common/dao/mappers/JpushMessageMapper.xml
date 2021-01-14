@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.JpushMessageMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.JpushMessage" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="msg_content" property="msgContent" jdbcType="VARCHAR" />
+    <result column="msg_type" property="msgType" jdbcType="TINYINT" />
+    <result column="read_type" property="readType" jdbcType="TINYINT" />
+    <result column="ruid" property="ruid" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, uuid, msg_content, msg_type, read_type, ruid, create_time
+  </sql>
+
+  <insert id="insertMsg" parameterType="io.openvidu.server.common.pojo.JpushMessage" >
+    insert into sd_jpush_message
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="uuid != null" >
+        uuid,
+      </if>
+      <if test="msgContent != null" >
+        msg_content,
+      </if>
+      <if test="msgType != null" >
+        msg_type,
+      </if>
+      <if test="readType != null" >
+        read_type,
+      </if>
+      <if test="ruid != null" >
+        ruid,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="uuid != null" >
+        #{uuid,jdbcType=VARCHAR},
+      </if>
+      <if test="msgContent != null" >
+        #{msgContent,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null" >
+        #{msgType,jdbcType=TINYINT},
+      </if>
+      <if test="readType != null" >
+        #{readType,jdbcType=TINYINT},
+      </if>
+      <if test="ruid != null" >
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+  <select id="getJpushMsgList" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_jpush_message
+    where uuid = #{uuid,jdbcType=VARCHAR}
+    and DATE_SUB(CURDATE(), INTERVAL 30 DAY) <![CDATA[<=]]> date(create_time)
+    order by create_time desc
+  </select>
+
+  <select id="getNotReadMsgCount" resultType="java.lang.Integer">
+    select
+    count(*)
+    from sd_jpush_message
+    where read_type = 0
+    and uuid = #{uuid,jdbcType=VARCHAR}
+  </select>
+
+  <delete id="delJpushMsg" >
+    delete from sd_jpush_message
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </delete>
+
+  <update id="updateJpushMsg" parameterType="java.lang.Object">
+    update sd_jpush_message
+    <set>
+      <if test="readType != null ">
+        read_type = #{readType,jdbcType=INTEGER},
+      </if>
+      update_time = now()
+    </set>
+    where read_type = 0
+    and uuid = #{uuid,jdbcType=VARCHAR}
+    <if test="list != null and list.size > 0">
+      AND id in
+      <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+        #{item,jdbcType=BIGINT}
+      </foreach>
+    </if>
+  </update>
+
+</mapper>
