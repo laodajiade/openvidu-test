@@ -17,6 +17,7 @@
 
 package io.openvidu.server.rpc;
 
+import com.codahale.metrics.Timer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
@@ -25,8 +26,7 @@ import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.manage.AuthorizationManage;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.*;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -119,9 +119,20 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				return;
 			}
 		}
-
+		RequestId.initId();
+		MetriceUtils.meterMark("all-request");
+		Timer.Context timer = MetriceUtils.timer(request.getMethod());
 		transaction.startAsync();
-		rpcAbstractHandler.handRpcRequest(rpcConnection, request);
+		UseTime.start();
+
+		try {
+			rpcAbstractHandler.handRpcRequest(rpcConnection, request);
+		} finally {
+			if (UseTime.elapse() > 500) {
+				log.info("\nrequestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
+			}
+			timer.stop();
+		}
 	}
 
 
