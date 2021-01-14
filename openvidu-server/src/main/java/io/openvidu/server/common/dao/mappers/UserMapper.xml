@@ -397,7 +397,7 @@
 
   <select id="selectAdminUserByProject" resultMap="BaseResultMap" parameterType="java.lang.String">
     SELECT
-      u.*
+      u.id,u.uuid,spa.phone
     FROM
       sd_user u,
       sd_preset_admin spa
