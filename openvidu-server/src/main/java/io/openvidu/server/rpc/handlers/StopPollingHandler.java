@@ -40,6 +40,11 @@ public class StopPollingHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
         }
+        if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.off)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.POLLING_IS_NOT_STARTED);
+            return;
+        }
         SessionPreset sessionPreset = session.getPresetInfo();
         sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
         timerManager.stopPollingCompensation(roomId);

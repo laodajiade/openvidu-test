@@ -83,14 +83,16 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         this.sessionManager.updateConferenceInfo(sessionId);
 
         //close room stopPolling
-        SessionPreset sessionPreset = session.getPresetInfo();
-        sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-        timerManager.stopPollingCompensation(sessionId);
-        //send notify
-        JsonObject params = new JsonObject();
-        params.addProperty("roomId", sessionId);
-        session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+        if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+            SessionPreset sessionPreset = session.getPresetInfo();
+            sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+            timerManager.stopPollingCompensation(sessionId);
+            //send notify
+            JsonObject params = new JsonObject();
+            params.addProperty("roomId", sessionId);
+            session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                    ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+        }
 
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
         rpcConnection.setReconnected(false);
