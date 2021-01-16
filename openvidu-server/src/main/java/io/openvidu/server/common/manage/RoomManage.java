@@ -33,4 +33,6 @@ public interface RoomManage {
     List<String> getSubRoomIds(String roomId, Long orgId);
 
     List<ConferencePartHistory> getConfRecordDetail(ConferencePartHistory search);
+
+    String createShortUrl();
 }

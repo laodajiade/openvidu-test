@@ -178,6 +178,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             conference.setModeratorPassword(StringUtils.isEmpty(moderatorPassword) ? StringUtil.getRandomPassWord(6) : moderatorPassword);
             conference.setRoomIdType(roomIdType);
             conference.setModeratorUuid(moderatorUuid);
+            conference.setShortUrl(roomManage.createShortUrl());
             roomManage.createMeetingRoom(conference);
 
             // setPresetInfo.
@@ -193,7 +194,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
             SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                     roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
-            preset.setConInviteUrl(openviduConfig.getConferenceInviteUrl() + StringUtil.getNonce(8));
             sessionManager.setPresetInfo(sessionId, preset);
 
             // store this inactive session
@@ -247,7 +247,5 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         } catch (InterruptedException e) {
             log.error("create room inviteParticipant error", e);
         }
-
-
     }
 }

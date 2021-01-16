@@ -39,8 +39,6 @@ public class SessionPreset {
     @Setter
     private Integer imMode = IMModeEnum.NOT_LIMIT.getMode();
 
-    private String conInviteUrl;
-
     public void setMicStatusInRoom(SessionPresetEnum micStatusInRoom) { this.micStatusInRoom = micStatusInRoom; }
 
     public SessionPresetEnum getMicStatusInRoom() { return this.micStatusInRoom; }
@@ -109,13 +107,6 @@ public class SessionPreset {
         this.pollingIntervalTime = pollingIntervalTime;
     }
 
-    public String getConInviteUrl() {
-        return conInviteUrl;
-    }
-
-    public void setConInviteUrl(String conInviteUrl) {
-        this.conInviteUrl = conInviteUrl;
-    }
 
     public SessionPreset() {
         this.micStatusInRoom = SessionPresetEnum.on;

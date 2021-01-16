@@ -22,10 +22,11 @@
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
     <result column="concurrent_number" property="concurrentNumber" jdbcType="INTEGER" />
     <result column="room_id_type" property="roomIdType" jdbcType="VARCHAR" />
+    <result column="short_url" property="shortUrl" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
-    status, password, moderator_uuid, moderator_password, invite_limit, create_time, update_time, project, concurrent_number, room_id_type
+    status, password, moderator_uuid, moderator_password, invite_limit, create_time, update_time, project, concurrent_number, room_id_type, short_url
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
       select
@@ -92,12 +93,12 @@
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Conference" >
     insert into sd_conference (id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time,
-      end_time, status, password, moderator_password, project, room_id_type, moderator_uuid
+      end_time, status, password, moderator_password, project, room_id_type, moderator_uuid, short_url
       )
     values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
       #{conferenceDesc,jdbcType=VARCHAR}, #{conferenceMode,jdbcType=TINYINT}, #{userId,jdbcType=BIGINT}, #{startTime,jdbcType=TIMESTAMP},
       #{endTime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},#{moderatorPassword,jdbcType=VARCHAR},#{project,jdbcType=VARCHAR},
-      #{roomIdType,jdbcType=VARCHAR}, #{moderatorUuid,jdbcType=VARCHAR}
+      #{roomIdType,jdbcType=VARCHAR}, #{moderatorUuid,jdbcType=VARCHAR}, #{shortUrl,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Conference" >
@@ -157,6 +158,9 @@
       <if test="roomIdType != null" >
         room_id_type,
       </if>
+      <if test="shortUrl != null" >
+        short_url,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -212,6 +216,9 @@
       </if>
       <if test="roomIdType != null" >
         #{roomIdType,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shortUrl != null" >
+        #{shortUrl,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -389,5 +396,12 @@
     <include refid="Base_Column_List"/>
     from sd_conference a
     where a.`status` != 2
+  </select>
+
+  <select id="getConferenceByShortUrl" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference
+    where short_url = #{shortUrl,jdbcType=VARCHAR}
   </select>
 </mapper>
