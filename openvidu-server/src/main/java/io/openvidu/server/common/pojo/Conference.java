@@ -47,4 +47,6 @@ public class Conference {
     private String roomIdType;
 
     private String shortUrl;
+
+    private String moderatorName;
 }

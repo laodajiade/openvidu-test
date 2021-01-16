@@ -23,10 +23,11 @@
     <result column="concurrent_number" property="concurrentNumber" jdbcType="INTEGER" />
     <result column="room_id_type" property="roomIdType" jdbcType="VARCHAR" />
     <result column="short_url" property="shortUrl" jdbcType="VARCHAR" />
+    <result column="moderator_name" property="moderatorName" jdbcType="VARCHAR" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time, end_time, room_capacity,
-    status, password, moderator_uuid, moderator_password, invite_limit, create_time, update_time, project, concurrent_number, room_id_type, short_url
+    status, password, moderator_uuid, moderator_password, invite_limit, create_time, update_time, project, concurrent_number, room_id_type, short_url, moderator_name
   </sql>
   <select id="selectBySearchCondition" resultMap="BaseResultMap" parameterType="io.openvidu.server.common.pojo.ConferenceSearch">
       select
@@ -93,12 +94,12 @@
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Conference" >
     insert into sd_conference (id, ruid, room_id, conference_subject, conference_desc, conference_mode, user_id, start_time,
-      end_time, status, password, moderator_password, project, room_id_type, moderator_uuid, short_url
+      end_time, status, password, moderator_password, project, room_id_type, moderator_uuid, short_url, moderator_name
       )
     values (#{id,jdbcType=BIGINT}, #{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
       #{conferenceDesc,jdbcType=VARCHAR}, #{conferenceMode,jdbcType=TINYINT}, #{userId,jdbcType=BIGINT}, #{startTime,jdbcType=TIMESTAMP},
       #{endTime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},#{moderatorPassword,jdbcType=VARCHAR},#{project,jdbcType=VARCHAR},
-      #{roomIdType,jdbcType=VARCHAR}, #{moderatorUuid,jdbcType=VARCHAR}, #{shortUrl,jdbcType=VARCHAR}
+      #{roomIdType,jdbcType=VARCHAR}, #{moderatorUuid,jdbcType=VARCHAR}, #{shortUrl,jdbcType=VARCHAR}, #{moderatorName,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.Conference" >
@@ -161,6 +162,9 @@
       <if test="shortUrl != null" >
         short_url,
       </if>
+      <if test="moderatorName != null" >
+        moderator_name,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -219,6 +223,9 @@
       </if>
       <if test="shortUrl != null" >
         #{shortUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="moderatorName != null" >
+        #{moderatorName,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>

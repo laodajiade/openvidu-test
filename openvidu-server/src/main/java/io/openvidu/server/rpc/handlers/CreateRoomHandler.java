@@ -179,6 +179,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             conference.setRoomIdType(roomIdType);
             conference.setModeratorUuid(moderatorUuid);
             conference.setShortUrl(roomManage.createShortUrl());
+            conference.setModeratorName(rpcConnection.getUsername());
             roomManage.createMeetingRoom(conference);
 
             // setPresetInfo.

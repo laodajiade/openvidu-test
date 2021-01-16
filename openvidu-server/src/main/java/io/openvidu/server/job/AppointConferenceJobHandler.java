@@ -407,6 +407,7 @@ public class AppointConferenceJobHandler {
         conference.setModeratorPassword(ac.getModeratorPassword());
         conference.setRoomIdType(RoomIdTypeEnums.random.name());
         conference.setShortUrl(roomManage.createShortUrl());
+        conference.setModeratorName(ac.getModeratorName());
         return conference;
     }
 
