@@ -183,6 +183,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
             if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
                 String type = userInfo.get("type").toString();
                 String registrationId = userInfo.get("registrationId").toString();
+                log.info("send jpush message type:{} registrationId:{}",type, registrationId);
                 Date createDate = new Date();
                 String title = vo.getSubject();
                 String alert = String.format(StringUtil.MEETING_NOTIFY, vo.getSubject(),

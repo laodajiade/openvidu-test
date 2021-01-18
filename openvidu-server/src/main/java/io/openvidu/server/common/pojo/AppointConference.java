@@ -5,7 +5,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * @author 
+ * @author
  * 预约会议表
  */
 @Data
@@ -44,6 +44,10 @@ public class AppointConference implements Serializable {
      * 主持人uuid
      */
     private String moderatorUuid;
+    /**
+     * 主持人昵称
+     */
+    private String moderatorName;
 
     /**
      * 开始时间

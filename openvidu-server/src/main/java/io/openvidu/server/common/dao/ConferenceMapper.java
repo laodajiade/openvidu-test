@@ -43,4 +43,6 @@ public interface ConferenceMapper {
     void changeRealStartTime(String ruid);
 
     List<Conference> getNotFinishConference();
+
+    Conference getConferenceByShortUrl(String shortUrl);
 }

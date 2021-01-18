@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.dao.DeviceMapper;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
@@ -40,6 +41,9 @@ public class CacheManageImpl implements CacheManage {
     @Resource(name = "roomRedisTemplate")
     private RedisTemplate<String, Object> roomRedisTemplate;
 
+    @Resource
+    private DeviceMapper deviceMapper;
+
 
     @Override
     public Map getUserInfoByUUID(String uuid) {
@@ -61,6 +65,7 @@ public class CacheManageImpl implements CacheManage {
     public void setDeviceStatus(String serialNumber, String version) {
         String key = CacheKeyConstants.DEV_PREFIX_KEY + serialNumber;
         tokenStringTemplate.opsForValue().set(key, version);
+        deviceMapper.updateDeviceStatus(serialNumber, version);
     }
 
     @Override
@@ -110,6 +115,7 @@ public class CacheManageImpl implements CacheManage {
 
         if (!StringUtils.isEmpty(rpcConnection.getSerialNumber()) && updateDevStatus) {
             tokenStringTemplate.opsForValue().set(CacheKeyConstants.DEV_PREFIX_KEY + rpcConnection.getSerialNumber(), terminalStatus.name());
+            deviceMapper.updateDeviceStatus(rpcConnection.getSerialNumber(), terminalStatus.name());
             log.info("Update device online status in cache. serialNumber:{}, updateStatus:{}", rpcConnection.getSerialNumber(), terminalStatus.name());
         }
     }

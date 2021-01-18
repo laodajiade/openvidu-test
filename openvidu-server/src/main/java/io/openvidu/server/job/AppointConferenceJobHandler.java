@@ -16,6 +16,7 @@ import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
+import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
@@ -66,6 +67,9 @@ public class AppointConferenceJobHandler {
 
     @Resource
     private ConferenceMapper conferenceMapper;
+
+    @Resource
+    private RoomManage roomManage;
 
     /**
      * 预约会议通知
@@ -402,6 +406,8 @@ public class AppointConferenceJobHandler {
         conference.setProject(ac.getProject());
         conference.setModeratorPassword(ac.getModeratorPassword());
         conference.setRoomIdType(RoomIdTypeEnums.random.name());
+        conference.setShortUrl(roomManage.createShortUrl());
+        conference.setModeratorName(ac.getModeratorName());
         return conference;
     }
 

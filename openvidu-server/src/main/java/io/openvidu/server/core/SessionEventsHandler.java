@@ -244,7 +244,8 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("automatically", session.isAutomatically());
         roomInfoJson.addProperty("roomIdType", conference.getRoomIdType());
         roomInfoJson.addProperty("ruid", conference.getRuid());
-        roomInfoJson.addProperty("imMode", session.getPresetInfo().getImMode());
+        roomInfoJson.addProperty("moderatorAccount", conference.getModeratorUuid());
+		roomInfoJson.addProperty("moderatorName", conference.getModeratorName());
 		roomInfoJson.addProperty(ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM,participant.getPreset().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
@@ -255,6 +256,7 @@ public class SessionEventsHandler {
         if (org.apache.commons.lang.StringUtils.isNotEmpty(conference.getPassword())) {
 			roomInfoJson.addProperty("password", conference.getPassword());
 		}
+
 		result.add("value", resultArray);
 
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {

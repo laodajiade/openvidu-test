@@ -110,6 +110,7 @@ public enum ErrorCodeEnum {
     IM_ALL_LIMIT(13066,"全体禁言"),
     IM_ONLY_PUBLISH(13066,"主持人不允许私聊"),
     IM_ONLY_TO_MODERATOR(13066,"仅允许与主持人私聊"),
+    POLLING_IS_NOT_STARTED(13069, "轮询尚未开始"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
