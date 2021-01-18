@@ -819,6 +819,7 @@ public class ProtocolElements {
 	public static final String UPLOAD_MEETING_QUALITY_METHOD = "uploadMeetingQuality";
 	public static final String UPLOAD_MEETING_QUALITY_NOTIFY_METHOD = "uploadMeetingQualityNotify";
 
+	public static final String EVICT_CORPORATION_METHOD = "evictCorporation";
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
