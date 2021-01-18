@@ -3,6 +3,7 @@ package io.openvidu.server.common.broker;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
@@ -24,10 +25,7 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 
 /**
  * @author chosongi
@@ -106,6 +104,9 @@ public class UserDelHandler {
                                 // access out the delUserRpcConnection directly
                                 log.info("Access out the user:{} websocket connection directly cause it is free", userId);
                             }
+                            rpcNotificationService.sendNotification(delUserRpcConnection.getParticipantPrivateId(), ProtocolElements.EVICT_CORPORATION_METHOD,new JsonObject());
+                            TimeUnit.SECONDS.sleep(3);
+
                             rpcNotificationService.closeRpcSession(delUserRpcConnection.getParticipantPrivateId());
                         } else {
                             log.info("User:{} deleted did not access the signal server.", userId);
