@@ -104,13 +104,15 @@ public enum ErrorCodeEnum {
     JOIN_ROOM_NEEDED(13057,"请先加入房间"),
     REMAINDER_DURATION_USE_UP(13058,"通话时长已用完，请联系管理员"),
     UPLOAD_MEETING_QUALITY_TIMEOUT(13059,"会议质量上报超时"),
-    RECORD_SERVICE_INVALID(13062,"存储服务未启用或已到期"),
+    UNSUPPORTED_RECORD_OPERATION(13061,"当前不支持录制服务"),
+    RECORD_SERVICE_INVALID(13062,"录制服务已到期，请联系管理员"),
     SET_ROLL_CALL_SAME_PART(13063,"不能点名同一个人"),
     MODERATOR_NOT_FOUND(13065,"主持人已离会，请稍后再试"),
     IM_ALL_LIMIT(13066,"全体禁言"),
     IM_ONLY_PUBLISH(13066,"主持人不允许私聊"),
     IM_ONLY_TO_MODERATOR(13066,"仅允许与主持人私聊"),
     POLLING_IS_NOT_STARTED(13069, "轮询尚未开始"),
+    NO_RECORD_SERVICE(13070, "未开通录制服务，请联系管理员"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

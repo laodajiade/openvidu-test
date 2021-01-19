@@ -31,6 +31,9 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     @Value("${min.interval.stop}")
     private Long minIntervalStop;
 
+    @Value("${record.service:true}")
+    private boolean recordService = true;
+
     private static final long lowerLimit = 20 * 1024 * 1024;
 
     private static final long upperLimit = 100 * 1024 * 1024;
@@ -81,6 +84,16 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
         // 录制服务是否启用（在有效期内）
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        if (!recordService){
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);
+            return;
+        }
+        if (corporation.getRecordingExpireDate().getYear() == 1970) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.NO_RECORD_SERVICE);
+            return;
+        }
         if (LocalDateTimeUtils.toEpochMilli(corporation.getRecordingExpireDate()) < System.currentTimeMillis()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.RECORD_SERVICE_INVALID);
