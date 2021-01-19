@@ -3,6 +3,7 @@ package io.openvidu.server.common.pojo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -22,16 +23,16 @@ public class Corporation {
     private Integer recordingCapacity;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date activationDate;
+    private LocalDateTime activationDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date expireDate;
+    private LocalDateTime expireDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date recordingActivationDate;
+    private LocalDateTime recordingActivationDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date recordingExpireDate;
+    private LocalDateTime recordingExpireDate;
 
     private Integer remainderDuration;
 }

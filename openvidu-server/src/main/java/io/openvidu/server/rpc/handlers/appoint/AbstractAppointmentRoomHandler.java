@@ -52,9 +52,6 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
     @Resource
     private JpushMessageMapper jpushMessageMapper;
 
-
-    protected static final long ONE_DAY_MILLIS = 24 * 60 * 60 * 1000;
-
     /**
      * 创建定时任务
      */

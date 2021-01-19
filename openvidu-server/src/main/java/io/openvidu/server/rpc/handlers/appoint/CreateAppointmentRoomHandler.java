@@ -92,7 +92,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         }
 
         // 校验有效期
-        if (corporation.getExpireDate().getTime() + ONE_DAY_MILLIS < params.getEndTime()) {
+        if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
         }
         // 判断是否会议冲突

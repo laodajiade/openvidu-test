@@ -415,10 +415,10 @@
     where
     ruid = #{ruid} and (sender_user_id= #{userId}  or operate = 1 or revicer_user_id = #{userId})
     <if test="timestamp != null and reverse == 1 "  >
-      and `timestamp` > #{timestamp}
+      and `timestamp` >= #{timestamp}
     </if>
     <if test="timestamp != null and reverse == 2 "  >
-      and #{timestamp} > `timestamp`
+      and #{timestamp} >= `timestamp`
     </if>
     <if test="reverse == 1">
       order by `timestamp` asc ,id asc
