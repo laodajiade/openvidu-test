@@ -136,6 +136,9 @@ public abstract class RpcAbstractHandler {
     protected JpushMessageMapper jpushMessageMapper;
 
     @Resource
+    protected CallHistoryMapper callHistoryMapper;
+
+    @Resource
     protected InviteCompensationManage inviteCompensationManage;
 
     @Resource

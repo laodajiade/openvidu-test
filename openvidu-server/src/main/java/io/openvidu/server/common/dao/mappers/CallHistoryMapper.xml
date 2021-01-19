@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.CallHistoryMapper" >
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.CallHistory" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="room_id" property="roomId" jdbcType="VARCHAR" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="ruid" property="ruid" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, room_id, uuid, username, ruid, create_time, update_time
+  </sql>
+
+  <select id="getCallHistoryList" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select
+    <include refid="Base_Column_List" />
+    from sd_call_history
+    where del = 0
+    and ruid = #{ruid,jdbcType=VARCHAR}
+  </select>
+
+
+  <insert id="insertBatch" parameterType="java.util.List" >
+    insert into sd_call_history (room_id, uuid, username,ruid)
+    values
+    <foreach collection="list" index="index" item="ud" separator=",">
+      ( #{ud.roomId,jdbcType=VARCHAR}, #{ud.uuid,jdbcType=VARCHAR},
+      #{ud.username,jdbcType=VARCHAR},#{ud.ruid,jdbcType=VARCHAR})
+    </foreach>
+  </insert>
+
+  <update id="updateCallHistory" parameterType="java.lang.Object">
+    update sd_call_history
+    set del = 1
+    where ruid = #{ruid,jdbcType=VARCHAR}
+    and uuid = #{uuid,jdbcType=VARCHAR}
+  </update>
+
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.User" >
+    insert into sd_call_history
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="roomId != null" >
+        room_id,
+      </if>
+      <if test="uuid != null" >
+        uuid,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="ruid != null" >
+        ruid,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null" >
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="uuid != null" >
+        #{uuid,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="ruid != null" >
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+
+
+</mapper>

@@ -160,19 +160,19 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                 String type = userInfo.get("type").toString();
                 String registrationId = userInfo.get("registrationId").toString();
                 Date createDate = new Date();
-                String title = vo.getSubject();
+                String title = StringUtil.INVITE_CONT;
                 String alert = String.format(StringUtil.MEETING_INVITE, userName, vo.getSubject(),
                         DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
                         DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
                 Map<String,String> map = new HashMap<>(1);
-                map.put("message",getJpushMsgTemp(vo, alert, createDate, JpushMsgEnum.MEETING_INVITE.name()));
+                map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_INVITE.name()));
                 if (TerminalTypeEnum.A.name().equals(type)) {
                     jpushManage.sendToAndroid(title, alert, map, registrationId);
                 } else if(TerminalTypeEnum.I.name().equals(type)){
                     IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                     jpushManage.sendToIos(iosAlert, map, registrationId);
                 }
-                saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
+                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
             }
         }
     }
@@ -185,12 +185,12 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                 String registrationId = userInfo.get("registrationId").toString();
                 log.info("send jpush message type:{} registrationId:{}",type, registrationId);
                 Date createDate = new Date();
-                String title = vo.getSubject();
+                String title = StringUtil.NOTIFY_CONT;
                 String alert = String.format(StringUtil.MEETING_NOTIFY, vo.getSubject(),
                         DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
                         DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
                 Map<String,String> map = new HashMap<>(1);
-                map.put("message",getJpushMsgTemp(vo, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.name()));
+                map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.name()));
 
                 if (TerminalTypeEnum.A.name().equals(type)) {
                     jpushManage.sendToAndroid(title, alert, map, registrationId);
@@ -198,22 +198,8 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                     IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                     jpushManage.sendToIos(iosAlert, map, registrationId);
                 }
-                saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
+                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
             }
         }
-    }
-
-    private String getJpushMsgTemp(AppointmentRoomVO vo, String alert, Date createDate, String msgType) {
-        return JpushMsgTemp.builder().ruid(vo.getRuid()).title(vo.getSubject()).msgType(msgType).content(alert).date(String.valueOf(createDate.getTime())).toString();
-    }
-
-    private void saveJpushMsg(String uuid, String ruid, String msgType, String alert, Date createDate) {
-        JpushMessage jpushMessage = new JpushMessage();
-        jpushMessage.setUuid(uuid);
-        jpushMessage.setRuid(ruid);
-        jpushMessage.setMsgType(Integer.parseInt(msgType));
-        jpushMessage.setMsgContent(alert);
-        jpushMessage.setCreateTime(createDate);
-        jpushMessageMapper.insertMsg(jpushMessage);
     }
 }

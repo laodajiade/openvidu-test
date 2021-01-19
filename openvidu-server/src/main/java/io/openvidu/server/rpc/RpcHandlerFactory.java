@@ -319,6 +319,10 @@ public class RpcHandlerFactory {
     private GetNotReadJpushMessageHandler getNotReadJpushMessageHandler;
     @Resource
     private GetInviteInfoHandler getInviteInfoHandler;
+    @Resource
+    private GetCallListHandler getCallListHandler;
+    @Resource
+    private CallRemoveHandler callRemoveHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -440,6 +444,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.READ_JPUSH_MESSAGE_METHOD,                     readJpushMessageHandler);
         handlersMap.put(ProtocolElements.GETNOTREADJPUSHMESSAGE_METHOD,                 getNotReadJpushMessageHandler);
         handlersMap.put(ProtocolElements.GET_INVITE_INFO_METHOD,                        getInviteInfoHandler);
+        handlersMap.put(ProtocolElements.GET_CALL_LIST_METHOD,                          getCallListHandler);
+        handlersMap.put(ProtocolElements.CALL_REMOVE_METHOD,                            callRemoveHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

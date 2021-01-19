@@ -6,6 +6,7 @@ import cn.jpush.api.JPushClient;
 import cn.jpush.api.push.model.notification.IosAlert;
 import io.openvidu.server.common.dao.JpushMessageMapper;
 import io.openvidu.server.common.pojo.JpushMessage;
+import io.openvidu.server.common.pojo.JpushMsgTemp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -56,5 +57,19 @@ public class JpushManage {
         } catch (APIConnectionException | APIRequestException e) {
             log.error("极光消息推送iOS异常：", e);
         }
+    }
+
+    public String getJpushMsgTemp(String ruid, String title, String alert, Date createDate, String msgType) {
+        return JpushMsgTemp.builder().ruid(ruid).title(title).msgType(msgType).content(alert).date(String.valueOf(createDate.getTime())).toString();
+    }
+
+    public void saveJpushMsg(String uuid, String ruid, String msgType, String alert, Date createDate) {
+        JpushMessage jpushMessage = new JpushMessage();
+        jpushMessage.setUuid(uuid);
+        jpushMessage.setRuid(ruid);
+        jpushMessage.setMsgType(Integer.parseInt(msgType));
+        jpushMessage.setMsgContent(alert);
+        jpushMessage.setCreateTime(createDate);
+        jpushMessageMapper.insertMsg(jpushMessage);
     }
 }

@@ -133,6 +133,17 @@
     </foreach>
   </select>
 
+  <select id="selectCallUserByUuidList" parameterType="java.util.List" resultMap="BaseResultMap">
+    select uuid, if(su.username is not null,su.username,sd.device_name) username
+    from sd_user su
+    left join sd_user_dev sud on su.id = sud.user_id
+    left join sd_device sd on sud.serial_number = sd.serial_number
+    where su.uuid in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
+    </foreach>
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select
     <include refid="Base_Column_List" />
