@@ -40,6 +40,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -214,7 +215,7 @@ public class SessionEventsHandler {
 			}
 		}
 
-		notifyUpdateOrder(participant, existingParticipants);
+		notifyUpdateOrder(participant, session.getMajorPartEachConnect());
 
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
@@ -273,21 +274,23 @@ public class SessionEventsHandler {
 		if (ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 			return;
 		}
-		JsonObject notifyParam = new JsonObject();
-		JsonArray orderedParts = new JsonArray();
-		for (Participant exist : existParticipants) {
-			if (exist.getStreamType() == StreamType.MAJOR) {
-				JsonObject order = new JsonObject();
-				order.addProperty("account", exist.getUuid());
-				order.addProperty("order", exist.getOrder());
-				orderedParts.add(order);
+		if (!CollectionUtils.isEmpty(existParticipants)) {
+			JsonObject notifyParam = new JsonObject();
+			JsonArray orderedParts = new JsonArray();
+			for (Participant exist : existParticipants) {
+				if (exist.getStreamType() == StreamType.MAJOR) {
+					JsonObject order = new JsonObject();
+					order.addProperty("account", exist.getUuid());
+					order.addProperty("order", exist.getOrder());
+					orderedParts.add(order);
+				}
 			}
-		}
-		notifyParam.add("orderedParts", orderedParts);
+			notifyParam.add("orderedParts", orderedParts);
 
-		for (Participant exist : existParticipants) {
-			rpcNotificationService.sendNotification(exist.getParticipantPrivateId(),
-					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
+			for (Participant exist : existParticipants) {
+				rpcNotificationService.sendNotification(exist.getParticipantPrivateId(),
+						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
+			}
 		}
 	}
 
