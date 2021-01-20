@@ -14,14 +14,18 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
+import io.openvidu.server.utils.LocalDateTimeUtils;
 import io.openvidu.server.utils.LocalDateUtils;
+import io.openvidu.server.utils.ValidPeriodHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -174,8 +178,8 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
-        object.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(),DateUtil.DEFAULT_YEAR_MONTH_DAY));
-        object.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
+        object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
+        object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
 
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);

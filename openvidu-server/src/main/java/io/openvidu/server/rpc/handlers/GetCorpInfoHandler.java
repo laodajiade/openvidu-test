@@ -8,11 +8,13 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.LocalDateUtils;
+import io.openvidu.server.utils.ValidPeriodHelper;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
@@ -32,10 +34,8 @@ public class GetCorpInfoHandler extends RpcAbstractHandler {
         if (Objects.nonNull(corporation)) {
             respObj.addProperty("corpCapacity", corporation.getCapacity());
 
-            respObj.addProperty("expireDate",
-                    DateUtil.getDateFormat(corporation.getExpireDate(), DateUtil.DEFAULT_YEAR_MONTH_DAY));
-            respObj.addProperty("validPeriod",
-                    ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
+            respObj.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
+            respObj.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
 
             respObj.addProperty("totalStorageSpace", conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).toString());
             List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(

@@ -12,6 +12,7 @@ import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.LocalDateTimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,11 +31,13 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     @Value("${min.interval.stop}")
     private Long minIntervalStop;
 
+    @Value("${record.service:true}")
+    private boolean recordService = true;
+
     private static final long lowerLimit = 20 * 1024 * 1024;
 
     private static final long upperLimit = 100 * 1024 * 1024;
 
-    protected static final long ONE_DAY_MILLIS = 24 * 60 * 60 * 1000;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -81,7 +84,17 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
         // 录制服务是否启用（在有效期内）
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        if ((corporation.getRecordingExpireDate().getTime() + ONE_DAY_MILLIS) < System.currentTimeMillis()) {
+        if (!recordService){
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);
+            return;
+        }
+        if (corporation.getRecordingExpireDate().getYear() == 1970) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.NO_RECORD_SERVICE);
+            return;
+        }
+        if (LocalDateTimeUtils.toEpochMilli(corporation.getRecordingExpireDate()) < System.currentTimeMillis()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.RECORD_SERVICE_INVALID);
             return;

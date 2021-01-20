@@ -19,7 +19,7 @@ public class CallRemoveHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, ProtocolElements.CALL_REMOVE_UUID_PARAM);
-        String ruid = getStringParam(request, ProtocolElements.CALL_REMOVE_UUID_PARAM);
+        String ruid = getStringParam(request, ProtocolElements.CALL_REMOVE_RUID_PARAM);
         callHistoryMapper.updateCallHistory(ruid, uuid);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
