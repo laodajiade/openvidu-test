@@ -17,4 +17,5 @@ public class UserDeviceDeptInfo {
     private String deviceName;
     private String deviceModel;
     private String deviceVersion;
+    private Integer accountType;
 }

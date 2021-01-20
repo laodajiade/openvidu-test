@@ -82,6 +82,7 @@
     u.id AS userId,
     u.uuid,
     u.username,
+    u.type AS accountType,
     ud.id AS deptId,
     ud.dept_name AS deptName,
     d.serial_number AS serialNumber,
