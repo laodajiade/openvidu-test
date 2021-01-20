@@ -1,6 +1,7 @@
 package io.openvidu.server.core;
 
 import io.openvidu.server.common.enums.IMModeEnum;
+import io.openvidu.server.common.pojo.ScrollingBannersConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.StringUtils;
@@ -34,6 +35,10 @@ public class SessionPreset {
     private SessionPresetEnum pollingStatusInRoom = SessionPresetEnum.off;
 
     private Integer pollingIntervalTime;
+
+    private SessionPresetEnum scrollingBannersInRoom = SessionPresetEnum.off;
+
+    private ScrollingBannersConfig scrollingBannersConfig;
 
     @Getter
     @Setter
@@ -107,6 +112,21 @@ public class SessionPreset {
         this.pollingIntervalTime = pollingIntervalTime;
     }
 
+    public SessionPresetEnum getScrollingBannersInRoom() {
+        return scrollingBannersInRoom;
+    }
+
+    public void setScrollingBannersInRoom(SessionPresetEnum scrollingBannersInRoom) {
+        this.scrollingBannersInRoom = scrollingBannersInRoom;
+    }
+
+    public ScrollingBannersConfig getScrollingBannersConfig() {
+        return scrollingBannersConfig;
+    }
+
+    public void setScrollingBannersConfig(ScrollingBannersConfig scrollingBannersConfig) {
+        this.scrollingBannersConfig = scrollingBannersConfig;
+    }
 
     public SessionPreset() {
         this.micStatusInRoom = SessionPresetEnum.on;

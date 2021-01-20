@@ -852,6 +852,14 @@ public class ProtocolElements {
 
 	public static final String EVICT_CORPORATION_METHOD = "evictCorporation";
 
+	public static final String SET_SCROLLING_BANNERS_METHOD = "setScrollingBanners";
+	public static final String SET_SCROLLING_BANNERS_ROOMID_PARAM = "roomId";
+	public static final String SET_SCROLLING_BANNERS_OPERATION_PARAM = "operation";
+	public static final String SET_SCROLLING_BANNERS_CONFIG_PARAM = "config";
+
+	public static final String GET_SCROLLING_BANNERS_METHOD = "getScrollingBanners";
+	public static final String GET_SCROLLING_BANNERS_ROOMID_PARAM = "roomId";
+
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
 			GET_DEVICE_INFO_METHOD, UPDATE_DEVICE_INFO_METHOD, LEAVEROOM_METHOD, CLOSE_ROOM_METHOD,

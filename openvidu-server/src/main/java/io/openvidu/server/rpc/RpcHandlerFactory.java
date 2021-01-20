@@ -323,6 +323,10 @@ public class RpcHandlerFactory {
     private GetCallListHandler getCallListHandler;
     @Resource
     private CallRemoveHandler callRemoveHandler;
+    @Resource
+    private SetScrollingBannersHandler setScrollingBannersHandler;
+    @Resource
+    private GetScrollingBannersHandler getScrollingBannersHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -446,6 +450,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_INVITE_INFO_METHOD,                        getInviteInfoHandler);
         handlersMap.put(ProtocolElements.GET_CALL_LIST_METHOD,                          getCallListHandler);
         handlersMap.put(ProtocolElements.CALL_REMOVE_METHOD,                            callRemoveHandler);
+        handlersMap.put(ProtocolElements.SET_SCROLLING_BANNERS_METHOD,                  setScrollingBannersHandler);
+        handlersMap.put(ProtocolElements.GET_SCROLLING_BANNERS_METHOD,                  getScrollingBannersHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
