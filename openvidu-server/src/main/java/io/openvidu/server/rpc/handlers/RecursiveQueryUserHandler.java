@@ -8,7 +8,6 @@ import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
 import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.Department;
-import io.openvidu.server.common.pojo.UserDept;
 import io.openvidu.server.common.pojo.dto.SpecifyVisibleRule;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -69,11 +68,9 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
             }
 
             List<Long> allChildDeptIds = departmentManage.getAllChildDept(deptIds);
-            List<UserDept> userDepts = userDeptService.getByDeptIds(allChildDeptIds);
-
-            if (!userDepts.isEmpty()) {
-                List<Long> userIds = userDepts.stream().map(UserDept::getUserId).collect(Collectors.toList());
-                List<AllUserInfo> users = userMapper.selectAllUserByUserIdsList(userIds);
+            List<Long> allList = userDeptService.getUserIdsList(allChildDeptIds);
+            if (!CollectionUtils.isEmpty(allList)) {
+                List<AllUserInfo> users = userMapper.selectAllUserByUserIdsList(allList);
                 list.addAll(users);
             }
         }
@@ -122,4 +119,5 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
         respJson.add("list", jsonArray);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
+
 }

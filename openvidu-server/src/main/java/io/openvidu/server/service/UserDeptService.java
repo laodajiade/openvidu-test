@@ -5,7 +5,9 @@ import io.openvidu.server.common.pojo.UserDept;
 import io.openvidu.server.common.pojo.UserDeptSearch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,5 +32,19 @@ public class UserDeptService {
         UserDeptSearch userDeptSearch = new UserDeptSearch();
         userDeptSearch.setUserId(userId);
         return userDeptMapper.selectBySearchCondition(userDeptSearch);
+    }
+
+
+    public List<Long> getUserIdsList(List<Long> deptIds) {
+        List<Long> allList = new ArrayList<>();
+        List<Long> userList = userDeptMapper.selectUserByDeptIdsList(deptIds);
+        List<Long> deviceList = userDeptMapper.selectDeviceByDeptIdsList(deptIds);
+        if (!CollectionUtils.isEmpty(userList)) {
+            allList.addAll(userList);
+        }
+        if (!CollectionUtils.isEmpty(deviceList)) {
+            allList.addAll(deviceList);
+        }
+        return allList;
     }
 }
