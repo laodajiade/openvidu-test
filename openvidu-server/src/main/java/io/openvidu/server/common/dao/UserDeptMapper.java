@@ -30,5 +30,8 @@ public interface UserDeptMapper {
 
     List<UserDept> selectInUserId(List<Long> userIds);
 
+    List<Long> selectUserByDeptIdsList(List<Long> deptIds);
+
+    List<Long> selectDeviceByDeptIdsList(List<Long> deptIds);
 
 }

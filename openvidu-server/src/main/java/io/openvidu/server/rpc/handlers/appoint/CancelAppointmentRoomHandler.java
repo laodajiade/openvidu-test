@@ -1,6 +1,5 @@
 package io.openvidu.server.rpc.handlers.appoint;
 
-import com.alibaba.druid.util.StringUtils;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
@@ -18,6 +17,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.handlers.CloseRoomHandler;
 import io.openvidu.server.rpc.handlers.parthistory.DeleteConferenceHistoryHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,6 +73,9 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         }
 
         if (appointConference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
+            if (StringUtils.startsWith(rpcConnection.getDeviceVersion(), "1.3.2")) {
+                return cancelGeneralConference(rpcConnection, request, vo, ruid);
+            }
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
         }
 

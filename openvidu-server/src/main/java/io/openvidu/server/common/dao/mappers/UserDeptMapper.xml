@@ -132,6 +132,32 @@
     </foreach>
   </select>
 
+  <select id="selectUserByDeptIdsList" resultType="java.lang.Long" parameterType="java.util.List" >
+    select
+    user_id
+    from sd_user_dept
+    where dept_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+  <select id="selectDeviceByDeptIdsList" resultType="java.lang.Long" parameterType="java.util.List" >
+    SELECT
+    sud.user_id
+    FROM
+    sd_device_dept dd
+    INNER JOIN sd_device d ON dd.serial_number = d.serial_number
+    INNER JOIN sd_department depart ON dd.dept_id = depart.id
+    inner join sd_user_dev sud on sud.serial_number = dd.serial_number
+    WHERE
+    dd.dept_id in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=BIGINT}
+    </foreach>
+  </select>
+
+
   <select id="selectInUserId" resultMap="BaseResultMap" parameterType="java.util.List" >
     select
     <include refid="Base_Column_List" />
