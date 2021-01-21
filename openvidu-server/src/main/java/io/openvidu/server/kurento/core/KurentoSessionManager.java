@@ -48,6 +48,7 @@ import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.ListenerSubscription;
 import org.kurento.client.MediaProfileSpecType;
+import org.kurento.client.PassThrough;
 import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
@@ -1393,8 +1394,14 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
 		log.info("construct participant:{} record info.", part.getParticipantPublicId());
 		PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
+		if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
+			publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
+					kurentoParticipant.getSession().getPipeline(), this.openviduConfig);
+
+			publisherEndpoint.setPassThru(new PassThrough.Builder(kurentoParticipant.getSession().getPipeline()).build());
+		}
 		JsonObject jsonObject = new JsonObject();
-		if (Objects.nonNull(publisherEndpoint) && Objects.nonNull(publisherEndpoint.getPassThru())) {
+		if (Objects.nonNull(publisherEndpoint.getPassThru())) {
 			jsonObject.addProperty("passThruId", kurentoParticipant.getPublisher().getPassThru().getId());
 			jsonObject.addProperty("order", order);
 			jsonObject.addProperty("osd", part.getUsername());
