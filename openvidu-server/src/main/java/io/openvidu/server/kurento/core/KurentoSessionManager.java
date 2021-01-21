@@ -220,10 +220,12 @@ public class KurentoSessionManager extends SessionManager {
 			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, null,
 					transactionId, e);
 		}
+		UseTime.point("join room p3");
 		if (existingParticipants != null) {
 			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, existingParticipants,
 					transactionId, null);
 		}
+		UseTime.point("join room p4");
 	}
 
 	@Override

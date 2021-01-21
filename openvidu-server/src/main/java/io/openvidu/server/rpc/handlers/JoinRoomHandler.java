@@ -66,6 +66,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
 
+        UseTime.point("join room start");
         try {
             do {
                 // verify room join type
@@ -343,8 +344,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 rpcConnection.setSessionId(sessionId);
-
+                UseTime.point("join room p1");
                 sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                UseTime.point("join room p2");
             } while (false);
 
             rpcConnection.setReconnected(false);
@@ -374,6 +376,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.cleanCacheCollections(sessionId);
             }
         }
+        UseTime.point("join room end");
     }
 
 }
