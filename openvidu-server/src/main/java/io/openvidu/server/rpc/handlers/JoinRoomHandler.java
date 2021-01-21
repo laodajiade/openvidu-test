@@ -39,6 +39,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         boolean isReconnected = getBooleanParam(request, ProtocolElements.JOINROOM_ISRECONNECTED_PARAM);
         String micStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_MICSTATUS_PARAM);
         String videoStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM);
+        String nickName = getStringOptionalParam(request, ProtocolElements.JOINROOM_NICKNAME_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
@@ -47,6 +48,11 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
         try {
             do {
+                //保存游客nickName
+                if (!StringUtils.isEmpty(nickName)) {
+                    rpcConnection.setUsername(nickName);
+                }
+
                 // verify room join type
                 String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
 

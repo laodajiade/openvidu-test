@@ -82,6 +82,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
 	public static final String JOINROOM_MIXFLOWS_STREAMID_PARAM = "streamId";
 	public static final String JOINROOM_MIXFLOWS_STREAMMODE_PARAM = "streamMode";
+	public static final String JOINROOM_NICKNAME_PARAM = "nickName";
 
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
