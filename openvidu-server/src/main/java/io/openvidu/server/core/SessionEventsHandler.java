@@ -92,6 +92,7 @@ public class SessionEventsHandler {
 		JsonObject result = new JsonObject();
 		JsonObject roomInfoJson = new JsonObject();
 		JsonArray resultArray = new JsonArray();
+		UseTime.point("join room p5");
 		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
 				continue;
@@ -214,7 +215,7 @@ public class SessionEventsHandler {
 				resultArray.add(participantJson);
 			}
 		}
-
+		UseTime.point("join room p6");
 		notifyUpdateOrder(participant, session.getMajorPartEachConnect());
 
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
