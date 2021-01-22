@@ -9,7 +9,9 @@ import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.RuidHelper;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -75,8 +77,12 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
 
     @Override
     public void insert(AppointmentRoomVO params, RpcConnection rpcConnection) {
-        AppointConference ac = new AppointConference();
+        String moderatorPassword = params.getModeratorPassword();
+        if (StringUtils.isBlank(moderatorPassword)) {
+            moderatorPassword = StringUtil.getRandomPassWord(6);
+        }
 
+        AppointConference ac = new AppointConference();
         ac.setRuid(RuidHelper.generateAppointmentId());
         ac.setRoomId(params.getRoomId());
         ac.setConferenceSubject(params.getSubject());
@@ -92,7 +98,7 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setType("N");
         ac.setConferenceMode(params.getConferenceMode().getMode());
         ac.setPassword(params.getPassword());
-        ac.setModeratorPassword(params.getModeratorPassword());
+        ac.setModeratorPassword(moderatorPassword);
         appointConferenceMapper.insertSelective(ac);
 
         params.setRuid(ac.getRuid());
