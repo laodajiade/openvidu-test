@@ -99,18 +99,14 @@ public class KurentoSession extends Session {
 	public void join(Participant participant) {
 		synchronized (joinOrLeaveLock) {
 			checkClosed();
-			UseTime.point("join room kSession.join p3");
 			createPipeline();
-			UseTime.point("join room kSession.join p4");
 			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
 				this.compositeService.setPipeline(this.getPipeline());
 				compositeService.createMajorShareComposite();
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
 					compositeService.setExistSharing(true);
 				}
-				UseTime.point("join room kSession.join p5");
 			}
-			UseTime.point("join room kSession.join p6");
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
 

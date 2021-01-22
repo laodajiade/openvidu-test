@@ -30,6 +30,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
     private static final RateLimiter rateLimiter = RateLimiter.create(30);
 
+    private static final Object joinRoomLock = new Object();
 
     @Value("${joinroom.rate.limiter:30}")
     public void setRateLimiter(double rate){
@@ -345,7 +346,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 rpcConnection.setSessionId(sessionId);
                 UseTime.point("join room p1");
-                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                synchronized (joinRoomLock) {
+                    UseTime.point("join room p1.1");
+                    sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                }
                 UseTime.point("join room p2");
             } while (false);
 

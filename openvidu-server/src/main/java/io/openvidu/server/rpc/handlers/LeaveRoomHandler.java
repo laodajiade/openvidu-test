@@ -61,6 +61,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             }
         } catch (OpenViduException e) {
             log.info("close previous participant info exception", e);
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
             return;
         }
 

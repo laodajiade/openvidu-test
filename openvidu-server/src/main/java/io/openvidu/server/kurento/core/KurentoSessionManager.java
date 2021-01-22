@@ -101,7 +101,7 @@ public class KurentoSessionManager extends SessionManager {
 	protected TimerManager timerManager;
 
 	@Override
-	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
+	public void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
 		UseTime.point("join room synchronized joinRoom");
 		Set<Participant> existingParticipants = null;
 		String s = "";//todo test string
@@ -196,9 +196,7 @@ public class KurentoSessionManager extends SessionManager {
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
 
-			UseTime.point("join room kSession.join p1");
 			kSession.join(participant);
-			UseTime.point("join room kSession.join p2");
 			// record share status.
 			if (StreamType.SHARING.equals(participant.getStreamType())) {
 				participant.setShareStatus(ParticipantShareStatus.on);
