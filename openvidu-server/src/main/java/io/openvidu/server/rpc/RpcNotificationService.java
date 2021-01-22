@@ -42,7 +42,7 @@ public class RpcNotificationService {
 	private ConcurrentMap<String, RpcConnection> rpcConnections = new ConcurrentHashMap<>();
 
 	private static final ThreadPoolExecutor NOTIFY_THREAD_POOL = new ThreadPoolExecutor(
-			Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors() * 10,
+			Math.max(Runtime.getRuntime().availableProcessors() + 1, 4), Math.max(Runtime.getRuntime().availableProcessors() * 20, 20),
 			60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
 			new ThreadFactoryBuilder().setNameFormat("notify_thread_pool-").setDaemon(true).build());
 
