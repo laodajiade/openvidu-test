@@ -253,6 +253,7 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public synchronized boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
 			boolean closeWebSocket) {
+		UseTime.point("ip1");
 		log.debug("Request [LEAVE_ROOM] ({})", participant.getParticipantPublicId());
 
 		boolean sessionClosedByLastParticipant = false;
@@ -267,9 +268,9 @@ public class KurentoSessionManager extends SessionManager {
 			throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
 					+ "' is trying to leave from session '" + sessionId + "' but it is closing");
 		}
-
+		UseTime.point("ip2");
 		session.leaveRoom(participant, reason);
-
+		UseTime.point("ip3");
 		//update partInfo
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
@@ -311,9 +312,10 @@ public class KurentoSessionManager extends SessionManager {
 			sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
 					reason);
 		}
-
+		UseTime.point("ip4");
 		// adjust order notify after onLeft
-		session.dealParticipantOrder(participant,rpcNotificationService);
+		session.dealParticipantOrder(participant, rpcNotificationService);
+		UseTime.point("ip5");
 		if (!EndReason.sessionClosedByServer.equals(reason)) {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
@@ -341,7 +343,7 @@ public class KurentoSessionManager extends SessionManager {
 		if (session.isClosing()) {
 			closeSession(sessionId, EndReason.lastParticipantLeft);
 		}
-
+		UseTime.point("ip6");
 		return sessionClosedByLastParticipant;
 	}
 

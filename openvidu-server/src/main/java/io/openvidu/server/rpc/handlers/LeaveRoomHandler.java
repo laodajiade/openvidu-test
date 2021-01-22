@@ -5,12 +5,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionPreset;
-import io.openvidu.server.core.SessionPresetEnum;
-import io.openvidu.server.core.TimerManager;
+import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +37,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
-
+        UseTime.point("p1");
         Participant participant;
         try {
             participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), streamType);
@@ -65,6 +60,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
             return;
         }
+        UseTime.point("p2");
 
         if (Objects.isNull(sessionManager.getSession(sessionId))) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -101,9 +97,9 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             sessionManager.setLayoutAndNotifyWhenLeaveRoom(sessionId, participant,
                     !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
         }
-
+        UseTime.point("p3");
         sessionManager.leaveRoom(participant, request.getId(), EndReason.disconnect, false);
-
+        UseTime.point("p4");
         //判断轮询是否开启
         SessionPreset preset = session.getPresetInfo();
         if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.MODERATOR.equals(participant.getRole())) {
@@ -139,6 +135,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                     ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
         }
+        UseTime.point("p5");
         if (!Objects.isNull(rpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(participant.getStreamType())) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }
@@ -155,6 +152,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             sessionManager.evictParticipantByUUID(sessionId,
                     rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
         }
-
+        UseTime.point("p6");
     }
 }
