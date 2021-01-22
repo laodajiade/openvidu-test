@@ -768,16 +768,13 @@ public class Session implements SessionInterface {
 		JsonArray subToPubChangedParam = roleChanged ?
 				getPartRoleChangedNotifyParamArr(sub2PubPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
 
-		getMajorPartEachIncludeThorConnect().forEach(participant -> {
-			// send part order in session changed notification
-			notificationService.sendNotification(participant.getParticipantPrivateId(),
-					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
-			if (roleChanged) {
-				// send part role changed notification
-				notificationService.sendNotification(participant.getParticipantPrivateId(),
-						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
-			}
-		});
+		List<String> notifyList = getMajorPartEachIncludeThorConnect().stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+		notificationService.sendBatchNotification(notifyList, ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
+		if (roleChanged) {
+			// send part role changed notification
+			notificationService.sendBatchNotification(notifyList,
+					ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
+		}
 	}
 
 	public JsonArray getPartRoleChangedNotifyParamArr(Participant participant, OpenViduRole originalRole, OpenViduRole presentRole) {
