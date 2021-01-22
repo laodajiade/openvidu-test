@@ -26,6 +26,7 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.core.UseTime;
 import io.openvidu.server.kurento.kms.Kms;
 import org.kurento.client.*;
 import org.slf4j.Logger;
@@ -98,15 +99,18 @@ public class KurentoSession extends Session {
 	public void join(Participant participant) {
 		synchronized (joinOrLeaveLock) {
 			checkClosed();
+			UseTime.point("join room kSession.join p3");
 			createPipeline();
+			UseTime.point("join room kSession.join p4");
 			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
 				this.compositeService.setPipeline(this.getPipeline());
 				compositeService.createMajorShareComposite();
 				if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
 					compositeService.setExistSharing(true);
 				}
+				UseTime.point("join room kSession.join p5");
 			}
-
+			UseTime.point("join room kSession.join p6");
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
 

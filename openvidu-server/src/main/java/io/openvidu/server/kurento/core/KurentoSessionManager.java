@@ -102,11 +102,12 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Override
 	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
+		UseTime.point("join room synchronized joinRoom");
 		Set<Participant> existingParticipants = null;
+		String s = "";//todo test string
 		try {
 
 			KurentoSession kSession = (KurentoSession) sessions.get(sessionId);
-
 			if (kSession == null) {
 				// First user connecting to the session
 				Session sessionNotActive = sessionsNotActive.remove(sessionId);
@@ -147,7 +148,6 @@ public class KurentoSessionManager extends SessionManager {
 					kSession.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
 				}
 			}
-
 			if (kSession.isClosed()) {
 				log.warn("'{}' is trying to join session '{}' but it is closing", participant.getParticipantPublicId(),
 						sessionId);
@@ -196,8 +196,9 @@ public class KurentoSessionManager extends SessionManager {
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
 
+			UseTime.point("join room kSession.join p1");
 			kSession.join(participant);
-
+			UseTime.point("join room kSession.join p2");
 			// record share status.
 			if (StreamType.SHARING.equals(participant.getStreamType())) {
 				participant.setShareStatus(ParticipantShareStatus.on);
@@ -206,14 +207,36 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			// save part info
+			long t1 = System.nanoTime();
 			roomManage.storePartHistory(participant, conference);
+			long t2 = System.nanoTime();
+			//todo storePartHistory 取出来用于统计的
+			// save part info in cache
+			Map<String, Object> partInfo = new HashMap<>();
+			partInfo.put("userId", participant.getUserId());
+			partInfo.put("ruid", conference.getRuid());
+			partInfo.put("roomId", participant.getSessionId());
+			partInfo.put("role", participant.getRole().name());
+			partInfo.put("publicId", participant.getParticipantPublicId());
+			partInfo.put("shareStatus", participant.getShareStatus().name());
+			partInfo.put("speakerStatus", participant.getSpeakerStatus().name());
+			partInfo.put("handStatus", participant.getHandStatus().name());
+			partInfo.put("micStatus", participant.getMicStatus().name());
+			partInfo.put("videoStatus", participant.getVideoStatus().name());
+			partInfo.put("order", participant.getOrder());
+			cacheManage.savePartInfo(participant.getUuid(), partInfo);
+
+			long t3 = System.nanoTime();
 			// save max concurrent statistics
 			cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
+			long t4 = System.nanoTime();
 			//save max concurrent in conference
 			Conference concurrentCon = new Conference();
 			concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
 			concurrentCon.setId(conference.getId());
 			roomManage.storeConcurrentNumber(concurrentCon);
+			long t5 = System.nanoTime();
+			s = (t2 - t1) / 100_000 + ":" + (t3 - t2) / 100_000 + ":" + (t4 - t3) / 100_000 + ":" + (t5 - t4) / 100_000;
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
@@ -221,6 +244,7 @@ public class KurentoSessionManager extends SessionManager {
 					transactionId, e);
 		}
 		UseTime.point("join room p3");
+		UseTime.point("join room p3 s="+s);
 		if (existingParticipants != null) {
 			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, existingParticipants,
 					transactionId, null);
