@@ -166,7 +166,7 @@ public class TimerManager {
                     jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, false);
                 }
 
-                log.info("roomId:{} polling check part:{} the index:{}", session.getSessionId(), participant.getParticipantPublicId(), index);
+                log.info("dealPollingCheck roomId:{} polling check part:{} the index:{}", session.getSessionId(), participant.getParticipantPublicId(), index);
                 session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.POLLING_CHECK_NOTIFY_METHOD, jsonCheckParam));
 
@@ -175,7 +175,7 @@ public class TimerManager {
                 if (notifyIndex > participants.size() - 1) {
                     notifyIndex = 0;
                 }
-                log.info("roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
+                log.info("dealPollingCheck roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
                 JsonObject nextNotifyParam = new JsonObject();
                 nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getParticipantPublicId());
                 session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),

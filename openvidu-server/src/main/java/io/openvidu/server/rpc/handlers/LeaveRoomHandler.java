@@ -124,10 +124,10 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1) {
                         index = 0;
                     }
-                    timerManager.leaveRoomStartPollingAgainCompensation(sessionId, preset.getPollingIntervalTime(), index - 1);
+                    timerManager.leaveRoomStartPollingAgainCompensation(sessionId, preset.getPollingIntervalTime(), index == 0 ? index : index - 1);
                 }
             }
-        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && OpenViduRole.MODERATOR.equals(participant.getRole())) {
+        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && OpenViduRole.MODERATOR.equals(participant.getRole())) {
             //close room stopPolling
             preset.setPollingStatusInRoom(SessionPresetEnum.off);
             timerManager.stopPollingCompensation(sessionId);
