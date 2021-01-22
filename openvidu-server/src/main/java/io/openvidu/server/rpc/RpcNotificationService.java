@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import javax.ws.rs.NotSupportedException;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -200,6 +201,14 @@ public class RpcNotificationService {
         log.info("\nbatch WebSocket notification- Notification method:{} and params: \n{}" +
                 "\nsuccessList:{}  failList:{}", method, params, successList, failList);
     }
+
+	/**
+	 * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
+	 */
+	public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, final String method, final Object params) {
+		//todo 等待实现
+		throw new NotSupportedException("sendBatchNotificationConcurrent not support");
+	}
 
 	private Transaction getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {
 		RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
