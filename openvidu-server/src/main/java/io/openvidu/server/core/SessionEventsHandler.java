@@ -361,13 +361,14 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
+		List<String> notifyPartList = new ArrayList<>();
 		for (Participant p : remainingParticipants) {
 			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())
 					&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+				notifyPartList.add(p.getParticipantPrivateId());
 			}
 		}
+		rpcNotificationService.sendBatchNotification(notifyPartList, ProtocolElements.PARTICIPANTLEFT_METHOD, params);
 
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily
