@@ -70,7 +70,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         resp.setRoomId(imMsg.getRoomId());
         resp.setTimestamp(imMsg.getTimestamp().getTime());
 
-        Notification notification = buildNotification(params, imMsg, participant);
+        Notification notification = buildNotification(params, imMsg, session);
 
         return RespResult.ok(resp, notification);
     }
@@ -98,7 +98,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         return imMsgMapper.selectOne(example);
     }
 
-    private Notification buildNotification(SendMsgVO params, ImMsg imMsg, Participant participant) {
+    private Notification buildNotification(SendMsgVO params, ImMsg imMsg, Session session) {
         SendMsgNotify sendMsgNotify = new SendMsgNotify();
         BeanUtils.copyProperties(params, sendMsgNotify);
         sendMsgNotify.setMsgId(imMsg.getId());
@@ -109,7 +109,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         Notification notification = new Notification(ProtocolElements.NOTIFY_SEND_MSG_METHOD, sendMsgNotify);
 
         if (params.getOperate() == 0) {
-            notification.setParticipantIds(params.getReciverAccount());
+            notification.setParticipantIds(session.getParticipantByUUID(params.getReciverAccount().get(0)).getParticipantPrivateId());
             sendMsgNotify.setRecivers(Collections.singletonList(new ImUser(imMsg.getRevicerUuid(),
                     imMsg.getRevicerUsername(), imMsg.getRevicerTerminalType())));
         } else {
