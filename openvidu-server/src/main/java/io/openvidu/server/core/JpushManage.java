@@ -38,7 +38,7 @@ public class JpushManage {
     public void initJpushClient() {
         if (null == jPushClient) {
             synchronized (JPushClient.class) {
-                jPushClient = new JPushClient(appKey, appSecret);
+                jPushClient = new JPushClient(appSecret, appKey);
             }
         }
     }
