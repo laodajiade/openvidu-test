@@ -5,11 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionPreset;
-import io.openvidu.server.core.SessionPresetEnum;
+import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +61,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
 
 
     public void closeRoom(RpcConnection rpcConnection, Session session) {
+        UseTime.point("closeRoom p1");
         String sessionId = session.getSessionId();
         // set session status: closing
         session.setClosing(true);
@@ -76,7 +73,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                 cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
             }
         });
-
+        UseTime.point("closeRoom p2");
         //cancel invite
         cancelAllInviteCompensation(sessionId);
         // TODO: compatible to the delay of leaving room
@@ -86,13 +83,17 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         SessionPreset sessionPreset = session.getPresetInfo();
         sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
         timerManager.stopPollingCompensation(sessionId);
+        UseTime.point("closeRoom p3");
         //send notify
         JsonObject params = new JsonObject();
         params.addProperty("roomId", sessionId);
         session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                 ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
-
+        UseTime.point("closeRoom p4");
+        UseTime.Point point = UseTime.getPoint("sessionManager.closeSession.Point");
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
+        point.updateTime();
+        UseTime.point("closeRoom p5");
         rpcConnection.setReconnected(false);
     }
 }

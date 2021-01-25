@@ -28,6 +28,15 @@ public class UseTime {
         list.add(point);
     }
 
+    public static Point getPoint(String name) {
+        Point point = new Point(name, System.currentTimeMillis());
+        List<Point> list = threadLocal.get();
+        if (list == null) {
+            list = new LinkedList<>();
+        }
+        list.add(point);
+        return point;
+    }
 
     public static long elapse(){
         long now = System.currentTimeMillis();
@@ -66,7 +75,7 @@ public class UseTime {
         return msg.toString();
     }
 
-    static class Point {
+    public static class Point {
         String name;
         long time;
 
@@ -81,6 +90,10 @@ public class UseTime {
 
         public long getTime() {
             return time;
+        }
+
+        public void updateTime(){
+            time = System.currentTimeMillis();
         }
     }
 }
