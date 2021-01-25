@@ -40,5 +40,5 @@ public interface ImMsgMapper {
     }
 
     List<ImMsg> getImgHistory(@Param("ruid") String ruid, @Param("userId") Long userId,
-                              @Param("timestamp") Date timestamp, @Param("reverse") int reverse);
+                              @Param("timestamp") Date timestamp, @Param("id") Long id,@Param("reverse") int reverse);
 }

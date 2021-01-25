@@ -44,7 +44,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         BindValidate.notEmptyIfMatch(() -> params.getOperate() == 0, params::getReciverAccount);
 
         if (sensitiveWord(params)) {
-            return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
+            return RespResult.fail(ErrorCodeEnum.SENSITIVE_WORD);
         }
 
         String roomId = params.getRoomId();

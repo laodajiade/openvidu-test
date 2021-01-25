@@ -7,6 +7,8 @@ public class GetMsgHistoryVO {
 
     private long time;
 
+    private Long id;
+
     private String ruid;
 
     private int limit = 20;

@@ -420,6 +420,12 @@
     <if test="timestamp != null and reverse == 2 "  >
       and #{timestamp} >= `timestamp`
     </if>
+    <if test="id != null and reverse == 1 "  >
+      and `id` > #{id}
+    </if>
+    <if test="id != null and reverse == 2 "  >
+      and #{id} > `id`
+    </if>
     <if test="reverse == 1">
       order by `timestamp` asc ,id asc
     </if>
