@@ -10,6 +10,7 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcHandlerFactory;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.rpc.handlers.im.SendMsgHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,12 @@ public class DevController {
     public String reportReset() {
         MetriceUtils.reset(5);
         return "reset success";
+    }
+
+    @GetMapping("sensitiveWord")
+    public String sensitiveWord(@RequestParam("word") String word) {
+        SendMsgHandler.words = word.split(",");
+        return "ok";
     }
 
     @GetMapping("downloadReport")

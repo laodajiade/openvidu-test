@@ -35,11 +35,17 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
     @Autowired
     private ImMsgMapper imMsgMapper;
 
+    public static String[] words = new String[0];
+
     @Override
     public RespResult<SendMsgResp> doProcess(RpcConnection rpcConnection, Request<SendMsgVO> request, SendMsgVO params) {
         BindValidate.notEmpty(params::getClientMsgId, params::getRuid, params::getRoomId, params::getMsgType,
                 params::getOperate, params::getContent);
         BindValidate.notEmptyIfMatch(() -> params.getOperate() == 0, params::getReciverAccount);
+
+        if (sensitiveWord(params)) {
+            return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
+        }
 
         String roomId = params.getRoomId();
         Session session = sessionManager.getSession(roomId);
@@ -73,6 +79,18 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         Notification notification = buildNotification(params, imMsg, session);
 
         return RespResult.ok(resp, notification);
+    }
+
+    /**
+     *
+     */
+    private boolean sensitiveWord(SendMsgVO params) {
+        for (String word : words) {
+            if (params.getContent().contains(word)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void validateImMode(SendMsgVO params, Session session) {
