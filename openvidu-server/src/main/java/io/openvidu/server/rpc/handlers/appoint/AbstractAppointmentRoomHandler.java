@@ -29,6 +29,7 @@ import io.openvidu.server.utils.CrowOnceInfoManager;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -150,7 +151,8 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         return appointParticipantList;
     }
 
-    private void sendNotificationWithMeetingInvite(RpcConnection rpcConnection, String userName, AppointmentRoomVO vo) {
+    @Async
+    public void sendNotificationWithMeetingInvite(RpcConnection rpcConnection, String userName, AppointmentRoomVO vo) {
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
         if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
             if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
@@ -169,12 +171,13 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                     IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                     jpushManage.sendToIos(iosAlert, map, registrationId);
                 }
-                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
+                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
             }
         }
     }
 
-    private void sendNotificationWithMeetingToBegin(RpcConnection rpcConnection, AppointmentRoomVO vo) {
+    @Async
+    public void sendNotificationWithMeetingToBegin(RpcConnection rpcConnection, AppointmentRoomVO vo) {
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
         if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
             if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
@@ -195,7 +198,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                     IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                     jpushManage.sendToIos(iosAlert, map, registrationId);
                 }
-                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
+                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
             }
         }
     }

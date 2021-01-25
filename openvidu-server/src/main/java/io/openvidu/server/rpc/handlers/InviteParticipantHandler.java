@@ -4,7 +4,6 @@ import cn.jpush.api.push.model.notification.IosAlert;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
@@ -19,10 +18,10 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
-import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -164,6 +163,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         }
     }
 
+    @Async
     public void sendJpushMessage(List<String> targetIds, String moderatorName, String subject, String ruid) {
         targetIds.forEach(uuid ->{
             Map userInfo = cacheManage.getUserInfoByUUID(uuid);
@@ -182,7 +182,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                         IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                         jpushManage.sendToIos(iosAlert, map, registrationId);
                     }
-                    jpushManage.saveJpushMsg(uuid, ruid, JpushMsgEnum.MEETING_INVITE.name(), alert, createDate);
+                    jpushManage.saveJpushMsg(uuid, ruid, JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
                 }
             }
         });
