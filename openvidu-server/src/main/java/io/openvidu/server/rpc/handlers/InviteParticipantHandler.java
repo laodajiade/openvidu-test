@@ -142,7 +142,10 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         inviteOnline(targetIds, params);
         //极光推送
         sendJpushMessage(targetIds, moderatorName, conference.getConferenceSubject(), conference.getRuid());
-        callHistoryMapper.insertBatch(addList);
+        if (!CollectionUtils.isEmpty(addList)) {
+            callHistoryMapper.insertBatch(addList);
+        }
+
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
