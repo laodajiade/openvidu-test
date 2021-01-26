@@ -295,7 +295,8 @@ public class KurentoSessionManager extends SessionManager {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"
-			if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+			if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+				log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
 				session.setClosing(true);
 				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
 					// stop recording
@@ -316,6 +317,8 @@ public class KurentoSessionManager extends SessionManager {
         }
 
 		if (session.isClosing()) {
+			getMajorParticipants(sessionId).forEach(p -> rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+					ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
 			closeSession(sessionId, EndReason.lastParticipantLeft);
 		}
 
