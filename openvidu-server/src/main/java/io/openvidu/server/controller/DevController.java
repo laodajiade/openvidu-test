@@ -21,6 +21,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 
 @RestController
@@ -40,7 +42,7 @@ public class DevController {
 
     @GetMapping("report")
     public String report() {
-        return "<pre>"+ MetriceUtils.report()+"</pre>";
+        return "<pre>" + MetriceUtils.report() + "</pre>";
     }
 
     @GetMapping("reportReset")
@@ -55,6 +57,12 @@ public class DevController {
         return "ok";
     }
 
+    @GetMapping("muted")
+    public String muted(@RequestParam("user") String user) {
+        SendMsgHandler.mutedUser = new HashSet<>(Arrays.asList(user.split(",")));
+        return "ok";
+    }
+
     @GetMapping("downloadReport")
     public void downloadReport(HttpServletResponse response) throws Exception {
         response.setContentType("application//vnd.ms-excel;charset=UTF-8");
@@ -64,8 +72,9 @@ public class DevController {
         response.getOutputStream().println(MetriceUtils.report());
     }
 
-    @PostMapping(value = "test",produces = "application/json")
-    public @ResponseBody String test(@RequestParam("id") String id, @RequestParam("method") String method, @RequestBody String params) {
+    @PostMapping(value = "test", produces = "application/json")
+    public @ResponseBody
+    String test(@RequestParam("id") String id, @RequestParam("method") String method, @RequestBody String params) {
 
         RpcAbstractHandler rpcHandler = rpcHandlerFactory.getRpcHandler(method);
         String participantPrivateId = id;

@@ -24,9 +24,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service(ProtocolElements.SEND_MSG_METHOD)
@@ -36,6 +34,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
     private ImMsgMapper imMsgMapper;
 
     public static String[] words = new String[0];
+    public static Set<String> mutedUser = new HashSet<>();
 
     @Override
     public RespResult<SendMsgResp> doProcess(RpcConnection rpcConnection, Request<SendMsgVO> request, SendMsgVO params) {
@@ -44,6 +43,9 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         BindValidate.notEmptyIfMatch(() -> params.getOperate() == 0, params::getReciverAccount);
 
         if (sensitiveWord(params)) {
+            return RespResult.fail(ErrorCodeEnum.SENSITIVE_WORD);
+        }
+        if (muted(params, rpcConnection)) {
             return RespResult.fail(ErrorCodeEnum.SENSITIVE_WORD);
         }
 
@@ -58,6 +60,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         }
 
         validateImMode(params, session);
+
 
         ImMsg imMsg;
         if (Objects.equals(params.getResendFlag(), 1)) {
@@ -79,6 +82,10 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         Notification notification = buildNotification(params, imMsg, session);
 
         return RespResult.ok(resp, notification);
+    }
+
+    private boolean muted(SendMsgVO params, RpcConnection session) {
+        return mutedUser.contains(session.getUserId());
     }
 
     /**
