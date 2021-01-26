@@ -327,6 +327,8 @@ public class RpcHandlerFactory {
     private SetScrollingBannersHandler setScrollingBannersHandler;
     @Resource
     private GetScrollingBannersHandler getScrollingBannersHandler;
+    @Resource
+    private SaveJpushHandler saveJpushHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -452,6 +454,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.CALL_REMOVE_METHOD,                            callRemoveHandler);
         handlersMap.put(ProtocolElements.SET_SCROLLING_BANNERS_METHOD,                  setScrollingBannersHandler);
         handlersMap.put(ProtocolElements.GET_SCROLLING_BANNERS_METHOD,                  getScrollingBannersHandler);
+        handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD,                             saveJpushHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

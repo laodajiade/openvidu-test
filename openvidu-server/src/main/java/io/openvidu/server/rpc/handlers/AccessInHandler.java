@@ -139,8 +139,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                     request.getId(), object, errCode);
             return;
         }
-        if (!StringUtils.isEmpty(registrationId)) {
-            cacheManage.updateTokenInfo(uuid, ProtocolElements.ACCESS_IN_REGISTRATION_ID_TYPE, registrationId);
+        if (!StringUtils.isEmpty(clientType)) {
             cacheManage.updateTokenInfo(uuid, ProtocolElements.ACCESS_IN_CLIENT_TYPE, clientType);
         }
 
