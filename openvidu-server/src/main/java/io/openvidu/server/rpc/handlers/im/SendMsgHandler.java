@@ -34,7 +34,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
     private ImMsgMapper imMsgMapper;
 
     public static String[] words = new String[0];
-    public static Set<String> mutedUser = new HashSet<>();
+    public static Set<Long> mutedUser = new HashSet<>();
 
     @Override
     public RespResult<SendMsgResp> doProcess(RpcConnection rpcConnection, Request<SendMsgVO> request, SendMsgVO params) {

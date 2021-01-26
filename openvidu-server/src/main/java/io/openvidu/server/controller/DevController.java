@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/dev")
@@ -59,7 +60,7 @@ public class DevController {
 
     @GetMapping("muted")
     public String muted(@RequestParam("user") String user) {
-        SendMsgHandler.mutedUser = new HashSet<>(Arrays.asList(user.split(",")));
+        SendMsgHandler.mutedUser = Arrays.stream(user.split(",")).map(Long::valueOf).collect(Collectors.toSet());
         return "ok";
     }
 
