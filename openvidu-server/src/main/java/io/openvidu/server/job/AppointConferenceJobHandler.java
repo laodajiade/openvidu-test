@@ -111,7 +111,7 @@ public class AppointConferenceJobHandler {
 
             AppointmentRoomVO vo = AppointmentRoomVO.builder()
                     .userId(appointConference.getUserId()).startTime(appointConference.getStartTime().getTime())
-                    .duration(appointConference.getDuration()).subject(appointConference.getConferenceSubject()).build();
+                    .duration(appointConference.getDuration()).subject(appointConference.getConferenceSubject()).ruid(ruid).build();
             createAppointmentRoomHandler.sendConferenceToBeginNotify(vo, uuidSet);
             log.info("conferenceToBeginJobHandler notify end... uuidSet ={}", uuidSet);
         }

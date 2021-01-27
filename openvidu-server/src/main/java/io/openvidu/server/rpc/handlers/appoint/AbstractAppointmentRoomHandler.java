@@ -170,7 +170,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                                 DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
                                 DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
                         Map<String,String> map = new HashMap<>(1);
-                        map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_INVITE.name()));
+                        map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
                         if (TerminalTypeEnum.A.name().equals(type)) {
                             jpushManage.sendToAndroid(title, alert, map, registrationId);
                         } else if(TerminalTypeEnum.I.name().equals(type)){
@@ -200,7 +200,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                                 DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
                                 DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
                         Map<String,String> map = new HashMap<>(1);
-                        map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.name()));
+                        map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.getMessage()));
 
                         if (TerminalTypeEnum.A.name().equals(type)) {
                             jpushManage.sendToAndroid(title, alert, map, registrationId);
