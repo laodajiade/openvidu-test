@@ -4,6 +4,7 @@ import cn.jiguang.common.resp.APIConnectionException;
 import cn.jiguang.common.resp.APIRequestException;
 import cn.jpush.api.JPushClient;
 import cn.jpush.api.push.model.notification.IosAlert;
+import com.alibaba.fastjson.JSONObject;
 import io.openvidu.server.common.dao.JpushMessageMapper;
 import io.openvidu.server.common.pojo.JpushMessage;
 import io.openvidu.server.common.pojo.JpushMsgTemp;
@@ -60,7 +61,8 @@ public class JpushManage {
     }
 
     public String getJpushMsgTemp(String ruid, String title, String alert, Date createDate, String msgType) {
-        return JpushMsgTemp.builder().ruid(ruid).title(title).msgType(msgType).content(alert).date(String.valueOf(createDate.getTime())).toString();
+        JpushMsgTemp jpushMsgTemp = JpushMsgTemp.builder().ruid(ruid).title(title).msgType(msgType).content(alert).date(String.valueOf(createDate.getTime())).build();
+        return JSONObject.toJSONString(jpushMsgTemp);
     }
 
     public void saveJpushMsg(String uuid, String ruid, String msgType, String alert, Date createDate) {
