@@ -30,6 +30,7 @@ import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -111,10 +112,10 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         notificationService.getRpcConnections().forEach(rpcConnection1 -> {
             if (!Objects.equals(rpcConnection1.getUserId(), vo.getUserId()) && uuidSet.contains(rpcConnection1.getUserUuid())) {
                 notificationService.sendNotification(rpcConnection1.getParticipantPrivateId(), ProtocolElements.APPOINTMENT_CONFERENCE_CREATED_METHOD, jsonObject);
-                //推送消息
-                sendNotificationWithMeetingInvite(rpcConnection1, userName, vo);
             }
         });
+        //推送消息
+        sendNotificationWithMeetingInvite(creator.getUuid(), uuidSet, userName, vo);
     }
 
     public void sendConferenceToBeginNotify(AppointmentRoomVO vo, Set<String> uuidSet) {
@@ -128,10 +129,10 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         notificationService.getRpcConnections().forEach(rpcConnection1 -> {
             if (uuidSet.contains(rpcConnection1.getUserUuid())) {
                 notificationService.sendNotification(rpcConnection1.getParticipantPrivateId(), ProtocolElements.CONFERENCE_TO_BEGIN_METHOD, jsonObject);
-                //推送消息
-                sendNotificationWithMeetingToBegin(rpcConnection1, vo);
             }
         });
+        //推送消息
+        sendNotificationWithMeetingToBegin(uuidSet, vo);
     }
 
     protected List<AppointParticipant> constructBatchAppoints(String ruid, List<User> users) {
@@ -152,54 +153,65 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
     }
 
     @Async
-    public void sendNotificationWithMeetingInvite(RpcConnection rpcConnection, String userName, AppointmentRoomVO vo) {
-        Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-        if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
-            if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
-                String type = userInfo.get("type").toString();
-                String registrationId = userInfo.get("registrationId").toString();
-                Date createDate = new Date();
-                String title = StringUtil.INVITE_CONT;
-                String alert = String.format(StringUtil.MEETING_INVITE, userName, vo.getSubject(),
-                        DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
-                        DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
-                Map<String,String> map = new HashMap<>(1);
-                map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_INVITE.name()));
-                if (TerminalTypeEnum.A.name().equals(type)) {
-                    jpushManage.sendToAndroid(title, alert, map, registrationId);
-                } else if(TerminalTypeEnum.I.name().equals(type)){
-                    IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
-                    jpushManage.sendToIos(iosAlert, map, registrationId);
+    public void sendNotificationWithMeetingInvite(String moderatorUuid, Set<String> uuidSet, String userName, AppointmentRoomVO vo) {
+        if (!CollectionUtils.isEmpty(uuidSet)) {
+            uuidSet.forEach(uuid -> {
+                if (uuid.equals(moderatorUuid)) {
+                    return;
                 }
-                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
-            }
+                Map userInfo = cacheManage.getUserInfoByUUID(uuid);
+                if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
+                    if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
+                        String type = userInfo.get("type").toString();
+                        String registrationId = userInfo.get("registrationId").toString();
+                        Date createDate = new Date();
+                        String title = StringUtil.INVITE_CONT;
+                        String alert = String.format(StringUtil.MEETING_INVITE, userName, vo.getSubject(),
+                                DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
+                                DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
+                        Map<String,String> map = new HashMap<>(1);
+                        map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_INVITE.name()));
+                        if (TerminalTypeEnum.A.name().equals(type)) {
+                            jpushManage.sendToAndroid(title, alert, map, registrationId);
+                        } else if(TerminalTypeEnum.I.name().equals(type)){
+                            IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
+                            jpushManage.sendToIos(iosAlert, map, registrationId);
+                        }
+                        jpushManage.saveJpushMsg(uuid, vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
+                    }
+                }
+            });
         }
     }
 
     @Async
-    public void sendNotificationWithMeetingToBegin(RpcConnection rpcConnection, AppointmentRoomVO vo) {
-        Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
-        if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
-            if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
-                String type = userInfo.get("type").toString();
-                String registrationId = userInfo.get("registrationId").toString();
-                log.info("send jpush message type:{} registrationId:{}",type, registrationId);
-                Date createDate = new Date();
-                String title = StringUtil.NOTIFY_CONT;
-                String alert = String.format(StringUtil.MEETING_NOTIFY, vo.getSubject(),
-                        DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
-                        DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
-                Map<String,String> map = new HashMap<>(1);
-                map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.name()));
+    public void sendNotificationWithMeetingToBegin(Set<String> uuidSet, AppointmentRoomVO vo) {
+        if (!CollectionUtils.isEmpty(uuidSet)) {
+            uuidSet.forEach(uuid ->{
+                Map userInfo = cacheManage.getUserInfoByUUID(uuid);
+                if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
+                    if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
+                        String type = userInfo.get("type").toString();
+                        String registrationId = userInfo.get("registrationId").toString();
+                        log.info("send jpush message type:{} registrationId:{}",type, registrationId);
+                        Date createDate = new Date();
+                        String title = StringUtil.NOTIFY_CONT;
+                        String alert = String.format(StringUtil.MEETING_NOTIFY, vo.getSubject(),
+                                DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
+                                DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
+                        Map<String,String> map = new HashMap<>(1);
+                        map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.name()));
 
-                if (TerminalTypeEnum.A.name().equals(type)) {
-                    jpushManage.sendToAndroid(title, alert, map, registrationId);
-                } else if(TerminalTypeEnum.I.name().equals(type)){
-                    IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
-                    jpushManage.sendToIos(iosAlert, map, registrationId);
+                        if (TerminalTypeEnum.A.name().equals(type)) {
+                            jpushManage.sendToAndroid(title, alert, map, registrationId);
+                        } else if(TerminalTypeEnum.I.name().equals(type)){
+                            IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
+                            jpushManage.sendToIos(iosAlert, map, registrationId);
+                        }
+                        jpushManage.saveJpushMsg(uuid, vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
+                    }
                 }
-                jpushManage.saveJpushMsg(rpcConnection.getUserUuid(), vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
-            }
+            });
         }
     }
 }
