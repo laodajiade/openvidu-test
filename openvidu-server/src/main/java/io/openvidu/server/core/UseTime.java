@@ -71,7 +71,6 @@ public class UseTime {
             msg.append(MessageFormat.format("{0}-{1}={2},  ", now.getName(), pre.getName(), (now.getTime() - pre.getTime())));
             pre = now;
         }
-        threadLocal.remove();
         return msg.toString();
     }
 
@@ -95,5 +94,9 @@ public class UseTime {
         public void updateTime(){
             time = System.currentTimeMillis();
         }
+    }
+
+    public static void clear(){
+        threadLocal.remove();
     }
 }

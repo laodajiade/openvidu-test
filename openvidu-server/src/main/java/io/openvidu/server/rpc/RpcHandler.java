@@ -132,6 +132,7 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				log.info("\nrequestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
 			}
 			timer.stop();
+			UseTime.clear();
 		}
 	}
 
