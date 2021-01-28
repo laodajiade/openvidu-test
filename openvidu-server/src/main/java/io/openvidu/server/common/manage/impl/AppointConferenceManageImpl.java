@@ -26,28 +26,7 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
 
     @Resource
     AppointConferenceMapper appointConferenceMapper;
-//
-//    @Autowired
-//    private ConfRoomManage confRoomManage;
 
-    @Resource
-    private UserMapper userMapper;
-
-
-    //    public Optional<AppointConference> getByRuid(String ruid) {
-//        AppointConferenceExample example = new AppointConferenceExample();
-//        example.createCriteria().andRuidEqualTo(ruid);
-//        return Optional.ofNullable(appointConferenceMapper.selectOneByExample(example));
-//    }
-//
-//    public Optional<AppointConference> getByRoomIdInValidTime(String roomId) {
-//        AppointConferenceExample example = new AppointConferenceExample();
-//
-//        example.createCriteria().andRoomIdEqualTo(roomId).andEndTimeGreaterThan(LocalDateTime.now());
-//
-//        return Optional.ofNullable(appointConferenceMapper.selectOneByExample(example));
-//    }
-//
     public void deleteByRuid(String ruid) {
         AppointConferenceExample example = new AppointConferenceExample();
         example.createCriteria().andRuidEqualTo(ruid);
@@ -98,9 +77,7 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setType("N");
         ac.setConferenceMode(params.getConferenceMode().getMode());
         ac.setPassword(params.getPassword());
-        ac.setModeratorPassword(params.getModeratorPassword());
-        ac.setModeratorName(rpcConnection.getUsername());
-
+        ac.setModeratorPassword(moderatorPassword);
         appointConferenceMapper.insertSelective(ac);
 
         params.setRuid(ac.getRuid());

@@ -1589,4 +1589,12 @@ public class Session implements SessionInterface {
 
 		return kmsRequest;
 	}
+
+	public Set<Participant> getMajorPartEachExcludeThorConnect() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant)
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
+				.collect(Collectors.toSet());
+	}
 }
