@@ -78,6 +78,7 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setConferenceMode(params.getConferenceMode().getMode());
         ac.setPassword(params.getPassword());
         ac.setModeratorPassword(moderatorPassword);
+        ac.setModeratorName(rpcConnection.getUsername());
         appointConferenceMapper.insertSelective(ac);
 
         params.setRuid(ac.getRuid());
