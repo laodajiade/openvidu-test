@@ -14,12 +14,13 @@
     id, room_id, uuid, username, ruid, create_time, update_time
   </sql>
 
-  <select id="getCallHistoryList" resultMap="BaseResultMap" parameterType="java.lang.String">
+  <select id="getCallHistoryList" resultType="io.openvidu.server.common.pojo.vo.CallHistoryVo" parameterType="java.lang.String">
     select
-    <include refid="Base_Column_List" />
-    from sd_call_history
-    where del = 0
-    and ruid = #{ruid,jdbcType=VARCHAR}
+    sch.uuid, sch.username, su.type accountType
+    from sd_call_history sch
+    inner join sd_user su on sch.uuid = su.uuid
+    where sch.del = 0
+    and sch.ruid = #{ruid,jdbcType=VARCHAR}
   </select>
 
 

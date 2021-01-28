@@ -11,6 +11,7 @@ import io.openvidu.server.common.pojo.CallHistory;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import io.openvidu.server.core.JpushManage;
 import io.openvidu.server.core.JpushMsgEnum;
 import io.openvidu.server.core.Participant;
@@ -108,11 +109,11 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
         List<User> invitees = userMapper.selectCallUserByUuidList(targetIds);
         Conference conference = sessionManager.getSession(sessionId).getConference();
-        List<CallHistory> callHistories = callHistoryMapper.getCallHistoryList(conference.getRuid());
+        List<CallHistoryVo> callHistories = callHistoryMapper.getCallHistoryList(conference.getRuid());
         List<CallHistory> addList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(invitees)) {
             if (!CollectionUtils.isEmpty(callHistories)) {
-                List<String> list = callHistories.stream().map(CallHistory::getUuid).collect(Collectors.toList());
+                List<String> list = callHistories.stream().map(CallHistoryVo::getUuid).collect(Collectors.toList());
                 invitees.forEach(invitee -> {
                     if (!list.contains(invitee.getUuid())) {
                         CallHistory callHistory = new CallHistory();
@@ -178,7 +179,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                     String title = StringUtil.INVITE_CONT;
                     String alert = String.format(StringUtil.ON_MEETING_INVITE, moderatorName, subject);
                     Map<String,String> map = new HashMap<>(1);
-                    map.put("message", jpushManage.getJpushMsgTemp(ruid, title, alert, createDate, JpushMsgEnum.MEETING_INVITE.name()));
+                    map.put("message", jpushManage.getJpushMsgTemp(ruid, title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
                     if (TerminalTypeEnum.A.name().equals(type)) {
                         jpushManage.sendToAndroid(title, alert, map, registrationId);
                     } else if(TerminalTypeEnum.I.name().equals(type)){

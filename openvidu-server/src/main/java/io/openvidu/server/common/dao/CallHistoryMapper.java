@@ -1,6 +1,7 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.CallHistory;
+import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public interface CallHistoryMapper {
 
-    List<CallHistory> getCallHistoryList(String ruid);
+    List<CallHistoryVo> getCallHistoryList(String ruid);
 
     void insertBatch(List<CallHistory> list);
 
