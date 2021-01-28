@@ -86,19 +86,19 @@ public class RoomManageImpl implements RoomManage {
         conferencePartHistoryMapper.insert(history);
 
         // save part info in cache
-//        Map<String, Object> partInfo = new HashMap<>();
-//        partInfo.put("userId", participant.getUserId());
-//        partInfo.put("ruid", conference.getRuid());
-//        partInfo.put("roomId", participant.getSessionId());
-//        partInfo.put("role", participant.getRole().name());
-//        partInfo.put("publicId", participant.getParticipantPublicId());
-//        partInfo.put("shareStatus", participant.getShareStatus().name());
-//        partInfo.put("speakerStatus", participant.getSpeakerStatus().name());
-//        partInfo.put("handStatus", participant.getHandStatus().name());
-//        partInfo.put("micStatus", participant.getMicStatus().name());
-//        partInfo.put("videoStatus", participant.getVideoStatus().name());
-//        partInfo.put("order", participant.getOrder());
-//        cacheManage.savePartInfo(participant.getUuid(), partInfo);
+        Map<String, Object> partInfo = new HashMap<>();
+        partInfo.put("userId", participant.getUserId());
+        partInfo.put("ruid", conference.getRuid());
+        partInfo.put("roomId", participant.getSessionId());
+        partInfo.put("role", participant.getRole().name());
+        partInfo.put("publicId", participant.getParticipantPublicId());
+        partInfo.put("shareStatus", participant.getShareStatus().name());
+        partInfo.put("speakerStatus", participant.getSpeakerStatus().name());
+        partInfo.put("handStatus", participant.getHandStatus().name());
+        partInfo.put("micStatus", participant.getMicStatus().name());
+        partInfo.put("videoStatus", participant.getVideoStatus().name());
+        partInfo.put("order", participant.getOrder());
+        cacheManage.savePartInfo(participant.getUuid(), partInfo);
     }
 
     @Override

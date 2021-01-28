@@ -87,8 +87,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
             //send notify
             JsonObject params = new JsonObject();
             params.addProperty("roomId", sessionId);
-            session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                    ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+            notificationService.sendBatchNotificationConcurrent(session.getMajorPartEachIncludeThorConnect(), ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
         }
         UseTime.point("closeRoom p3");
         this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);

@@ -206,10 +206,15 @@ public class RpcNotificationService {
                 "\nsuccessList:{}  failList:{}", method, params, successList, failList);
     }
 
+	public void sendBatchNotificationConcurrent(Set<Participant> participants, final String method, final Object params) {
+		List<String> collect = participants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+		sendBatchNotificationConcurrent(collect, method, params);
+	}
 	/**
 	 * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
 	 */
 	public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, final String method, final Object params) {
+		long start = System.currentTimeMillis();
 		List<String> successList = new ArrayList<>();
 		List<String> failList = new ArrayList<>();
 		int size = participantPrivateIds.size();
@@ -239,14 +244,15 @@ public class RpcNotificationService {
 			});
 		}
 		try {
-			if (!countDownLatch.await((size * 2) + 10, TimeUnit.MILLISECONDS)) {
-				log.warn("sendBatchNotificationConcurrent timeout method={},partSize = {}", method, size);
+			if (!countDownLatch.await(Math.min((size * 2) + 30, 500), TimeUnit.MILLISECONDS)) {
+				log.warn("sendBatchNotificationConcurrent timeout method={}, partSize = {}, elapseTime={}", method, size, System.currentTimeMillis() - start);
 			}
 		} catch (InterruptedException e) {
 			log.warn("sendBatchNotificationConcurrent error method={},partSize = {}", method, size);
 		}
+		long end = System.currentTimeMillis();
 		log.info("\nsendBatchNotificationConcurrent - Notification method:{} and params: \n{}" +
-				"\nsuccessList:{}  failList:{}", method, params, successList, failList);
+				"\nsuccessList:{}  failList:{}  elapseTime={}", method, params, successList, failList, (end - start));
 	}
 
 	private Transaction getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {

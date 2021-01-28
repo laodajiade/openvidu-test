@@ -307,10 +307,10 @@ public class SessionEventsHandler {
 			notifyFlag = notifyUpdateOrderLock.add(session.getSessionId());//在这期间只有第一个线程允许进行通知
 		}
 		if (notifyFlag) {
-			log.info("notifyUpdateOrder merge go on");
+			log.info("notifyUpdateOrder pass");
 			asyncNotifyUpdateOrder(session);
 		} else {
-			log.info("notifyUpdateOrder merge");
+			log.info("notifyUpdateOrder skip");
 		}
 	}
 
@@ -327,7 +327,7 @@ public class SessionEventsHandler {
             synchronized (notifyUpdateOrderLock) {
                 notifyUpdateOrderLock.remove(session.getSessionId());
             }
-
+			log.info("notifyUpdateOrder doing");
             Set<Participant> existParticipants =  session.getMajorPartEachConnect();
             if (!CollectionUtils.isEmpty(existParticipants)) {
                 JsonObject notifyParam = new JsonObject();
