@@ -36,7 +36,10 @@
     update sd_call_history
     set del = 1
     where ruid = #{ruid,jdbcType=VARCHAR}
-    and uuid = #{uuid,jdbcType=VARCHAR}
+    and uuid in
+    <foreach collection="uuidList" item="item" index="index" separator="," open="(" close=")">
+      #{item}
+    </foreach>
   </update>
 
   <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.User" >

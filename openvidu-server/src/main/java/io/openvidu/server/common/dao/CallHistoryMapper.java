@@ -15,5 +15,5 @@ public interface CallHistoryMapper {
 
     void insertBatch(List<CallHistory> list);
 
-    void updateCallHistory(@Param("ruid") String ruid, @Param("uuid") String uuid);
+    void updateCallHistory(@Param("ruid") String ruid, @Param("uuidList") List<String> uuidList);
 }

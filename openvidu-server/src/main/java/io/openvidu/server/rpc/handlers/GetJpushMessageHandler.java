@@ -5,9 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.pojo.JpushMessage;
-import io.openvidu.server.core.RespResult;
-import io.openvidu.server.rpc.ExRpcAbstractHandler;
+import io.openvidu.server.common.pojo.vo.JpushMessageVo;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +30,8 @@ public class GetJpushMessageHandler extends RpcAbstractHandler {
         String uuid = getStringParam(request, ProtocolElements.GET_JPUSH_MESSAGE_UUID_PARAM);
         PageHelper.startPage(pageNum, pageSize);
 
-        List<JpushMessage> jpushMessages = jpushMessageMapper.getJpushMsgList(uuid);
-        PageInfo<JpushMessage> pageInfo = new PageInfo<>(jpushMessages);
+        List<JpushMessageVo> jpushMessages = jpushMessageMapper.getJpushMsgList(uuid);
+        PageInfo<JpushMessageVo> pageInfo = new PageInfo<>(jpushMessages);
         JSONObject respJson = new JSONObject();
         respJson.put("list", pageInfo.getList());
         respJson.put("pageSize", pageSize);

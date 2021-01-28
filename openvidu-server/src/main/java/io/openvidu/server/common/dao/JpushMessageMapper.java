@@ -1,6 +1,7 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.JpushMessage;
+import io.openvidu.server.common.pojo.vo.JpushMessageVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface JpushMessageMapper {
 
     void insertMsg(JpushMessage jpushMessage);
 
-    List<JpushMessage> getJpushMsgList(String uuid);
+    List<JpushMessageVo> getJpushMsgList(String uuid);
 
     void updateJpushMsg(@Param("readType") Integer readType, @Param("uuid") String uuid, @Param("list") List<Long> ids);
 

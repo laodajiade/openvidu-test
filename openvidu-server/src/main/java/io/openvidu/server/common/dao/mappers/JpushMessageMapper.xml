@@ -64,9 +64,9 @@
     </trim>
   </insert>
 
-  <select id="getJpushMsgList" resultMap="BaseResultMap">
+  <select id="getJpushMsgList" resultType="io.openvidu.server.common.pojo.vo.JpushMessageVo">
     select
-    <include refid="Base_Column_List" />
+    id, uuid, msg_content msgContent, msg_type msgType, read_type readType, ruid, UNIX_TIMESTAMP(create_time) * 1000 createTime
     from sd_jpush_message
     where uuid = #{uuid,jdbcType=VARCHAR}
     and DATE_SUB(CURDATE(), INTERVAL 30 DAY) <![CDATA[<=]]> date(create_time)

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * @author even
  * @date 2021/1/18 17:04
@@ -18,9 +20,10 @@ public class CallRemoveHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String uuid = getStringParam(request, ProtocolElements.CALL_REMOVE_UUID_PARAM);
+        List<String> uuidList = getStringListParam(request, ProtocolElements.CALL_REMOVE_UUID_PARAM);
         String ruid = getStringParam(request, ProtocolElements.CALL_REMOVE_RUID_PARAM);
-        callHistoryMapper.updateCallHistory(ruid, uuid);
+        callHistoryMapper.updateCallHistory(ruid, uuidList);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
+
 }
