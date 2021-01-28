@@ -208,7 +208,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                             IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                             jpushManage.sendToIos(iosAlert, map, registrationId);
                         }
-                        jpushManage.saveJpushMsg(uuid, vo.getRuid(), JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
+                        jpushManage.saveJpushMsg(uuid, vo.getRuid(), JpushMsgEnum.MEETING_NOTIFY.getMessage(), alert, createDate);
                     }
                 }
             });
