@@ -128,10 +128,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		try {
 			rpcAbstractHandler.handRpcRequest(rpcConnection, request);
 		} finally {
-			if (UseTime.elapse() > 500) {
+			if (UseTime.elapse() > 100) {
 				log.info("\nrequestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
 			}
 			timer.stop();
+			UseTime.clear();
 		}
 	}
 

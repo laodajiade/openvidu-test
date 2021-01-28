@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -11,6 +12,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -25,8 +27,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 public class JoinRoomHandler extends RpcAbstractHandler {
+
+    private static final RateLimiter rateLimiter = RateLimiter.create(30);
+
+    private static final Object joinRoomLock = new Object();
+
+    @Value("${joinroom.rate.limiter:30}")
+    public void setRateLimiter(double rate){
+        if (rate <= 0.0) {
+            return;
+        }
+        rateLimiter.setRate(rate);
+    }
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        //rate limited
+        if (!rateLimiter.tryAcquire()) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.RATE_LIMITER);
+            return;
+        }
+
         String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
@@ -46,6 +68,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
 
+        UseTime.point("join room start");
         try {
             do {
                 //保存游客nickName
@@ -328,8 +351,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 rpcConnection.setSessionId(sessionId);
-
-                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                UseTime.point("join room p1");
+                synchronized (joinRoomLock) {
+                    UseTime.point("join room p1.1");
+                    sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                }
+                UseTime.point("join room p2");
             } while (false);
 
             rpcConnection.setReconnected(false);
@@ -359,6 +386,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.cleanCacheCollections(sessionId);
             }
         }
+        UseTime.point("join room end");
     }
 
 }

@@ -26,6 +26,7 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.core.UseTime;
 import io.openvidu.server.kurento.kms.Kms;
 import org.kurento.client.*;
 import org.slf4j.Logger;
@@ -106,7 +107,6 @@ public class KurentoSession extends Session {
 					compositeService.setExistSharing(true);
 				}
 			}
-
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
 

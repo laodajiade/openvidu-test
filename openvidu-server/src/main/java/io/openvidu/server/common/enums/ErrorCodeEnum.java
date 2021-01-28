@@ -51,6 +51,7 @@ public enum ErrorCodeEnum {
     UNRECOGNIZED_API(11005, "非法API调用"),
     CORP_SERVICE_EXPIRED(11006, "服务已到期"),
     ACCESS_IN_NEEDED(11007, "重新链接服务器中"),
+    RATE_LIMITER(11011, "请稍后再试"),
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
