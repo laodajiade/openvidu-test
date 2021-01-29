@@ -803,13 +803,33 @@ public class Session implements SessionInterface {
 		return result;
 	}
 
-	public void dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager, JsonArray orderedPartsArray, Participant thorParticipant) {
+	public ErrorCodeEnum dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager, JsonArray orderedPartsArray, Participant thorParticipant) {
+		ErrorCodeEnum errorCodeEnum = ErrorCodeEnum.SUCCESS;
 		int lineOrder = openviduConfig.getSfuPublisherSizeLimit() - 1;
 		RpcNotificationService notificationService = sessionManager.notificationService;
 		Set<Participant> participants = getMajorPartEachConnect();
 		Set<Participant> sub2PubPartSet = new HashSet<>(128);
 		Set<Participant> pub2SubPartSet = new HashSet<>(128);
+		boolean executeFlag = false;
 		synchronized (partOrderAdjustLock) {
+			for (Map.Entry<String, Integer> map : partOrderMap.entrySet()) {
+				String uuid = map.getKey();
+				Integer newOrder = map.getValue();
+				Participant oldPart = getMajorPartEachConnect().stream().filter(participant -> Objects.equals(uuid,participant.getUuid())).findAny().orElse(null);
+				if (Objects.isNull(oldPart)) {
+					log.info("web updateParticipantsOrder participant:{} is null", uuid);
+					executeFlag = true;
+					break;
+				}
+				if (newOrder == oldPart.getOrder()) {
+					log.info("web updateParticipantsOrder participant:{},oldOrder:{},newOrder:{}", uuid, oldPart.getOrder(), newOrder);
+					executeFlag = true;
+					break;
+				}
+			}
+			if (executeFlag) {
+				return ErrorCodeEnum.PERFORMANCE_EXCEED;
+			}
 			participants.forEach(participant -> {
 				try {
 					if (participant == null) {
@@ -918,6 +938,7 @@ public class Session implements SessionInterface {
 				}
 			});
 		}
+		return errorCodeEnum;
 	}
 
 	private void updatePartCacheInfo(Participant participant) {
