@@ -35,7 +35,6 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
         ParticipantMicStatus micStatus = ParticipantMicStatus.valueOf(status);
         String sourceId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
-        List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
         // add params for tourist
         String source = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SOURCE_PARAM);
         List<String> accountTargets = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGETS_PARAM);
@@ -52,48 +51,6 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;
-        }
-
-        JsonArray tsArray = new JsonArray();
-        if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
-            if (ParticipantMicStatus.on.equals(micStatus)) {
-                targetIds.forEach(t -> {
-                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                            .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
-                                    && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
-                                    && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
-                    if (Objects.nonNull(part)) {
-                        part.changeMicStatus(micStatus);
-                        tsArray.add(t);
-                    }
-
-                });
-            } else {
-                targetIds.forEach(t -> {
-                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                            .filter(s -> Objects.equals(t, s.getUserId().toString())
-                                    && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().orElse(null);
-                    if (Objects.nonNull(part)) {
-                        part.changeMicStatus(micStatus);
-                        tsArray.add(t);
-                    }
-
-                });
-            }
-
-        } else {
-            Set<Participant> participants = session.getMajorPartExcludeModeratorConnect();
-            if (!CollectionUtils.isEmpty(participants)) {
-                participants.forEach(participant -> {
-                    if (ParticipantMicStatus.on.equals(micStatus) && !OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
-                        participant.changeMicStatus(micStatus);
-                    }
-                    if (ParticipantMicStatus.off.equals(micStatus)) {
-                        participant.changeMicStatus(micStatus);
-                    }
-                });
-            }
-
         }
 
         JsonArray accountArr = new JsonArray();
