@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
@@ -32,11 +33,14 @@ import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
@@ -440,4 +444,11 @@ public class KurentoSession extends Session {
 	}
 
 
+	public Set<Participant> getMajorPartEachExcludeThorConnect() {
+		checkClosed();
+		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> Objects.nonNull(participant)
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
+				.collect(Collectors.toSet());
+	}
 }
