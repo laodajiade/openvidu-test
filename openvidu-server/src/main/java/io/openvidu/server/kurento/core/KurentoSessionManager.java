@@ -385,13 +385,13 @@ public class KurentoSessionManager extends SessionManager {
 			}
 
 			// Close Session if no more participants
-//			Set<Participant> remainingParticipants = null;
-//			try {
-//				remainingParticipants = getParticipants(sessionId);
-//			} catch (OpenViduException e) {
-//				log.info("Possible collision when closing the session '{}' (not found)", sessionId);
-//				remainingParticipants = Collections.emptySet();
-//			}
+			Set<Participant> remainingParticipants = null;
+			try {
+				remainingParticipants = getParticipants(sessionId);
+			} catch (OpenViduException e) {
+				log.info("Possible collision when closing the session '{}' (not found)", sessionId);
+				remainingParticipants = Collections.emptySet();
+			}
 
 //			if (!EndReason.forceDisconnectByUser.equals(reason) &&
 //					!EndReason.forceCloseSessionByUser.equals(reason) && !EndReason.closeSessionByModerator.equals(reason)) {
@@ -402,19 +402,19 @@ public class KurentoSessionManager extends SessionManager {
 			// adjust order notify after onLeft
 			//session.dealParticipantOrder(participant, rpcNotificationService);
 			// UseTime.point("ip5");
-//			if (!EndReason.sessionClosedByServer.equals(reason)) {
-//				// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
-//				// recording. Will be stopped after in method
-//				// "SessionManager.closeSessionAndEmptyCollections"
-//				if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
-//					session.setClosing(true);
-//					if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
-//						// stop recording
-//						log.info("Last participant left. Stopping recording of session {}", sessionId);
-//						stopRecording(sessionId);
-//					}
-//				}
-//			}
+			if (!EndReason.sessionClosedByServer.equals(reason)) {
+				// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
+				// recording. Will be stopped after in method
+				// "SessionManager.closeSessionAndEmptyCollections"
+				if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+					session.setClosing(true);
+					if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
+						// stop recording
+						log.info("Last participant left. Stopping recording of session {}", sessionId);
+						stopRecording(sessionId);
+					}
+				}
+			}
 
 			// Finally close websocket session if required
 			if (closeWebSocket) {
