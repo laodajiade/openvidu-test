@@ -33,8 +33,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
     private static final Object joinRoomLock = new Object();
 
     @Value("${joinroom.rate.limiter:30}")
-    public void setRateLimiter(double rate){
-        if (rate <= 0.0) {
+    public void setRateLimiter(double rate) {
+        if (rate <= 0.01) {
             return;
         }
         rateLimiter.setRate(rate);
@@ -42,8 +42,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         //rate limited
-        if (!rateLimiter.tryAcquire()) {
+        if (streamType == StreamType.MAJOR && !rateLimiter.tryAcquire()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.RATE_LIMITER);
             return;
@@ -54,7 +55,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
-        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
         String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
         String ruid = getStringOptionalParam(request, ProtocolElements.JOINROOM_RUID_PARAM);
@@ -117,7 +117,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(streamType) &&
-                        SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom()) ) {
+                        SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
                     if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
                         log.error("disable participant active join room:{}", sessionId);
                         errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
@@ -170,7 +170,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                                 //save previous order if reconnect
                                 sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
-                            }else{
+                            } else {
                                 log.warn("reconnect warn,because originalPart is null"); // todo yy 重点监听下这个日志输出,按流程不应该会是null
                             }
 
@@ -215,7 +215,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
                 //判断发起会议时是否超出企业人数上限
                 if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(sessionManager.getSession(sessionId))) {
-                    String project  = sessionManager.getSession(sessionId).getConference().getProject();
+                    String project = sessionManager.getSession(sessionId).getConference().getProject();
                     Collection<Session> sessions = sessionManager.getSessions();
                     if (Objects.nonNull(sessions)) {
                         AtomicInteger limitCapacity = new AtomicInteger();
@@ -235,7 +235,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
                 //判断通话时长是否不足
                 if (!Objects.isNull(sessionManager.getSession(sessionId))) {
-                    String project  = sessionManager.getSession(sessionId).getConference().getProject();
+                    String project = sessionManager.getSession(sessionId).getConference().getProject();
                     Corporation corporation = corporationMapper.selectByCorpProject(project);
                     if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
                         notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
