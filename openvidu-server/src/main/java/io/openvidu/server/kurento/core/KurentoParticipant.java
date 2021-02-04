@@ -232,6 +232,10 @@ public class KurentoParticipant extends Participant {
 		return this.publisher;
 	}
 
+	public void setPublisher(PublisherEndpoint publisher) {
+		this.publisher = publisher;
+	}
+
 	public ConcurrentMap<String, SubscriberEndpoint> getSubscribers() {
 		return this.subscribers;
 	}
