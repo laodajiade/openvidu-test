@@ -821,7 +821,7 @@ public class Session implements SessionInterface {
 					log.info("web drag participant:{},oldOrder:{},newOrder:{}",participant.getUuid(),oldOrder,newOrder);
 					if (Objects.nonNull(newOrder) && !Objects.equals(oldOrder, newOrder)) {
 						participant.setOrder(newOrder);
-						if (Math.max(oldOrder, newOrder) >= lineOrder && lineOrder >= Math.min(oldOrder, newOrder)
+						if (Math.max(oldOrder, newOrder) > lineOrder && lineOrder >= Math.min(oldOrder, newOrder)
 								&& !OpenViduRole.MODERATOR.equals(participant.getRole())) {  // exclude the moderator
 							// part role has to change
 							if (newOrder <= lineOrder) {
