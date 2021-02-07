@@ -68,6 +68,12 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             return;
         }
 
+        if (sessionManager.getSession(sessionId).isClosing()) {
+            log.info("call closeRoom method after again participant:{} call leaveRoom method roomId:{}", participant.getUuid() + participant.getParticipantPrivateId(), sessionId);
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+            return;
+        }
+
         String moderatePublicId = null;
         String speakerId = null;
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
