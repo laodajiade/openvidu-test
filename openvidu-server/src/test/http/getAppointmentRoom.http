@@ -1,0 +1,14 @@
+
+# 获取预约会议详情
+POST http://localhost:4443/dev/test?id={{uuid}}&method=testStartConferenceRecord
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "80101900002"
+}
+
+###
+
+

@@ -214,6 +214,8 @@ public class RpcHandlerFactory {
 
     @Resource
     private StartConferenceRecordHandler startConferenceRecordHandler;
+    @Resource
+    private TestStartConferenceRecordHandler testStartConferenceRecordHandler;
 
     @Resource
     private StopConferenceRecordHandler stopConferenceRecordHandler;
@@ -382,6 +384,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETSUBDEVORUSERBYDEPTIDS_METHOD,               getSubDevOrUserByDeptIdsHandler);
         handlersMap.put(ProtocolElements.CHANGE_PART_ROLE_METHOD,                       changePartRoleHandler);
         handlersMap.put(ProtocolElements.START_CONF_RECORD_METHOD,                      startConferenceRecordHandler);
+        handlersMap.put("testStartConferenceRecord",                                    testStartConferenceRecordHandler);
         handlersMap.put(ProtocolElements.STOP_CONF_RECORD_METHOD,                       stopConferenceRecordHandler);
         handlersMap.put(ProtocolElements.GET_CONF_RECORD_METHOD,                        getConferenceRecordHandler);
         handlersMap.put(ProtocolElements.PLAYBACK_CONF_RECORD_METHOD,                   playbackConferenceRecordHandler);

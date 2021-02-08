@@ -489,7 +489,7 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoMediaOptions kurentoOptions = (KurentoMediaOptions) mediaOptions;
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
 
-		log.debug(
+		log.info(
 				"Request [PUBLISH_MEDIA] isOffer={} sdp={} "
 						+ "loopbackAltSrc={} lpbkConnType={} doLoopback={} mediaElements={} ({})",
 				kurentoOptions.isOffer, kurentoOptions.sdpOffer, kurentoOptions.loopbackAlternativeSrc,

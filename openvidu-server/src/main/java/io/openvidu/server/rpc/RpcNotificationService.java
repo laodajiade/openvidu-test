@@ -202,8 +202,8 @@ public class RpcNotificationService {
                         participantPrivateId, e);
             }
         }
-        log.info("\nbatch WebSocket notification- Notification method:{} and params: \n{}" +
-                "\nsuccessList:{}  failList:{}", method, params, successList, failList);
+        log.info("batch WebSocket notification- Notification method:{} and params: {}" +
+                "successList:{}  failList:{}", method, params, successList, failList);
     }
 
 	/**
@@ -245,8 +245,8 @@ public class RpcNotificationService {
 		} catch (InterruptedException e) {
 			log.warn("sendBatchNotificationConcurrent error method={},partSize = {}", method, size);
 		}
-		log.info("\nsendBatchNotificationConcurrent - Notification method:{} and params: \n{}" +
-				"\nsuccessList:{}  failList:{}", method, params, successList, failList);
+		log.info("sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
+				"successList:{}  failList:{}", method, params, successList, failList);
 	}
 
 	private Transaction getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {

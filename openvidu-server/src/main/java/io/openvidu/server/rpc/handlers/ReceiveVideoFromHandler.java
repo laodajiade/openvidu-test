@@ -9,6 +9,7 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,8 +22,19 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class ReceiveVideoFromHandler extends RpcAbstractHandler {
+
+    @Autowired
+    TestReceiveVideoFromHandler testReceiveVideoFromHandler;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+
+        if (rpcConnection.getUserUuid().equals("80103600005")){
+            log.info("80103600005 testReceiveVideoFromHandler");
+            testReceiveVideoFromHandler.handRpcRequest(rpcConnection,request);
+            return;
+        }
+
         Participant participant;
         try {
             participant = sanityCheckOfSession(rpcConnection, "subscribe");
