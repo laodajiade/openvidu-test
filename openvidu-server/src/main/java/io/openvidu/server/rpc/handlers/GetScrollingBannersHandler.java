@@ -36,9 +36,9 @@ public class GetScrollingBannersHandler extends RpcAbstractHandler {
         SessionPreset preset = session.getPresetInfo();
         String operation = preset.getScrollingBannersInRoom().name();
         ScrollingBannersConfig config = preset.getScrollingBannersConfig();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("operation", operation);
-        jsonObject.addProperty("config", Objects.isNull(config) ? JSONObject.toJSONString(new ScrollingBannersConfig()) :JSONObject.toJSONString(config));
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("operation", operation);
+        jsonObject.put("config", Objects.isNull(config) ? new ScrollingBannersConfig() : config);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
 }
