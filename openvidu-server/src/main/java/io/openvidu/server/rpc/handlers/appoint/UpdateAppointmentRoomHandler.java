@@ -56,7 +56,7 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         //Conference conference = appointConferenceManage.constructConf(rpcConnection, request);
         // 会议开始时间校验
-        if (Objects.isNull(params.getStartTime()) || System.currentTimeMillis() > params.getStartTime()) {
+        if (params.getStartTime() != 0 && System.currentTimeMillis() > params.getStartTime()) {
             return RespResult.fail(ErrorCodeEnum.START_TIME_LATE);
         } else if (params.getStartTime() == 0) {
             params.setStartTime(System.currentTimeMillis() + 5000);
