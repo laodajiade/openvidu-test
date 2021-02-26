@@ -12,6 +12,7 @@ import io.openvidu.server.common.pojo.ConferencePartHistory;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.StatisticsConferenceDaily;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -43,6 +44,9 @@ public class StatisticsManageImpl implements StatisticsManage {
     @Resource
     private CacheManage cacheManage;
 
+    @Value("${duration.lessthan.tenhour}")
+    private int durationLessThanTenHour;
+
     @Override
     public List<Conference> queryConferenceByTimeRange(ConfStatisticSearch confStatisticSearch) {
         return conferenceMapper.queryConferenceByTimeRange(confStatisticSearch);
@@ -72,6 +76,12 @@ public class StatisticsManageImpl implements StatisticsManage {
             Corporation corporation = corporationMapper.selectByCorpProject(project);
             cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
             remainderDuration = corporation.getRemainderDuration();
+        }
+        if (remainderDuration > 0) {
+            cacheManage.delCorpRemainDurationUsedUp(project);
+        }
+        if (remainderDuration >= durationLessThanTenHour) {
+            cacheManage.delCorpRemainDurationLessTenHour(project);
         }
         map.put("remainderHour",remainderDuration/60);
         map.put("remainderMinute",remainderDuration%60);
