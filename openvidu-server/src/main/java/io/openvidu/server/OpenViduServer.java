@@ -30,10 +30,7 @@ import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
 import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
 import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
 import io.openvidu.server.kurento.core.KurentoSessionManager;
-import io.openvidu.server.kurento.kms.FixedOneKmsManager;
-import io.openvidu.server.kurento.kms.KmsManager;
-import io.openvidu.server.kurento.kms.LoadManager;
-import io.openvidu.server.kurento.kms.MaxWebRtcLoadManager;
+import io.openvidu.server.kurento.kms.*;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.DummyRecordingDownloader;
 import io.openvidu.server.recording.RecordingDownloader;
@@ -93,7 +90,8 @@ public class OpenViduServer implements JsonRpcConfigurer {
 		}
 		String firstKmsWsUri = openviduConfig.getKmsUris().get(0);
 		log.info("OpenVidu Server using one KMS: {}", firstKmsWsUri);
-		return new FixedOneKmsManager();
+		//return new FixedOneKmsManager();
+		return new ElasticKmsManager();
 	}
 
 	@Bean

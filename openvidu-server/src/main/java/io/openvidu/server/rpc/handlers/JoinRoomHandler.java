@@ -53,6 +53,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
+
+        //todo 测试代码
+        if (rpcConnection.getUserUuid().endsWith("5")) {
+            role = OpenViduRole.SUBSCRIBER;
+        }
+
+
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
@@ -171,7 +178,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                                 //save previous order if reconnect
                                 sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
                             } else {
-                                log.warn("reconnect warn,because originalPart is null"); // todo yy 重点监听下这个日志输出,按流程不应该会是null
+                                log.warn("reconnect warn,because originalPart is null");
                             }
 
                         }

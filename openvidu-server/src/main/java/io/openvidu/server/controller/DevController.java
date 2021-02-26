@@ -48,6 +48,13 @@ public class DevController {
         return "reset success";
     }
 
+    @GetMapping("dispatcher")
+    public String dispatcher(@RequestParam("sessionId")String sessionId) {
+        return test(sessionId, "testStartConferenceRecord", "{\n" +
+                "  \"roomId\": \"" + sessionId + "\"\n" +
+                "}");
+    }
+
     @GetMapping("downloadReport")
     public void downloadReport(HttpServletResponse response) throws Exception {
         response.setContentType("application//vnd.ms-excel;charset=UTF-8");

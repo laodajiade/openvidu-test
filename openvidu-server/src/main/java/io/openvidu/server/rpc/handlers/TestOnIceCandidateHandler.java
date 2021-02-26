@@ -11,6 +11,8 @@ import org.kurento.client.IceCandidate;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author geedow
  * @date 2019/11/5 17:46
@@ -31,7 +33,15 @@ public class TestOnIceCandidateHandler extends RpcAbstractHandler {
         IceCandidate cand = new IceCandidate(candidate, sdpMid, sdpMLineIndex);
 
         log.info("receive add iceCandidate ");
-        TestReceiveVideoFromHandler.receiveEndpoint.addIceCandidate(cand);
+        try {
+            //TimeUnit.MILLISECONDS.sleep(500);
+            TestReceiveVideoFromHandler.receiveEndpoint.addIceCandidate(cand);
+        }catch (Exception e){
+            log.error("null ? {} ? {} ",TestReceiveVideoFromHandler.receiveEndpoint == null,cand == null);
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
 
 
     }

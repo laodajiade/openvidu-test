@@ -489,7 +489,7 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoMediaOptions kurentoOptions = (KurentoMediaOptions) mediaOptions;
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
 
-		log.info(
+		log.debug(
 				"Request [PUBLISH_MEDIA] isOffer={} sdp={} "
 						+ "loopbackAltSrc={} lpbkConnType={} doLoopback={} mediaElements={} ({})",
 				kurentoOptions.isOffer, kurentoOptions.sdpOffer, kurentoOptions.loopbackAlternativeSrc,
@@ -567,7 +567,7 @@ public class KurentoSessionManager extends SessionManager {
 	@Override
 	public void subscribe(Participant participant, String senderName, StreamModeEnum streamMode, String sdpOffer, Integer transactionId) {
 		String sdpAnswer = null;
-		Session session = null;
+		KurentoSession session = null;
 		try {
 			log.debug("Request [SUBSCRIBE] remoteParticipant={} sdpOffer={} ({})", senderName, sdpOffer,
 					participant.getParticipantPublicId());
@@ -604,7 +604,14 @@ public class KurentoSessionManager extends SessionManager {
 						"User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
 			}
 
-			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
+			// 如果是墙下，且服务器开启了媒体级联，则从分发服务器上进行接收
+			if (!participant.getRole().needToPublish() && !session.getDeliveryKmsManagers().isEmpty()) {
+				sdpAnswer = kParticipant.receiveMediaFromDelivery(senderParticipant, streamMode, sdpOffer, senderName, session.getDeliveryKmsManagers().get(0).getPipeline());
+
+				return;
+			} else {
+				sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
+			}
 			if (sdpAnswer == null) {
 				throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 						"Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()

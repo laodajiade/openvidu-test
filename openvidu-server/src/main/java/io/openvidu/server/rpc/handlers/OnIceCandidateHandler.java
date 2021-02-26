@@ -4,9 +4,12 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
+import org.kurento.client.IceCandidate;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 public class OnIceCandidateHandler extends RpcAbstractHandler {
     @Autowired
     TestOnIceCandidateHandler testOnIceCandidateHandler;
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
 
@@ -34,20 +38,30 @@ public class OnIceCandidateHandler extends RpcAbstractHandler {
         } catch (OpenViduException e) {
             return;
         }
-        log.info("testOnIceCandidateHandler 33333333333333 {}, {}", rpcConnection.getUserUuid(),participant.getUuid());
-        if (rpcConnection.getUserUuid().equals("80103600005") && participant.getUuid().equals("80103600005")) {
+        if (rpcConnection.getUserUuid().endsWith("5") && participant.getUuid().endsWith("5")) {
             try {
                 log.info("80103600005 testOnIceCandidateHandler");
                 testOnIceCandidateHandler.handRpcRequest(rpcConnection, request);
-
+                return;
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             //return;
         } else {
-            log.info("testOnIceCandidateHandler 2222222222 {}", participant.getUuid());
+            log.info("OnIceCandidateHandler 2222222222 {}", participant.getUuid());
         }
+
+        if (rpcConnection.getUserUuid().equals("80103600004") && participant.getUuid().equals("80103600004")) {
+            //todo 临时代码
+            IceCandidate cand = new IceCandidate(candidate, sdpMid, sdpMLineIndex);
+
+            log.info("111111111 receive add iceCandidate ");
+            KurentoParticipant kParticipant = (KurentoParticipant) participant;
+            SubscriberEndpoint newOrExistingSubscriber = kParticipant.getNewOrExistingSubscriber(endpointName);
+            newOrExistingSubscriber.addIceCandidate(cand);
+        }
+
 
         sessionManager.onIceCandidate(participant, endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
     }

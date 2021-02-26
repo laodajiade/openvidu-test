@@ -105,6 +105,21 @@ public abstract class KmsManager {
 		return Collections.min(getKmsLoads()).kms;
 	}
 
+	/**
+	 * todo 获取负载最小的kms，现在阶段写死返回一个
+	 * @param excludeKms
+	 * @return
+	 */
+	public synchronized Kms getLessLoadedKms(Kms excludeKms){
+		for (Kms value : kmss.values()) {
+			if (value.getId().equals(excludeKms.getId())){
+				continue;
+			}
+			return value;
+		}
+		throw new RuntimeException("没有可用的其他kms");
+	}
+
 	public Kms getKms(String kmsId) {
 		return this.kmss.get(kmsId);
 	}
@@ -127,7 +142,6 @@ public abstract class KmsManager {
 		Collections.sort(kmsLoads);
 		return kmsLoads;
 	}
-
 	private List<KmsLoad> getKmsLoads() {
 		ArrayList<KmsLoad> kmsLoads = new ArrayList<>();
 		for (Kms kms : kmss.values()) {

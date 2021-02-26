@@ -34,6 +34,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
+import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -70,6 +71,9 @@ public class SessionEventsHandler {
 
 	@Autowired
 	protected SessionManager sessionManager;
+
+	@Autowired
+	private KmsManager kmsManager;
 
 	Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -245,6 +249,28 @@ public class SessionEventsHandler {
 		result.add("roomInfo", roomInfoJson);
 		UseTime.point("join room p9");
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
+
+//		KurentoSession kurentoSession = (KurentoSession) session;
+//		Collection<KurentoSession> kurentoSessions = kurentoSession.getKms().getKurentoSessions();
+//		int sum = kurentoSessions.stream().map(Session::getParticipants).mapToInt(Set::size).sum();
+//
+//		for (KurentoSession ks : kurentoSessions) {
+//			Set<Participant> participants = ks.getParticipants();
+//			for (Participant p : participants) {
+//				KurentoParticipant kp = 	(KurentoParticipant)p;
+//				kp.getPipeline().getMediaPipeline().
+//			}
+//		}
+		// 人数超过阈值后开始往第二台分发。
+		KurentoSession ks = (KurentoSession) session;
+		if (
+				session.getParticipants().size() > 1 &&
+				ks.getDeliveryKmsManagers().size() == 0) {
+			log.info("1111111111111 delivery kms");
+			ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));
+		}
+
+
 	}
 
 	private void participantJoined(Participant participant, Set<Participant> existingParticipants) {

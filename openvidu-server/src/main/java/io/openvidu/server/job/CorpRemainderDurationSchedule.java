@@ -71,7 +71,8 @@ public class CorpRemainderDurationSchedule {
     @Value("${duration.lessthan.tenhour}")
     private int durationLessThanTenHour;
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+    //todo 开发调试其他功能，这里一直报错影响查问题，先注释掉
+    //@Scheduled(cron = "0 0/1 * * * ?")
     public void fixEndPartHistory(){
         List<NotEndPartHistory> notEndPartHistoryList = conferencePartHistoryMapper.selectNotEndPartHistory();
         if (!CollectionUtils.isEmpty(notEndPartHistoryList)) {
@@ -112,7 +113,7 @@ public class CorpRemainderDurationSchedule {
                 if (Objects.nonNull(corporation.getRemainderDuration())) {
                     statisticsManage.statisticsRemainderDuration(corporation.getProject());
                     int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
-                    log.info("当前企业：{} 剩余时长：{}", corporation.getProject(), remainderDuration);
+                    //log.info("当前企业：{} 剩余时长：{}", corporation.getProject(), remainderDuration);
                     if (remainderDuration > 0 && remainderDuration < durationLessThanTenHour ) {
                         String durationLessTenHour = cacheManage.getCorpRemainDurationLessTenHour(corporation.getProject());
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationLessTenHour)) {

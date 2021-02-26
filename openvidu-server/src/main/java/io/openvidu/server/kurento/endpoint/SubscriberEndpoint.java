@@ -24,10 +24,7 @@ import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
-import org.kurento.client.Continuation;
-import org.kurento.client.MediaElement;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.MediaType;
+import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +64,31 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 		setConnectedToPublisher(true);
 		setPublisher(publisher);
+		this.createdAt = System.currentTimeMillis();
+		return sdpAnswer;
+	}
+
+	/**
+	 * #{subscribeVideo()}
+	 * @param sdpOffer
+	 * @param publisher
+	 * @param streamMode
+	 * @return
+	 */
+	public synchronized String subscribeVideoDelivery(String sdpOffer, PassThrough publisher, StreamModeEnum streamMode) {
+//		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
+//				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getParticipantPublicId());
+
+		String sdpAnswer = processOffer(sdpOffer);
+		gatherCandidates();
+		if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
+		} else {
+			publisher.connect(this.getEndpoint());
+		}
+
+		setConnectedToPublisher(true);
+		//setPublisher(publisher);
 		this.createdAt = System.currentTimeMillis();
 		return sdpAnswer;
 	}

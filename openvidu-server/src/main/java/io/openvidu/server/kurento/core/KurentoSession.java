@@ -27,15 +27,14 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.core.UseTime;
 import io.openvidu.server.kurento.kms.Kms;
 import org.kurento.client.*;
+import org.kurento.client.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -56,6 +55,9 @@ public class KurentoSession extends Session {
 	private Throwable pipelineCreationErrorCause;
 
 	private Kms kms;
+
+	private List<DeliveryKmsManager> deliveryKmsManagers = new ArrayList<>();
+
 	private KurentoSessionEventsHandler kurentoSessionHandler;
 	private KurentoParticipantEndpointConfig kurentoEndpointConfig;
 
@@ -65,8 +67,8 @@ public class KurentoSession extends Session {
 
 	private Composite sipComposite;
 
-	private Object pipelineCreateLock = new Object();
-	private Object pipelineReleaseLock = new Object();
+	private final Object pipelineCreateLock = new Object();
+	private final Object pipelineReleaseLock = new Object();
 	private final Object joinOrLeaveLock = new Object();
 	private boolean destroyKurentoClient;
 
@@ -451,4 +453,63 @@ public class KurentoSession extends Session {
 						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
 				.collect(Collectors.toSet());
 	}
+
+	public List<DeliveryKmsManager> getDeliveryKmsManagers() {
+		return deliveryKmsManagers;
+	}
+
+	public void createDeliveryKms(Kms otherKms) {
+		synchronized (pipelineCreateLock) {
+			if (deliveryKmsManagers.size() != 0) {
+				return;
+			}
+
+			DeliveryKmsManager deliveryKms = new DeliveryKmsManager(otherKms, this);
+            deliveryKmsManagers.add(deliveryKms);
+            log.info("SESSION {}: Creating delivery MediaPipeline,kmsIp ({} >> {}),master kms {}", sessionId, otherKms.getIp(), otherKms.getId(), kms.getIp());
+            try {
+                otherKms.getKurentoClient().createMediaPipeline(new Continuation<MediaPipeline>() {
+                    @Override
+                    public void onSuccess(MediaPipeline result) throws Exception {
+                        deliveryKms.setPipeline(result);
+                        deliveryKms.getPipelineLatch().countDown();
+                        deliveryKms.getPipeline().setName(MessageFormat.format("delivery_pipeline_{0}_{1}", otherKms.getId(), sessionId));
+                        log.info("SESSION {}: Created MediaPipeline {} in kmsId {}", sessionId, result.getId(), otherKms.getId());
+                    }
+
+                    @Override
+                    public void onError(Throwable cause) throws Exception {
+                        deliveryKms.setPipelineCreationErrorCause(cause);
+                        deliveryKms.getPipelineLatch().countDown();
+                        log.error("SESSION {}: Failed to create MediaPipeline", sessionId, cause);
+                    }
+                });
+			} catch (Exception e) {
+				log.error("Unable to create media pipeline for session '{}'", sessionId, e);
+				deliveryKms.getPipelineLatch().countDown();
+			}
+			if (deliveryKms.getPipeline() == null) {
+				final String message = deliveryKms.pipelineCreationErrorCause != null
+						? deliveryKms.pipelineCreationErrorCause.getLocalizedMessage()
+						: "Unable to create media pipeline for session '" + sessionId + "'";
+				deliveryKms.pipelineCreationErrorCause = null;
+				throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE, message);
+			}
+
+			deliveryKms.pipeline.addErrorListener(new EventListener<ErrorEvent>() {
+				@Override
+				public void onEvent(ErrorEvent event) {
+					String desc = event.getType() + ": " + event.getDescription() + "(errCode=" + event.getErrorCode()
+							+ ")";
+					log.warn("SESSION {}: Pipeline error encountered: {}", sessionId, desc);
+					kurentoSessionHandler.onPipelineError(sessionId, getParticipants(), desc);
+				}
+			});
+
+
+			deliveryKms.dispatcher(this);
+			log.info("delivery dispatcher success");
+		}
+	}
+
 }

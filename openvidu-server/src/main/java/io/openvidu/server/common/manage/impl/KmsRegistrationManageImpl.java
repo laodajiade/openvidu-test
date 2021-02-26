@@ -33,8 +33,13 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
 
     private Set<String> kmsUrisSet = new HashSet<>();
 
+    private List<String> kmsUrisDeliveryServers;
+
     @Value("${kms.uris}")
     private String kmsUris;
+
+    @Value("${kms.uris.delivery}")
+    private String kmsUrisDelivery;
 
     @Resource
     private KmsRegistrationMapper kmsRegistrationMapper;
@@ -61,8 +66,17 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
             configKmsUris = kmsUris;
         }
 
-        initiateKmsUris(configKmsUris);
+        this.kmsUrisList = initiateKmsUris(configKmsUris);
         return kmsUrisList;
+    }
+
+    @Override
+    public List<String> getAllDeliveryKms() throws Exception {
+        if (StringUtils.isEmpty(kmsUrisDelivery)) {
+            return new ArrayList<>();
+        }
+        this.kmsUrisDeliveryServers = initiateKmsUris(kmsUrisDelivery);
+        return kmsUrisDeliveryServers;
     }
 
     @Override
@@ -82,13 +96,14 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
         return recentRegisterKms;
     }
 
-    private void initiateKmsUris(String kmsUris) throws Exception {
+    private List<String> initiateKmsUris(String kmsUris) throws Exception {
         kmsUris = eraseIllegalCharacter(kmsUris);
-        this.kmsUrisList = kmsUris.startsWith("[") && kmsUris.endsWith("]") ?
+        List<String> kmsList = kmsUris.startsWith("[") && kmsUris.endsWith("]") ?
                 JsonUtils.toStringList(new Gson().fromJson(kmsUris, JsonArray.class)) : Arrays.asList(kmsUris.split(SEPARATOR));
-        for (String uri : kmsUrisList) {
+        for (String uri : kmsList) {
             this.checkWebsocketUri(uri);
         }
+        return kmsList;
     }
 
     private void checkWebsocketUri(String uri) throws MalformedURLException {

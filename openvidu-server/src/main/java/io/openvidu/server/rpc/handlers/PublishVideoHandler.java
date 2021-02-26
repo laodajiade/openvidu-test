@@ -31,6 +31,9 @@ import java.util.Objects;
 public class PublishVideoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        if (rpcConnection.getUserUuid().equals("80103600005")) {
+            return;
+        }
         String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
         Participant participant;
         if (Objects.isNull(participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType)))) {

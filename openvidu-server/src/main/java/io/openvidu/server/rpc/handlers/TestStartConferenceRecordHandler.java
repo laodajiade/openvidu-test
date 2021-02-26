@@ -22,32 +22,40 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
     @Resource
     KmsManager kmsManager;
 
-    KurentoClient kurentoClient104 = KurentoClient.create("ws://172.25.11.104:8888/kurento");
+    KurentoClient kurentoClient104 = KurentoClient.create("ws://172.25.11.201:8888/kurento");
 
     public static MediaPipeline pipeline104 = null;
 
     public static WebRtcEndpoint distributionEp=null;
+
+    public static PassThrough passThrough = null;
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = rpcConnection.getSessionId();
+        if (pipeline104 != null) {
+            pipeline104.release();
+            pipeline104 = null;
+        }
 
         pipeline104 = kurentoClient104.createMediaPipeline();
+        log.info("xxxxxxxxxx pipeline104 {}",pipeline104.getId());
         //WebRtcEndpoint distributionEp = new WebRtcEndpoint.Builder(pipeline104).recvonly().build();
-        Dispatcher dispatcher = new Dispatcher.Builder(pipeline104).build(); //104的调度器，相当于录制服务RecordCompositeWrapper：67
-        HubPort dispatcherHubPort = new HubPort.Builder(dispatcher).build();
+        //Dispatcher dispatcher = new Dispatcher.Builder(pipeline104).build(); //104的调度器，相当于录制服务RecordCompositeWrapper：67
+        //Dispatcher dispatcher = new Dispatcher.Builder(pipeline104).build(); //104的调度器，相当于录制服务RecordCompositeWrapper：67
+       // HubPort dispatcherHubPort = new HubPort.Builder(dispatcher).build();
 
 //        UriEndpoint endpoint = new PlayerEndpoint.Builder(pipeline104, recording.getPath())
 //                .withMediaProfile(recording.getMediaProfileSpecType())
 //                .build();
-        distributionEp = new WebRtcEndpoint.Builder(pipeline104).recvonly().build();
-        dispatcherHubPort.connect(distributionEp);
+        passThrough = new PassThrough.Builder(pipeline104).build();
 
-        distributionEp.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
-            @Override
-            public void onEvent(IceCandidateFoundEvent event) {
-                log.info("distributionEp addIceCandidateFoundListener event {}", event);
-            }
-        });
+        distributionEp = new WebRtcEndpoint.Builder(pipeline104).build();
+        distributionEp.setMinOutputBitrate(2000000);
+        distributionEp.setMaxOutputBitrate(2000000);
+        //dispatcherHubPort.connect(distributionEp);
+
+
+        distributionEp.connect(passThrough);
 
         Session session = sessionManager.getSession(sessionId);
         KurentoParticipant moderatorPart = (KurentoParticipant) sessionManager.getModeratorPart(sessionId);
@@ -55,7 +63,8 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
         // 录制的获取源媒体，我应该是直接获取到session中的pipeline
         //MediaPipeline mediaPipeline = kms.getKurentoClient().getById(mediaSourceObj.getString("mediaPipelineId"), MediaPipeline.class);
         MediaPipeline mediaPipeline = moderatorPart.getPipeline();
-        WebRtcEndpoint moderatorEndpoint = new WebRtcEndpoint.Builder(mediaPipeline).recvonly().build();
+        log.info("xxxxxxxxxx sourcePipeline {}", mediaPipeline.getId());
+        WebRtcEndpoint moderatorEndpoint = new WebRtcEndpoint.Builder(mediaPipeline).build();
         //代替 this.passThrough = kms.getKurentoClient().getById(passThruId, PassThrough.class);
         PublisherEndpoint publisherEndpoint = moderatorPart.getPublisher();
         PassThrough passThru = publisherEndpoint.getPassThru();//主持人的passThru
@@ -69,9 +78,8 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
 
     public void createRtcChnAndSwitchIces(WebRtcEndpoint distributionEp, WebRtcEndpoint publisherEndpoint, PassThrough passThru) {
         String sdpOffer = distributionEp.generateOffer();
-        log.info("distributionEp sdpOffer:{}", sdpOffer);
 
-        log.info("add distributionEp OnIceCandidateListener.");
+
         distributionEp.addOnIceCandidateListener(event -> {
             IceCandidate candidate = event.getCandidate();
             log.info("RecordRecvWebRtcEndPoint iceCandidate:{}", JSON.toJSON(candidate));
@@ -84,7 +92,7 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
 
                 @Override
                 public void onError(Throwable cause) throws Exception {
-                    log.warn("sourceSubEndPoint EP {}: Failed to add ice candidate to the internal endpoint", publisherEndpoint.getId());
+                    log.error("sourceSubEndPoint EP {}: Failed to add ice candidate to the internal endpoint", publisherEndpoint.getId());
                 }
             });
         });
@@ -94,7 +102,7 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
         log.info("add recordRecvWebRtcEndPoint IceComponentStateChangeListener.");
         distributionEp.addIceComponentStateChangeListener(event -> {
             String msg = "KMS event [IceComponentStateChange]: -> endpoint: " + distributionEp.getId()
-                    + " (subscriber) | state: " + event.getState().name() + " | componentId: "
+                    + " (distributionEp) | state: " + event.getState().name() + " | componentId: "
                     + event.getComponentId() + " | streamId: " + event.getStreamId() + " | timestamp: "
                     + event.getTimestampMillis();
             log.info(msg);
@@ -113,7 +121,7 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
 
                 @Override
                 public void onError(Throwable cause) throws Exception {
-                    log.warn("recordRecvWebRtcEndPoint EP {}: Failed to add ice candidate to the internal endpoint", distributionEp.getId());
+                    log.error("recordRecvWebRtcEndPoint EP {}: Failed to add ice candidate to the internal endpoint", distributionEp.getId());
                 }
             });
         });
@@ -129,7 +137,7 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
 
             @Override
             public void onError(Throwable cause) throws Exception {
-                log.warn("sourceSubEndPoint EP {}: Internal endpoint failed to start gathering candidates", publisherEndpoint.getId(), cause);
+                log.error("sourceSubEndPoint EP {}: Internal endpoint failed to start gathering candidates", publisherEndpoint.getId(), cause);
             }
         });
 
@@ -143,7 +151,7 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
 
             @Override
             public void onError(Throwable cause) throws Exception {
-                log.warn("Failed to connect media elements (source {} -> sink {})", passThru.getId(), publisherEndpoint.getId(), cause);
+                log.error("Failed to connect media elements (source {} -> sink {})", passThru.getId(), publisherEndpoint.getId(), cause);
             }
         });
 
@@ -157,7 +165,7 @@ public class TestStartConferenceRecordHandler extends RpcAbstractHandler {
 
             @Override
             public void onError(Throwable cause) throws Exception {
-                log.warn("recordRecvWebRtcEndPoint EP {}: Internal endpoint failed to start gathering candidates", distributionEp.getId(), cause);
+                log.error("recordRecvWebRtcEndPoint EP {}: Internal endpoint failed to start gathering candidates", distributionEp.getId(), cause);
             }
         });
 

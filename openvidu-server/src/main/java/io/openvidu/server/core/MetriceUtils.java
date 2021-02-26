@@ -17,7 +17,7 @@ public class MetriceUtils {
     private static Slf4jReporter reporter = Slf4jReporter.forRegistry(registry).build();
 
     static {
-        reporter.start(5, TimeUnit.MINUTES);
+        reporter.start(24, TimeUnit.DAYS);
     }
 
     public static Histogram histogram(String name, long value) {

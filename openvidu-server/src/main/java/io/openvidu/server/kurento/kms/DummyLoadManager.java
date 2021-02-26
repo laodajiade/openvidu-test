@@ -17,6 +17,9 @@
 
 package io.openvidu.server.kurento.kms;
 
+import java.util.Collections;
+import java.util.NoSuchElementException;
+
 public class DummyLoadManager implements LoadManager {
 
 	@Override
