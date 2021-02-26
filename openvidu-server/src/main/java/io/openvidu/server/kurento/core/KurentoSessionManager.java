@@ -102,12 +102,12 @@ public class KurentoSessionManager extends SessionManager {
 	protected TimerManager timerManager;
 
 	@Override
-	public synchronized void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
+	public void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
+		UseTime.point("join room synchronized joinRoom");
 		Set<Participant> existingParticipants = null;
 		try {
 
 			KurentoSession kSession = (KurentoSession) sessions.get(sessionId);
-
 			if (kSession == null) {
 				// First user connecting to the session
 				Session sessionNotActive = sessionsNotActive.remove(sessionId);
@@ -148,7 +148,6 @@ public class KurentoSessionManager extends SessionManager {
 					kSession.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
 				}
 			}
-
 			if (kSession.isClosed()) {
 				log.warn("'{}' is trying to join session '{}' but it is closing", participant.getParticipantPublicId(),
 						sessionId);
@@ -198,7 +197,6 @@ public class KurentoSessionManager extends SessionManager {
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
 
 			kSession.join(participant);
-
 			// record share status.
 			if (StreamType.SHARING.equals(participant.getStreamType())) {
 				participant.setShareStatus(ParticipantShareStatus.on);
@@ -206,10 +204,11 @@ public class KurentoSessionManager extends SessionManager {
 				majorPart.changeShareStatus(ParticipantShareStatus.on);
 			}
 
-			// save part info
+			// save part info;
 			roomManage.storePartHistory(participant, conference);
 			// save max concurrent statistics
 			cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
+			long t4 = System.nanoTime();
 			//save max concurrent in conference
 			Conference concurrentCon = new Conference();
 			concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
@@ -221,16 +220,127 @@ public class KurentoSessionManager extends SessionManager {
 			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, null,
 					transactionId, e);
 		}
+		UseTime.point("join room p3");
 		if (existingParticipants != null) {
 			sessionEventsHandler.onParticipantJoined(conference, participant, sessionId, existingParticipants,
 					transactionId, null);
 		}
+		UseTime.point("join room p4");
 	}
 
+	private static final Object leaveRoomLock = new Object();
 	@Override
-	public synchronized boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
-			boolean closeWebSocket) {
-		log.debug("Request [LEAVE_ROOM] ({})", participant.getParticipantPublicId());
+	public boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
+							 boolean closeWebSocket) {
+		synchronized (leaveRoomLock) {
+			UseTime.point("ip1");
+			log.debug("Request [LEAVE_ROOM] ({})", participant.getParticipantPublicId());
+
+			boolean sessionClosedByLastParticipant = false;
+
+			KurentoParticipant kParticipant = (KurentoParticipant) participant;
+			KurentoSession session = kParticipant.getSession();
+			String sessionId = session.getSessionId();
+
+			if (session.isClosed()) {
+				log.warn("'{}' is trying to leave from session '{}' but it is closing",
+						participant.getParticipantPublicId(), sessionId);
+				throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
+						+ "' is trying to leave from session '" + sessionId + "' but it is closing");
+			}
+			UseTime.point("ip2");
+			session.leaveRoom(participant, reason);
+			UseTime.point("ip3");
+			//update partInfo
+			if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+				roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
+			}
+
+			// Update control data structures
+			if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+				Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
+						.remove(participant.getParticipantPublicId());
+				boolean stillParticipant = false;
+				if (Objects.nonNull(p)) {
+					for (Session s : sessions.values()) {
+						if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+							stillParticipant = true;
+							break;
+						}
+					}
+					if (!stillParticipant) {
+						insecureUsers.remove(p.getParticipantPrivateId());
+					}
+				}
+			}
+
+			if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+				changeSharingStatusInConference(session, participant);
+			}
+
+			// Close Session if no more participants
+			Set<Participant> remainingParticipants = null;
+			try {
+				remainingParticipants = getParticipants(sessionId);
+			} catch (OpenViduException e) {
+				log.info("Possible collision when closing the session '{}' (not found)", sessionId);
+				remainingParticipants = Collections.emptySet();
+			}
+
+			if (!EndReason.forceDisconnectByUser.equals(reason) &&
+					!EndReason.forceCloseSessionByUser.equals(reason) && !EndReason.closeSessionByModerator.equals(reason)) {
+				sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
+						reason);
+			}
+			UseTime.point("ip4");
+			// adjust order notify after onLeft
+			session.dealParticipantOrder(participant, rpcNotificationService);
+			UseTime.point("ip5");
+			if (!EndReason.sessionClosedByServer.equals(reason)) {
+				// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
+				// recording. Will be stopped after in method
+				// "SessionManager.closeSessionAndEmptyCollections"
+				if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+					log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
+					session.setClosing(true);
+					if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
+						// stop recording
+						log.info("Last participant left. Stopping recording of session {}", sessionId);
+						stopRecording(sessionId);
+					}
+				}
+			}
+
+			// Finally close websocket session if required
+			if (closeWebSocket) {
+				sessionEventsHandler.closeRpcSession(participant.getParticipantPrivateId());
+			}
+
+			// update recording
+			if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
+				updateRecording(session.getSessionId());
+			}
+
+			if (session.isClosing()) {
+				getMajorParticipants(sessionId).forEach(p -> rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
+				closeSession(sessionId, EndReason.lastParticipantLeft);
+			}
+			UseTime.point("ip6");
+			return sessionClosedByLastParticipant;
+		}
+	}
+
+	/**
+	 * leaveRoom 的简单版本，使用于closeRoom的方法中，
+	 * 这个方法 删除诸如重新排序，异步修改入会记录等功能。
+	 */
+	@Override
+	public boolean leaveRoomSimple(Participant participant, Integer transactionId, EndReason reason,
+							 boolean closeWebSocket) {
+		//synchronized (leaveRoomLock) {
+			//UseTime.point("ip1");
+			//log.debug("Request [leaveRoomSimple] ({})", participant.getParticipantPublicId());
 
 		boolean sessionClosedByLastParticipant = false;
 
@@ -244,13 +354,14 @@ public class KurentoSessionManager extends SessionManager {
 			throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
 					+ "' is trying to leave from session '" + sessionId + "' but it is closing");
 		}
-
+		UseTime.point("ip2");
 		session.leaveRoom(participant, reason);
-
+		UseTime.point("ip3");
 		//update partInfo
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
 		}
+		UseTime.point("ip4");
 
 		// Update control data structures
 		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
@@ -283,20 +394,20 @@ public class KurentoSessionManager extends SessionManager {
 			remainingParticipants = Collections.emptySet();
 		}
 
-		if (!EndReason.forceDisconnectByUser.equals(reason) &&
-				!EndReason.forceCloseSessionByUser.equals(reason) && !EndReason.closeSessionByModerator.equals(reason)) {
-			sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
-					reason);
-		}
-
+//			if (!EndReason.forceDisconnectByUser.equals(reason) &&
+//					!EndReason.forceCloseSessionByUser.equals(reason) && !EndReason.closeSessionByModerator.equals(reason)) {
+//				sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
+//						reason);
+//			}
+		// UseTime.point("ip4");
 		// adjust order notify after onLeft
-		session.dealParticipantOrder(participant,rpcNotificationService);
+		//session.dealParticipantOrder(participant, rpcNotificationService);
+		// UseTime.point("ip5");
 		if (!EndReason.sessionClosedByServer.equals(reason)) {
 			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
 			// recording. Will be stopped after in method
 			// "SessionManager.closeSessionAndEmptyCollections"
-			if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
-				log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
+			if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
 				session.setClosing(true);
 				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
 					// stop recording
@@ -311,18 +422,18 @@ public class KurentoSessionManager extends SessionManager {
 			sessionEventsHandler.closeRpcSession(participant.getParticipantPrivateId());
 		}
 
-        // update recording
-        if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
-            updateRecording(session.getSessionId());
-        }
-
-		if (session.isClosing()) {
-			getMajorParticipants(sessionId).forEach(p -> rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-					ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
-			closeSession(sessionId, EndReason.lastParticipantLeft);
+		// update recording
+		if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
+			updateRecording(session.getSessionId());
 		}
 
+//			if (session.isClosing()) {
+//				closeSession(sessionId, EndReason.lastParticipantLeft);
+//			}
+		UseTime.point("ip6");
 		return sessionClosedByLastParticipant;
+		//}
+
 	}
 
     @Override
@@ -673,7 +784,31 @@ public class KurentoSessionManager extends SessionManager {
 			sessionClosedByLastParticipant = this.leaveRoom(kParticipant, null, reason, false);
 			this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant, participants, transactionId,
 					null, reason);
-//			sessionEventsHandler.closeRpcSession(evictedParticipant.getParticipantPrivateId());
+		} else {
+			if (moderator != null && transactionId != null) {
+				this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant,
+						new HashSet<>(Arrays.asList(moderator)), transactionId,
+						new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+								"Connection not found when calling 'forceDisconnect'"),
+						null);
+			}
+		}
+
+		return sessionClosedByLastParticipant;
+	}
+
+	@Override
+	public boolean evictParticipantByCloseRoom(Participant evictedParticipant, Participant moderator, Integer transactionId,
+									EndReason reason) throws OpenViduException {
+
+		boolean sessionClosedByLastParticipant = false;
+
+		if (evictedParticipant != null && !evictedParticipant.isClosed()) {
+			KurentoParticipant kParticipant = (KurentoParticipant) evictedParticipant;
+			Set<Participant> participants = kParticipant.getSession().getParticipants();
+			sessionClosedByLastParticipant = this.leaveRoomSimple(kParticipant, null, reason, false);
+			this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant, participants, transactionId,
+					null, reason);
 		} else {
 			if (moderator != null && transactionId != null) {
 				this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant,

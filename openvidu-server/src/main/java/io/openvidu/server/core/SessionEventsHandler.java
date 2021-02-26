@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -92,38 +93,14 @@ public class SessionEventsHandler {
 		JsonObject result = new JsonObject();
 		JsonObject roomInfoJson = new JsonObject();
 		JsonArray resultArray = new JsonArray();
+		UseTime.point("join room p5");
+		participantJoined(participant, existingParticipants);
+		UseTime.point("join room p6");
 		for (Participant existingParticipant : existingParticipants) {
 			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
 				continue;
 			}
-
-			// If RECORDER participant has joined do NOT send 'participantJoined'
-			// notification to existing participants. 'recordingStarted' will be sent to all
-			// existing participants when recorder first subscribe to a stream
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-				JsonObject notifParams = new JsonObject();
-
-				// Metadata associated to new participant
-                RpcConnection rpcConnection = rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
-				notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
-                notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
-                notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
-				if (StreamType.MAJOR.equals(participant.getStreamType())) {
-					notifParams.addProperty("order", participant.getOrder());
-				}
-                if (!Objects.isNull(rpcConnection.getTerminalConfig()))
-                	notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
-
-				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())
-						&& Objects.equals(StreamType.MAJOR, existingParticipant.getStreamType())) {
-					rpcNotificationService.sendNotification(existingParticipant.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
-				}
-
 				if (Objects.equals(OpenViduRole.THOR, existingParticipant.getRole())) {
 					continue;
 				}
@@ -155,10 +132,12 @@ public class SessionEventsHandler {
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
 						UserOnlineStatusEnum.offline.name());
 			} else {
-				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
-				String status = Objects.isNull(userInfo) ? UserOnlineStatusEnum.offline.name() :
-						UserOnlineStatusEnum.offline.name().equals(String.valueOf(userInfo.get("status"))) ?
-								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
+
+//				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
+//				String status = Objects.isNull(userInfo) ? UserOnlineStatusEnum.offline.name() :
+//						UserOnlineStatusEnum.offline.name().equals(String.valueOf(userInfo.get("status"))) ?
+//								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
+				String status = UserOnlineStatusEnum.online.name();
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
                 participantJson.addProperty(ProtocolElements.JOINROOM_FUNCTIONALITY_PARAM, rpc.getFunctionality());
@@ -214,9 +193,9 @@ public class SessionEventsHandler {
 				resultArray.add(participantJson);
 			}
 		}
-
-		notifyUpdateOrder(participant, session.getMajorPartEachConnect());
-
+		UseTime.point("join room p7");
+		notifyUpdateOrder(participant, session);
+		UseTime.point("join room p8");
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
@@ -264,34 +243,106 @@ public class SessionEventsHandler {
 			roomInfoJson.add("layoutInfo", layoutInfoObj);
         }
 		result.add("roomInfo", roomInfoJson);
+		UseTime.point("join room p9");
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 	}
 
+	private void participantJoined(Participant participant, Set<Participant> existingParticipants) {
+		JsonObject notifParams = new JsonObject();
+		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+			// Metadata associated to new participant
+			RpcConnection rpcConnection = rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
+			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
+			if (StreamType.MAJOR.equals(participant.getStreamType())) {
+				notifParams.addProperty("order", participant.getOrder());
+			}
+			if (!Objects.isNull(rpcConnection.getTerminalConfig()))
+				notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
+		}
+
+		List<String> notifyList = new ArrayList<>();
+		for (Participant existingParticipant : existingParticipants) {
+			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
+				continue;
+			}
+			// If RECORDER participant has joined do NOT send 'participantJoined'
+			// notification to existing participants. 'recordingStarted' will be sent to all
+			// existing participants when recorder first subscribe to a stream
+			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
+				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())
+						&& Objects.equals(StreamType.MAJOR, existingParticipant.getStreamType())) {
+					notifyList.add(existingParticipant.getParticipantPrivateId());
+				}
+			}
+		}
+
+		if (!notifyList.isEmpty()) {
+			rpcNotificationService.sendBatchNotification(notifyList,
+					ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+		}
+	}
+
+	private static final HashSet<String> notifyUpdateOrderLock = new HashSet<>();
+
 	/**
 	 * 通知端上排序有发生改变
+	 * 延迟0.2秒通知，并合并期间的所有相同的通知
 	 */
-	private void notifyUpdateOrder(Participant participant, Set<Participant> existParticipants) {
+	private void notifyUpdateOrder(Participant participant, Session session) {
 		if (ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 			return;
 		}
-		if (!CollectionUtils.isEmpty(existParticipants)) {
-			JsonObject notifyParam = new JsonObject();
-			JsonArray orderedParts = new JsonArray();
-			for (Participant exist : existParticipants) {
-				if (exist.getStreamType() == StreamType.MAJOR) {
-					JsonObject order = new JsonObject();
-					order.addProperty("account", exist.getUuid());
-					order.addProperty("order", exist.getOrder());
-					orderedParts.add(order);
-				}
-			}
-			notifyParam.add("orderedParts", orderedParts);
-
-			for (Participant exist : existParticipants) {
-				rpcNotificationService.sendNotification(exist.getParticipantPrivateId(),
-						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
-			}
+		boolean notifyFlag;
+		synchronized (notifyUpdateOrderLock) {
+			notifyFlag = notifyUpdateOrderLock.add(session.getSessionId());//在这期间只有第一个线程允许进行通知
 		}
+		if (notifyFlag) {
+			log.info("notifyUpdateOrder merge go on");
+			asyncNotifyUpdateOrder(session);
+		} else {
+			log.info("notifyUpdateOrder merge");
+		}
+	}
+
+	/**
+	 * 通知端上排序有发生改变,
+	 */
+	private void asyncNotifyUpdateOrder(Session session) {
+	    new Thread(() -> {
+            try {
+                TimeUnit.MILLISECONDS.sleep(200);//延迟0.2秒
+            } catch (InterruptedException e) {
+                //
+            }
+            synchronized (notifyUpdateOrderLock) {
+                notifyUpdateOrderLock.remove(session.getSessionId());
+            }
+
+            Set<Participant> existParticipants =  session.getMajorPartEachConnect();
+            if (!CollectionUtils.isEmpty(existParticipants)) {
+                JsonObject notifyParam = new JsonObject();
+                JsonArray orderedParts = new JsonArray();
+                for (Participant exist : existParticipants) {
+                    if (exist.getStreamType() == StreamType.MAJOR) {
+                        JsonObject order = new JsonObject();
+                        order.addProperty("account", exist.getUuid());
+                        order.addProperty("order", exist.getOrder());
+                        orderedParts.add(order);
+                    }
+                }
+                notifyParam.add("orderedParts", orderedParts);
+
+				List<String> notifyList = existParticipants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+				rpcNotificationService.sendBatchNotification(notifyList,
+						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
+            }
+        }).start();
 	}
 
 	public void onParticipantLeft(Participant participant, String sessionId, Set<Participant> remainingParticipants,
@@ -310,13 +361,14 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
+		List<String> notifyPartList = new ArrayList<>();
 		for (Participant p : remainingParticipants) {
 			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())
 					&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTLEFT_METHOD, params);
+				notifyPartList.add(p.getParticipantPrivateId());
 			}
 		}
+		rpcNotificationService.sendBatchNotification(notifyPartList, ProtocolElements.PARTICIPANTLEFT_METHOD, params);
 
 		if (transactionId != null) {
 			// No response when the participant is forcibly evicted instead of voluntarily

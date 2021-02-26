@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -713,13 +715,15 @@ public class Session implements SessionInterface {
 	}
 
 	private void dealPartOrderInSessionAfterLeaving(Participant leavePart, RpcNotificationService notificationService) {
+		Participant sub2PubPart;
+		boolean sendPartRoleChanged;
 		synchronized (partOrderAdjustLock) {
 			int leavePartOrder = leavePart.getOrder();
 			int sfuLimit = openviduConfig.getSfuPublisherSizeLimit();
 			int lineOrder = openviduConfig.getSfuPublisherSizeLimit() - 1;
 			// decrement the part order which original order is bigger than leavePart.
 			// recorder the part whose role need to be changed.
-			Participant sub2PubPart;
+
 			AtomicReference<Participant> sub2PubPartRef = new AtomicReference<>();
 			Set<Participant> participants = getMajorPartEachConnect();
 			participants.forEach(participant -> {
@@ -741,11 +745,10 @@ public class Session implements SessionInterface {
 					log.info("after order deal and participant:{} current order:{}", participant.getUuid(), participant.getOrder());
 				}
 			});
-			boolean sendPartRoleChanged = Objects.nonNull(sub2PubPart = sub2PubPartRef.get());
-
-			// send notification
-			notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged, notificationService);
+			sendPartRoleChanged = Objects.nonNull(sub2PubPart = sub2PubPartRef.get());
 		}
+		// send notification
+		notifyPartOrderOrRoleChanged(sub2PubPart, sendPartRoleChanged, notificationService);
 	}
 
 	private void downWallNotifyPartOrderOrRoleChanged(Participant participant, boolean roleChanged, RpcNotificationService notificationService) {
@@ -776,16 +779,13 @@ public class Session implements SessionInterface {
 		JsonArray subToPubChangedParam = roleChanged ?
 				getPartRoleChangedNotifyParamArr(sub2PubPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER) : null;
 
-		getMajorPartEachIncludeThorConnect().forEach(participant -> {
-			// send part order in session changed notification
-			notificationService.sendNotification(participant.getParticipantPrivateId(),
-					ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
-			if (roleChanged) {
-				// send part role changed notification
-				notificationService.sendNotification(participant.getParticipantPrivateId(),
-						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
-			}
-		});
+		List<String> notifyList = getMajorPartEachIncludeThorConnect().stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+		notificationService.sendBatchNotificationConcurrent(notifyList, ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
+		if (roleChanged) {
+			// send part role changed notification
+			notificationService.sendBatchNotificationConcurrent(notifyList,
+					ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
+		}
 	}
 
 	public JsonArray getPartRoleChangedNotifyParamArr(Participant participant, OpenViduRole originalRole, OpenViduRole presentRole) {
@@ -829,7 +829,7 @@ public class Session implements SessionInterface {
 					log.info("web drag participant:{},oldOrder:{},newOrder:{}",participant.getUuid(),oldOrder,newOrder);
 					if (Objects.nonNull(newOrder) && !Objects.equals(oldOrder, newOrder)) {
 						participant.setOrder(newOrder);
-						if (Math.max(oldOrder, newOrder) >= lineOrder && lineOrder >= Math.min(oldOrder, newOrder)
+						if (Math.max(oldOrder, newOrder) > lineOrder && lineOrder >= Math.min(oldOrder, newOrder)
 								&& !OpenViduRole.MODERATOR.equals(participant.getRole())) {  // exclude the moderator
 							// part role has to change
 							if (newOrder <= lineOrder) {

@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -11,6 +12,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -25,14 +27,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 public class JoinRoomHandler extends RpcAbstractHandler {
+
+    private static final RateLimiter rateLimiter = RateLimiter.create(30);
+
+    private static final Object joinRoomLock = new Object();
+
+    @Value("${joinroom.rate.limiter:30}")
+    public void setRateLimiter(double rate) {
+        if (rate <= 0.01) {
+            return;
+        }
+        rateLimiter.setRate(rate);
+    }
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
+        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
+        //rate limited
+        if (streamType == StreamType.MAJOR && !rateLimiter.tryAcquire()) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.RATE_LIMITER);
+            return;
+        }
+
         String sessionId = getStringParam(request, ProtocolElements.JOINROOM_ROOM_PARAM);
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
-        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
         String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
         String ruid = getStringOptionalParam(request, ProtocolElements.JOINROOM_RUID_PARAM);
@@ -45,6 +67,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
 
+        UseTime.point("join room start");
         try {
             do {
                 // verify room join type
@@ -94,7 +117,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(streamType) &&
-                        SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom()) ) {
+                        SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
                     if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
                         log.error("disable participant active join room:{}", sessionId);
                         errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
@@ -147,7 +170,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                                 //save previous order if reconnect
                                 sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
-                            }else{
+                            } else {
                                 log.warn("reconnect warn,because originalPart is null"); // todo yy 重点监听下这个日志输出,按流程不应该会是null
                             }
 
@@ -192,7 +215,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
                 //判断发起会议时是否超出企业人数上限
                 if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(sessionManager.getSession(sessionId))) {
-                    String project  = sessionManager.getSession(sessionId).getConference().getProject();
+                    String project = sessionManager.getSession(sessionId).getConference().getProject();
                     Collection<Session> sessions = sessionManager.getSessions();
                     if (Objects.nonNull(sessions)) {
                         AtomicInteger limitCapacity = new AtomicInteger();
@@ -212,7 +235,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
                 //判断通话时长是否不足
                 if (!Objects.isNull(sessionManager.getSession(sessionId))) {
-                    String project  = sessionManager.getSession(sessionId).getConference().getProject();
+                    String project = sessionManager.getSession(sessionId).getConference().getProject();
                     Corporation corporation = corporationMapper.selectByCorpProject(project);
                     if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
                         notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -322,8 +345,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 rpcConnection.setSessionId(sessionId);
-
-                sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                UseTime.point("join room p1");
+                synchronized (joinRoomLock) {
+                    UseTime.point("join room p1.1");
+                    sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                }
+                UseTime.point("join room p2");
             } while (false);
 
             rpcConnection.setReconnected(false);
@@ -332,10 +359,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         null, errCode);
 
                 log.error("join room:{} failed. errCode:{} message:{}", sessionId, errCode.getCode(), errCode.getMessage());
-                if (isModerator(role)) {
+                /*if (isModerator(role)) {
                     sessionManager.cleanCacheCollections(sessionId);
                     cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), false, EndReason.forceCloseSessionByUser);
-                }
+                }*/
             } else {
                 if (!Objects.isNull(rpcConnection.getSerialNumber())) {
                     cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
@@ -353,6 +380,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 sessionManager.cleanCacheCollections(sessionId);
             }
         }
+        UseTime.point("join room end");
     }
 
 }

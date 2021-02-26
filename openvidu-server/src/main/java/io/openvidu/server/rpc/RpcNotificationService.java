@@ -17,6 +17,7 @@
 
 package io.openvidu.server.rpc;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
@@ -31,8 +32,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class RpcNotificationService {
@@ -40,6 +40,11 @@ public class RpcNotificationService {
 	private static final Logger log = LoggerFactory.getLogger(RpcNotificationService.class);
 
 	private ConcurrentMap<String, RpcConnection> rpcConnections = new ConcurrentHashMap<>();
+
+	private static final ThreadPoolExecutor NOTIFY_THREAD_POOL = new ThreadPoolExecutor(
+			Math.max(Runtime.getRuntime().availableProcessors() + 1, 4), Math.max(Runtime.getRuntime().availableProcessors() * 20, 20),
+			60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+			new ThreadFactoryBuilder().setNameFormat("notify_thread_pool-").setDaemon(true).build());
 
 	public RpcConnection newRpcConnection(Transaction t, Request<JsonObject> request) {
 		String participantPrivateId = t.getSession().getSessionId();
@@ -200,6 +205,49 @@ public class RpcNotificationService {
         log.info("\nbatch WebSocket notification- Notification method:{} and params: \n{}" +
                 "\nsuccessList:{}  failList:{}", method, params, successList, failList);
     }
+
+	/**
+	 * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
+	 */
+	public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, final String method, final Object params) {
+		List<String> successList = new ArrayList<>();
+		List<String> failList = new ArrayList<>();
+		int size = participantPrivateIds.size();
+		CountDownLatch countDownLatch = new CountDownLatch(size);
+		for (String participantPrivateId : participantPrivateIds) {
+			NOTIFY_THREAD_POOL.submit(() -> {
+				try {
+					RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
+					if (rpcSession == null || rpcSession.getSession() == null) {
+						log.error("No rpc session found for private id {}, unable to send notification {}: {}",
+								participantPrivateId, method, params);
+						failList.add(participantPrivateId);
+						return;
+					}
+					Session s = rpcSession.getSession();
+					try {
+						s.sendNotification(method, params);
+						successList.add(participantPrivateId);
+					} catch (Exception e) {
+						failList.add(participantPrivateId);
+						log.error("Exception sending notification '{}': {} to participant with private id {}", method, params,
+								participantPrivateId, e);
+					}
+				} finally {
+					countDownLatch.countDown();
+				}
+			});
+		}
+		try {
+			if (!countDownLatch.await((size * 2) + 10, TimeUnit.MILLISECONDS)) {
+				log.warn("sendBatchNotificationConcurrent timeout method={},partSize = {}", method, size);
+			}
+		} catch (InterruptedException e) {
+			log.warn("sendBatchNotificationConcurrent error method={},partSize = {}", method, size);
+		}
+		log.info("\nsendBatchNotificationConcurrent - Notification method:{} and params: \n{}" +
+				"\nsuccessList:{}  failList:{}", method, params, successList, failList);
+	}
 
 	private Transaction getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {
 		RpcConnection rpcSession = rpcConnections.get(participantPrivateId);

@@ -111,6 +111,9 @@ public abstract class SessionManager {
 	public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
 			boolean closeWebSocket);
 
+	public abstract boolean leaveRoomSimple(Participant participant, Integer transactionId, EndReason reason,
+									  boolean closeWebSocket);
+
 	public abstract void changeSharingStatusInConference(KurentoSession session, Participant participant);
 
 	public abstract RpcConnection accessOut(RpcConnection rpcConnection);
@@ -142,6 +145,9 @@ public abstract class SessionManager {
 
 	public abstract boolean evictParticipant(Participant evictedParticipant, Participant moderator,
 			Integer transactionId, EndReason reason);
+
+	public abstract boolean evictParticipantByCloseRoom(Participant evictedParticipant, Participant moderator,
+											 Integer transactionId, EndReason reason);
 
 	public abstract void applyFilter(Session session, String streamId, String filterType, JsonObject filterOptions,
 			Participant moderator, Integer transactionId, String reason);
@@ -614,14 +620,16 @@ public abstract class SessionManager {
 		/*if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
 			session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
 		}*/
-
+		UseTime.point("closeSession");
+		UseTime.Point point = UseTime.getPoint("closeSession.evictParticipant");
 		for (Participant p : participants) {
 			try {
-                sessionClosedByLastParticipant = this.evictParticipant(p, null, null, reason);
+                sessionClosedByLastParticipant = this.evictParticipantByCloseRoom(p, null, null, reason);
 			} catch (OpenViduException e) {
 				log.warn("Error evicting participant '{}' from session '{}'", p.getParticipantPublicId(), sessionId, e);
 			}
 		}
+		point.updateTime();
 
 		if (!sessionClosedByLastParticipant) {
 			// This code should never be executed, as last evicted participant must trigger
