@@ -7,6 +7,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.ScrollingBannersConfig;
+import io.openvidu.server.common.pojo.UserDto;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
@@ -18,8 +19,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author even
@@ -57,10 +60,20 @@ public class SetScrollingBannersHandler extends RpcAbstractHandler {
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         Set<Participant> participants = session.getParticipants();
         if (!CollectionUtils.isEmpty(participants)) {
-            for (Participant p: participants) {
-                if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                    this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
+            if (CollectionUtils.isEmpty(scrollingBannersConfig.getTargetIds())) {
+                for (Participant p: participants) {
+                    if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+                        this.notificationService.sendNotification(p.getParticipantPrivateId(),
+                                ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
+                    }
+                }
+            } else {
+                List<String> uuidList = scrollingBannersConfig.getTargetIds().stream().map(UserDto::getUuid).collect(Collectors.toList());
+                for (Participant p : participants) {
+                    if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && uuidList.contains(p.getUuid())) {
+                        this.notificationService.sendNotification(p.getParticipantPrivateId(),
+                                ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
+                    }
                 }
             }
         }
