@@ -68,13 +68,13 @@ public class UserDelHandler {
         @Override
         public void run() {
             while (true) {
-                User user;
                 Long userId;
+                String uuid = null;
                 JsonObject delUserObj;
                 try {
                     delUserObj = gson.fromJson(delUserInfos.take(), JsonObject.class);
                     if (delUserObj.has("userId")
-                            && Objects.nonNull(user = userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong()))) {
+                            && Objects.isNull(userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong()))) {
                         // find the websocket connection with userId
                         RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
                                 .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId())
@@ -83,6 +83,7 @@ public class UserDelHandler {
                                 .orElse(null);
 
                         if (Objects.nonNull(delUserRpcConnection)) {
+                            uuid = delUserRpcConnection.getUserUuid();
                             // check user deleted ever in conference
                             String sessionId;
                             Session session;
@@ -113,7 +114,7 @@ public class UserDelHandler {
                         }
 
                         // del user token info in cache
-                        cacheManage.delUserToken(user.getUuid());
+                        cacheManage.delUserToken(uuid);
                     } else {
                         log.error("Invalid user delete info:{}", delUserObj.toString());
                     }
