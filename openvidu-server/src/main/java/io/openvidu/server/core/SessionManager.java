@@ -1014,4 +1014,10 @@ public abstract class SessionManager {
 	public abstract void updateRecording(String sessionId);
 
     public abstract void handleRecordErrorEvent(Object msg);
+
+	/**
+	 * 创建分发的隧道
+	 * @param participant
+	 */
+	public abstract void createDeliverChannel(Participant participant);
 }

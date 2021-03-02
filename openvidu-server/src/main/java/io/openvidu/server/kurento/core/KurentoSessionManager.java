@@ -36,6 +36,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
+import io.openvidu.server.kurento.endpoint.MediaChannel;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.kms.Kms;
@@ -535,6 +536,19 @@ public class KurentoSessionManager extends SessionManager {
 	}
 
 	@Override
+	public void createDeliverChannel(Participant participant) {
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		KurentoSession session = kParticipant.getSession();
+
+		for (DeliveryKmsManager deliveryKmsManager : session.getDeliveryKmsManagers()) {
+			MediaChannel mediaChannel = new MediaChannel(session.getPipeline(), kParticipant.getPublisher().getPassThru(), deliveryKmsManager.getPipeline(),
+					true, kParticipant, kParticipant.getPublisherStreamId(), openviduConfig);
+			mediaChannel.createChannel();
+			kParticipant.getMediaChannels().putIfAbsent(deliveryKmsManager.getId(), mediaChannel);
+		}
+	}
+
+	@Override
 	public void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
 			EndReason reason) {
 		try {
@@ -607,8 +621,7 @@ public class KurentoSessionManager extends SessionManager {
 			// 如果是墙下，且服务器开启了媒体级联，则从分发服务器上进行接收
 			if (!participant.getRole().needToPublish() && !session.getDeliveryKmsManagers().isEmpty()) {
 				sdpAnswer = kParticipant.receiveMediaFromDelivery(senderParticipant, streamMode, sdpOffer, senderName, session.getDeliveryKmsManagers().get(0).getPipeline());
-
-				return;
+				//return;
 			} else {
 				sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
 			}

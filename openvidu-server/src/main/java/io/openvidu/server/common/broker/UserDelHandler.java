@@ -64,17 +64,54 @@ public class UserDelHandler {
         delUserInfos.offer(delInfo);
     }
 
+    /**
+
+     I looked at him. 'There's a woman in this somewhere, isn't there? You've had a strange look in your eyes for weeks.'
+
+     Will laughed, but didn't answer my question.
+
+     The theatres in London didn't open again until June 1594. Will often visited Lord Southampton, but sometimes we went on tour with the company, or spent time at home in Stratford. Will began to spend more time in Stratford, because it was quiet there, and he could do his writing. I never heard what Anne thought about it all.
+
+     During those years Will wrote a lot of poetry. He wrote his beautiful long poem, Venus and Adonis, for his friend Lord Southampton, and he wrote many of his famous short poems, the Sonnets. But they didn't go in a book; they were only for his friends to read.
+
+     One day, when we were back in London, I was reading some of his latest sonnets. Will was out somewhere, and I was at home in our lodgings in Bishopsgate. A lot of the poems were about a woman, a terrible, black-haired, black-eyed woman. She was cold and cruel, then she was true and loving, and then she was cruel again.
+
+     For I have sworn thee fair, and thought the bright,
+
+     Who art as black as hell, as dark as night.
+
+     Was Will writing about himself here? I asked myself. And who was this woman, this Dark Lady?
+
+     I always like to know what's going on, so I listened, and watched, and looked at all his women friends.
+
+     Then one day I saw her. I was coming in the door at our lodgings, and she was coming downstairs. She had black hair and great stormy black eyes, and there was gold at her ears and round her neck. I stood back and she went past me like a ship sailing into war. She looked wild, and angry, and very, very beautiful.
+
+     'Whew!' I said to myself. 'If that's Will's Dark Lady, he'll never have a quiet, easy life!'
+
+     The woman looked Italian, so I went and asked John Florio about her. Florio was Lord Southampton's Italian teacher. We saw a lot of him in those days.
+
+     I described the woman, and he knew her at once.
+
+     'Emilia,' he said. 'Emilia Bassano. Now Emilia Lanier, wife to Alphonso Lanier. Before that, she lived with the old Lord Chamberlain. She was not his wife, you understand. But why do you want to know, my friend?'
+
+     'If she's a married lady, she doesn't have a lover now, then?'
+
+     Florio laughed loudly. 'Lovers! You don't know Emilia Lanier! She's a bad woman, my friend, a bad woman.' Now he spoke very quietly. 'For a time she was the friend of Lord Southampton. But not now. That is all finished.'
+
+     I didn't ask him about Will. Perhaps Emilia Lanier was Will's Dark Lady, or perhaps Will was just trying to help his friend Lord Southampton. Nobody will ever know now.
+
+     */
     private class UserDelThread implements Runnable {
         @Override
         public void run() {
             while (true) {
-                User user;
                 Long userId;
+                String uuid = null;
                 JsonObject delUserObj;
                 try {
                     delUserObj = gson.fromJson(delUserInfos.take(), JsonObject.class);
                     if (delUserObj.has("userId")
-                            && Objects.nonNull(user = userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong()))) {
+                            && Objects.isNull(userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong()))) {
                         // find the websocket connection with userId
                         RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
                                 .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId())
@@ -83,6 +120,7 @@ public class UserDelHandler {
                                 .orElse(null);
 
                         if (Objects.nonNull(delUserRpcConnection)) {
+                            uuid = delUserRpcConnection.getUserUuid();
                             // check user deleted ever in conference
                             String sessionId;
                             Session session;
@@ -113,7 +151,7 @@ public class UserDelHandler {
                         }
 
                         // del user token info in cache
-                        cacheManage.delUserToken(user.getUuid());
+                        cacheManage.delUserToken(uuid);
                     } else {
                         log.error("Invalid user delete info:{}", delUserObj.toString());
                     }

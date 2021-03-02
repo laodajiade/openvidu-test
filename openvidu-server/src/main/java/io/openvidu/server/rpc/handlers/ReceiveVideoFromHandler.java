@@ -50,6 +50,7 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
         KurentoSession session = (KurentoSession) sessionManager.getSession(rpcConnection.getSessionId());
         // 如果是墙下，且服务器开启了媒体级联，则从分发服务器上进行接收
         if (!participant.getRole().needToPublish() && !session.getDeliveryKmsManagers().isEmpty()) {
+            log.info("{} goto delivery receive", rpcConnection.getUserUuid());
             receiveVideoFromDelivery(rpcConnection, request);
             return;
         }
@@ -86,17 +87,17 @@ public class ReceiveVideoFromHandler extends RpcAbstractHandler {
 
         sessionManager.subscribe(participant, senderName, streamMode, sdpOffer, request.getId());
 
-        EventListener<IceCandidateFoundEvent> eventListener = new EventListener<IceCandidateFoundEvent>() {
-            @Override
-            public void onEvent(IceCandidateFoundEvent event) {
-
-                JsonObject response = new JsonObject();
-                response.addProperty("id", "iceCandidate");
-                response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
-                log.info("addIceCandidateFoundListener {}", response.toString());
-                notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), "onIceCandidate", response);
-            }
-        };
+//        EventListener<IceCandidateFoundEvent> eventListener = new EventListener<IceCandidateFoundEvent>() {
+//            @Override
+//            public void onEvent(IceCandidateFoundEvent event) {
+//
+//                JsonObject response = new JsonObject();
+//                response.addProperty("id", "iceCandidate");
+//                response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+//                log.info("addIceCandidateFoundListener {}", response.toString());
+//                notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), "onIceCandidate", response);
+//            }
+//        };
 
     }
 }

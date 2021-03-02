@@ -55,7 +55,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
 
         //todo 测试代码
-        if (rpcConnection.getUserUuid().endsWith("5")) {
+        if (rpcConnection.getUserUuid().endsWith("5") || rpcConnection.getUserUuid().endsWith("6")) {
             role = OpenViduRole.SUBSCRIBER;
         }
 

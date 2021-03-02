@@ -40,10 +40,9 @@ public class TestReceiveVideoFromHandler extends RpcAbstractHandler {
         final String finalSenderName =senderName;
         String sdpOffer = getStringParam(request, ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM);
 
-        log.info("TestReceiveVideoFromHandler  111111111111");
         receiveEndpoint = new WebRtcEndpoint.Builder(TestStartConferenceRecordHandler.pipeline104).build();
         Participant participant = sessionManager.getParticipant(rpcConnection.getSessionId(), rpcConnection.getParticipantPrivateId());
-        log.info("TestReceiveVideoFromHandler  222222222222");
+        log.info("TestReceiveVideoFromHandler  addIceCandidateFoundListener before");
         receiveEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
             @Override

@@ -32,6 +32,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.endpoint.*;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
+import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
 import org.kurento.client.EventListener;
@@ -64,6 +65,9 @@ public class KurentoParticipant extends Participant {
 
 	private PublisherEndpoint publisher;
 	private CountDownLatch publisherLatch = new CountDownLatch(1);
+
+	@Getter
+	private final ConcurrentMap<String, MediaChannel> mediaChannels = new ConcurrentHashMap<>();
 
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
 	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
@@ -179,6 +183,65 @@ public class KurentoParticipant extends Participant {
                         + "_" + "MAJOR-SHARE-MIX";
                 this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
             }
+
+//			this.publisher.getMajorShareHubPort().setName(getParticipantName());
+			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
+		} else if (TerminalTypeEnum.S == getTerminalType()) {
+			log.info("SIP terminal:{} published and create sipComposite", getUuid());
+			Composite sipComposite = this.session.createSipComposite();
+			this.publisher.createSipCompositeHubPort(sipComposite);
+			new Thread(this.session::updateSipComposite).start();
+		}
+
+		this.publisher.setEndpointName(publisherStreamId);
+		this.publisher.getEndpoint().setName(publisherStreamId);
+		this.publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub");
+		this.publisher.setStreamId(publisherStreamId);
+		endpointConfig.addEndpointListeners(this.publisher, "publisher");
+
+		// Remove streamId from publisher's map
+		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
+	}
+
+	public void createPublishingDeliveryEndpoint(MediaOptions mediaOptions, Participant participant) {
+		if (Objects.isNull(this.publisher)) {
+			// Initialize a PublisherEndpoint
+			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setCompositeService(this.session.compositeService);
+		} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
+			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
+					this.session.getPipeline(), this.openviduConfig);
+
+			this.publisher.setCompositeService(this.session.compositeService);
+		}
+		this.publisher.createEndpoint(publisherLatch);
+		if (getPublisher().getEndpoint() == null) {
+			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
+		}
+		this.publisher.setMediaOptions(mediaOptions);
+
+		String publisherStreamId;
+		if (StringUtils.isEmpty(this.publisherStreamId)) {
+			publisherStreamId = this.getParticipantPublicId() + "_"
+					+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
+					+ RandomStringUtils.random(5, true, false).toUpperCase();
+			this.publisherStreamId = publisherStreamId;
+		} else {
+			publisherStreamId = this.publisherStreamId;
+		}
+
+		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+			if (Objects.equals(StreamType.SHARING, getStreamType())) {
+				this.session.compositeService.setShareStreamId(publisherStreamId);
+			}
+
+			if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
+				String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
+						+ "_" + "MAJOR-SHARE-MIX";
+				this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
+			}
 
 //			this.publisher.getMajorShareHubPort().setName(getParticipantName());
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
@@ -407,7 +470,7 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public String receiveMediaFromDelivery(Participant sender, StreamModeEnum streamMode, String sdpOffer, String externalSenderName, MediaPipeline pipeline) {
-		log.info("11111111111 into receiveMediaFromDelivery");
+		log.info("{} into receiveMediaFromDelivery", this.getUuid());
 
 		String senderName = sender.getParticipantPublicId();
 		if (!StringUtils.isEmpty(externalSenderName)) {
@@ -425,39 +488,18 @@ public class KurentoParticipant extends Participant {
 		}
 
 		KurentoParticipant kSender = (KurentoParticipant) sender;
-		DeliveryKmsManager deliveryKmsManager = new ArrayList<>(kSender.deliveryKmsManagers.values()).get(0);
-//		if (true){
-//			subscriber.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
-//
-//				@Override
-//				public void onEvent(IceCandidateFoundEvent event) {
-//
-//					JsonObject response = new JsonObject();
-//					response.addProperty("id", "iceCandidate");
-//					response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
-//					log.info("111111111111 addIceCandidateFoundListener {}", response.toString());
-//					//notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), "onIceCandidate", response);
-//					String subscriberEndpointName = getParticipantPublicId() + "_" + kSender.getPublisherStreamId();
-//					sendIceCandidate(getParticipantPublicId(),subscriberEndpointName , event.getCandidate());
-//				}
-//			});
-//
-//			senderEp.connect(receiveEndpoint);
-//			String sdpAnswer = receiveEndpoint.processOffer(sdpOffer);
-//			receiveEndpoint.gatherCandidates();
-//			log.info("1111111111 sdpAnswe {}",sdpAnswer);
-//			return sdpAnswer;
-//		}
+
 		if (kSender.getPublisher() == null) {
 			log.warn("PARTICIPANT {}: Trying to connect to a user without " + "a publishing endpoint",
 					this.getParticipantPublicId());
 			return null;
 		}
+		MediaChannel mediaChannel = new ArrayList<>(kSender.getMediaChannels().values()).get(0);
 
 		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 				senderName);
 
-		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName, deliveryKmsManager.getPipeline());
+		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName, mediaChannel.getTargetPipeline());
 
 		try {
 			CountDownLatch subscriberLatch = new CountDownLatch(1);
@@ -498,8 +540,7 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
 		try {
-			DispatcherEndpoint dispatcherEndpoint = new ArrayList<>(deliveryKmsManager.dispatcherMap.values()).get(0);
-			String sdpAnswer = subscriber.subscribeVideoDelivery(sdpOffer, dispatcherEndpoint.getPassThrough(), streamMode);
+			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, mediaChannel.getPublisher() , streamMode);
 			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
 			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
 					senderName, this.session.getSessionId());
@@ -597,7 +638,7 @@ public class KurentoParticipant extends Participant {
 		return subscriberEndpoint;
 	}
 
-	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId,MediaPipeline pipeline) {
+	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId, MediaPipeline pipeline) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
 				pipeline, this.session.compositeService, this.openviduConfig);
 

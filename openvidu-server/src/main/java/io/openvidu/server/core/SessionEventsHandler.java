@@ -264,7 +264,7 @@ public class SessionEventsHandler {
 		// 人数超过阈值后开始往第二台分发。
 		KurentoSession ks = (KurentoSession) session;
 		if (
-				session.getParticipants().size() > 1 &&
+				session.getSessionId().endsWith("0002") &&
 				ks.getDeliveryKmsManagers().size() == 0) {
 			log.info("1111111111111 delivery kms");
 			ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));

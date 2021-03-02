@@ -506,8 +506,7 @@ public class KurentoSession extends Session {
 				}
 			});
 
-
-			deliveryKms.dispatcher(this);
+			//deliveryKms.dispatcher(this);
 			log.info("delivery dispatcher success");
 		}
 	}
