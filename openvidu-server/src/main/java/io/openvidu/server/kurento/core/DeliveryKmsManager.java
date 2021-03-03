@@ -95,19 +95,20 @@ public class DeliveryKmsManager {
         state = DeliveryKmsStateEnum.READY;
     }
 
-    public void dispatcher(KurentoParticipant kParticipant) {
+    public MediaChannel dispatcher(KurentoParticipant kParticipant) {
         KurentoSession kSession = (KurentoSession) session;
         MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), kParticipant.getPublisher().getPassThru(), this.getPipeline(),
                 true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig());
         MediaChannel oldMediaChannel = kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
         if (oldMediaChannel != null) {
             log.info("participant {} 已创建通道 {}", kParticipant.getUuid(), this.id);
-            return;
+            return oldMediaChannel;
         }
         this.dispatcherMap.put(kParticipant.getUuid() + "_" + kParticipant.getPublisherStreamId(), mediaChannel);
         mediaChannel.createChannel();
-        kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
+        kParticipant.getMediaChannels().put(this.getId(), mediaChannel);
         log.info("dispatcherMap {}", dispatcherMap);
+        return mediaChannel;
     }
 
     public void initToReady() {

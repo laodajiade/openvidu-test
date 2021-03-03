@@ -504,6 +504,7 @@ public class KurentoParticipant extends Participant {
 		MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
 		if (mediaChannel == null) {
 			synchronized (this){
+				deliveryKms.dispatcher(kSender);
 				mediaChannel = new MediaChannel(session.getPipeline(), kSender.getPublisher().getPassThru(), deliveryKms.getPipeline(),
 						true, kSender, kSender.getPublisherStreamId(), openviduConfig);
 				this.mediaChannels.put(deliveryKms.getId(), mediaChannel);

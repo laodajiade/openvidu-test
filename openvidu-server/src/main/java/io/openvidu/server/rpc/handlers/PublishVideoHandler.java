@@ -57,9 +57,11 @@ public class PublishVideoHandler extends RpcAbstractHandler {
             if (sessionManager.isPublisherInSession(rpcConnection.getSessionId(), participant,preset.getPollingStatusInRoom())) {
                 MediaOptions options = sessionManager.generateMediaOptions(request);
                 sessionManager.publishVideo(participant, options, request.getId());
+
+                sessionManager.createDeliverChannel(participant);
                 // 判断会议是否已经触发了分发
                 if (session.getSessionId().endsWith("00002")){
-                    sessionManager.createDeliverChannel(participant);
+
                 }
 
             } else {
