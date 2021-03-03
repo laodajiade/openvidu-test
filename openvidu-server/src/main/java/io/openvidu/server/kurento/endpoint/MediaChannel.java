@@ -5,6 +5,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
 
 import java.text.MessageFormat;
@@ -12,13 +13,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * -------------------------------------------------------------------------------------------------------------------
- * |  kms1.pipeline                                     |         |         kms2.pipeline                                |
- * |                          |<----------              mediaChannel             ---------->|                           |
+ * -----------------------------------------------------------------------------------------------------------------------
+ * |  kms1.pipeline                                     |         |    kms2.pipeline                                     |
+ * |                          |<----------              mediaChannel             ---------->|                            |
  * |  client1 -> publisher -> passThrough -> subscriber |  -----> | publisher -> passThrough -> subscriber  -> client2   |
  * |                                                    |         |                                                      |
  * |                                                    |         |                                                      |
- * -------------------------------------------------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------------------------------------------------
  */
 @Slf4j
 public class MediaChannel {
@@ -27,7 +28,13 @@ public class MediaChannel {
     private final String id;
 
     @Getter
+    private final String mediaChannelName;
+
+    @Getter
     private final String senderEndpointName;
+
+    @Getter
+    private final long createAt;
 
     /**
      * kms1.pipeline，主媒体服务器的pipeline
@@ -57,10 +64,10 @@ public class MediaChannel {
         this.sourcePassThrough = sourcePassThrough;
         this.targetPipeline = targetPipeline;
         this.senderEndpointName = senderEndpointName;
+        this.createAt = System.currentTimeMillis();
 
-
-        this.id = "channel_" + senderEndpointName + sourcePipeline.getId() + " to " + targetPipeline.getId();
-
+        this.mediaChannelName = "channel_" + senderEndpointName + sourcePipeline.getId() + " to " + targetPipeline.getId();
+        this.id = senderEndpointName + "_" + RandomStringUtils.randomAlphabetic(6);
     }
 
     public MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline,
@@ -206,5 +213,10 @@ public class MediaChannel {
                     + " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
             log.info(msg);
         });
+    }
+
+    @Override
+    public String toString() {
+        return "MediaChannel " + this.id;
     }
 }

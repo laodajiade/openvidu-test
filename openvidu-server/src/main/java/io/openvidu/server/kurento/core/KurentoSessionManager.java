@@ -541,10 +541,15 @@ public class KurentoSessionManager extends SessionManager {
 		KurentoSession session = kParticipant.getSession();
 
 		for (DeliveryKmsManager deliveryKmsManager : session.getDeliveryKmsManagers()) {
+			log.debug("uuid {}, publisherId = {}", kParticipant.getUuid(), kParticipant.getPublisher().getStreamId());
+
 			MediaChannel mediaChannel = new MediaChannel(session.getPipeline(), kParticipant.getPublisher().getPassThru(), deliveryKmsManager.getPipeline(),
 					true, kParticipant, kParticipant.getPublisherStreamId(), openviduConfig);
+			log.debug("mediaChannel exist(yes/no) = {}",kParticipant.getMediaChannels().get(deliveryKmsManager.getId()));
+			kParticipant.getMediaChannels().put(deliveryKmsManager.getId(), mediaChannel);
+			deliveryKmsManager.dispatcherMap.put(kParticipant.getUuid(), mediaChannel);
+			log.info("dispatcherMap {}",deliveryKmsManager.dispatcherMap);
 			mediaChannel.createChannel();
-			kParticipant.getMediaChannels().putIfAbsent(deliveryKmsManager.getId(), mediaChannel);
 		}
 	}
 

@@ -77,7 +77,6 @@ public class KurentoParticipant extends Participant {
 	private final String strMSTagDebugMCUParticipant = "debugMCUParticipant";
 	private final String strMSTagDebugEndpointName = "debugEndpointName";
 
-	public Map<String, DeliveryKmsManager> deliveryKmsManagers = new ConcurrentHashMap<>();
 
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
@@ -122,6 +121,10 @@ public class KurentoParticipant extends Participant {
 			this.publisher.setCompositeService(this.session.compositeService);
 		}
 
+		// ↓↓↓↓↓↓↓↓ 杨宇 注释于2021年3月2日17:56:49，
+		// 原因：我认为在每次receiveVideoFrom时会调用getNewOrExistingSubscriber并创建一个subscriber，
+		// 没有必要在初始化时对每个publisher进行创建并保存，这样造成了内存的浪费
+		/*
 		for (Participant other : session.getParticipants()) {
 			if (!other.getParticipantPublicId().equals(this.getParticipantPublicId())
 					&& !OpenViduRole.NON_PUBLISH_ROLES.contains(other.getRole())) {
@@ -130,6 +133,8 @@ public class KurentoParticipant extends Participant {
 				getNewOrExistingSubscriber(other.getParticipantPublicId());
 			}
 		}
+		 */
+		// ↑↑↑↑↑↑↑↑↑ 杨宇 注释于2021年3月2日17:56:49，
 	}
 
 	public void createPublisher() {
@@ -498,6 +503,8 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 				senderName);
+		log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
+				this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
 
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName, mediaChannel.getTargetPipeline());
 
@@ -642,7 +649,10 @@ public class KurentoParticipant extends Participant {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
 				pipeline, this.session.compositeService, this.openviduConfig);
 
-		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
+		//SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
+		// 修改强行覆盖
+		SubscriberEndpoint existingSendingEndpoint = this.subscribers.put(senderPublicId, subscriberEndpoint);
+
 		if (existingSendingEndpoint != null) {
 			// subscriberEndpoint = existingSendingEndpoint;
 			log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),

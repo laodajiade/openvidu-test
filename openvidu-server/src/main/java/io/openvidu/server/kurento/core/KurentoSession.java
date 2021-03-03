@@ -458,57 +458,28 @@ public class KurentoSession extends Session {
 		return deliveryKmsManagers;
 	}
 
-	public void createDeliveryKms(Kms otherKms) {
-		synchronized (pipelineCreateLock) {
-			if (deliveryKmsManagers.size() != 0) {
-				return;
-			}
+    /**
+     * 是否需要新的分发网络
+     */
+    public boolean needMediaDeliveryKms() {
+        //需要开第二台分发kms
+        if (this.getMajorPartEachIncludeThorConnect().size() > 20 && this.getDeliveryKmsManagers().size() < 2) {
+            return true;
+        }
+        //需要开第一台分发kms
+        return this.getMajorPartEachIncludeThorConnect().size() >= 2 && this.getDeliveryKmsManagers().size() < 1;
+    }
 
-			DeliveryKmsManager deliveryKms = new DeliveryKmsManager(otherKms, this);
+    public void createDeliveryKms(Kms otherKms) {
+        synchronized (pipelineCreateLock) {
+            if (!needMediaDeliveryKms()) {
+                return;
+            }
+            DeliveryKmsManager deliveryKms = new DeliveryKmsManager(otherKms, this, kurentoSessionHandler);
             deliveryKmsManagers.add(deliveryKms);
-            log.info("SESSION {}: Creating delivery MediaPipeline,kmsIp ({} >> {}),master kms {}", sessionId, otherKms.getIp(), otherKms.getId(), kms.getIp());
-            try {
-                otherKms.getKurentoClient().createMediaPipeline(new Continuation<MediaPipeline>() {
-                    @Override
-                    public void onSuccess(MediaPipeline result) throws Exception {
-                        deliveryKms.setPipeline(result);
-                        deliveryKms.getPipelineLatch().countDown();
-                        deliveryKms.getPipeline().setName(MessageFormat.format("delivery_pipeline_{0}_{1}", otherKms.getId(), sessionId));
-                        log.info("SESSION {}: Created MediaPipeline {} in kmsId {}", sessionId, result.getId(), otherKms.getId());
-                    }
-
-                    @Override
-                    public void onError(Throwable cause) throws Exception {
-                        deliveryKms.setPipelineCreationErrorCause(cause);
-                        deliveryKms.getPipelineLatch().countDown();
-                        log.error("SESSION {}: Failed to create MediaPipeline", sessionId, cause);
-                    }
-                });
-			} catch (Exception e) {
-				log.error("Unable to create media pipeline for session '{}'", sessionId, e);
-				deliveryKms.getPipelineLatch().countDown();
-			}
-			if (deliveryKms.getPipeline() == null) {
-				final String message = deliveryKms.pipelineCreationErrorCause != null
-						? deliveryKms.pipelineCreationErrorCause.getLocalizedMessage()
-						: "Unable to create media pipeline for session '" + sessionId + "'";
-				deliveryKms.pipelineCreationErrorCause = null;
-				throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE, message);
-			}
-
-			deliveryKms.pipeline.addErrorListener(new EventListener<ErrorEvent>() {
-				@Override
-				public void onEvent(ErrorEvent event) {
-					String desc = event.getType() + ": " + event.getDescription() + "(errCode=" + event.getErrorCode()
-							+ ")";
-					log.warn("SESSION {}: Pipeline error encountered: {}", sessionId, desc);
-					kurentoSessionHandler.onPipelineError(sessionId, getParticipants(), desc);
-				}
-			});
-
-			//deliveryKms.dispatcher(this);
-			log.info("delivery dispatcher success");
-		}
-	}
+            log.info("create delivery kms sessionId {} ip {},deliveryKms {}", this.sessionId, otherKms.getIp(), deliveryKms.getId());
+            deliveryKms.initToReady();
+        }
+    }
 
 }

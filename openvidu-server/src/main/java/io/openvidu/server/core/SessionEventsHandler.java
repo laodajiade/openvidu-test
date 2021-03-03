@@ -250,28 +250,21 @@ public class SessionEventsHandler {
 		UseTime.point("join room p9");
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 
-//		KurentoSession kurentoSession = (KurentoSession) session;
-//		Collection<KurentoSession> kurentoSessions = kurentoSession.getKms().getKurentoSessions();
-//		int sum = kurentoSessions.stream().map(Session::getParticipants).mapToInt(Set::size).sum();
-//
-//		for (KurentoSession ks : kurentoSessions) {
-//			Set<Participant> participants = ks.getParticipants();
-//			for (Participant p : participants) {
-//				KurentoParticipant kp = 	(KurentoParticipant)p;
-//				kp.getPipeline().getMediaPipeline().
-//			}
-//		}
-		// 人数超过阈值后开始往第二台分发。
-		KurentoSession ks = (KurentoSession) session;
-		if (
-				session.getSessionId().endsWith("0002") &&
-				ks.getDeliveryKmsManagers().size() == 0) {
-			log.info("1111111111111 delivery kms");
-			ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));
-		}
-
+		new Thread(() -> deliveryOnParticipantJoined(session)).start();
 
 	}
+
+    private void deliveryOnParticipantJoined(Session session) {
+        // 人数超过阈值后开始往第二台分发。
+        KurentoSession ks = (KurentoSession) session;
+
+        if (!ks.needMediaDeliveryKms()) {
+            return;
+        }
+        ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));
+    }
+
+
 
 	private void participantJoined(Participant participant, Set<Participant> existingParticipants) {
 		JsonObject notifParams = new JsonObject();

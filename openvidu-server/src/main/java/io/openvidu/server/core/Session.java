@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Session implements SessionInterface {
 
+	@Getter
 	protected OpenviduConfig openviduConfig;
 	protected RecordingManager recordingManager;
 	protected LivingManager livingManager;
