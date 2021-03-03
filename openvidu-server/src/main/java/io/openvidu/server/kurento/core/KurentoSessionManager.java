@@ -625,7 +625,7 @@ public class KurentoSessionManager extends SessionManager {
 
 			// 如果是墙下，且服务器开启了媒体级联，则从分发服务器上进行接收
 			if (!participant.getRole().needToPublish() && !session.getDeliveryKmsManagers().isEmpty()) {
-				sdpAnswer = kParticipant.receiveMediaFromDelivery(senderParticipant, streamMode, sdpOffer, senderName, session.getDeliveryKmsManagers().get(0).getPipeline());
+				sdpAnswer = kParticipant.receiveMediaFromDelivery(senderParticipant, streamMode, sdpOffer, senderName, session.getDeliveryKmsManagers().get(0));
 				//return;
 			} else {
 				sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);

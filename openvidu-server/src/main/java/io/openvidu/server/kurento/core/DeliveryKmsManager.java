@@ -48,7 +48,7 @@ public class DeliveryKmsManager {
     private DeliveryKmsStateEnum state;
 
     /**
-     * key = participant.uuid
+     * key = participant.uuid_publishId
      * value = mediaChannel
      */
     public Map<String, MediaChannel> dispatcherMap = new ConcurrentHashMap<>();
@@ -85,14 +85,12 @@ public class DeliveryKmsManager {
         List<KurentoParticipant> publisher = new ArrayList<>();
 
         for (Participant participant : participants) {
-            if (!participant.getStreamType().isStreamTypeMixInclude()) {
-                continue;
-            }
 
             if (participant.getRole().needToPublish()) {
                 publisher.add((KurentoParticipant) participant);
             }
         }
+        log.debug("要分发的part的个数 {}", publisher.size());
         publisher.stream().parallel().forEach(this::dispatcher);
         state = DeliveryKmsStateEnum.READY;
     }
@@ -106,10 +104,10 @@ public class DeliveryKmsManager {
             log.info("participant {} 已创建通道 {}", kParticipant.getUuid(), this.id);
             return;
         }
-        this.dispatcherMap.put(kParticipant.getUuid(), mediaChannel);
+        this.dispatcherMap.put(kParticipant.getUuid() + "_" + kParticipant.getPublisherStreamId(), mediaChannel);
         mediaChannel.createChannel();
         kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
-        log.info("dispatcherMap {}",dispatcherMap);
+        log.info("dispatcherMap {}", dispatcherMap);
     }
 
     public void initToReady() {

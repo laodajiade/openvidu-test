@@ -71,10 +71,10 @@ public class MediaChannel {
     }
 
     public MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline,
-                        boolean web, KurentoParticipant owner, String endpointName, OpenviduConfig openviduConfig) {
+                        boolean web, KurentoParticipant publisherParticipant, String endpointName, OpenviduConfig openviduConfig) {
         this(sourcePipeline, sourcePassThrough, targetPipeline, endpointName);
 
-        this.publisher = new PublisherEndpoint(web, owner, endpointName, targetPipeline, openviduConfig);
+        this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, openviduConfig);
 
         this.subscriber = new WebRtcEndpoint.Builder(sourcePipeline).build();
         log.info("mediaChannel create id {}", id);

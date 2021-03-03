@@ -474,7 +474,7 @@ public class KurentoParticipant extends Participant {
 		return null;
 	}
 
-	public String receiveMediaFromDelivery(Participant sender, StreamModeEnum streamMode, String sdpOffer, String externalSenderName, MediaPipeline pipeline) {
+	public String receiveMediaFromDelivery(Participant sender, StreamModeEnum streamMode, String sdpOffer, String externalSenderName, DeliveryKmsManager deliveryKms) {
 		log.info("{} into receiveMediaFromDelivery", this.getUuid());
 
 		String senderName = sender.getParticipantPublicId();
@@ -499,7 +499,18 @@ public class KurentoParticipant extends Participant {
 					this.getParticipantPublicId());
 			return null;
 		}
-		MediaChannel mediaChannel = new ArrayList<>(kSender.getMediaChannels().values()).get(0);
+
+		log.info("debug 11111111111,uuid ");
+		MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
+		if (mediaChannel == null) {
+			synchronized (this){
+				mediaChannel = new MediaChannel(session.getPipeline(), kSender.getPublisher().getPassThru(), deliveryKms.getPipeline(),
+						true, kSender, kSender.getPublisherStreamId(), openviduConfig);
+				this.mediaChannels.put(deliveryKms.getId(), mediaChannel);
+				mediaChannel.createChannel();
+			}
+		}
+		mediaChannel = new ArrayList<>(kSender.getMediaChannels().values()).get(0);
 
 		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 				senderName);

@@ -467,7 +467,7 @@ public class KurentoSession extends Session {
             return true;
         }
         //需要开第一台分发kms
-        return this.getMajorPartEachIncludeThorConnect().size() >= 2 && this.getDeliveryKmsManagers().size() < 1;
+        return this.getMajorPartEachIncludeThorConnect().size() >= 10 && this.getDeliveryKmsManagers().size() < 1;
     }
 
     public void createDeliveryKms(Kms otherKms) {

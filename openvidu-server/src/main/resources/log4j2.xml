@@ -38,6 +38,7 @@
         </Logger>
         <logger name="io.openvidu.server.common.dao" level="DEBUG" />
         <logger name="io.openvidu.server.kurento.core.KurentoSessionManager" level="DEBUG" />
+        <logger name="io.openvidu.server.kurento.core.DeliveryKmsManager" level="DEBUG" />
         <root level="all">
             <appender-ref ref="RollingFile"/>
             <appender-ref ref="Error" />

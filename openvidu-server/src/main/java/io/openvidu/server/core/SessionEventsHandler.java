@@ -148,11 +148,12 @@ public class SessionEventsHandler {
 				if (!Objects.isNull(rpc.getTerminalConfig())) {
 					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
 				}
+				participantJson.addProperty("deviceVersion", rpc.getDeviceVersion());
             }
             participantJson.addProperty("isVoiceMode", existingParticipant.getVoiceMode().equals(VoiceMode.on));
 			participantJson.addProperty("order",existingParticipant.getOrder());
 			participantJson.addProperty("pushStreamStatus",existingParticipant.getPushStreamStatus().name());
-			participantJson.addProperty("deviceVersion", rpc.getDeviceVersion());
+
 
 			// Metadata associated to each existing participant
 			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
