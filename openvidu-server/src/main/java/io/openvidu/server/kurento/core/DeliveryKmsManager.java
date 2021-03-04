@@ -33,7 +33,7 @@ public class DeliveryKmsManager {
 
     private final String sessionId;
 
-    private final Session session;
+    private final KurentoSession kSession;
 
     @Setter
     public MediaPipeline pipeline;
@@ -56,7 +56,7 @@ public class DeliveryKmsManager {
 
     public DeliveryKmsManager(Kms kms, Session session, KurentoSessionEventsHandler kurentoSessionHandler) {
         this.kms = kms;
-        this.session = session;
+        this.kSession = (KurentoSession) session;
         this.sessionId = session.getSessionId();
         this.id = kms.getId() + "_" + session.getSessionId();
         this.kurentoSessionHandler = kurentoSessionHandler;
@@ -79,9 +79,9 @@ public class DeliveryKmsManager {
     }
 
     public void dispatcher() {
-        log.info("begin kms dispatcher sessionId {}", session.getSessionId());
+        log.info("begin kms dispatcher sessionId {}", kSession.getSessionId());
 
-        Set<Participant> participants = session.getParticipants();
+        Set<Participant> participants = kSession.getParticipants();
 
         List<KurentoParticipant> publisher = new ArrayList<>();
 
@@ -97,8 +97,6 @@ public class DeliveryKmsManager {
     }
 
     public MediaChannel dispatcher(KurentoParticipant kParticipant) {
-
-        KurentoSession kSession = (KurentoSession) session;
         MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), kParticipant.getPublisher().getPassThru(), this.getPipeline(),
                 true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig());
         MediaChannel oldMediaChannel = kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
@@ -121,7 +119,7 @@ public class DeliveryKmsManager {
     }
 
     public void createPipeline() {
-        log.info("SESSION {}: Creating delivery MediaPipeline,kmsIp ({} >> {}),master kms {}", sessionId, kms.getIp(), kms.getId(), kms.getIp());
+        log.info("SESSION {}: Creating delivery MediaPipeline,kmsIp ({} >> {}),master kms {}", sessionId, kms.getIp(), kms.getId(), kSession.getKms().getIp());
         try {
             kms.getKurentoClient().createMediaPipeline(new Continuation<MediaPipeline>() {
                 @Override
@@ -129,8 +127,8 @@ public class DeliveryKmsManager {
                     pipeline = result;
                     pipelineLatch.countDown();
                     state = DeliveryKmsStateEnum.CONNECTED;
-                    pipeline.setName(MessageFormat.format("delivery_pipeline_{0}_{1}", kms.getId(), sessionId));
-                    log.info("SESSION {}: Created MediaPipeline {} in kmsId {}", sessionId, result.getId(), kms.getId());
+                    pipeline.setName(MessageFormat.format("delivery_pipeline_{0}_{1}", kms.getIp(), sessionId));
+                    log.info("SESSION {}: Created MediaPipeline {}, MediaPipelineName {} in kmsId {}", sessionId, result.getId(), result.getName(), kms.getId());
                 }
 
                 @Override
@@ -159,10 +157,14 @@ public class DeliveryKmsManager {
                 String desc = event.getType() + ": " + event.getDescription() + "(errCode=" + event.getErrorCode()
                         + ")";
                 log.warn("SESSION {}: Pipeline error encountered: {}", sessionId, desc);
-                kurentoSessionHandler.onPipelineError(sessionId, session.getParticipants(), desc);
+                kurentoSessionHandler.onPipelineError(sessionId, kSession.getParticipants(), desc);
             }
         });
 
         log.info("delivery kms create success");
+    }
+
+    public MediaChannel getMediaChannel(String sendName) {
+        return dispatcherMap.get(sendName);
     }
 }

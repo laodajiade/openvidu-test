@@ -26,7 +26,6 @@ public class OnIceCandidateHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-
         Participant participant;
 
         String endpointName = getStringParam(request, ProtocolElements.ONICECANDIDATE_EPNAME_PARAM);
@@ -38,31 +37,6 @@ public class OnIceCandidateHandler extends RpcAbstractHandler {
         } catch (OpenViduException e) {
             return;
         }
-        if (rpcConnection.getUserUuid().endsWith("5") && participant.getUuid().endsWith("5")) {
-            try {
-                log.info("80103600005 testOnIceCandidateHandler");
-                testOnIceCandidateHandler.handRpcRequest(rpcConnection, request);
-                return;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            //return;
-        } else {
-            log.info("OnIceCandidateHandler 2222222222 {}", participant.getUuid());
-        }
-
-        if (rpcConnection.getUserUuid().equals("80103600004") && participant.getUuid().equals("80103600004")) {
-            //todo 临时代码
-            IceCandidate cand = new IceCandidate(candidate, sdpMid, sdpMLineIndex);
-
-            log.info("111111111 receive add iceCandidate ");
-            KurentoParticipant kParticipant = (KurentoParticipant) participant;
-            SubscriberEndpoint newOrExistingSubscriber = kParticipant.getNewOrExistingSubscriber(endpointName);
-            newOrExistingSubscriber.addIceCandidate(cand);
-        }
-
-
         sessionManager.onIceCandidate(participant, endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
     }
 }

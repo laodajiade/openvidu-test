@@ -395,11 +395,41 @@ public class KurentoParticipant extends Participant {
 					this.getParticipantPublicId());
 			return null;
 		}
+		PublisherEndpoint senderPublisher = kSender.getPublisher();
 
 		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 				senderName);
+		SubscriberEndpoint subscriber = this.subscribers.get(senderName);
+		if (subscriber == null) {
+			MediaPipeline pipeline = this.getPipeline();
+			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty()) {
+				// todo 选择一个负载低的做会议室。
+				DeliveryKmsManager deliveryKms = getSession().getDeliveryKmsManagers().get(0);
+				// 这里开始不同
+				MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
+				MediaChannel mediaChannel2 = deliveryKms.getMediaChannel(kSender.getPublisherStreamId());
+				log.info("mediaChannel == mediaChannel2 ? {}", mediaChannel == mediaChannel2);
+				if (mediaChannel == null) {
+					log.warn("mediaChannel not exist");
+					synchronized (this) {
+						mediaChannel = deliveryKms.dispatcher(kSender);
+					}
+				}
+				log.info("mediaChannel state = {}", mediaChannel.getState().name());
 
-		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName);
+				log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
+						senderName);
+				log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
+						this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
+				pipeline = mediaChannel.getTargetPipeline();
+				senderPublisher = mediaChannel.getPublisher();
+			}
+			log.debug("getNewOrExistingSubscriber {}", this.getUuid());
+			subscriber = getNewOrExistingSubscriber(senderName, pipeline);
+		} else {
+			log.debug("old subscriber {} exist", this.getUuid());
+		}
+
 
 		try {
 			CountDownLatch subscriberLatch = new CountDownLatch(1);
@@ -440,7 +470,7 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
 		try {
-			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, kSender.getPublisher(), streamMode);
+			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, senderPublisher, streamMode);
 			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
 			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
 					senderName, this.session.getSessionId());
@@ -499,7 +529,7 @@ public class KurentoParticipant extends Participant {
 					this.getParticipantPublicId());
 			return null;
 		}
-
+// 这里开始不同
 		MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
 		if (mediaChannel == null) {
 			log.warn("mediaChannel not exist");
@@ -518,8 +548,9 @@ public class KurentoParticipant extends Participant {
 				senderName);
 		log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
 				this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
-
+		// 这里开始不同
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName, mediaChannel.getTargetPipeline());
+
 
 		try {
 			CountDownLatch subscriberLatch = new CountDownLatch(1);
