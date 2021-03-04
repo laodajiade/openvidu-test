@@ -17,6 +17,7 @@
 
 package io.openvidu.server.core;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -30,8 +31,10 @@ import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.kurento.core.DeliveryKmsManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
@@ -995,6 +998,32 @@ public class Session implements SessionInterface {
 		if (this.sessionProperties.customSessionId() != null) {
 			json.addProperty("customSessionId", this.sessionProperties.customSessionId());
 		}
+
+		if (this instanceof KurentoSession) {
+			KurentoSession ks = (KurentoSession) this;
+
+			JsonObject kmsJson = new JsonObject();
+			kmsJson.addProperty("kmsIp", ks.getKms().getIp());
+			kmsJson.addProperty("kmsLoad", ks.getKms().getLoad());
+			kmsJson.addProperty("sessions", new Gson().toJson(ks.getKms().getKurentoClient().getServerManager().getSessions()));
+			json.add("kms", kmsJson);
+
+			if (!ks.getDeliveryKmsManagers().isEmpty()) {
+				JsonArray dkms = new JsonArray();
+				kmsJson.add("deliveryKmss", dkms);
+				for (DeliveryKmsManager dkm : ks.getDeliveryKmsManagers()) {
+					JsonObject kmsj = new JsonObject();
+					kmsj.addProperty("kmsIp", dkm.getKms().getIp());
+					kmsj.addProperty("kmsLoad", dkm.getKms().getLoad());
+					kmsj.addProperty("userdMemory", dkm.getKms().getKurentoClient().getServerManager().getUsedMemory());
+					kmsj.addProperty("info", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getInfo()));
+					kmsj.addProperty("metadata", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getMetadata()));
+					kmsj.addProperty("sessions", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getSessions()));
+					dkms.add(kmsj);
+				}
+			}
+		}
+
 		JsonObject connections = new JsonObject();
 		JsonArray participants = new JsonArray();
 		/*this.participants.values().forEach(p -> {

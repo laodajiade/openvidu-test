@@ -500,18 +500,19 @@ public class KurentoParticipant extends Participant {
 			return null;
 		}
 
-		log.info("debug 11111111111,uuid ");
 		MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
 		if (mediaChannel == null) {
-			synchronized (this){
-				deliveryKms.dispatcher(kSender);
-				mediaChannel = new MediaChannel(session.getPipeline(), kSender.getPublisher().getPassThru(), deliveryKms.getPipeline(),
-						true, kSender, kSender.getPublisherStreamId(), openviduConfig);
-				this.mediaChannels.put(deliveryKms.getId(), mediaChannel);
-				mediaChannel.createChannel();
+			log.warn("mediaChannel not exist");
+			synchronized (this) {
+				mediaChannel = deliveryKms.dispatcher(kSender);
+//				mediaChannel = new MediaChannel(session.getPipeline(), kSender.getPublisher().getPassThru(), deliveryKms.getPipeline(),
+//						true, kSender, kSender.getPublisherStreamId(), openviduConfig);
+				kSender.mediaChannels.put(deliveryKms.getId(), mediaChannel);
+				//mediaChannel.createChannel();
 			}
 		}
-		mediaChannel = new ArrayList<>(kSender.getMediaChannels().values()).get(0);
+		log.info("mediaChannel state = {}", mediaChannel.getState().name());
+		//mediaChannel = new ArrayList<>(kSender.getMediaChannels().values()).get(0);
 
 		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 				senderName);
@@ -661,12 +662,9 @@ public class KurentoParticipant extends Participant {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
 				pipeline, this.session.compositeService, this.openviduConfig);
 
-		//SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
-		// 修改强行覆盖
-		SubscriberEndpoint existingSendingEndpoint = this.subscribers.put(senderPublicId, subscriberEndpoint);
-
+		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {
-			// subscriberEndpoint = existingSendingEndpoint;
+			subscriberEndpoint = existingSendingEndpoint;
 			log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),
 					senderPublicId);
 		} else {

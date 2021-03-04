@@ -59,10 +59,6 @@ public class PublishVideoHandler extends RpcAbstractHandler {
                 sessionManager.publishVideo(participant, options, request.getId());
 
                 sessionManager.createDeliverChannel(participant);
-                // 判断会议是否已经触发了分发
-                if (session.getSessionId().endsWith("00002")){
-
-                }
 
             } else {
                 log.error("Error: participant {} is not a publisher and role={} and streamType={}", participant.getParticipantPublicId()

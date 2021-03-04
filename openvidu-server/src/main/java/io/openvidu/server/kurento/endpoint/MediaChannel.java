@@ -1,6 +1,7 @@
 package io.openvidu.server.kurento.endpoint;
 
 import com.alibaba.fastjson.JSON;
+import io.openvidu.server.common.enums.MediaChannelStateEnum;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import lombok.Getter;
@@ -55,8 +56,11 @@ public class MediaChannel {
     @Getter
     public PublisherEndpoint publisher;
 
-    // 0 = 未准备  1=正在准备  2=准备完毕
-    public int state = 0;
+    /**
+     * 状态，READ和FLOWING是可用状态
+     */
+    @Getter
+    public MediaChannelStateEnum state;
 
 
     private MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline, String senderEndpointName) {
@@ -68,6 +72,7 @@ public class MediaChannel {
 
         this.mediaChannelName = "channel_" + senderEndpointName + sourcePipeline.getId() + " to " + targetPipeline.getId();
         this.id = senderEndpointName + "_" + RandomStringUtils.randomAlphabetic(6);
+        state = MediaChannelStateEnum.INITIAL;
     }
 
     public MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline,
@@ -81,6 +86,7 @@ public class MediaChannel {
     }
 
     public void createChannel() {
+        state = MediaChannelStateEnum.PREPARE;
         CountDownLatch countDownLatch = new CountDownLatch(1);
         publisher.internalEndpointInitialization(countDownLatch);
         try {
@@ -102,7 +108,7 @@ public class MediaChannel {
      */
     private void createRtcChnAndSwitchIces(WebRtcEndpoint publisherEndpoint, WebRtcEndpoint subscriber, PassThrough subscriberPassThru) {
         String sdpOffer = publisherEndpoint.generateOffer();
-        log.info("publisher create offer," + sdpOffer);
+        log.debug("publisher create offer {}" , sdpOffer);
         publisherEndpoint.addOnIceCandidateListener(event -> {
             IceCandidate candidate = event.getCandidate();
             log.info("publisher iceCandidate:{}", JSON.toJSON(candidate));
@@ -175,11 +181,13 @@ public class MediaChannel {
             @Override
             public void onSuccess(Void result) throws Exception {
                 log.info("Elements have been connected (source {} -> sink {})", subscriberPassThru.getId(), subscriber.getId());
+                state = MediaChannelStateEnum.READY;
             }
 
             @Override
             public void onError(Throwable cause) throws Exception {
                 log.error("Failed to connect media elements (source {} -> sink {})", subscriberPassThru.getId(), subscriber.getId(), cause);
+                state = MediaChannelStateEnum.FAILED;
             }
         });
 
@@ -204,6 +212,9 @@ public class MediaChannel {
             String msg = "KMS event [MediaFlowInStateChange] -> endpoint: " + endpoint.getId() + " ("
                     + typeOfEndpoint + ") | state: " + event.getState() + " | pad: " + event.getPadName()
                     + " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
+            if (event.getState() == MediaFlowState.FLOWING) {
+                state = MediaChannelStateEnum.FLOWING;
+            }
             log.info(msg);
         });
 
@@ -211,6 +222,9 @@ public class MediaChannel {
             String msg = "KMS event [MediaFlowOutStateChange] -> endpoint: " + endpoint.getId() + " ("
                     + typeOfEndpoint + ") | state: " + event.getState() + " | pad: " + event.getPadName()
                     + " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
+            if (event.getState() == MediaFlowState.FLOWING) {
+                state = MediaChannelStateEnum.FLOWING;
+            }
             log.info(msg);
         });
     }

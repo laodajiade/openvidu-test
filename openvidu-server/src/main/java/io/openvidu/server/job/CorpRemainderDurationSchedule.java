@@ -105,7 +105,7 @@ public class CorpRemainderDurationSchedule {
     }
 
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+    //@Scheduled(cron = "0 0/1 * * * ?")
     public void countCorpRemainderDuration(){
         List<Corporation> corporations = corporationMapper.selectAllCorp();
         if (!CollectionUtils.isEmpty(corporations)) {

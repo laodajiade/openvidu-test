@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DeliveryKmsManager {
 
+    @Getter
     private final Kms kms;
     @Getter
     private final String id;
@@ -96,15 +97,17 @@ public class DeliveryKmsManager {
     }
 
     public MediaChannel dispatcher(KurentoParticipant kParticipant) {
+
         KurentoSession kSession = (KurentoSession) session;
         MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), kParticipant.getPublisher().getPassThru(), this.getPipeline(),
                 true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig());
         MediaChannel oldMediaChannel = kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
+        log.info("开始分发 {}, {}", kParticipant.getUuid(), mediaChannel.getId());
         if (oldMediaChannel != null) {
             log.info("participant {} 已创建通道 {}", kParticipant.getUuid(), this.id);
             return oldMediaChannel;
         }
-        this.dispatcherMap.put(kParticipant.getUuid() + "_" + kParticipant.getPublisherStreamId(), mediaChannel);
+        this.dispatcherMap.put(kParticipant.getPublisherStreamId(), mediaChannel);
         mediaChannel.createChannel();
         kParticipant.getMediaChannels().put(this.getId(), mediaChannel);
         log.info("dispatcherMap {}", dispatcherMap);
