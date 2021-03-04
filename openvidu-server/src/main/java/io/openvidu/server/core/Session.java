@@ -725,7 +725,8 @@ public class Session implements SessionInterface {
 				if ((partOrder = participant.getOrder()) > leavePartOrder) {
 					if (leavePartOrder <= lineOrder && partOrder == sfuLimit
 							&& OpenViduRole.MODERATOR != participant.getRole()
-							&& OpenViduRole.ONLY_SHARE != participant.getRole()) {	// exclude the moderator and only_share
+							&& OpenViduRole.ONLY_SHARE != participant.getRole()
+							&& OpenViduRole.PUBLISHER != participant.getRole()) {	// exclude the moderator and only_share
 						sub2PubPartRef.set(participant);
 					}
 					participant.setOrder(--partOrder);
