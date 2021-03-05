@@ -75,7 +75,7 @@ public class EndpointLoadManager implements LoadManager {
 
             // 计算分发的压力
             for (DeliveryKmsManager deliveryKmsManager : kurentoSession.getDeliveryKmsManagers()) {
-                for (MediaChannel mediaChannel : deliveryKmsManager.dispatcherMap.values()) {
+                for (MediaChannel mediaChannel : deliveryKmsManager.getDispatcherMap().values()) {
                     String deliveryIp = pipelineAndKmsMap.getOrDefault(mediaChannel.getTargetPipeline().getId(), UNKNOWN);
                     publisherCntMap.compute(deliveryIp, incFunction);
 

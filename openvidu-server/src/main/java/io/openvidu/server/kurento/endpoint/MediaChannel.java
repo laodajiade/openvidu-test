@@ -3,22 +3,22 @@ package io.openvidu.server.kurento.endpoint;
 import com.alibaba.fastjson.JSON;
 import io.openvidu.server.common.enums.MediaChannelStateEnum;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.kurento.core.DeliveryKmsManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
 
-import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
  * -----------------------------------------------------------------------------------------------------------------------
  * |  kms1.pipeline                                     |         |    kms2.pipeline                                     |
- * |                          |<----------              mediaChannel             ---------->|                            |
+ * |                                         |<----------            [MediaChannel]           ---------->|               |
  * |  client1 -> publisher -> passThrough -> subscriber |  -----> | publisher -> passThrough -> subscriber  -> client2   |
- * |                                                    |         |                                                      |
  * |                                                    |         |                                                      |
  * -----------------------------------------------------------------------------------------------------------------------
  */
@@ -41,43 +41,47 @@ public class MediaChannel {
      * kms1.pipeline，主媒体服务器的pipeline
      */
     @Getter
-    public MediaPipeline sourcePipeline;
+    private final MediaPipeline sourcePipeline;
 
     /**
      * kms2.pipeline，分发媒体服务器的pipeline
      */
     @Getter
-    public MediaPipeline targetPipeline;
+    private final MediaPipeline targetPipeline;
 
-    public PassThrough sourcePassThrough;
+    private final PassThrough sourcePassThrough;
 
-    public WebRtcEndpoint subscriber;
+    private WebRtcEndpoint subscriber;
 
     @Getter
-    public PublisherEndpoint publisher;
+    private PublisherEndpoint publisher;
 
     /**
      * 状态，READ和FLOWING是可用状态
      */
     @Getter
-    public MediaChannelStateEnum state;
+    private MediaChannelStateEnum state;
+
+    private final DeliveryKmsManager deliveryKmsManager;
 
 
-    private MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline, String senderEndpointName) {
+    private MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline, String senderEndpointName,
+                         DeliveryKmsManager deliveryKmsManager) {
         this.sourcePipeline = sourcePipeline;
         this.sourcePassThrough = sourcePassThrough;
         this.targetPipeline = targetPipeline;
         this.senderEndpointName = senderEndpointName;
         this.createAt = System.currentTimeMillis();
-
-        this.mediaChannelName = "channel_" + senderEndpointName + sourcePipeline.getId() + " to " + targetPipeline.getId();
+        this.deliveryKmsManager = deliveryKmsManager;
+        this.mediaChannelName = "channel_" + senderEndpointName + sourcePipeline.getName() + " to " + targetPipeline.getName();
         this.id = senderEndpointName + "_" + RandomStringUtils.randomAlphabetic(6);
         state = MediaChannelStateEnum.INITIAL;
     }
 
     public MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline,
-                        boolean web, KurentoParticipant publisherParticipant, String endpointName, OpenviduConfig openviduConfig) {
-        this(sourcePipeline, sourcePassThrough, targetPipeline, endpointName);
+                        boolean web, KurentoParticipant publisherParticipant, String endpointName, OpenviduConfig openviduConfig,
+                        DeliveryKmsManager deliveryKmsManager) {
+        this(sourcePipeline, sourcePassThrough, targetPipeline, endpointName, deliveryKmsManager);
 
         this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, openviduConfig);
 
@@ -101,14 +105,10 @@ public class MediaChannel {
 
     /**
      * 流的方向是 subscriber ->  publisher
-     *
-     * @param publisherEndpoint
-     * @param subscriber
-     * @param subscriberPassThru
      */
     private void createRtcChnAndSwitchIces(WebRtcEndpoint publisherEndpoint, WebRtcEndpoint subscriber, PassThrough subscriberPassThru) {
         String sdpOffer = publisherEndpoint.generateOffer();
-        log.debug("publisher create offer {}" , sdpOffer);
+        log.debug("publisher create offer {}", sdpOffer);
         publisherEndpoint.addOnIceCandidateListener(event -> {
             IceCandidate candidate = event.getCandidate();
             log.info("publisher iceCandidate:{}", JSON.toJSON(candidate));
@@ -191,7 +191,6 @@ public class MediaChannel {
             }
         });
 
-        // recordRecvWebRtcEndPoint process sdpAnswer
         publisherEndpoint.processAnswer(sdpAnswer);
         publisherEndpoint.gatherCandidates(new Continuation<Void>() {
             @Override
@@ -232,5 +231,40 @@ public class MediaChannel {
     @Override
     public String toString() {
         return "MediaChannel " + this.id;
+    }
+
+    public void release() {
+        state = MediaChannelStateEnum.CLOSE;
+
+        publisher.unregisterErrorListeners();
+        releaseElement("publisher", publisher.getEndpoint());
+        releaseElement("subscriber", subscriber);
+        log.info("deliveryKmsManager.getDispatcherMap() size = {} before", this.deliveryKmsManager.getDispatcherMap().size());
+        this.deliveryKmsManager.getDispatcherMap().remove(senderEndpointName);
+        log.info("deliveryKmsManager.getDispatcherMap() size = {} after", this.deliveryKmsManager.getDispatcherMap().size());
+    }
+
+
+    private void releaseElement(final String typeName, final MediaElement element) {
+        if (Objects.isNull(element)) return;
+        final String eid = element.getId();
+        try {
+            element.release(new Continuation<Void>() {
+                @Override
+                public void onSuccess(Void result) throws Exception {
+                    log.debug("mediaChannelName {}: Released successfully media element #{} for {}",
+                            id, eid, typeName);
+                }
+
+                @Override
+                public void onError(Throwable cause) throws Exception {
+                    log.warn("mediaChannelName {}: Could not release media element #{} for {}", id,
+                            eid, typeName, cause);
+                }
+            });
+        } catch (Exception e) {
+            log.error("PARTICIPANT {}: Error calling release on elem #{} for {}", id, eid,
+                    typeName, e);
+        }
     }
 }

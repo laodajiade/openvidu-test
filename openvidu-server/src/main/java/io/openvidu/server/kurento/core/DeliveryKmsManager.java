@@ -52,7 +52,8 @@ public class DeliveryKmsManager {
      * key = participant.uuid_publishId
      * value = mediaChannel
      */
-    public Map<String, MediaChannel> dispatcherMap = new ConcurrentHashMap<>();
+    @Getter
+    private final Map<String, MediaChannel> dispatcherMap = new ConcurrentHashMap<>();
 
     public DeliveryKmsManager(Kms kms, Session session, KurentoSessionEventsHandler kurentoSessionHandler) {
         this.kms = kms;
@@ -98,7 +99,7 @@ public class DeliveryKmsManager {
 
     public MediaChannel dispatcher(KurentoParticipant kParticipant) {
         MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), kParticipant.getPublisher().getPassThru(), this.getPipeline(),
-                true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig());
+                true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig(),this);
         MediaChannel oldMediaChannel = kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
         log.info("开始分发 {}, {}", kParticipant.getUuid(), mediaChannel.getId());
         if (oldMediaChannel != null) {

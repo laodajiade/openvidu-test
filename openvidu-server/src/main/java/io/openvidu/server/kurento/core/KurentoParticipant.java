@@ -371,6 +371,7 @@ public class KurentoParticipant extends Participant {
 		log.info("PARTICIPANT {}: unpublishing media stream from room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
 		releasePublisherEndpoint(reason, kmsDisconnectionTime);
+
 		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
 				this.getPipeline(), this.openviduConfig);
 		log.info("PARTICIPANT {}: released publisher endpoint and left it initialized (ready for future streaming)",
@@ -772,6 +773,16 @@ public class KurentoParticipant extends Participant {
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
 		}
+
+		// 释放分发资源
+		if (!this.mediaChannels.isEmpty()) {
+			log.info("release mediaChannels {}",reason);
+			for (MediaChannel mediaChannel : this.getMediaChannels().values()) {
+				mediaChannel.release();
+			}
+			this.getMediaChannels().clear();
+		}
+
 	}
 
 	private void releaseSubscriberEndpoint(String senderName, SubscriberEndpoint subscriber, EndReason reason) {

@@ -7,6 +7,7 @@ public enum MediaChannelStateEnum {
     READY,
     FLOWING,
     FAILED,
+    CLOSE,
     ;
 
 }
