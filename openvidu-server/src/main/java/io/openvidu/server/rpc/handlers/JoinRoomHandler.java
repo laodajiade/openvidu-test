@@ -54,11 +54,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String clientMetadata = getStringParam(request, ProtocolElements.JOINROOM_METADATA_PARAM);
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
 
-        //todo 测试代码
-        if (rpcConnection.getUserUuid().endsWith("5") || rpcConnection.getUserUuid().endsWith("6")) {
-            role = OpenViduRole.SUBSCRIBER;
-        }
-
 
         String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);

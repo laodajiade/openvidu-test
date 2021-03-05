@@ -28,17 +28,9 @@ import java.util.Objects;
 @Service
 public class ReceiveVideoFromHandler extends RpcAbstractHandler {
 
-    @Autowired
-    TestReceiveVideoFromHandler testReceiveVideoFromHandler;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-//        if (rpcConnection.getUserUuid().endsWith("5")) {
-//            log.info("80103600005 testReceiveVideoFromHandler");
-//            testReceiveVideoFromHandler.handRpcRequest(rpcConnection, request);
-//            return;
-//        }
-
         Participant participant;
         try {
             participant = sanityCheckOfSession(rpcConnection, "subscribe");

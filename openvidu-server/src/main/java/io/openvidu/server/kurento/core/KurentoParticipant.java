@@ -30,6 +30,7 @@ import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.endpoint.*;
+import io.openvidu.server.kurento.kms.EndpointLoadManager;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import lombok.Getter;
@@ -300,6 +301,10 @@ public class KurentoParticipant extends Participant {
 		return this.publisher;
 	}
 
+	public boolean isPublisherStreaming() {
+		return this.isStreaming() && publisher != null && publisher.getEndpoint() != null;
+	}
+
 	public void setPublisher(PublisherEndpoint publisher) {
 		this.publisher = publisher;
 	}
@@ -399,13 +404,12 @@ public class KurentoParticipant extends Participant {
 
 		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 				senderName);
-		SubscriberEndpoint subscriber = this.subscribers.get(senderName);
-		if (subscriber == null) {
-			MediaPipeline pipeline = this.getPipeline();
+
+		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName);
+		if (subscriber.getEndpoint() == null) {
+			subscriber = getNewOrExistingSubscriber(senderName);
 			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty()) {
-				// todo 选择一个负载低的做会议室。
-				DeliveryKmsManager deliveryKms = getSession().getDeliveryKmsManagers().get(0);
-				// 这里开始不同
+				DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
 				MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
 				MediaChannel mediaChannel2 = deliveryKms.getMediaChannel(kSender.getPublisherStreamId());
 				log.info("mediaChannel == mediaChannel2 ? {}", mediaChannel == mediaChannel2);
@@ -421,15 +425,10 @@ public class KurentoParticipant extends Participant {
 						senderName);
 				log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
 						this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
-				pipeline = mediaChannel.getTargetPipeline();
 				senderPublisher = mediaChannel.getPublisher();
+				subscriber = getNewAndCompareSubscriber(senderName, mediaChannel.getTargetPipeline(), subscriber);
 			}
-			log.debug("getNewOrExistingSubscriber {}", this.getUuid());
-			subscriber = getNewOrExistingSubscriber(senderName, pipeline);
-		} else {
-			log.debug("old subscriber {} exist", this.getUuid());
 		}
-
 
 		try {
 			CountDownLatch subscriberLatch = new CountDownLatch(1);
@@ -549,7 +548,7 @@ public class KurentoParticipant extends Participant {
 		log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
 				this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
 		// 这里开始不同
-		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName, mediaChannel.getTargetPipeline());
+		SubscriberEndpoint subscriber = getNewAndCompareSubscriber(senderName, mediaChannel.getTargetPipeline(), null);
 
 
 		try {
@@ -689,17 +688,20 @@ public class KurentoParticipant extends Participant {
 		return subscriberEndpoint;
 	}
 
-	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId, MediaPipeline pipeline) {
+	public SubscriberEndpoint getNewAndCompareSubscriber(String senderPublicId, MediaPipeline pipeline, SubscriberEndpoint compare) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
 				pipeline, this.session.compositeService, this.openviduConfig);
-
 		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {
-			subscriberEndpoint = existingSendingEndpoint;
+			if (existingSendingEndpoint == compare) {
+				this.subscribers.put(senderPublicId, subscriberEndpoint);
+			} else {
+				subscriberEndpoint = existingSendingEndpoint;
+			}
 			log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),
 					senderPublicId);
 		} else {
-			log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(), senderPublicId);
+			log.debug("PARTICIPANT {}: New subscriber endpoint to user {},pipeline {}", this.getParticipantPublicId(), senderPublicId, subscriberEndpoint.getPipeline());
 		}
 
 		return subscriberEndpoint;

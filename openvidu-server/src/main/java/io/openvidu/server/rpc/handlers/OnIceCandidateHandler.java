@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class OnIceCandidateHandler extends RpcAbstractHandler {
-    @Autowired
-    TestOnIceCandidateHandler testOnIceCandidateHandler;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
