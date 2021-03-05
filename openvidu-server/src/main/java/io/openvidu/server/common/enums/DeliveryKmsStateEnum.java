@@ -17,5 +17,7 @@ public enum DeliveryKmsStateEnum {
     /**
      * 不可用状态
      */
-    FAILED;
+    FAILED,
+    CLOSE,
+
 }

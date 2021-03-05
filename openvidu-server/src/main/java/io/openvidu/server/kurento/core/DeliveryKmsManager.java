@@ -55,6 +55,8 @@ public class DeliveryKmsManager {
     @Getter
     private final Map<String, MediaChannel> dispatcherMap = new ConcurrentHashMap<>();
 
+    private static final Object releasePipelineLock = new Object();
+
     public DeliveryKmsManager(Kms kms, Session session, KurentoSessionEventsHandler kurentoSessionHandler) {
         this.kms = kms;
         this.kSession = (KurentoSession) session;
@@ -75,8 +77,30 @@ public class DeliveryKmsManager {
     }
 
     public void release() {
-        pipeline.release();
-        state = DeliveryKmsStateEnum.FAILED;
+        synchronized (releasePipelineLock) {
+            if (pipeline == null) {
+                return;
+            }
+            state = DeliveryKmsStateEnum.CLOSE;
+
+            getPipeline().release(new Continuation<Void>() {
+                @Override
+                public void onSuccess(Void result) throws Exception {
+                    log.debug("SESSION {}: Released Pipeline", sessionId);
+                    pipeline = null;
+                    pipelineLatch = new CountDownLatch(1);
+                    pipelineCreationErrorCause = null;
+                }
+
+                @Override
+                public void onError(Throwable cause) throws Exception {
+                    log.warn("SESSION {}: Could not successfully release Pipeline", sessionId, cause);
+                    pipeline = null;
+                    pipelineLatch = new CountDownLatch(1);
+                    pipelineCreationErrorCause = null;
+                }
+            });
+        }
     }
 
     public void dispatcher() {

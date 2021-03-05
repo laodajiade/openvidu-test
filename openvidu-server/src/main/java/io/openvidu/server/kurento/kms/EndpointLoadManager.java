@@ -24,7 +24,6 @@ public class EndpointLoadManager implements LoadManager {
     private static SessionManager sessionManager = null;
 
     private static BiFunction<String, Integer, Integer> incFunction = (k, v) -> v == null ? 1 : ++v;
-    private static BiFunction<String, Integer, Integer> inc2 = (k, v) -> v == null ? 2 : (v = v + 2);
 
     private static final String UNKNOWN = "unknown";
 

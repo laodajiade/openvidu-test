@@ -231,6 +231,11 @@ public class KurentoSession extends Session {
 			}
 			closePipeline(null);
 
+			for (DeliveryKmsManager deliveryKmsManager : deliveryKmsManagers) {
+				deliveryKmsManager.release();
+			}
+			deliveryKmsManagers.clear();
+
 			log.debug("Session {} closed", this.sessionId);
 
 			if (destroyKurentoClient) {
