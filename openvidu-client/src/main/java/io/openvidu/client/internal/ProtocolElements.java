@@ -865,6 +865,8 @@ public class ProtocolElements {
 	public static final String SAVE_JPUSH_UUID_PARAM = "uuid";
 	public static final String SAVE_JPUSH_REGISTRATIONID_PARAM = "registrationId";
 
+	public static  final  String DEVICE_INFO_UPDATE_NOTIFY_METHOD = "deviceInfoUpdateNotify";
+
 
 	public static final List<String> FILTERS = Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
