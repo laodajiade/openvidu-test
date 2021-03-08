@@ -10,8 +10,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.Continuation;
-import org.kurento.client.ErrorEvent;
-import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 
 import java.text.MessageFormat;
@@ -22,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DeliveryKmsManager {
@@ -43,7 +42,7 @@ public class DeliveryKmsManager {
     public CountDownLatch pipelineLatch = new CountDownLatch(1);
 
     public Throwable pipelineCreationErrorCause;
-    private KurentoSessionEventsHandler kurentoSessionHandler;
+    private final KurentoSessionEventsHandler kurentoSessionHandler;
 
     @Getter
     private DeliveryKmsStateEnum state;
@@ -85,7 +84,7 @@ public class DeliveryKmsManager {
 
             getPipeline().release(new Continuation<Void>() {
                 @Override
-                public void onSuccess(Void result) throws Exception {
+                public void onSuccess(Void result) {
                     log.debug("SESSION {}: Released Pipeline", sessionId);
                     pipeline = null;
                     pipelineLatch = new CountDownLatch(1);
@@ -93,7 +92,7 @@ public class DeliveryKmsManager {
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     log.warn("SESSION {}: Could not successfully release Pipeline", sessionId, cause);
                     pipeline = null;
                     pipelineLatch = new CountDownLatch(1);
@@ -116,15 +115,16 @@ public class DeliveryKmsManager {
                 publisher.add((KurentoParticipant) participant);
             }
         }
-        log.debug("要分发的part的个数 {}", publisher.size());
+        String dispatchInfo = publisher.stream().map(p -> p.getUuid() + "(" + p.getPublisherStreamId() + ")").collect(Collectors.joining(","));
+        log.info("delivery media sessionId = {}，dispatch info {}", sessionId, dispatchInfo);
         publisher.stream().parallel().forEach(this::dispatcher);
         state = DeliveryKmsStateEnum.READY;
     }
 
     public MediaChannel dispatcher(KurentoParticipant kParticipant) {
         MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), kParticipant.getPublisher().getPassThru(), this.getPipeline(),
-                true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig(),this);
-        MediaChannel oldMediaChannel = kParticipant.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
+                true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig(), this);
+        MediaChannel oldMediaChannel = kParticipant.getPublisher().getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
         log.info("开始分发 {}, {}", kParticipant.getUuid(), mediaChannel.getId());
         if (oldMediaChannel != null) {
             log.info("participant {} 已创建通道 {}", kParticipant.getUuid(), this.id);
@@ -132,7 +132,7 @@ public class DeliveryKmsManager {
         }
         this.dispatcherMap.put(kParticipant.getPublisherStreamId(), mediaChannel);
         mediaChannel.createChannel();
-        kParticipant.getMediaChannels().put(this.getId(), mediaChannel);
+        kParticipant.getPublisher().getMediaChannels().put(this.getId(), mediaChannel);
         log.info("dispatcherMap {}", dispatcherMap);
         return mediaChannel;
     }
@@ -148,7 +148,7 @@ public class DeliveryKmsManager {
         try {
             kms.getKurentoClient().createMediaPipeline(new Continuation<MediaPipeline>() {
                 @Override
-                public void onSuccess(MediaPipeline result) throws Exception {
+                public void onSuccess(MediaPipeline result) {
                     pipeline = result;
                     pipelineLatch.countDown();
                     state = DeliveryKmsStateEnum.CONNECTED;
@@ -157,7 +157,7 @@ public class DeliveryKmsManager {
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     pipelineCreationErrorCause = cause;
                     pipelineLatch.countDown();
                     log.error("SESSION {}: Failed to create MediaPipeline", sessionId, cause);
@@ -176,14 +176,11 @@ public class DeliveryKmsManager {
             throw new OpenViduException(OpenViduException.Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE, message);
         }
 
-        pipeline.addErrorListener(new EventListener<ErrorEvent>() {
-            @Override
-            public void onEvent(ErrorEvent event) {
-                String desc = event.getType() + ": " + event.getDescription() + "(errCode=" + event.getErrorCode()
-                        + ")";
-                log.warn("SESSION {}: Pipeline error encountered: {}", sessionId, desc);
-                kurentoSessionHandler.onPipelineError(sessionId, kSession.getParticipants(), desc);
-            }
+        pipeline.addErrorListener(event -> {
+            String desc = event.getType() + ": " + event.getDescription() + "(errCode=" + event.getErrorCode()
+                    + ")";
+            log.warn("SESSION {}: Pipeline error encountered: {}", sessionId, desc);
+            kurentoSessionHandler.onPipelineError(sessionId, kSession.getParticipants(), desc);
         });
 
         log.info("delivery kms create success");

@@ -115,12 +115,12 @@ public class MediaChannel {
             subscriber.addIceCandidate(candidate, new Continuation<Void>() {
 
                 @Override
-                public void onSuccess(Void result) throws Exception {
+                public void onSuccess(Void result) {
                     log.info("subscriber EP {}: Ice candidate added to the internal endpoint", subscriber.getId());
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     log.error("subscriber EP {}: Failed to add ice candidate to the internal endpoint", subscriber.getId());
                 }
             });
@@ -147,12 +147,12 @@ public class MediaChannel {
             log.info("subscriber iceCandidate:{}", JSON.toJSON(candidate));
             publisherEndpoint.addIceCandidate(candidate, new Continuation<Void>() {
                 @Override
-                public void onSuccess(Void result) throws Exception {
+                public void onSuccess(Void result) {
                     log.info("publisherEndpoint EP {}: Ice candidate added to the internal endpoint", publisherEndpoint.getId());
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     log.error("publisherEndpoint EP {}: Failed to add ice candidate to the internal endpoint", publisherEndpoint.getId());
                 }
             });
@@ -165,12 +165,12 @@ public class MediaChannel {
 
         subscriber.gatherCandidates(new Continuation<Void>() {
             @Override
-            public void onSuccess(Void result) throws Exception {
+            public void onSuccess(Void result) {
                 log.info("subscriber EP {}: Internal endpoint started to gather candidates", subscriber.getId());
             }
 
             @Override
-            public void onError(Throwable cause) throws Exception {
+            public void onError(Throwable cause) {
                 log.error("subscriber EP {}: Internal endpoint failed to start gathering candidates", subscriber.getId(), cause);
             }
         });
@@ -179,13 +179,13 @@ public class MediaChannel {
         // connect the passThru and sourceSubEndPoint
         subscriberPassThru.connect(subscriber, new Continuation<Void>() {
             @Override
-            public void onSuccess(Void result) throws Exception {
+            public void onSuccess(Void result) {
                 log.info("Elements have been connected (source {} -> sink {})", subscriberPassThru.getId(), subscriber.getId());
                 state = MediaChannelStateEnum.READY;
             }
 
             @Override
-            public void onError(Throwable cause) throws Exception {
+            public void onError(Throwable cause) {
                 log.error("Failed to connect media elements (source {} -> sink {})", subscriberPassThru.getId(), subscriber.getId(), cause);
                 state = MediaChannelStateEnum.FAILED;
             }
@@ -194,12 +194,12 @@ public class MediaChannel {
         publisherEndpoint.processAnswer(sdpAnswer);
         publisherEndpoint.gatherCandidates(new Continuation<Void>() {
             @Override
-            public void onSuccess(Void result) throws Exception {
+            public void onSuccess(Void result) {
                 log.info("publisherEndpoint EP {}: Internal endpoint started to gather candidates", publisherEndpoint.getId());
             }
 
             @Override
-            public void onError(Throwable cause) throws Exception {
+            public void onError(Throwable cause) {
                 log.error("publisherEndpoint EP {}: Internal endpoint failed to start gathering candidates", publisherEndpoint.getId(), cause);
             }
         });
@@ -251,13 +251,13 @@ public class MediaChannel {
         try {
             element.release(new Continuation<Void>() {
                 @Override
-                public void onSuccess(Void result) throws Exception {
+                public void onSuccess(Void result) {
                     log.debug("mediaChannelName {}: Released successfully media element #{} for {}",
                             id, eid, typeName);
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     log.warn("mediaChannelName {}: Could not release media element #{} for {}", id,
                             eid, typeName, cause);
                 }

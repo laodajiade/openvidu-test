@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -82,6 +83,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private ConcurrentHashMap<String, String> othersConToSelfHubportIns = new ConcurrentHashMap<>(50);
 
 	private boolean connected = false;
+
+	@Getter
+	private final ConcurrentMap<String, MediaChannel> mediaChannels = new ConcurrentHashMap<>();
 
 	private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
 

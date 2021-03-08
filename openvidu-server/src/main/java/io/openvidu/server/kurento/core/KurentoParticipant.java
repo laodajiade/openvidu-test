@@ -67,9 +67,6 @@ public class KurentoParticipant extends Participant {
 	private PublisherEndpoint publisher;
 	private CountDownLatch publisherLatch = new CountDownLatch(1);
 
-	@Getter
-	private final ConcurrentMap<String, MediaChannel> mediaChannels = new ConcurrentHashMap<>();
-
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
 	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
 
@@ -411,7 +408,7 @@ public class KurentoParticipant extends Participant {
 			subscriber = getNewOrExistingSubscriber(senderName);
 			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty()) {
 				DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
-				MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
+				MediaChannel mediaChannel = senderPublisher.getMediaChannels().get(deliveryKms.getId());
 				MediaChannel mediaChannel2 = deliveryKms.getMediaChannel(kSender.getPublisherStreamId());
 				log.info("mediaChannel == mediaChannel2 ? {}", mediaChannel == mediaChannel2);
 				if (mediaChannel == null) {
@@ -530,14 +527,14 @@ public class KurentoParticipant extends Participant {
 			return null;
 		}
 // 这里开始不同
-		MediaChannel mediaChannel = kSender.mediaChannels.get(deliveryKms.getId());
+		MediaChannel mediaChannel = kSender.getPublisher().getMediaChannels().get(deliveryKms.getId());
 		if (mediaChannel == null) {
 			log.warn("mediaChannel not exist");
 			synchronized (this) {
 				mediaChannel = deliveryKms.dispatcher(kSender);
 //				mediaChannel = new MediaChannel(session.getPipeline(), kSender.getPublisher().getPassThru(), deliveryKms.getPipeline(),
 //						true, kSender, kSender.getPublisherStreamId(), openviduConfig);
-				kSender.mediaChannels.put(deliveryKms.getId(), mediaChannel);
+				kSender.getPublisher().getMediaChannels().put(deliveryKms.getId(), mediaChannel);
 				//mediaChannel.createChannel();
 			}
 		}
@@ -734,6 +731,14 @@ public class KurentoParticipant extends Participant {
 	}
 
 	private void releasePublisherEndpoint(EndReason reason, long kmsDisconnectionTime) {
+		// 释放分发资源
+		if (!publisher.getMediaChannels().isEmpty()) {
+			log.info("release mediaChannels {}",reason);
+			for (MediaChannel mediaChannel : publisher.getMediaChannels().values()) {
+				mediaChannel.release();
+			}
+			publisher.getMediaChannels().clear();
+		}
 		if (publisher != null && publisher.getEndpoint() != null) {
 
 			// Remove streamId from publisher's map
@@ -774,14 +779,7 @@ public class KurentoParticipant extends Participant {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
 		}
 
-		// 释放分发资源
-		if (!this.mediaChannels.isEmpty()) {
-			log.info("release mediaChannels {}",reason);
-			for (MediaChannel mediaChannel : this.getMediaChannels().values()) {
-				mediaChannel.release();
-			}
-			this.getMediaChannels().clear();
-		}
+
 
 	}
 
