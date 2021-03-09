@@ -731,15 +731,15 @@ public class KurentoParticipant extends Participant {
 	}
 
 	private void releasePublisherEndpoint(EndReason reason, long kmsDisconnectionTime) {
-		// 释放分发资源
-		if (!publisher.getMediaChannels().isEmpty()) {
-			log.info("release mediaChannels {}",reason);
-			for (MediaChannel mediaChannel : publisher.getMediaChannels().values()) {
-				mediaChannel.release();
-			}
-			publisher.getMediaChannels().clear();
-		}
 		if (publisher != null && publisher.getEndpoint() != null) {
+			// 释放分发资源
+			if (!publisher.getMediaChannels().isEmpty()) {
+				log.info("release mediaChannels {}",reason);
+				for (MediaChannel mediaChannel : publisher.getMediaChannels().values()) {
+					mediaChannel.release();
+				}
+				publisher.getMediaChannels().clear();
+			}
 
 			// Remove streamId from publisher's map
 			if (!StringUtils.isEmpty(this.getPublisherStreamId())) {
