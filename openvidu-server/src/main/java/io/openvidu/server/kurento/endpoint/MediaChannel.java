@@ -1,6 +1,7 @@
 package io.openvidu.server.kurento.endpoint;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.MediaChannelStateEnum;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.DeliveryKmsManager;
@@ -62,7 +63,6 @@ public class MediaChannel {
     @Getter
     private MediaChannelStateEnum state;
 
-    @Getter
     private final DeliveryKmsManager deliveryKmsManager;
 
 
@@ -268,5 +268,14 @@ public class MediaChannel {
             log.error("PARTICIPANT {}: Error calling release on elem #{} for {}", id, eid,
                     typeName, e);
         }
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("kmsIp", deliveryKmsManager.getKms().getIp());
+        json.addProperty("createAt", createAt);
+        json.addProperty("sourcePipeline", sourcePipeline.getId());
+        json.addProperty("targetPipeline", targetPipeline.getId());
+        return json;
     }
 }

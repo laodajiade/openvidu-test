@@ -867,12 +867,7 @@ public class KurentoParticipant extends Participant {
 			publisherEnpoints.add(toJsonFunction.apply(this.publisher));
 			if (!this.publisher.getMediaChannels().isEmpty()){
 				for (MediaChannel mediaChannel : this.publisher.getMediaChannels().values()) {
-					JsonObject mediaChannelEle = new JsonObject();
-					mediaChannelEle.addProperty("kmsIp",mediaChannel.getDeliveryKmsManager().getKms().getIp());
-					mediaChannelEle.addProperty("createAt",mediaChannel.getCreateAt());
-					mediaChannelEle.addProperty("sourcePipeline",mediaChannel.getSourcePipeline().getId());
-					mediaChannelEle.addProperty("targetPipeline",mediaChannel.getTargetPipeline().getId());
-					mediaChannels.add( mediaChannelEle);
+					mediaChannels.add(mediaChannel.toJson());
 				}
 			}
 		}
@@ -883,7 +878,7 @@ public class KurentoParticipant extends Participant {
 			}
 		}
 		json.add("publishers", publisherEnpoints);
-		json.add("mediaChannel", mediaChannels);
+		json.add("mediaChannels", mediaChannels);
 		json.add("subscribers", subscriberEndpoints);
 		return json;
 	}
