@@ -17,16 +17,18 @@
 
 package io.openvidu.server.kurento.kms;
 
+import io.openvidu.server.exception.NoSuchKmsException;
 import org.kurento.client.KurentoClient;
 import org.kurento.commons.exception.KurentoException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ElasticKmsManager extends KmsManager {
 
+    private final Map<String, Kms> availableKmss = new ConcurrentHashMap<>();
+
+    private final Map<String, Kms> unavailableKmss = new ConcurrentHashMap<>();
 
     @Override
     public List<Kms> initializeKurentoClients(List<String> kmsUris) {
@@ -59,24 +61,46 @@ public class ElasticKmsManager extends KmsManager {
 
     @Override
     public synchronized Kms getLessLoadedKms() throws NoSuchElementException {
-        for (Kms kms : getKmss()) {
-            if (kms.getIp().contains("201")) {
-                log.info("return 201 kms");
-                return kms;
-            }
+        Kms lessKms = EndpointLoadManager.getLessKms(getAvailableKmss());
+        if (Objects.isNull(lessKms)) {
+            log.error("没有可用的kms服务");
+            throw new NoSuchKmsException();
         }
-        return super.getLessLoadedKms();
+        log.info("get less loaded kms with id {}, ip {}", lessKms.getId(), lessKms.getIp());
+        return lessKms;
     }
 
     @Override
     public synchronized Kms getLessLoadedKms(Kms excludeKms) {
-        for (Kms kms : kmss.values()) {
-            if (kms.getId().equals(excludeKms.getId())) {
-                continue;
-            }
-            log.info("return other kms by ip {} id {}", kms.getIp(), kms.getId());
-            return kms;
+        Collection<Kms> availableKmss = getAvailableKmss();
+        availableKmss.remove(excludeKms);
+
+        Kms lessKms = EndpointLoadManager.getLessKms(getAvailableKmss());
+        if (lessKms == null) {
+            throw new RuntimeException("没有可用的其他kms");
         }
-        throw new RuntimeException("没有可用的其他kms");
+        return lessKms;
+    }
+
+    @Override
+    protected void connected(String kmsId) {
+        super.connected(kmsId);
+        unavailableKmss.remove(kmsId);
+        availableKmss.put(kmsId, kmss.get(kmsId));
+    }
+
+    @Override
+    protected void connectionFailed(String kmsId) {
+        super.connectionFailed(kmsId);
+    }
+
+    @Override
+    protected void disconnected(String kmsId) {
+        super.disconnected(kmsId);
+    }
+
+    @Override
+    protected void reconnected(String kmsId, boolean sameServer) {
+        super.reconnected(kmsId, sameServer);
     }
 }

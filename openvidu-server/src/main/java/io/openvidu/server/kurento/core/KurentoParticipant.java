@@ -187,66 +187,6 @@ public class KurentoParticipant extends Participant {
                 this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
             }
 
-//			this.publisher.getMajorShareHubPort().setName(getParticipantName());
-			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
-		} else if (TerminalTypeEnum.S == getTerminalType()) {
-			log.info("SIP terminal:{} published and create sipComposite", getUuid());
-			Composite sipComposite = this.session.createSipComposite();
-			this.publisher.createSipCompositeHubPort(sipComposite);
-			new Thread(this.session::updateSipComposite).start();
-		}
-
-		this.publisher.setEndpointName(publisherStreamId);
-		this.publisher.getEndpoint().setName(publisherStreamId);
-		this.publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub");
-		this.publisher.setStreamId(publisherStreamId);
-		endpointConfig.addEndpointListeners(this.publisher, "publisher");
-
-		// Remove streamId from publisher's map
-		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
-	}
-
-	public void createPublishingDeliveryEndpoint(MediaOptions mediaOptions, Participant participant) {
-		if (Objects.isNull(this.publisher)) {
-			// Initialize a PublisherEndpoint
-			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
-					this.session.getPipeline(), this.openviduConfig);
-
-			this.publisher.setCompositeService(this.session.compositeService);
-		} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
-			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
-					this.session.getPipeline(), this.openviduConfig);
-
-			this.publisher.setCompositeService(this.session.compositeService);
-		}
-		this.publisher.createEndpoint(publisherLatch);
-		if (getPublisher().getEndpoint() == null) {
-			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
-		}
-		this.publisher.setMediaOptions(mediaOptions);
-
-		String publisherStreamId;
-		if (StringUtils.isEmpty(this.publisherStreamId)) {
-			publisherStreamId = this.getParticipantPublicId() + "_"
-					+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
-					+ RandomStringUtils.random(5, true, false).toUpperCase();
-			this.publisherStreamId = publisherStreamId;
-		} else {
-			publisherStreamId = this.publisherStreamId;
-		}
-
-		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-			if (Objects.equals(StreamType.SHARING, getStreamType())) {
-				this.session.compositeService.setShareStreamId(publisherStreamId);
-			}
-
-			if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
-				String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
-						+ "_" + "MAJOR-SHARE-MIX";
-				this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
-			}
-
-//			this.publisher.getMajorShareHubPort().setName(getParticipantName());
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
 		} else if (TerminalTypeEnum.S == getTerminalType()) {
 			log.info("SIP terminal:{} published and create sipComposite", getUuid());

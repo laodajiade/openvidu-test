@@ -55,6 +55,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.GET, "/config/**").authenticated()
 				// /cdr
 				.antMatchers(HttpMethod.GET, "/cdr/**").authenticated()
+				// /kms
+				.antMatchers(HttpMethod.GET, "/kms/**").authenticated()
 				// Dashboard
 				.antMatchers("/").authenticated();
 

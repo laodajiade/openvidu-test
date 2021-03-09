@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public abstract class KmsManager {
 
@@ -135,6 +136,13 @@ public abstract class KmsManager {
 
 	public Collection<Kms> getKmss() {
 		return this.kmss.values();
+	}
+
+	/**
+	 * 获取可用的kms服务
+	 */
+	public Collection<Kms> getAvailableKmss() {
+		return this.kmss.values().stream().filter(Kms::isKurentoClientConnected).collect(Collectors.toSet());
 	}
 
 	public synchronized List<KmsLoad> getKmssSortedByLoad() {

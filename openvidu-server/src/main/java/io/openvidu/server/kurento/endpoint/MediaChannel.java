@@ -86,6 +86,8 @@ public class MediaChannel {
 
         this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, openviduConfig);
         this.publisher.setStreamId(publisherParticipant.getPublisherStreamId());
+        this.publisher.setMediaOptions(publisherParticipant.getPublisherMediaOptions());
+        this.publisher.createdAt = System.currentTimeMillis();
 
         this.subscriber = new WebRtcEndpoint.Builder(sourcePipeline).build();
         log.info("mediaChannel create id {}", id);
@@ -276,6 +278,8 @@ public class MediaChannel {
         json.addProperty("createAt", createAt);
         json.addProperty("sourcePipeline", sourcePipeline.getId());
         json.addProperty("targetPipeline", targetPipeline.getId());
+        json.addProperty("state", state.name());
+        json.add("publisher", publisher.toJson());
         return json;
     }
 }

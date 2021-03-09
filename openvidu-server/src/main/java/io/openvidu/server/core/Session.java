@@ -1004,8 +1004,10 @@ public class Session implements SessionInterface {
 			KurentoSession ks = (KurentoSession) this;
 
 			JsonObject kmsJson = new JsonObject();
+			kmsJson.addProperty("kmsId", ks.getKms().getId());
 			kmsJson.addProperty("kmsIp", ks.getKms().getIp());
-			kmsJson.addProperty("kmsLoad", ks.getKms().getLoad());
+			kmsJson.addProperty("kmsUri", ks.getKms().getUri());
+			kmsJson.addProperty("usedMemory", ks.getKms().getKurentoClient().getServerManager().getUsedMemory() / 1024);
 			json.add("kms", kmsJson);
 
 			if (!ks.getDeliveryKmsManagers().isEmpty()) {
@@ -1013,10 +1015,10 @@ public class Session implements SessionInterface {
 				kmsJson.add("deliveryKmss", dkms);
 				for (DeliveryKmsManager dkm : ks.getDeliveryKmsManagers()) {
 					JsonObject kmsj = new JsonObject();
+					kmsj.addProperty("kmsId", dkm.getKms().getId());
 					kmsj.addProperty("kmsIp", dkm.getKms().getIp());
-					kmsj.addProperty("kmsLoad", dkm.getKms().getLoad());
-					kmsj.addProperty("userdMemory", dkm.getKms().getKurentoClient().getServerManager().getUsedMemory());
-					kmsj.addProperty("info", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getInfo()));
+					kmsj.addProperty("kmsUri", dkm.getKms().getUri());
+					kmsj.addProperty("usedMemory", dkm.getKms().getKurentoClient().getServerManager().getUsedMemory() / 1024);
 					dkms.add(kmsj);
 				}
 			}
