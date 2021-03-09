@@ -60,7 +60,7 @@ public class KmsRestController {
 
         JsonArray json = new JsonArray();
         Collection<Kms> kmss = kmsManager.getKmss();
-        Map<String, Integer> loadMap = EndpointLoadManager.calculateLoad(kmss);
+        Map<String, Integer> loadMap = EndpointLoadManager.calculateLoad(kmsManager.getAvailableKmss());
 
         for (Kms kms : kmss) {
             JsonObject jsonKms = new JsonObject();
