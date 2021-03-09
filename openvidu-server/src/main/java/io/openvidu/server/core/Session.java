@@ -985,6 +985,7 @@ public class Session implements SessionInterface {
 	private JsonObject sharedJson(Function<KurentoParticipant, JsonObject> toJsonFunction) {
 		JsonObject json = new JsonObject();
 		json.addProperty("sessionId", this.sessionId);
+		json.addProperty("ruid", this.ruid);
 		json.addProperty("createdAt", this.startTime);
 		json.addProperty("mediaMode", this.sessionProperties.mediaMode().name());
 		json.addProperty("recordingMode", this.sessionProperties.recordingMode().name());
@@ -1005,7 +1006,6 @@ public class Session implements SessionInterface {
 			JsonObject kmsJson = new JsonObject();
 			kmsJson.addProperty("kmsIp", ks.getKms().getIp());
 			kmsJson.addProperty("kmsLoad", ks.getKms().getLoad());
-			kmsJson.addProperty("sessions", new Gson().toJson(ks.getKms().getKurentoClient().getServerManager().getSessions()));
 			json.add("kms", kmsJson);
 
 			if (!ks.getDeliveryKmsManagers().isEmpty()) {
@@ -1017,8 +1017,6 @@ public class Session implements SessionInterface {
 					kmsj.addProperty("kmsLoad", dkm.getKms().getLoad());
 					kmsj.addProperty("userdMemory", dkm.getKms().getKurentoClient().getServerManager().getUsedMemory());
 					kmsj.addProperty("info", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getInfo()));
-					kmsj.addProperty("metadata", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getMetadata()));
-					kmsj.addProperty("sessions", new Gson().toJson(dkm.getKms().getKurentoClient().getServerManager().getSessions()));
 					dkms.add(kmsj);
 				}
 			}

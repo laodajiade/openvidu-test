@@ -862,8 +862,19 @@ public class KurentoParticipant extends Participant {
 	private JsonObject sharedJson(Function<MediaEndpoint, JsonObject> toJsonFunction) {
 		JsonObject json = super.toJson();
 		JsonArray publisherEnpoints = new JsonArray();
+		JsonArray mediaChannels = new JsonArray();
 		if (this.streaming && this.publisher.getEndpoint() != null) {
 			publisherEnpoints.add(toJsonFunction.apply(this.publisher));
+			if (!this.publisher.getMediaChannels().isEmpty()){
+				for (MediaChannel mediaChannel : this.publisher.getMediaChannels().values()) {
+					JsonObject mediaChannelEle = new JsonObject();
+					mediaChannelEle.addProperty("kmsIp",mediaChannel.getDeliveryKmsManager().getKms().getIp());
+					mediaChannelEle.addProperty("createAt",mediaChannel.getCreateAt());
+					mediaChannelEle.addProperty("sourcePipeline",mediaChannel.getSourcePipeline().getId());
+					mediaChannelEle.addProperty("targetPipeline",mediaChannel.getTargetPipeline().getId());
+					mediaChannels.add( mediaChannelEle);
+				}
+			}
 		}
 		JsonArray subscriberEndpoints = new JsonArray();
 		for (MediaEndpoint sub : this.subscribers.values()) {
@@ -872,6 +883,7 @@ public class KurentoParticipant extends Participant {
 			}
 		}
 		json.add("publishers", publisherEnpoints);
+		json.add("mediaChannel", mediaChannels);
 		json.add("subscribers", subscriberEndpoints);
 		return json;
 	}

@@ -62,6 +62,7 @@ public class MediaChannel {
     @Getter
     private MediaChannelStateEnum state;
 
+    @Getter
     private final DeliveryKmsManager deliveryKmsManager;
 
 
@@ -84,6 +85,7 @@ public class MediaChannel {
         this(sourcePipeline, sourcePassThrough, targetPipeline, endpointName, deliveryKmsManager);
 
         this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, openviduConfig);
+        this.publisher.setStreamId(publisherParticipant.getPublisherStreamId());
 
         this.subscriber = new WebRtcEndpoint.Builder(sourcePipeline).build();
         log.info("mediaChannel create id {}", id);

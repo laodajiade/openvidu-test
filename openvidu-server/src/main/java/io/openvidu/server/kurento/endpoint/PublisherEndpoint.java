@@ -743,6 +743,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	public JsonObject toJson() {
 		JsonObject json = super.toJson();
 		json.addProperty("streamId", this.getStreamId());
+		json.addProperty("pipeline",this.getPipeline().getId());
 		json.add("mediaOptions", this.mediaOptions.toJson());
 		return json;
 	}
