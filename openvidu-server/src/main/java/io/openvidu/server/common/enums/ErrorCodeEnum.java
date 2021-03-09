@@ -106,7 +106,7 @@ public enum ErrorCodeEnum {
     REMAINDER_DURATION_USE_UP(13058,"通话时长已用完，请联系管理员"),
     UPLOAD_MEETING_QUALITY_TIMEOUT(13059,"会议质量上报超时"),
     UNSUPPORTED_RECORD_OPERATION(13061,"当前不支持录制服务"),
-    RECORD_SERVICE_INVALID(13062,"录制服务已到期，请联系管理员"),
+    RECORD_SERVICE_INVALID(13062,"录制服务已过期，请联系管理员"),
     SET_ROLL_CALL_SAME_PART(13063,"不能点名同一个人"),
     MODERATOR_NOT_FOUND(13065,"主持人已离会，请稍后再试"),
     IM_ALL_LIMIT(13066,"全体禁言"),
