@@ -147,7 +147,6 @@ public abstract class KmsManager {
 		for (Kms kms : kmss.values()) {
 			double load = kms.getLoad();
 			kmsLoads.add(new KmsLoad(kms, load));
-			log.trace("Calc load {} for kms {}", load, kms.getUri());
 		}
 		return kmsLoads;
 	}
@@ -156,58 +155,71 @@ public abstract class KmsManager {
 		return false;
 	}
 
-	protected KurentoConnectionListener generateKurentoConnectionListener(String kmsId) {
-		return new KurentoConnectionListener() {
+    protected KurentoConnectionListener generateKurentoConnectionListener(String kmsId) {
+        return new KurentoConnectionListener() {
 
-			@Override
-			public void reconnected(boolean sameServer) {
-				final Kms kms = kmss.get(kmsId);
-				kms.setKurentoClientConnected(true);
-				kms.setTimeOfKurentoClientConnection(System.currentTimeMillis());
-				if (!sameServer) {
-					// Different KMS. Reset sessions status (no Publisher or SUbscriber endpoints)
-					log.warn("Kurento Client reconnected to a different KMS instance, with uri {}", kms.getUri());
-					log.warn("Updating all webrtc endpoints for active sessions");
-					final long timeOfKurentoDisconnection = kms.getTimeOfKurentoClientDisconnection();
-					kms.getKurentoSessions().forEach(kSession -> {
-						kSession.restartStatusInKurento(timeOfKurentoDisconnection);
-					});
-				} else {
-					// Same KMS. We may infer that openvidu-server/KMS connection has been lost, but
-					// not the clients/KMS connections
-					log.warn("Kurento Client reconnected to same KMS {} with uri {}", kmsId, kms.getUri());
-				}
-				kms.setTimeOfKurentoClientDisconnection(0);
-			}
+            @Override
+            public void reconnected(boolean sameServer) {
+                KmsManager.this.reconnected(kmsId, sameServer);
+            }
 
-			@Override
-			public void disconnected() {
-				final Kms kms = kmss.get(kmsId);
-				kms.setKurentoClientConnected(false);
-				kms.setTimeOfKurentoClientDisconnection(System.currentTimeMillis());
-				log.warn("Kurento Client disconnected from KMS {} with uri {}", kmsId, kms.getUri());
+            @Override
+            public void disconnected() {
+                KmsManager.this.disconnected(kmsId);
+            }
 
-				// TODO 重构KMS的重连，排查disconnected原因
-				/*kms.getKurentoSessions().forEach(kSession ->
-						sessionManager.updateRoomAndPartInfoAfterKMSDisconnect(kSession.getSessionId()));*/
-			}
+            @Override
+            public void connectionFailed() {
+                KmsManager.this.connectionFailed(kmsId);
+            }
 
-			@Override
-			public void connectionFailed() {
-				final Kms kms = kmss.get(kmsId);
-				kms.setKurentoClientConnected(false);
-				log.warn("Kurento Client failed connecting to KMS {} with uri {}", kmsId, kms.getUri());
-			}
+            @Override
+            public void connected() {
+                KmsManager.this.connected(kmsId);
+            }
+        };
+    }
 
-			@Override
-			public void connected() {
-				final Kms kms = kmss.get(kmsId);
-				kms.setKurentoClientConnected(true);
-				kms.setTimeOfKurentoClientConnection(System.currentTimeMillis());
-				log.warn("Kurento Client is now connected to KMS {} with uri {}", kmsId, kms.getUri());
-			}
-		};
-	}
+    protected void connected(String kmsId) {
+        final Kms kms = kmss.get(kmsId);
+        kms.setKurentoClientConnected(true);
+        kms.setTimeOfKurentoClientConnection(System.currentTimeMillis());
+        log.info("Kurento Client is now connected to KMS {} with uri {}", kmsId, kms.getUri());
+    }
+
+    protected void connectionFailed(String kmsId) {
+        final Kms kms = kmss.get(kmsId);
+        kms.setKurentoClientConnected(false);
+        log.warn("Kurento Client failed connecting to KMS {} with uri {}", kmsId, kms.getUri());
+    }
+
+    protected void disconnected(String kmsId) {
+        final Kms kms = kmss.get(kmsId);
+        kms.setKurentoClientConnected(false);
+        kms.setTimeOfKurentoClientDisconnection(System.currentTimeMillis());
+        log.warn("Kurento Client disconnected from KMS {} with uri {}", kmsId, kms.getUri());
+    }
+
+    protected void reconnected(String kmsId, boolean sameServer) {
+        final Kms kms = kmss.get(kmsId);
+        kms.setKurentoClientConnected(true);
+        kms.setTimeOfKurentoClientConnection(System.currentTimeMillis());
+        if (!sameServer) {
+            // Different KMS. Reset sessions status (no Publisher or SUbscriber endpoints)
+            log.warn("Kurento Client reconnected to a different KMS instance, with uri {}", kms.getUri());
+            log.warn("Updating all webrtc endpoints for active sessions");
+            final long timeOfKurentoDisconnection = kms.getTimeOfKurentoClientDisconnection();
+            kms.getKurentoSessions().forEach(kSession -> {
+                kSession.restartStatusInKurento(timeOfKurentoDisconnection);
+            });
+        } else {
+            // Same KMS. We may infer that openvidu-server/KMS connection has been lost, but
+            // not the clients/KMS connections
+            log.warn("Kurento Client reconnected to same KMS {} with uri {}", kmsId, kms.getUri());
+        }
+        kms.setTimeOfKurentoClientDisconnection(0);
+    }
+
 
 	public abstract List<Kms> initializeKurentoClients(List<String> kmsUris);
 
