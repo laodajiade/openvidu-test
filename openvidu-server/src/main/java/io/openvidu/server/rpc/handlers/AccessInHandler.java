@@ -22,6 +22,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -189,6 +191,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         if (Objects.isNull(user)) {
             return ErrorCodeEnum.USER_NOT_EXIST;
         }
+        // check HDC terminal necessary conditions
+        boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         if (user.getType().equals(1)) {
             // check HDC terminal ever online
             String deviceStatus;
@@ -198,13 +202,34 @@ public class AccessInHandler extends RpcAbstractHandler {
                 return ErrorCodeEnum.TERMINAL_MUST_LOGIN_FIRST;
             }
         } else if (user.getType().equals(0)) {
+            // check ever exists web THOR
+            ConferenceSearch search = new ConferenceSearch();
+            search.setStatus(ConferenceStatus.PROCESS.getStatus());
+            search.setModeratorUuid(userUuid);
+            List<Conference> conferenceList = conferenceMapper.selectBySearchCondition(search);
+            if (!CollectionUtils.isEmpty(conferenceList)) {
+                String roomId = conferenceList.get(0).getRoomId();
+                Session session = sessionManager.getSession(roomId);
+                if (Objects.nonNull(session) && Objects.nonNull(session.getThorPart())) {
+                    if (forceLogin) {
+                        // send remote login notify to current terminal
+                        String thorPartPrivateId = session.getThorPart().getParticipantPrivateId();
+                        notificationService.sendNotification(thorPartPrivateId, ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
+                        leaveRoomAfterConnClosed(thorPartPrivateId, EndReason.sessionClosedByServer);
+                        notificationService.closeRpcSession(thorPartPrivateId);
+                    } else {
+                        log.info("thorPart privateId:{}, role:{}, userId:{} already exists.",
+                                session.getThorPart().getParticipantPrivateId(), session.getThorPart().getRole().name(), session.getThorPart().getUserId());
+                        return ErrorCodeEnum.WEB_MODERATOR_ALREADY_EXIST;
+                    }
+                }
+            }
             return ErrorCodeEnum.SUCCESS;
         }
 
-        // check HDC terminal necessary conditions
-        boolean forceLogin = getBooleanParam(request, ProtocolElements.ACCESS_IN_FORCE_LOGIN_PARAM);
         Session session = !StringUtils.isEmpty(previousRpc.getSessionId()) ? sessionManager.getSession(previousRpc.getSessionId()) : null;
-        if (Objects.nonNull(session)) {     // HDC terminal in room
+        // HDC terminal in room
+        if (Objects.nonNull(session)) {
             // return errorCode if HDC in room is not a moderator
             Participant hdcPart = session.getPartByPrivateIdAndStreamType(previousRpc.getParticipantPrivateId(), StreamType.MAJOR);
             if (Objects.nonNull(hdcPart) && !OpenViduRole.MODERATOR.equals(hdcPart.getRole())) {

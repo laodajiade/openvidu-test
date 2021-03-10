@@ -43,6 +43,9 @@
         <if test="project != null">
           and project = #{project,jdbcType=VARCHAR}
         </if>
+        <if test="moderatorUuid != null">
+          and moderator_uuid = #{moderatorUuid,jdbcType=VARCHAR}
+        </if>
         order by create_time desc
       </where>
   </select>

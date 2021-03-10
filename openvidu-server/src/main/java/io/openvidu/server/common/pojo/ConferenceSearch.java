@@ -18,4 +18,6 @@ public class ConferenceSearch {
 
     private List<Long> limitDepts;
 
+    private String moderatorUuid;
+
 }
