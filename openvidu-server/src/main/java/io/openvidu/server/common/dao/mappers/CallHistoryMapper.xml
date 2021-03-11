@@ -23,6 +23,15 @@
     and sch.ruid = #{ruid,jdbcType=VARCHAR}
   </select>
 
+  <select id="getCallHistoryByCondition" resultType="io.openvidu.server.common.pojo.vo.CallHistoryVo" parameterType="java.lang.Object">
+    select
+    sch.uuid, sch.username, su.type accountType
+    from sd_call_history sch
+    inner join sd_user su on sch.uuid = su.uuid
+    where sch.del = 0
+    and sch.ruid = #{ruid,jdbcType=VARCHAR}
+    and sch.uuid = #{uuid,jdbcType=VARCHAR}
+  </select>
 
   <insert id="insertBatch" parameterType="java.util.List" >
     insert into sd_call_history (room_id, uuid, username,ruid)

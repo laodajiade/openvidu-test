@@ -8,6 +8,7 @@ import com.sensegigit.cockcrow.pojo.CrowOnceResponse;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
+import io.openvidu.server.common.dao.CallHistoryMapper;
 import io.openvidu.server.common.dao.JpushMessageMapper;
 import io.openvidu.server.common.enums.ConferenceJobTypeEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
@@ -15,11 +16,13 @@ import io.openvidu.server.common.enums.JobGroupEnum;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.common.manage.ConferenceJobManage;
 import io.openvidu.server.common.pojo.AppointParticipant;
+import io.openvidu.server.common.pojo.CallHistory;
 import io.openvidu.server.common.pojo.ConferenceJob;
 import io.openvidu.server.common.pojo.JpushMessage;
 import io.openvidu.server.common.pojo.JpushMsgTemp;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
+import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import io.openvidu.server.core.JpushManage;
 import io.openvidu.server.core.JpushMsgEnum;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
@@ -35,6 +38,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHandler<T> {
@@ -52,7 +56,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
     protected JpushManage jpushManage;
 
     @Resource
-    private JpushMessageMapper jpushMessageMapper;
+    private CallHistoryMapper callHistoryMapper;
 
     /**
      * 创建定时任务
@@ -150,6 +154,36 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         });
 
         return appointParticipantList;
+    }
+
+    protected void insertBatchCallHistory(String roomId, String ruid, List<User> users) {
+        List<CallHistory> addList = new ArrayList<>();
+        List<CallHistoryVo> callHistories = callHistoryMapper.getCallHistoryList(ruid);
+        if (!CollectionUtils.isEmpty(callHistories)) {
+            List<String> list = callHistories.stream().map(CallHistoryVo::getUuid).collect(Collectors.toList());
+            users.forEach(invitee -> {
+                if (!list.contains(invitee.getUuid())) {
+                    CallHistory callHistory = new CallHistory();
+                    callHistory.setRoomId(roomId);
+                    callHistory.setUuid(invitee.getUuid());
+                    callHistory.setUsername(invitee.getUsername());
+                    callHistory.setRuid(ruid);
+                    addList.add(callHistory);
+                }
+            });
+        } else {
+            users.forEach(invitee -> {
+                CallHistory callHistory = new CallHistory();
+                callHistory.setRoomId(roomId);
+                callHistory.setUuid(invitee.getUuid());
+                callHistory.setUsername(invitee.getUsername());
+                callHistory.setRuid(ruid);
+                addList.add(callHistory);
+            });
+        }
+        if (!CollectionUtils.isEmpty(addList)) {
+            callHistoryMapper.insertBatch(addList);
+        }
     }
 
     @Async

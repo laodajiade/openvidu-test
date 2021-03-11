@@ -1,11 +1,13 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -102,6 +104,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     log.error("can not find roomId:{} in data layer", sessionId);
                     errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                     break;
+                } else {
+                    ruid = conference.get(0).getRuid();
                 }
 
                 // v.1.3.2 如果会议室有人，则不删除房间，无法通过预约邀请新加入房间
@@ -128,6 +132,22 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         log.error("disable participant active join room:{}", sessionId);
                         errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                         break;
+                    }
+                }
+
+                //record joinRoom account
+                JSONObject jsonObject = JSONObject.parseObject(clientMetadata);
+                CallHistoryVo callHistoryVo = callHistoryMapper.getCallHistoryByCondition(ruid, jsonObject.getString("account"));
+                if (Objects.isNull(callHistoryVo) && StringUtils.isEmpty(nickName) && !OpenViduRole.MODERATOR_ROLES.contains(role)) {
+                    List<CallHistory> addList = new ArrayList<>();
+                    CallHistory callHistory = new CallHistory();
+                    callHistory.setRoomId(sessionId);
+                    callHistory.setUuid(jsonObject.getString("account"));
+                    callHistory.setUsername(rpcConnection.getUsername());
+                    callHistory.setRuid(ruid);
+                    addList.add(callHistory);
+                    if (!CollectionUtils.isEmpty(addList)) {
+                        callHistoryMapper.insertBatch(addList);
                     }
                 }
 
