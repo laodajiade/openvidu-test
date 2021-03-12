@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.ScrollingBannersConfig;
@@ -70,7 +71,7 @@ public class SetScrollingBannersHandler extends RpcAbstractHandler {
             } else {
                 List<String> uuidList = scrollingBannersConfig.getTargetIds().stream().map(UserDto::getUuid).collect(Collectors.toList());
                 for (Participant p : participants) {
-                    if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && uuidList.contains(p.getUuid())) {
+                    if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && (uuidList.contains(p.getUuid()) || Objects.equals(OpenViduRole.THOR, p.getRole()))) {
                         this.notificationService.sendNotification(p.getParticipantPrivateId(),
                                 ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
                     }
