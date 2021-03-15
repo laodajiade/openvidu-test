@@ -17,6 +17,10 @@
 
 package io.openvidu.server.rpc;
 
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.codahale.metrics.Timer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -26,6 +30,7 @@ import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.manage.AuthorizationManage;
+import io.openvidu.server.config.FlowRulesConfig;
 import io.openvidu.server.core.*;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
@@ -59,6 +64,8 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
     @Autowired
     AuthorizationManage authorizationManage;
 
+    @Autowired
+    FlowRulesConfig flowRulesConfig;
 
 	@Override
 	public void handleRequest(Transaction transaction, Request<JsonObject> request) {
@@ -125,11 +132,15 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		transaction.startAsync();
 		UseTime.start();
 
-		try {
+		try (Entry groupEntry = SphU.entry(flowRulesConfig.getGroup(request.getMethod())); Entry methodEntry = SphU.entry(request.getMethod())) {
 			rpcAbstractHandler.handRpcRequest(rpcConnection, request);
+		} catch (BlockException ex) {
+			// 处理被流控的逻辑
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.REQUEST_TOO_FREQUENT);
 		} finally {
-			if (UseTime.elapse() > 100) {
-				log.info("\nrequestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
+			if (UseTime.elapse() > 500) {
+				log.info("requestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
 			}
 			timer.stop();
 			UseTime.clear();
