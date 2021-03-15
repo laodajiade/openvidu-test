@@ -42,6 +42,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -75,6 +76,9 @@ public class SessionEventsHandler {
 
 	@Autowired
 	private KmsManager kmsManager;
+
+	@Value("${conference.delivery.load.factor}")
+	private int loadFactor =10;
 
 	Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -260,14 +264,14 @@ public class SessionEventsHandler {
         // 人数超过阈值后开始往第二台分发。
         KurentoSession ks = (KurentoSession) session;
 
-        if (!ks.needMediaDeliveryKms()) {
+        if (!ks.needMediaDeliveryKms(loadFactor)) {
             return;
         }
         try {
-            ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));
-        } catch (NoSuchKmsException e) {
-            log.debug(e.getMessage());
-        }
+            ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()), loadFactor);
+		} catch (NoSuchKmsException e) {
+			log.info("session {} delivery fail, no such kms", session.getSessionId());
+		}
     }
 
 

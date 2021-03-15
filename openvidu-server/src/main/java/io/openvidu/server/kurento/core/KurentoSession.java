@@ -466,24 +466,29 @@ public class KurentoSession extends Session {
     /**
      * 是否需要新的分发网络
      */
-    public boolean needMediaDeliveryKms() {
-        //需要开第二台分发kms
-        if (this.getMajorPartEachIncludeThorConnect().size() > 20 && this.getDeliveryKmsManagers().size() < 2) {
-            return true;
-        }
-        //需要开第一台分发kms
-        return this.getMajorPartEachIncludeThorConnect().size() >= 10 && this.getDeliveryKmsManagers().size() < 1;
-    }
+    public boolean needMediaDeliveryKms(int loadFactor) {
+		int partSize = this.getMajorPartEachIncludeThorConnect().size();
+		int deliveryKmsSize = this.getDeliveryKmsManagers().size();
+		return ((partSize - 1) / loadFactor) > deliveryKmsSize;
+	}
 
-    public void createDeliveryKms(Kms otherKms) {
+    public void createDeliveryKms(Kms otherKms, int loadFactor) {
         synchronized (pipelineCreateLock) {
-            if (!needMediaDeliveryKms()) {
+            if (!needMediaDeliveryKms(loadFactor)) {
                 return;
             }
+
+			for (DeliveryKmsManager deliveryKmsManager : deliveryKmsManagers) {
+				if (Objects.equals(deliveryKmsManager.getKms().getId(), otherKms.getId())) {
+					log.info("最低负载的kms已经参与分发，不在重复创建，kmsId {} ,kmsIp {}", otherKms.getId(), otherKms.getIp());
+					return;
+				}
+			}
+
             DeliveryKmsManager deliveryKms = new DeliveryKmsManager(otherKms, this, kurentoSessionHandler);
             deliveryKmsManagers.add(deliveryKms);
-            log.info("create delivery kms sessionId {} ip {},deliveryKms {}", this.sessionId, otherKms.getIp(), deliveryKms.getId());
-            deliveryKms.initToReady();
+			log.info("create delivery kms sessionId {} kmsId {} ,kmsIp {},deliveryKms {}", this.sessionId, otherKms.getId(), otherKms.getIp(), deliveryKms.getId());
+			deliveryKms.initToReady();
         }
     }
 

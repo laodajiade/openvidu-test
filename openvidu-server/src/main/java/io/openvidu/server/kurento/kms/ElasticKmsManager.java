@@ -76,9 +76,9 @@ public class ElasticKmsManager extends KmsManager {
         Collection<Kms> availableKmss = getAvailableKmss();
         availableKmss.remove(excludeKms);
 
-        Kms lessKms = EndpointLoadManager.getLessKms(getAvailableKmss());
+        Kms lessKms = EndpointLoadManager.getLessKms(availableKmss);
         if (lessKms == null) {
-            throw new RuntimeException("没有可用的其他kms");
+            throw new NoSuchKmsException("没有可用的其他kms");
         }
         return lessKms;
     }
