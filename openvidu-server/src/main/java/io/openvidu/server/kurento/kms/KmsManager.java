@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.manage.KmsRegistrationManage;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.exception.NoSuchKmsException;
 import org.kurento.client.KurentoConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,7 @@ public abstract class KmsManager {
 			}
 			return value;
 		}
-		throw new RuntimeException("没有可用的其他kms");
+		throw new NoSuchKmsException("没有可用的其他kms");
 	}
 
 	public Kms getKms(String kmsId) {
@@ -203,9 +204,31 @@ public abstract class KmsManager {
 
     protected void disconnected(String kmsId) {
         final Kms kms = kmss.get(kmsId);
-        kms.setKurentoClientConnected(false);
-        kms.setTimeOfKurentoClientDisconnection(System.currentTimeMillis());
-        log.warn("Kurento Client disconnected from KMS {} with uri {}", kmsId, kms.getUri());
+        boolean connected = true;
+
+        if (kms.getKurentoClient().isClosed()) {
+            log.info("Kurento Client \"disconnected\" event for KMS {} [{}]. Closed explicitly", kms.getUri(),
+                    kms.getKurentoClient().toString());
+            connected = false;
+        } else {
+            log.info("Kurento Client \"disconnected\" event for KMS {} [{}]. Waiting reconnection",
+                    kms.getUri(), kms.getKurentoClient().toString());
+        }
+
+        try {
+            kms.getKurentoClient().getServerManager().getInfo();
+            log.info("Kurento Client server manager get info success");
+        } catch (Exception e) {
+            log.error(
+                    "According to Timer KMS with uri {} and KurentoClient [{}] is not reconnected yet. Exception {}",
+                    kms.getUri(), kms.getKurentoClient().toString(), e.getClass().getName());
+            connected = false;
+        }
+        if (!connected) {
+            kms.setKurentoClientConnected(false);
+            kms.setTimeOfKurentoClientDisconnection(System.currentTimeMillis());
+            log.warn("Kurento Client disconnected from KMS {} with uri {}", kmsId, kms.getUri());
+        }
     }
 
     protected void reconnected(String kmsId, boolean sameServer) {

@@ -27,6 +27,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
+import io.openvidu.server.exception.NoSuchKmsException;
 import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
 import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
 import io.openvidu.server.kurento.core.KurentoSessionManager;
@@ -284,6 +285,9 @@ public class OpenViduServer implements JsonRpcConfigurer {
 							+ "\" set with system property \"openvidu.recording.custom-layout\"";
 				}
 				log.error(finalErrorMessage + ". Shutting down OpenVidu Server");
+				System.exit(1);
+			} catch (NoSuchKmsException e) {
+				log.error("No such kms error. Shutting down OpenVidu Server");
 				System.exit(1);
 			}
 		}

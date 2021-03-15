@@ -31,6 +31,7 @@ import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.exception.NoSuchKmsException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
@@ -262,7 +263,11 @@ public class SessionEventsHandler {
         if (!ks.needMediaDeliveryKms()) {
             return;
         }
-        ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));
+        try {
+            ks.createDeliveryKms(kmsManager.getLessLoadedKms(ks.getKms()));
+        } catch (NoSuchKmsException e) {
+            log.debug(e.getMessage());
+        }
     }
 
 

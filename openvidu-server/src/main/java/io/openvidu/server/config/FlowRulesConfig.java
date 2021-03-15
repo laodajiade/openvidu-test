@@ -17,7 +17,7 @@ public class FlowRulesConfig {
     private final List<FlowRule> rules = new ArrayList<>();
     private static final Map<String, String> groupMap = new HashMap<>();
 
-    @Value("${flow.rule.modulus:0.1}")
+    @Value("${flow.rule.modulus:1}")
     private double modulus = 1;
 
     private static final String CONTACT_LIST_GROUP = "CONTACT_LIST_GROUP";

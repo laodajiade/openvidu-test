@@ -49,6 +49,7 @@ public class ElasticKmsManager extends KmsManager {
         this.addKms(kms);
         try {
             kClient = KurentoClient.create(kmsUri, this.generateKurentoConnectionListener(kms.getId()));
+
         } catch (KurentoException e) {
             log.error("KMS in {} is not reachable by OpenVidu Server", kmsUri);
             return null;
