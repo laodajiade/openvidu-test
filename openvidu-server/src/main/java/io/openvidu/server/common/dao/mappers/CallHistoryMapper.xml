@@ -31,6 +31,7 @@
     where sch.del = 0
     and sch.ruid = #{ruid,jdbcType=VARCHAR}
     and sch.uuid = #{uuid,jdbcType=VARCHAR}
+    limit 1
   </select>
 
   <insert id="insertBatch" parameterType="java.util.List" >
