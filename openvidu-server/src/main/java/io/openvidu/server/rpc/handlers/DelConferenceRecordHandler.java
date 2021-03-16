@@ -21,7 +21,7 @@ public class DelConferenceRecordHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         List<Long> ids = getLongListParam(request, ProtocolElements.DEL_CONF_RECORD_ID_PARAM);
 
-        if (!isAdmin(rpcConnection.getUserUuid())) {
+        if (!isReadWrite(rpcConnection.getUserUuid())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;

@@ -23,7 +23,7 @@ public class ClearConferenceRecordHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, "roomId");
 
-        if (!isAdmin(rpcConnection.getUserUuid())) {
+        if (!isReadWrite(rpcConnection.getUserUuid())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;

@@ -481,6 +481,11 @@ public abstract class RpcAbstractHandler {
 
     protected boolean isAdmin(String uuid) {
         Map userInfo = cacheManage.getUserInfoByUUID(uuid);
+        return userInfo.containsKey("role") && "admin".equals(String.valueOf(userInfo.get("role")));
+    }
+
+    protected boolean isReadWrite(String uuid) {
+        Map userInfo = cacheManage.getUserInfoByUUID(uuid);
         return userInfo.containsKey("readWrite") && "1".equals(String.valueOf(userInfo.get("readWrite")));
     }
 
