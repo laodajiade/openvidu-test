@@ -137,17 +137,19 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 //record joinRoom account
                 JSONObject jsonObject = JSONObject.parseObject(clientMetadata);
-                CallHistoryVo callHistoryVo = callHistoryMapper.getCallHistoryByCondition(ruid, jsonObject.getString("account"));
-                if (Objects.isNull(callHistoryVo) && StringUtils.isEmpty(nickName) && !OpenViduRole.MODERATOR_ROLES.contains(role)) {
-                    List<CallHistory> addList = new ArrayList<>();
-                    CallHistory callHistory = new CallHistory();
-                    callHistory.setRoomId(sessionId);
-                    callHistory.setUuid(jsonObject.getString("account"));
-                    callHistory.setUsername(rpcConnection.getUsername());
-                    callHistory.setRuid(ruid);
-                    addList.add(callHistory);
-                    if (!CollectionUtils.isEmpty(addList)) {
-                        callHistoryMapper.insertBatch(addList);
+                if (Objects.equals(StreamType.MAJOR, streamType) && !OpenViduRole.MODERATOR_ROLES.contains(role)) {
+                    CallHistoryVo callHistoryVo = callHistoryMapper.getCallHistoryByCondition(ruid, jsonObject.getString("account"));
+                    if (Objects.isNull(callHistoryVo) && StringUtils.isEmpty(nickName)) {
+                        List<CallHistory> addList = new ArrayList<>();
+                        CallHistory callHistory = new CallHistory();
+                        callHistory.setRoomId(sessionId);
+                        callHistory.setUuid(jsonObject.getString("account"));
+                        callHistory.setUsername(rpcConnection.getUsername());
+                        callHistory.setRuid(ruid);
+                        addList.add(callHistory);
+                        if (!CollectionUtils.isEmpty(addList)) {
+                            callHistoryMapper.insertBatch(addList);
+                        }
                     }
                 }
 
