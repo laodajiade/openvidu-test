@@ -1,36 +1,26 @@
 package io.openvidu.server.rpc.handlers;
 
-import cn.jpush.api.push.model.notification.IosAlert;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
-import io.openvidu.server.common.enums.TerminalTypeEnum;
-import io.openvidu.server.common.pojo.CallHistory;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
-import io.openvidu.server.common.pojo.vo.CallHistoryVo;
-import io.openvidu.server.core.JpushManage;
-import io.openvidu.server.core.JpushMsgEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * @author geedow
@@ -39,9 +29,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class InviteParticipantHandler extends RpcAbstractHandler {
-
-    @Resource
-    protected JpushManage jpushManage;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -108,47 +95,22 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         }
 
         List<User> invitees = userMapper.selectCallUserByUuidList(targetIds);
-        Conference conference = sessionManager.getSession(sessionId).getConference();
-        List<CallHistoryVo> callHistories = callHistoryMapper.getCallHistoryList(conference.getRuid());
-        List<CallHistory> addList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(invitees)) {
-            if (!CollectionUtils.isEmpty(callHistories)) {
-                List<String> list = callHistories.stream().map(CallHistoryVo::getUuid).collect(Collectors.toList());
-                invitees.forEach(invitee -> {
-                    if (!list.contains(invitee.getUuid())) {
-                        CallHistory callHistory = new CallHistory();
-                        callHistory.setRoomId(sessionId);
-                        callHistory.setUuid(invitee.getUuid());
-                        callHistory.setUsername(invitee.getUsername());
-                        callHistory.setRuid(conference.getRuid());
-                        addList.add(callHistory);
-                    }
-                });
-            } else {
-                invitees.forEach(invitee -> {
-                    CallHistory callHistory = new CallHistory();
-                    callHistory.setRoomId(sessionId);
-                    callHistory.setUuid(invitee.getUuid());
-                    callHistory.setUsername(invitee.getUsername());
-                    callHistory.setRuid(conference.getRuid());
-                    addList.add(callHistory);
-                });
-            }
             invitees.forEach(invitee -> {
                 cacheManage.saveInviteInfo(sessionId,invitee.getUuid());
                 addInviteCompensation(invitee.getUuid(), params, expireTime);
             });
         }
-
         inviteOnline(targetIds, params);
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+        Conference conference = sessionManager.getSession(sessionId).getConference();
+        saveCallHistoryUsers(invitees, sessionId, conference.getRuid());
         //极光推送
         sendJpushMessage(targetIds, moderatorName, conference.getConferenceSubject(), conference.getRuid());
-        if (!CollectionUtils.isEmpty(addList)) {
-            callHistoryMapper.insertBatch(addList);
-        }
 
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
+
 
     public void inviteOnline(List<String> targetIds, JsonObject params) {
         Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
@@ -165,31 +127,6 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                 }
             }
         }
-    }
-
-    @Async
-    public void sendJpushMessage(List<String> targetIds, String moderatorName, String subject, String ruid) {
-        targetIds.forEach(uuid ->{
-            Map userInfo = cacheManage.getUserInfoByUUID(uuid);
-            if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
-                if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
-                    String type = userInfo.get("type").toString();
-                    String registrationId = userInfo.get("registrationId").toString();
-                    Date createDate = new Date();
-                    String title = StringUtil.INVITE_CONT;
-                    String alert = String.format(StringUtil.ON_MEETING_INVITE, moderatorName, subject);
-                    Map<String,String> map = new HashMap<>(1);
-                    map.put("message", jpushManage.getJpushMsgTemp(ruid, title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
-                    if (TerminalTypeEnum.A.name().equals(type)) {
-                        jpushManage.sendToAndroid(title, alert, map, registrationId);
-                    } else if(TerminalTypeEnum.I.name().equals(type)){
-                        IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
-                        jpushManage.sendToIos(iosAlert, map, registrationId);
-                    }
-                    jpushManage.saveJpushMsg(uuid, ruid, JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
-                }
-            }
-        });
     }
 
 }
