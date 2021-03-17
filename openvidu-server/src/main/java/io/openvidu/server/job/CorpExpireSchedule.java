@@ -70,7 +70,7 @@ public class CorpExpireSchedule {
             // close room and notify
             if (expiredSet.contains(project)) {
                 JsonObject params = new JsonObject();
-                params.addProperty("reason", "ServiceExpired");
+                params.addProperty("reason", "serviceExpired");
 
                 Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
 

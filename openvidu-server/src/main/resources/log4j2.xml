@@ -8,7 +8,7 @@
         <RollingRandomAccessFile name="Error" fileName="logs/error.log" filePattern="./logs/error.log.%i">
             <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p - %c{1}$%M:%L - %m%n"/>
-            <SizeBasedTriggeringPolicy size="100MB"/>
+            <SizeBasedTriggeringPolicy size="200MB"/>
             <DefaultRolloverStrategy max="20" />
         </RollingRandomAccessFile>
 
@@ -22,7 +22,7 @@
         <RollingRandomAccessFile name="RollingFile" fileName="./logs/server.log" filePattern="./logs/server.log.%i">
             <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %-5p - %c{1}$%M:%L - %m%n"/>
-            <SizeBasedTriggeringPolicy size="100MB"/>
+            <SizeBasedTriggeringPolicy size="200MB"/>
             <DefaultRolloverStrategy max="40" />
         </RollingRandomAccessFile>
     </Appenders>

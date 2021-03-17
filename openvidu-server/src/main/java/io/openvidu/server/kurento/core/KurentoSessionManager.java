@@ -343,97 +343,98 @@ public class KurentoSessionManager extends SessionManager {
 			//UseTime.point("ip1");
 			//log.debug("Request [leaveRoomSimple] ({})", participant.getParticipantPublicId());
 
-			boolean sessionClosedByLastParticipant = false;
+		boolean sessionClosedByLastParticipant = false;
 
-			KurentoParticipant kParticipant = (KurentoParticipant) participant;
-			KurentoSession session = kParticipant.getSession();
-			String sessionId = session.getSessionId();
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		KurentoSession session = kParticipant.getSession();
+		String sessionId = session.getSessionId();
 
-			if (session.isClosed()) {
-				log.warn("'{}' is trying to leave from session '{}' but it is closing",
-						participant.getParticipantPublicId(), sessionId);
-				throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
-						+ "' is trying to leave from session '" + sessionId + "' but it is closing");
-			}
-			UseTime.point("ip2");
-			session.leaveRoom(participant, reason);
-			UseTime.point("ip3");
-			//update partInfo
-			if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-				roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
-			}
-			UseTime.point("ip4");
+		if (session.isClosed()) {
+			log.warn("'{}' is trying to leave from session '{}' but it is closing",
+					participant.getParticipantPublicId(), sessionId);
+			throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
+					+ "' is trying to leave from session '" + sessionId + "' but it is closing");
+		}
+		UseTime.point("ip2");
+		session.leaveRoom(participant, reason);
+		UseTime.point("ip3");
+		//update partInfo
+		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+			roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
+		}
+		UseTime.point("ip4");
 
-			// Update control data structures
-			if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-				Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
-						.remove(participant.getParticipantPublicId());
-				boolean stillParticipant = false;
-				if (Objects.nonNull(p)) {
-					for (Session s : sessions.values()) {
-						if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-							stillParticipant = true;
-							break;
-						}
-					}
-					if (!stillParticipant) {
-						insecureUsers.remove(p.getParticipantPrivateId());
+		// Update control data structures
+		if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+			Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
+					.remove(participant.getParticipantPublicId());
+			boolean stillParticipant = false;
+			if (Objects.nonNull(p)) {
+				for (Session s : sessions.values()) {
+					if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+						stillParticipant = true;
+						break;
 					}
 				}
+				if (!stillParticipant) {
+					insecureUsers.remove(p.getParticipantPrivateId());
+				}
 			}
+		}
 
-			if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
-				changeSharingStatusInConference(session, participant);
-			}
+		if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+			changeSharingStatusInConference(session, participant);
+		}
 
-			// Close Session if no more participants
-			Set<Participant> remainingParticipants = null;
-			try {
-				remainingParticipants = getParticipants(sessionId);
-			} catch (OpenViduException e) {
-				log.info("Possible collision when closing the session '{}' (not found)", sessionId);
-				remainingParticipants = Collections.emptySet();
-			}
+		// Close Session if no more participants
+		Set<Participant> remainingParticipants = null;
+		try {
+			remainingParticipants = getParticipants(sessionId);
+		} catch (OpenViduException e) {
+			log.info("Possible collision when closing the session '{}' (not found)", sessionId);
+			remainingParticipants = Collections.emptySet();
+		}
 
 //			if (!EndReason.forceDisconnectByUser.equals(reason) &&
 //					!EndReason.forceCloseSessionByUser.equals(reason) && !EndReason.closeSessionByModerator.equals(reason)) {
 //				sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
 //						reason);
 //			}
-			// UseTime.point("ip4");
-			// adjust order notify after onLeft
-			//session.dealParticipantOrder(participant, rpcNotificationService);
-			// UseTime.point("ip5");
-			if (!EndReason.sessionClosedByServer.equals(reason)) {
-				// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
-				// recording. Will be stopped after in method
-				// "SessionManager.closeSessionAndEmptyCollections"
-				if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
-					session.setClosing(true);
-					if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
-						// stop recording
-						log.info("Last participant left. Stopping recording of session {}", sessionId);
-						stopRecording(sessionId);
-					}
+		// UseTime.point("ip4");
+		// adjust order notify after onLeft
+		//session.dealParticipantOrder(participant, rpcNotificationService);
+		// UseTime.point("ip5");
+		if (!EndReason.sessionClosedByServer.equals(reason)) {
+			// If session is closed by a call to "DELETE /api/sessions" do NOT stop the
+			// recording. Will be stopped after in method
+			// "SessionManager.closeSessionAndEmptyCollections"
+			if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+				session.setClosing(true);
+				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
+					// stop recording
+					log.info("Last participant left. Stopping recording of session {}", sessionId);
+					stopRecording(sessionId);
 				}
 			}
+		}
 
-			// Finally close websocket session if required
-			if (closeWebSocket) {
-				sessionEventsHandler.closeRpcSession(participant.getParticipantPrivateId());
-			}
+		// Finally close websocket session if required
+		if (closeWebSocket) {
+			sessionEventsHandler.closeRpcSession(participant.getParticipantPrivateId());
+		}
 
-			// update recording
-			if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
-				updateRecording(session.getSessionId());
-			}
+		// update recording
+		if (session.ableToUpdateRecord() && participant.ableToUpdateRecord()) {
+			updateRecording(session.getSessionId());
+		}
 
 //			if (session.isClosing()) {
 //				closeSession(sessionId, EndReason.lastParticipantLeft);
 //			}
-			UseTime.point("ip6");
-			return sessionClosedByLastParticipant;
+		UseTime.point("ip6");
+		return sessionClosedByLastParticipant;
 		//}
+
 	}
 
     @Override
@@ -1548,6 +1549,7 @@ public class KurentoSessionManager extends SessionManager {
 	private JsonObject constructPartRecordInfo(Participant part, int order) {
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
 		log.info("construct participant:{} record info.", part.getParticipantPublicId());
+
 		PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
 		if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
 			publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),

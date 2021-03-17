@@ -361,10 +361,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         null, errCode);
 
                 log.error("join room:{} failed. errCode:{} message:{}", sessionId, errCode.getCode(), errCode.getMessage());
-                if (isModerator(role)) {
+                /*if (isModerator(role)) {
                     sessionManager.cleanCacheCollections(sessionId);
                     cleanSession(sessionId, rpcConnection.getParticipantPrivateId(), false, EndReason.forceCloseSessionByUser);
-                }
+                }*/
             } else {
                 if (!Objects.isNull(rpcConnection.getSerialNumber())) {
                     cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.meeting.name());
