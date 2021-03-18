@@ -71,8 +71,7 @@ public class CorpRemainderDurationSchedule {
     @Value("${duration.lessthan.tenhour}")
     private int durationLessThanTenHour;
 
-    //todo 开发调试其他功能，这里一直报错影响查问题，先注释掉
-    //@Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void fixEndPartHistory(){
         List<NotEndPartHistory> notEndPartHistoryList = conferencePartHistoryMapper.selectNotEndPartHistory();
         if (!CollectionUtils.isEmpty(notEndPartHistoryList)) {
@@ -104,8 +103,7 @@ public class CorpRemainderDurationSchedule {
         }
     }
 
-    //todo 开发调试其他功能，这里一直报错影响查问题，先注释掉
-    //@Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void countCorpRemainderDuration(){
         List<Corporation> corporations = corporationMapper.selectAllCorp();
         if (!CollectionUtils.isEmpty(corporations)) {
