@@ -240,6 +240,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
                 List<String> targets = users.stream().filter(user -> !appt.getModeratorUuid().equals(user.getUuid()))
                         .map(User::getUuid).collect(Collectors.toList());
+                targets.forEach(uuid ->{
+                    cacheManage.saveInviteInfo(appt.getRoomId(), uuid);
+                });
                 log.info("invite participant in create room, targets = {}", targets);
                 inviteParticipantHandler.inviteOnline(targets, params);
             } else {

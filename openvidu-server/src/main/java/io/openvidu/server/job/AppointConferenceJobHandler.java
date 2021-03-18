@@ -347,6 +347,7 @@ public class AppointConferenceJobHandler {
                     log.info("conferenceBeginJobHandler inviteParticipant uuid={}", rpcConnection.getUserUuid());
                     params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserId());
                     notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
+                    cacheManage.saveInviteInfo(conference.getRoomId(),rpcConnection.getUserUuid());
                 });
     }
 
