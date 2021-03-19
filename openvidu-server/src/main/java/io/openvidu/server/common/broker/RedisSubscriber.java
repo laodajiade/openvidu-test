@@ -31,6 +31,9 @@ public class RedisSubscriber {
             case BrokerChannelConstans.DEVICE_LOG_UPLOAD_CHANNEL:
                 notifyDeviceUploadLogHandler.notifyDev2UploadLog(message);
                 break;
+            case BrokerChannelConstans.DEVICE_NAME_UPDATE_CHANNEL:
+                NotifyDeviceInfoUpdateHandler.notifyDeviceInfoUpdate(message);
+                break;
             default:
                 log.error("Unrecognized listening channel:{}", channel);
                 break;

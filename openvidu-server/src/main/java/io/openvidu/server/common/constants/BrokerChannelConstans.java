@@ -15,4 +15,5 @@ public class BrokerChannelConstans {
      */
     public static final String CLIENT_WS_EXCEPTION_KEY = "ws:link:exception:%s:%s";
     public static final String DEVICE_LOG_UPLOAD_CHANNEL = "channel:device:log:upload";
+    public static final String DEVICE_NAME_UPDATE_CHANNEL = "channel:devicename:update";
 }
