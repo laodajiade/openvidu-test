@@ -17,6 +17,7 @@
 
 package io.openvidu.server;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.server.cdr.CDRLogger;
@@ -70,6 +71,7 @@ import java.util.List;
  */
 @Import({ JsonRpcConfiguration.class })
 @SpringBootApplication
+@EnableEncryptableProperties
 public class OpenViduServer implements JsonRpcConfigurer {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenViduServer.class);
@@ -216,6 +218,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 		log.info("Using /dev/urandom for secure random generation");
 		System.setProperty("java.security.egd", "file:/dev/./urandom");
 		System.setProperty("project.name", "openvidu");
+		System.setProperty("jasypt.encryptor.password", "hpj");
 		SpringApplication.run(OpenViduServer.class, args);
 	}
 
