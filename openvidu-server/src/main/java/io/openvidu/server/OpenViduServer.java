@@ -17,6 +17,7 @@
 
 package io.openvidu.server;
 
+import cn.suditech.access.rule.RuleConfiguration;
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
@@ -76,8 +77,8 @@ import java.util.List;
 @SpringBootApplication
 @EnableEncryptableProperties
 @EnableEurekaClient
-@EnableFeignClients({"cn.suditech.openvidu.client"})
-//@RibbonClient(name = "access-server", configuration = RuleConfiguration.class)
+@EnableFeignClients({"io.openvidu.server"})
+@RibbonClient(name = "access-server", configuration = RuleConfiguration.class)
 public class OpenViduServer implements JsonRpcConfigurer {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenViduServer.class);
