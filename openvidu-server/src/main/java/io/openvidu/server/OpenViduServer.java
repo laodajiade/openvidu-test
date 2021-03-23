@@ -40,7 +40,7 @@ import io.openvidu.server.recording.RecordingDownloader;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.rpc.RpcNotificationServiceKurento;
+import io.openvidu.server.rpc.RpcNotificationServiceAccess;
 import io.openvidu.server.utils.CommandExecutor;
 import io.openvidu.server.utils.GeoLocationByIp;
 import io.openvidu.server.utils.GeoLocationByIpDummy;
@@ -78,7 +78,7 @@ import java.util.List;
 @SpringBootApplication
 @EnableEncryptableProperties
 @EnableEurekaClient
-@EnableFeignClients({"io.openvidu.server"})
+@EnableFeignClients({"io.openvidu.server", "cn.suditech.access.client"})
 @RibbonClient(name = "access-server", configuration = RuleConfiguration.class)
 public class OpenViduServer implements JsonRpcConfigurer {
 
@@ -114,7 +114,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public RpcNotificationService notificationService() {
-		return new RpcNotificationServiceKurento();
+		return new RpcNotificationServiceAccess();
 	}
 
 	@Bean

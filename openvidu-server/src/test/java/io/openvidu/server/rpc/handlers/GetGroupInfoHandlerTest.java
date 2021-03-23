@@ -23,18 +23,6 @@ public class GetGroupInfoHandlerTest extends TestCase {
 
     @Test
     public void test() {
-        ClientSession session = new ClientSession("123456", null);
-        RpcConnection rpcConnection = new RpcConnection(session);
 
-        Request<JsonObject> request = new Request<>();
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("groupId", "14");
-        jsonObject.addProperty("pageNum", "1");
-        jsonObject.addProperty("pageSize", "1");
-        request.setParams(jsonObject);
-
-
-        RespResult<?> pageResultRespResult = handler.doProcess(rpcConnection, request, jsonObject);
-        System.out.println(pageResultRespResult.getResult().toString());
     }
 }

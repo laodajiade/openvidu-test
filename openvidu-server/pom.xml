@@ -494,9 +494,15 @@
 		</dependency>
 		<dependency>
 			<groupId>cn.suditech.rtc</groupId>
+			<artifactId>access-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.suditech.rtc</groupId>
 			<artifactId>access-client</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>

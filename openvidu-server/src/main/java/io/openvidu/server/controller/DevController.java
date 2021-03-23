@@ -91,7 +91,7 @@ public class DevController {
         return new GsonBuilder().setPrettyPrinting().create().toJson(result);
     }
 
-    class RpcNotificationService0 extends RpcNotificationServiceKurento {
+    class RpcNotificationService0 extends RpcNotificationServiceAccess {
         @Override
         public void sendResponse(String participantPrivateId, Integer transactionId, Object result) {
             DevController.result = RespResult.ok(result);
