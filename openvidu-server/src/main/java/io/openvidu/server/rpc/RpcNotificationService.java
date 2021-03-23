@@ -39,7 +39,8 @@ public class RpcNotificationService {
 
 	private static final Logger log = LoggerFactory.getLogger(RpcNotificationService.class);
 
-	private ConcurrentMap<String, RpcConnection> rpcConnections = new ConcurrentHashMap<>();
+	//private ConcurrentMap<String, RpcConnection> rpcConnections = new ConcurrentHashMap<>();
+	private IRpcConnection rpcConnections = new RpcConnectionMap();
 
 	private static final ThreadPoolExecutor NOTIFY_THREAD_POOL = new ThreadPoolExecutor(
 			Math.max(Runtime.getRuntime().availableProcessors() + 1, 4), Math.max(Runtime.getRuntime().availableProcessors() * 20, 20),
