@@ -6,10 +6,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.MetriceUtils;
 import io.openvidu.server.core.RespResult;
-import io.openvidu.server.rpc.RpcAbstractHandler;
-import io.openvidu.server.rpc.RpcConnection;
-import io.openvidu.server.rpc.RpcHandlerFactory;
-import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.rpc.*;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +91,7 @@ public class DevController {
         return new GsonBuilder().setPrettyPrinting().create().toJson(result);
     }
 
-    class RpcNotificationService0 extends RpcNotificationService {
+    class RpcNotificationService0 extends RpcNotificationServiceKurento {
         @Override
         public void sendResponse(String participantPrivateId, Integer transactionId, Object result) {
             DevController.result = RespResult.ok(result);

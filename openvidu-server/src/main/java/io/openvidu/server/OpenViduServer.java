@@ -40,6 +40,7 @@ import io.openvidu.server.recording.RecordingDownloader;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.rpc.RpcNotificationServiceKurento;
 import io.openvidu.server.utils.CommandExecutor;
 import io.openvidu.server.utils.GeoLocationByIp;
 import io.openvidu.server.utils.GeoLocationByIpDummy;
@@ -113,7 +114,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public RpcNotificationService notificationService() {
-		return new RpcNotificationService();
+		return new RpcNotificationServiceKurento();
 	}
 
 	@Bean
