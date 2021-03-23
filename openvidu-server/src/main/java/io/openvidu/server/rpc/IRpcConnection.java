@@ -12,6 +12,5 @@ public interface IRpcConnection {
 
     int size();
 
-
     Collection<RpcConnection> values();
 }
