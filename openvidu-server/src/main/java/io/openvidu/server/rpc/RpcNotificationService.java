@@ -34,6 +34,7 @@ public interface RpcNotificationService {
     RpcConnection newRpcConnection(Transaction t, Request<JsonObject> request);
 
     RpcConnection addTransaction(Transaction t, Request<JsonObject> request);
+    RpcConnection addTransaction(RpcConnection rc, Request<JsonObject> request);
 
     void sendResponse(String participantPrivateId, Integer transactionId, Object result);
 

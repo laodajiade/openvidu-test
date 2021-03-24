@@ -55,6 +55,12 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     }
 
     @Override
+    public RpcConnection addTransaction(RpcConnection rc, Request<JsonObject> request) {
+        transactions.put(getTransactionId(rc.getParticipantPrivateId(), request.getId()), rc);
+        return rc;
+    }
+
+    @Override
     public void sendResponse(String participantPrivateId, Integer transactionId, Object result) {
         RpcConnection rpcConnection = getAndRemoveTransaction(participantPrivateId, transactionId);
         if (rpcConnection == null) {
@@ -268,12 +274,17 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     }
 
     private RpcConnection getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {
-        String key = participantPrivateId + "-&-" + transactionId;
-        RpcConnection rpcSession = transactions.get(key);
+
+        RpcConnection rpcSession = transactions.get(getTransactionId(participantPrivateId, transactionId));
         if (rpcSession == null) {
             log.warn("Invalid WebSocket session id {}, tid{}", participantPrivateId, transactionId);
             return null;
         }
         return rpcSession;
     }
+
+    private String getTransactionId(String privateId, Integer transactionId) {
+        return privateId + "-&-" + transactionId;
+    }
+
 }

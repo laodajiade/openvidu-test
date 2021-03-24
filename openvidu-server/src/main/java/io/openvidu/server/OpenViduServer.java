@@ -59,6 +59,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -80,6 +81,7 @@ import java.util.List;
 @EnableEurekaClient
 @EnableFeignClients({"io.openvidu.server", "cn.suditech.access.client"})
 @RibbonClient(name = "access-server", configuration = RuleConfiguration.class)
+@ComponentScan(basePackages = {"io.openvidu.server","cn.suditech.access.rule"})
 public class OpenViduServer implements JsonRpcConfigurer {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenViduServer.class);
