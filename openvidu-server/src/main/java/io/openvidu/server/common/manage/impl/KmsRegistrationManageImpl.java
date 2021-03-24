@@ -33,13 +33,9 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
 
     private Set<String> kmsUrisSet = new HashSet<>();
 
-    private List<String> kmsUrisDeliveryServers;
 
     @Value("${kms.uris}")
     private String kmsUris;
-
-    @Value("${kms.uris.delivery}")
-    private String kmsUrisDelivery;
 
     @Resource
     private KmsRegistrationMapper kmsRegistrationMapper;
@@ -70,14 +66,6 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
         return kmsUrisList;
     }
 
-    @Override
-    public List<String> getAllDeliveryKms() throws Exception {
-        if (StringUtils.isEmpty(kmsUrisDelivery)) {
-            return new ArrayList<>();
-        }
-        this.kmsUrisDeliveryServers = initiateKmsUris(kmsUrisDelivery);
-        return kmsUrisDeliveryServers;
-    }
 
     @Override
     public List<String> getRecentRegisterKms() {

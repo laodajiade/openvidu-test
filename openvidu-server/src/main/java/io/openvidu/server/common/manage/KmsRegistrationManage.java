@@ -9,7 +9,5 @@ import java.util.List;
 public interface KmsRegistrationManage {
     List<String> getAllRegisterKms() throws Exception;
 
-    List<String> getAllDeliveryKms() throws Exception;
-
     List<String> getRecentRegisterKms();
 }
