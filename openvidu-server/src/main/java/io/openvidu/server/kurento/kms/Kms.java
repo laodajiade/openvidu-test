@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.ModuleInfo;
@@ -37,16 +39,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import io.openvidu.server.kurento.core.KurentoSession;
+import org.springframework.stereotype.Service;
 
 /**
  * Abstraction of a KMS instance: an object of this class corresponds to a KMS
  * process running somewhere.
- * 
+ *
  * It is uniquely identified by the KMS ws URI endpoint. It encapsulates the
  * WebSocket client to communicate openvidu-server Java process with it and has
  * a specific LoadManager service to calculate the load of this KMS based on
  * different measures
- * 
+ *
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
  */
 public class Kms {
@@ -64,6 +67,10 @@ public class Kms {
 	private AtomicLong timeOfKurentoClientDisconnection = new AtomicLong(0);
 
 	private Map<String, KurentoSession> kurentoSessions = new ConcurrentHashMap<>();
+
+    @Getter
+    @Setter
+    private Thread tryThread = null;
 
 	public Kms(String uri, LoadManager loadManager) {
 		this.uri = uri;

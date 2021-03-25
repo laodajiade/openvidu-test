@@ -22,7 +22,9 @@ import io.openvidu.server.common.manage.KmsRegistrationManage;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.exception.NoSuchKmsException;
+import org.kurento.client.KurentoClient;
 import org.kurento.client.KurentoConnectionListener;
+import org.kurento.client.MediaPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,6 +212,28 @@ public abstract class KmsManager {
             log.info("Kurento Client \"disconnected\" event for KMS {} [{}]. Closed explicitly", kms.getUri(),
                     kms.getKurentoClient().toString());
             connected = false;
+			kms.setKurentoClientConnected(connected);
+
+			if (kms.getTryThread()==null) {
+				kms.setTryThread(new Thread(() -> {
+					while (true) {
+						try {
+							TimeUnit.MINUTES.sleep(1);
+							MediaPipeline mediaPipeline = kms.getKurentoClient().createMediaPipeline();
+							log.info("KMS try thread {} reconnection {}",kms.getId(),kms.getUri());
+							mediaPipeline.release();
+							kms.setTryThread(null);
+							break;
+						} catch (Exception e) {
+							log.info("eeeeeeeeeeeeeee");
+						}
+
+					}
+				}));
+				kms.getTryThread().start();
+			}
+			kms.getKurentoClient().destroy();
+            return;
         } else {
             log.info("Kurento Client \"disconnected\" event for KMS {} [{}]. Waiting reconnection",
                     kms.getUri(), kms.getKurentoClient().toString());
