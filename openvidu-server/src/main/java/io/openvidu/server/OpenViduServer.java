@@ -219,6 +219,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 		System.setProperty("java.security.egd", "file:/dev/./urandom");
 		System.setProperty("project.name", "openvidu");
 		System.setProperty("jasypt.encryptor.password", "hpj");
+		System.setProperty("csp.sentinel.api.port", "18719");
 		SpringApplication.run(OpenViduServer.class, args);
 	}
 

@@ -28,22 +28,22 @@ public class FlowRulesConfig {
         initGroup();
 
         //
-        addRule(ACCESS_IN_METHOD, 50, null);
-        addRule(PUBLISHVIDEO_METHOD, 50, null);
-        addRule(RECEIVEVIDEO_METHOD, 50, null);
-        addRule(GET_PARTICIPANTS_METHOD, 50, null);
-        addRule("updateParticipantsOrder", 50, null);
+        addRule(ACCESS_IN_METHOD, 100, null);
+        addRule(PUBLISHVIDEO_METHOD, 200, null);
+        addRule(RECEIVEVIDEO_METHOD, 200, null);
+        //addRule(GET_PARTICIPANTS_METHOD, 50, null);
+        //addRule("updateParticipantsOrder", 50, null);
 
         // 通讯录
-        addRule("getDepartmentTree", 50, CONTACT_LIST_GROUP);
-        addRule("getSubDevOrUser", 50, CONTACT_LIST_GROUP);
-        addRule("getSubDevOrUserByDeptIds", 50, CONTACT_LIST_GROUP);
-        addRule("getGroupList", 50, CONTACT_LIST_GROUP);
-        addRule("getGroupMember", 50, CONTACT_LIST_GROUP);
-        addRule("getSpecificPageOfDept", 50, CONTACT_LIST_GROUP);
-        addRule("getSpecificPageOfMember", 50, CONTACT_LIST_GROUP);
-        addRule("getMemberDetails", 50, CONTACT_LIST_GROUP);
-        addRule("recursiveQueryUser", 50, CONTACT_LIST_GROUP);
+        addRule("getDepartmentTree", 100, CONTACT_LIST_GROUP);
+        addRule("getSubDevOrUser", 100, CONTACT_LIST_GROUP);
+        addRule("getSubDevOrUserByDeptIds", 100, CONTACT_LIST_GROUP);
+        addRule("getGroupList", 100, CONTACT_LIST_GROUP);
+        addRule("getGroupMember", 100, CONTACT_LIST_GROUP);
+        addRule("getSpecificPageOfDept", 100, CONTACT_LIST_GROUP);
+        addRule("getSpecificPageOfMember", 100, CONTACT_LIST_GROUP);
+        addRule("getMemberDetails", 100, CONTACT_LIST_GROUP);
+        addRule("recursiveQueryUser", 100, CONTACT_LIST_GROUP);
 
 
         FlowRuleManager.loadRules(rules);
