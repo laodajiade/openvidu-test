@@ -29,8 +29,8 @@ public class FlowRulesConfig {
 
         //
         addRule(ACCESS_IN_METHOD, 100, null);
-        addRule(PUBLISHVIDEO_METHOD, 200, null);
-        addRule(RECEIVEVIDEO_METHOD, 200, null);
+        //addRule(PUBLISHVIDEO_METHOD, 200, null);
+        //addRule(RECEIVEVIDEO_METHOD, 200, null);
         //addRule(GET_PARTICIPANTS_METHOD, 50, null);
         //addRule("updateParticipantsOrder", 50, null);
 
