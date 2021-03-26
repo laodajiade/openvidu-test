@@ -346,18 +346,22 @@ public class KurentoParticipant extends Participant {
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName);
 		if (subscriber.getEndpoint() == null) {
 			subscriber = getNewOrExistingSubscriber(senderName);
-			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty()) {
+			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
 				DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
 				MediaChannel mediaChannel = senderPublisher.getMediaChannels().get(deliveryKms.getId());
-				MediaChannel mediaChannel2 = deliveryKms.getMediaChannel(kSender.getPublisherStreamId());
-				log.info("mediaChannel == mediaChannel2 ? {}", mediaChannel == mediaChannel2);
 				if (mediaChannel == null) {
-					log.warn("mediaChannel not exist");
+					log.warn("mediaChannel not exist and create it");
 					synchronized (this) {
 						mediaChannel = deliveryKms.dispatcher(kSender);
 					}
 				}
 				log.info("mediaChannel state = {}", mediaChannel.getState().name());
+				MediaChannelStateEnum mediaChannelState = mediaChannel.getStateSync();
+				if (mediaChannelState != MediaChannelStateEnum.READY && mediaChannelState != MediaChannelStateEnum.FLOWING) {
+					log.info("mediaChannel new state = {}", mediaChannelState.name());
+					throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+							"media channel state error");
+				}
 
 				log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
 						senderName);

@@ -55,7 +55,7 @@ public class HandlerController {
 
     @PostMapping(value = "handler", produces = "application/json")
     public @ResponseBody
-    String handler(@RequestBody RequestDTO requestDTO) {
+    RespResult<?> handler(@RequestBody RequestDTO requestDTO) {
 
         try {
             Request<JsonObject> request = new Request<>();
@@ -71,16 +71,19 @@ public class HandlerController {
                         "No connection found for participant with privateId {} when trying to execute method '{}'. " +
                                 "Method 'Session.connect()' must be the first operation called in any session", request.getId(), request.getMethod());
                 //notificationService.sendRespWithConnTransaction(requestDTO.getParticipantPrivateId(), request.getId(), ErrorCodeEnum.ACCESS_IN_NEEDED);
-                return ErrorCodeEnum.ACCESS_IN_NEEDED.name();
+                return RespResult.fail(ErrorCodeEnum.ACCESS_IN_NEEDED);
             }
-
+            int hashCode = rpcConnection.hashCode();
             rpcExHandler.handleRequest(rpcConnection, request);
-            return "{}";
+
+            if (hashCode != rpcConnection.hashCode()) {
+                rtcUserClient.updateRpcConnection(rpcConnection);
+            }
+            return RespResult.ok();
         } catch (Exception e) {
             log.error(e.toString(), e);
-            throw new RuntimeException(e);
+            return RespResult.fail(ErrorCodeEnum.FAIL);
         }
-
     }
 
 
@@ -99,7 +102,7 @@ public class HandlerController {
             rtcUserClient.updateRpcConnection(rpcConnection);
 
             if (rpcConnection.getLoginTime() == null || rpcConnection.getLoginTime() == 0) {
-                return RespResult.fail(ErrorCodeEnum.SERVER_UNKNOWN_ERROR);
+                return RespResult.fail(ErrorCodeEnum.FAIL);
             }
             return RespResult.ok(rpcConnection);
         } catch (Exception e) {
