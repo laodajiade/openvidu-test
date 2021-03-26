@@ -24,7 +24,7 @@ public class RemoteRpcConnection implements IRpcConnection {
 
     @Override
     public RpcConnection remove(String privateId) {
-        throw new UnsupportedOperationException();
+        return rtcUserClient.remove(privateId);
     }
 
     @Override

@@ -2,6 +2,7 @@ package io.openvidu.server.rpc;
 
 import cn.suditech.access.client.AccessClient;
 import cn.suditech.access.core.ErrorBean;
+import cn.suditech.access.domain.AccessBean;
 import cn.suditech.access.domain.AccessErrorResp;
 import cn.suditech.access.domain.AccessNotification;
 import cn.suditech.access.domain.AccessResp;
@@ -172,7 +173,18 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
 
     @Override
     public RpcConnection closeRpcSession(String participantPrivateId) {
-        //todo yy
+        RpcConnection rpcConnection = rpcConnections.remove(participantPrivateId);
+        if (rpcConnection == null) {
+            log.error("No session found for private id {}, unable to cleanup", participantPrivateId);
+            return null;
+        }
+
+        try {
+            AccessBean dto = new AccessBean(participantPrivateId, rpcConnection.getAccessInfo().getOrigin());
+            accessClient.close(dto);
+        } catch (Exception e) {
+            log.error("Error closing session for participant with private id {}", participantPrivateId, e);
+        }
         return null;
     }
 
