@@ -170,6 +170,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         object.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(),DateUtil.DEFAULT_YEAR_MONTH_DAY));
         object.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
 
+        rpcConnection.setLoginTime(System.currentTimeMillis());
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }

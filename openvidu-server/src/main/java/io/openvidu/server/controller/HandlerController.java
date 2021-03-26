@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.RequestDTO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcExHandler;
@@ -30,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
@@ -52,9 +52,6 @@ public class HandlerController {
 
     @Autowired
     private RtcUserClient rtcUserClient;
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @PostMapping(value = "handler", produces = "application/json")
     public @ResponseBody
@@ -78,13 +75,6 @@ public class HandlerController {
             }
 
             rpcExHandler.handleRequest(rpcConnection, request);
-//            SendResponseDTO respDTO = new SendResponseDTO();
-//            respDTO.setParticipantPrivateId(requestDTO.getParticipantPrivateId());
-//            respDTO.setId(requestDTO.getId());
-            //respDTO.setResult(result.getResult());
-            //RpcConnection rpcConnection = notificationService.getRpcConnection(requestDTO.getParticipantPrivateId());
-            //respDTO.setUuid(rpcConnection.getUserUuid());
-
             return "{}";
         } catch (Exception e) {
             log.error(e.toString(), e);
@@ -96,30 +86,26 @@ public class HandlerController {
 
     @PostMapping(value = "accessIn", produces = "application/json")
     public @ResponseBody
-    String accessIn(@RequestBody RequestDTO requestDTO) {
-
+    RespResult<RpcConnection> accessIn(@RequestBody RequestDTO requestDTO) {
         try {
             Request<JsonObject> request = new Request<>();
             request.setId(requestDTO.getId());
             request.setMethod(requestDTO.getMethod());
             request.setParams(new Gson().fromJson(requestDTO.getParams(), JsonObject.class));
 
-            rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
-            RpcConnection rpcConnection = rtcUserClient.newRpcConnection(requestDTO.getParticipantPrivateId(), requestDTO.getOrigin());
+            //rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
+            RpcConnection rpcConnection = rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
             rpcExHandler.handleRequest(rpcConnection, request);
+            rtcUserClient.updateRpcConnection(rpcConnection);
 
-//            SendResponseDTO respDTO = new SendResponseDTO();
-//            respDTO.setParticipantPrivateId(requestDTO.getParticipantPrivateId());
-//            respDTO.setId(requestDTO.getId());
-//            //respDTO.setResult(result.getResult());
-//            respDTO.setUuid(rpcConnection.getUserUuid());
-            //       return new GsonBuilder().setPrettyPrinting().create().toJson(respDTO);
-            return "{}";
+            if (rpcConnection.getLoginTime() == null || rpcConnection.getLoginTime() == 0) {
+                return RespResult.fail(ErrorCodeEnum.SERVER_UNKNOWN_ERROR);
+            }
+            return RespResult.ok(rpcConnection);
         } catch (Exception e) {
             log.error(e.toString(), e);
             throw new RuntimeException(e);
         }
-
     }
 
 }
