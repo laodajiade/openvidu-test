@@ -914,18 +914,19 @@ public class KurentoSessionManager extends SessionManager {
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
 		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachIncludeThorConnect();
+		if (OpenViduRole.MODERATOR.equals(majorPart.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+			//stop polling
+			SessionPreset sessionPreset = session.getPresetInfo();
+			sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+			timerManager.stopPollingCompensation(majorPart.getSessionId());
+			JsonObject params = new JsonObject();
+			params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, majorPart.getSessionId());
+			participants.forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
+					ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+		}
 		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
                 && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
-			//stop polling
-			if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
-				SessionPreset sessionPreset = session.getPresetInfo();
-				sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-				timerManager.stopPollingCompensation(majorPart.getSessionId());
-				JsonObject params = new JsonObject();
-				params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, majorPart.getSessionId());
-				participants.forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
-						ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
-			}
+
 			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
 		} else {
 			// check if MAJOR is speaker
