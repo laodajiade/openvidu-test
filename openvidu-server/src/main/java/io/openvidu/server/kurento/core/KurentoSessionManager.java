@@ -934,8 +934,7 @@ public class KurentoSessionManager extends SessionManager {
 		Session session;
 		Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
 		Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachIncludeThorConnect();
-		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
-                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
+		if (OpenViduRole.MODERATOR.equals(majorPart.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
 			//stop polling
 			SessionPreset sessionPreset = session.getPresetInfo();
 			sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
@@ -944,6 +943,10 @@ public class KurentoSessionManager extends SessionManager {
 			params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, majorPart.getSessionId());
 			participants.forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
 					ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+		}
+		if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
+                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {	// close the room
+
 			dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
 		} else {
 			// check if MAJOR is speaker
