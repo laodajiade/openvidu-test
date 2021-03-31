@@ -1551,7 +1551,9 @@ public class KurentoSessionManager extends SessionManager {
 
 	private JsonObject constructPartRecordInfo(Participant part, int order) {
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
-		log.info("construct participant:{} record info.", part.getParticipantPublicId());
+		log.info("construct participant:{}, osd:{}, order:{}, role:{}, handStatus:{}, steamType:{} record info.",
+				part.getParticipantPublicId(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(),
+				part.getStreamType().name());
 
 		PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
 		if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
