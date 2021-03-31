@@ -429,8 +429,8 @@ public class ProtocolElements {
 	public static final String GET_NOT_FINISHED_ROOM_SUBJECT_PARAM = "subject";
 	public static final String GET_NOT_FINISHED_ROOM_PASSWORD_PARAM = "password";
 	public static final String GET_NOT_FINISHED_ROOM_ROLE_PARAM = "role";
-	public static final String GET_NOT_FINISHED_ROOM_AUDIOACTIVE_PARAM = "audioActive";
-	public static final String GET_NOT_FINISHED_ROOM_VIDEOACTIVE_PARAM = "videoActive";
+	public static final String GET_NOT_FINISHED_ROOM_AUDIOACTIVE_PARAM = "micStatus";
+	public static final String GET_NOT_FINISHED_ROOM_VIDEOACTIVE_PARAM = "videoStatus";
 	public static final String GET_NOT_FINISHED_ROOM_SHARESTATUS_PARAM = "shareStatus";
 	public static final String GET_NOT_FINISHED_ROOM_SPEAKERSTATUS_PARAM = "speakerStatus";
 	public static final String GET_NOT_FINISHED_ROOM_HANDSTATUS_PARAM = "handStatus";
