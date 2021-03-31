@@ -82,6 +82,7 @@ public class ProtocolElements {
 	public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
 	public static final String JOINROOM_MIXFLOWS_STREAMID_PARAM = "streamId";
 	public static final String JOINROOM_MIXFLOWS_STREAMMODE_PARAM = "streamMode";
+	public static final String JOINROOM_NICKNAME_PARAM = "nickname";
 
 
 	public static final String PUBLISHVIDEO_METHOD = "publishVideo";
@@ -177,6 +178,8 @@ public class ProtocolElements {
 	public static final String ACCESS_IN_SERVERTIMESTAMP_PARAM = "serverTimestamp";
 	public static final String ACCESS_IN_USERTYPE_PARAM = "userType";
 	public static final String ACCESS_IN_CLIENT_TYPE = "type";
+	public static final String ACCESS_IN_REGISTRATION_ID_TYPE = "registrationId";
+	public static final String ACCESS_IN_NICKNAME_PARAM = "nickName";
 
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
 	public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";
@@ -530,6 +533,12 @@ public class ProtocolElements {
 
 	public static final String DELETE_CONFERENCE_HISTORY_METHOD = "deleteConferenceHistory";
 
+	public static final String SEND_MSG_METHOD = "sendMsg";
+	public static final String NOTIFY_SEND_MSG_METHOD = "notifySendMsg";
+	public static final String GET_MSG_HISTORY_METHOD = "getMsgHistory";
+	public static final String SET_IM_MODE_METHOD = "setImMode";
+	public static final String NOTIFY_SET_IM_MODE_METHOD = "notifySetImMode";
+
 	// ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
 	public static final String PARTICIPANTJOINED_METHOD = "participantJoined";
@@ -819,7 +828,42 @@ public class ProtocolElements {
 	public static final String UPLOAD_MEETING_QUALITY_METHOD = "uploadMeetingQuality";
 	public static final String UPLOAD_MEETING_QUALITY_NOTIFY_METHOD = "uploadMeetingQualityNotify";
 
+	public static final String GET_JPUSH_MESSAGE_METHOD = "getJpushMessage";
+	public static final String GET_JPUSH_MESSAGE_UUID_PARAM = "uuid";
+
+	public static final String CLEAN_JPUSH_MESSAGE_METHOD = "cleanJpushMessage";
+	public static final String CLEAN_JPUSH_MESSAGE_UUID_PARAM = "uuid";
+
+	public static final String READ_JPUSH_MESSAGE_METHOD = "readJpushMessage";
+	public static final String READ_JPUSH_MESSAGE_MSGID_PARAM = "msgId";
+	public static final String READ_JPUSH_MESSAGE_UUID_PARAM = "uuid";
+
+	public static final String GETNOTREADJPUSHMESSAGE_METHOD = "getNotReadJpushMessage";
+	public static final String GETNOTREADJPUSHMESSAGE_UUID_PARAM = "uuid";
+
+	public static final String GET_INVITE_INFO_METHOD = "getInviteInfo";
+	public static final String GET_INVITE_INFO_ROOMID_PARAM = "roomId";
+
+	public static final String GET_CALL_LIST_METHOD = "getCallList";
+	public static final String GET_CALL_LIST_RUID_PARAM = "ruid";
+
+	public static final String CALL_REMOVE_METHOD = "callRemove";
+	public static final String CALL_REMOVE_UUID_PARAM = "uuid";
+	public static final String CALL_REMOVE_RUID_PARAM = "ruid";
+
 	public static final String EVICT_CORPORATION_METHOD = "evictCorporation";
+
+	public static final String SET_SCROLLING_BANNERS_METHOD = "setScrollingBanners";
+	public static final String SET_SCROLLING_BANNERS_ROOMID_PARAM = "roomId";
+	public static final String SET_SCROLLING_BANNERS_OPERATION_PARAM = "operation";
+	public static final String SET_SCROLLING_BANNERS_CONFIG_PARAM = "config";
+
+	public static final String GET_SCROLLING_BANNERS_METHOD = "getScrollingBanners";
+	public static final String GET_SCROLLING_BANNERS_ROOMID_PARAM = "roomId";
+
+	public static final String SAVE_JPUSH_METHOD = "saveJpush";
+	public static final String SAVE_JPUSH_UUID_PARAM = "uuid";
+	public static final String SAVE_JPUSH_REGISTRATIONID_PARAM = "registrationId";
 
 	public static  final  String DEVICE_INFO_UPDATE_NOTIFY_METHOD = "deviceInfoUpdateNotify";
 
@@ -838,7 +882,8 @@ public class ProtocolElements {
 			GETPRESETPOSITIONS_METHOD, ADJUSTTOPRESETPOSITION_METHOD, GET_CONFERENCE_SCHEDULE_METHOD, GET_ROOMS_RECORD_INFO,
             CLEAR_CONFERENCE_RECORD, GET_APPOINTMENT_ROOM_DETAILS_METHOD, START_POLLING_METHOD, STOP_POLLING_METHOD, GET_POLLING_STATUS_METHOD,
 			GET_ICE_SERVER_LIST, GET_CONFERENCE_SCHEDULE_ADMIN_METHOD, GET_CORP_INFO, GET_MEETING_HIS_DETAIL_METHOD, GET_PARTICIPATE_HISTORY_METHOD,
-			STATISTICS_DURATION_METHOD, DELETE_CONFERENCE_HISTORY_METHOD, GET_MEETING_QUALITY_METHOD, UPLOAD_MEETING_QUALITY_METHOD
+			STATISTICS_DURATION_METHOD, DELETE_CONFERENCE_HISTORY_METHOD, GET_MEETING_QUALITY_METHOD, UPLOAD_MEETING_QUALITY_METHOD,
+			GET_JPUSH_MESSAGE_METHOD, CLEAN_JPUSH_MESSAGE_METHOD, READ_JPUSH_MESSAGE_METHOD, GETNOTREADJPUSHMESSAGE_METHOD, SAVE_JPUSH_METHOD
 	);
 
     /**
@@ -853,10 +898,11 @@ public class ProtocolElements {
 	 * 会控主持人不在的情况下，接口黑名单
 	 */
 	public static final Set<String> THOR_IF_MODERATOR_NOT_FOUND_FILTERS = new HashSet<>(Arrays.asList(
-			SET_AUDIO_STATUS_METHOD,SET_ROLL_CALL_METHOD,SET_AUDIO_SPEAKER_STATUS_METHOD,SETCONFERENCELAYOUT_MODE_METHOD,
-			SET_PART_OPER_SPEAKER_METHOD,START_CONF_RECORD_METHOD,STOP_CONF_RECORD_METHOD,UPDATE_PARTICIPANTS_ORDER_METHOD,
-			PUT_DOWN_HAND_METHOD,END_ROLL_CALL_METHOD,REPLACE_ROLL_CALL_METHOD,FORCEDISCONNECT_METHOD,START_POLLING_METHOD,
-			STOP_POLLING_METHOD
+			SET_AUDIO_STATUS_METHOD, SET_ROLL_CALL_METHOD, SET_AUDIO_SPEAKER_STATUS_METHOD, SETCONFERENCELAYOUT_MODE_METHOD,
+			SET_PART_OPER_SPEAKER_METHOD, START_CONF_RECORD_METHOD, STOP_CONF_RECORD_METHOD, UPDATE_PARTICIPANTS_ORDER_METHOD,
+			PUT_DOWN_HAND_METHOD, END_ROLL_CALL_METHOD, REPLACE_ROLL_CALL_METHOD, FORCEDISCONNECT_METHOD, START_POLLING_METHOD,
+			STOP_POLLING_METHOD, SEND_MSG_METHOD, GET_MSG_HISTORY_METHOD, SET_IM_MODE_METHOD
+
 	));
 
 }

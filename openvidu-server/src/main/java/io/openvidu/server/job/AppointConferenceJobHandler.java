@@ -16,6 +16,7 @@ import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
+import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
@@ -67,6 +68,9 @@ public class AppointConferenceJobHandler {
     @Resource
     private ConferenceMapper conferenceMapper;
 
+    @Resource
+    private RoomManage roomManage;
+
     /**
      * 预约会议通知
      *
@@ -107,7 +111,7 @@ public class AppointConferenceJobHandler {
 
             AppointmentRoomVO vo = AppointmentRoomVO.builder()
                     .userId(appointConference.getUserId()).startTime(appointConference.getStartTime().getTime())
-                    .duration(appointConference.getDuration()).subject(appointConference.getConferenceSubject()).build();
+                    .duration(appointConference.getDuration()).subject(appointConference.getConferenceSubject()).ruid(ruid).build();
             createAppointmentRoomHandler.sendConferenceToBeginNotify(vo, uuidSet);
             log.info("conferenceToBeginJobHandler notify end... uuidSet ={}", uuidSet);
         }
@@ -343,6 +347,7 @@ public class AppointConferenceJobHandler {
                     log.info("conferenceBeginJobHandler inviteParticipant uuid={}", rpcConnection.getUserUuid());
                     params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserId());
                     notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
+                    cacheManage.saveInviteInfo(conference.getRoomId(),rpcConnection.getUserUuid());
                 });
     }
 
@@ -402,6 +407,8 @@ public class AppointConferenceJobHandler {
         conference.setProject(ac.getProject());
         conference.setModeratorPassword(ac.getModeratorPassword());
         conference.setRoomIdType(RoomIdTypeEnums.random.name());
+        conference.setShortUrl(roomManage.createShortUrl());
+        conference.setModeratorName(ac.getModeratorName());
         return conference;
     }
 

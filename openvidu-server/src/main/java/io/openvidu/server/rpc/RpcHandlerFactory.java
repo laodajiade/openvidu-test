@@ -309,6 +309,26 @@ public class RpcHandlerFactory {
     private AdjustToPresetPositionHandler adjustToPresetPositionHandler;
     @Resource
     private StatisticsDurationHandler statisticsDurationHandler;
+    @Resource
+    private GetJpushMessageHandler getJpushMessageHandler;
+    @Resource
+    private CleanJpushMessageHandler cleanJpushMessageHandler;
+    @Resource
+    private ReadJpushMessageHandler readJpushMessageHandler;
+    @Resource
+    private GetNotReadJpushMessageHandler getNotReadJpushMessageHandler;
+    @Resource
+    private GetInviteInfoHandler getInviteInfoHandler;
+    @Resource
+    private GetCallListHandler getCallListHandler;
+    @Resource
+    private CallRemoveHandler callRemoveHandler;
+    @Resource
+    private SetScrollingBannersHandler setScrollingBannersHandler;
+    @Resource
+    private GetScrollingBannersHandler getScrollingBannersHandler;
+    @Resource
+    private SaveJpushHandler saveJpushHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
@@ -425,6 +445,16 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GETPRESETPOSITIONS_METHOD,                     getPresetPositionsHandler);
         handlersMap.put(ProtocolElements.ADJUSTTOPRESETPOSITION_METHOD,                 adjustToPresetPositionHandler);
         handlersMap.put(ProtocolElements.STATISTICS_DURATION_METHOD,                    statisticsDurationHandler);
+        handlersMap.put(ProtocolElements.GET_JPUSH_MESSAGE_METHOD,                      getJpushMessageHandler);
+        handlersMap.put(ProtocolElements.CLEAN_JPUSH_MESSAGE_METHOD,                    cleanJpushMessageHandler);
+        handlersMap.put(ProtocolElements.READ_JPUSH_MESSAGE_METHOD,                     readJpushMessageHandler);
+        handlersMap.put(ProtocolElements.GETNOTREADJPUSHMESSAGE_METHOD,                 getNotReadJpushMessageHandler);
+        handlersMap.put(ProtocolElements.GET_INVITE_INFO_METHOD,                        getInviteInfoHandler);
+        handlersMap.put(ProtocolElements.GET_CALL_LIST_METHOD,                          getCallListHandler);
+        handlersMap.put(ProtocolElements.CALL_REMOVE_METHOD,                            callRemoveHandler);
+        handlersMap.put(ProtocolElements.SET_SCROLLING_BANNERS_METHOD,                  setScrollingBannersHandler);
+        handlersMap.put(ProtocolElements.GET_SCROLLING_BANNERS_METHOD,                  getScrollingBannersHandler);
+        handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD,                             saveJpushHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

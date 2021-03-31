@@ -8,6 +8,7 @@ import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.LocalDateUtils;
+import io.openvidu.server.utils.ValidPeriodHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -42,8 +44,8 @@ public class CorpServiceExpiredNotifyHandler {
         }
         JsonObject params = new JsonObject();
         params.addProperty("project", corporation.getProject());
-        params.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(), DateUtil.DEFAULT_YEAR_MONTH_DAY));
-        params.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
+        params.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
+        params.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
 
         int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
         int remainderHour = remainderDuration/60;

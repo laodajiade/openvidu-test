@@ -3,9 +3,9 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.Participant;
@@ -81,11 +81,12 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         Object username = userInfo.get("username");
         String deviceName = userInfo.containsKey("deviceName") ? String.valueOf(userInfo.get("deviceName")) : null;
         String userIcon = userInfo.containsKey("userIcon") ? String.valueOf(userInfo.get("userIcon")) : "";
+        String moderatorName = Objects.isNull(username) ? deviceName : username.toString();
         // find the target rpc connection by targetId list and notify info.
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SOURCE_ID_PARAM, sourceId);
-        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, Objects.isNull(username) ? deviceName : username.toString());
+        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERNAME_PARAM, moderatorName);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_USERICON_PARAM, userIcon);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, expireTime);
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_SUBJECT_PARAM, preset.getRoomSubject());
@@ -93,19 +94,23 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_DEVICE_NAME_PARAM, deviceName);
         }
 
-        List<User> invitees = userMapper.selectUserByUuidList(targetIds);
+        List<User> invitees = userMapper.selectCallUserByUuidList(targetIds);
         if (!CollectionUtils.isEmpty(invitees)) {
             invitees.forEach(invitee -> {
                 cacheManage.saveInviteInfo(sessionId,invitee.getUuid());
                 addInviteCompensation(invitee.getUuid(), params, expireTime);
             });
-
         }
-
         inviteOnline(targetIds, params);
-
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+
+        Conference conference = sessionManager.getSession(sessionId).getConference();
+        saveCallHistoryUsers(invitees, sessionId, conference.getRuid());
+        //极光推送
+        sendJpushMessage(targetIds, moderatorName, conference.getConferenceSubject(), conference.getRuid());
+
     }
+
 
     public void inviteOnline(List<String> targetIds, JsonObject params) {
         Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
@@ -123,4 +128,5 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             }
         }
     }
+
 }

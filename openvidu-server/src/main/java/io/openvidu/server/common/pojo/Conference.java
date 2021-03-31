@@ -45,4 +45,8 @@ public class Conference {
     private Integer concurrentNumber;
 
     private String roomIdType;
+
+    private String shortUrl;
+
+    private String moderatorName;
 }

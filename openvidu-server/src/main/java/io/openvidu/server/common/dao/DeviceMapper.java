@@ -2,6 +2,7 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -26,4 +27,6 @@ public interface DeviceMapper {
     List<String> selectDevSerialNumsByDeptIds(List<Long> subDeptIds);
 
     List<Device> getDevicesBySerialNumsList(List<String> deviceSerialNumbers);
+
+    int updateDeviceStatus(@Param("serialNumber") String serialNumber, @Param("status") String status);
 }

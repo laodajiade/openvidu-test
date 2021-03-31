@@ -22,7 +22,7 @@
     version, manufacturer, access_type, project, create_time, update_time
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_device
     where id = #{id,jdbcType=BIGINT}
@@ -58,12 +58,12 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.Device" >
-    insert into sd_device (id, serial_number, device_id, 
+    insert into sd_device (id, serial_number, device_id,
       device_name, device_mac, device_type, device_model,
-      ability, version, manufacturer, 
-      access_type, project, create_time, 
+      ability, version, manufacturer,
+      access_type, project, create_time,
       update_time)
-    values (#{id,jdbcType=BIGINT}, #{serialNumber,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=BIGINT}, #{serialNumber,jdbcType=VARCHAR}, #{deviceId,jdbcType=VARCHAR},
       #{deviceName,jdbcType=VARCHAR}, #{deviceMac,jdbcType=VARCHAR}, #{deviceType,jdbcType=VARCHAR},
       #{deviceModel,jdbcType=VARCHAR}, #{ability,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR},
       #{manufacturer,jdbcType=VARCHAR}, #{accessType,jdbcType=TINYINT}, #{project,jdbcType=VARCHAR},
@@ -263,5 +263,11 @@
       create_time = #{createTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateDeviceStatus" parameterType="java.lang.Object" >
+    update sd_device
+    set status = #{status,jdbcType=VARCHAR}
+    where serial_number = #{serialNumber,jdbcType=VARCHAR}
   </update>
 </mapper>

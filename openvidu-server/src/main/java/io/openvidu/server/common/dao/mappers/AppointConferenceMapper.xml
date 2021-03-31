@@ -9,6 +9,7 @@
     <result column="conference_desc" jdbcType="VARCHAR" property="conferenceDesc" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
     <result column="moderator_uuid" jdbcType="VARCHAR" property="moderatorUuid" />
+    <result column="moderator_name" jdbcType="VARCHAR" property="moderatorName" />
     <result column="start_time" jdbcType="TIMESTAMP" property="startTime" />
     <result column="end_time" jdbcType="TIMESTAMP" property="endTime" />
     <result column="duration" jdbcType="INTEGER" property="duration" />
@@ -82,8 +83,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, ruid, room_id, conference_subject, conference_desc, user_id, moderator_uuid, 
-    start_time, end_time, duration, room_capacity, `password`, moderator_password, auto_invite, 
+    id, ruid, room_id, conference_subject, conference_desc, user_id, moderator_uuid, moderator_name,
+    start_time, end_time, duration, room_capacity, `password`, moderator_password, auto_invite,
     project, `type`, create_time, update_time, `status`, conference_mode
   </sql>
   <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample" resultMap="BaseResultMap">
@@ -101,7 +102,7 @@
     </if>
   </select>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-    select 
+    select
     <include refid="Base_Column_List" />
     from sd_appoint_conference
     where id = #{id,jdbcType=BIGINT}
@@ -117,19 +118,19 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.AppointConference" useGeneratedKeys="true">
-    insert into sd_appoint_conference (ruid, room_id, conference_subject, 
-      conference_desc, user_id, moderator_uuid, 
-      start_time, end_time, duration, 
-      room_capacity, `password`, moderator_password, 
-      auto_invite, project, `type`, 
-      create_time, update_time, `status`, 
+    insert into sd_appoint_conference (ruid, room_id, conference_subject,
+      conference_desc, user_id, moderator_uuid,
+      start_time, end_time, duration,
+      room_capacity, `password`, moderator_password,
+      auto_invite, project, `type`,
+      create_time, update_time, `status`,
       conference_mode)
-    values (#{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR}, 
-      #{conferenceDesc,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{moderatorUuid,jdbcType=VARCHAR}, 
-      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{duration,jdbcType=INTEGER}, 
-      #{roomCapacity,jdbcType=INTEGER}, #{password,jdbcType=VARCHAR}, #{moderatorPassword,jdbcType=VARCHAR}, 
-      #{autoInvite,jdbcType=INTEGER}, #{project,jdbcType=VARCHAR}, #{type,jdbcType=CHAR}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}, 
+    values (#{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
+      #{conferenceDesc,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{moderatorUuid,jdbcType=VARCHAR},
+      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{duration,jdbcType=INTEGER},
+      #{roomCapacity,jdbcType=INTEGER}, #{password,jdbcType=VARCHAR}, #{moderatorPassword,jdbcType=VARCHAR},
+      #{autoInvite,jdbcType=INTEGER}, #{project,jdbcType=VARCHAR}, #{type,jdbcType=CHAR},
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER},
       #{conferenceMode,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.AppointConference" useGeneratedKeys="true">
@@ -192,6 +193,9 @@
       <if test="conferenceMode != null">
         conference_mode,
       </if>
+      <if test="moderatorName != null">
+        moderator_name,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="ruid != null">
@@ -250,6 +254,9 @@
       </if>
       <if test="conferenceMode != null">
         #{conferenceMode,jdbcType=INTEGER},
+      </if>
+      <if test="moderatorName != null">
+        #{moderatorName,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>

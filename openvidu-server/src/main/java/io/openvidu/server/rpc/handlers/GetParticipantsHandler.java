@@ -44,13 +44,11 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         String targetId = getStringOptionalParam(request,ProtocolElements.GET_PARTICIPANTS_TARGETID_PARAM);
         JsonArray jsonArray = new JsonArray();
         // key:connectionId, value:userDeviceDeptInfo
-        Map<String, UserDeviceDeptInfo> connectIdUserInfoMap;
-        Set<Participant> needReturnParts = session.getMajorPartAllOrSpecificConnect(targetId);
 
+        Set<Participant> needReturnParts = session.getMajorPartAllOrSpecificConnect(targetId);
         JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
-        if (!CollectionUtils.isEmpty(needReturnParts)
-                && Objects.nonNull(connectIdUserInfoMap = userManage.getUserInfoInRoom(needReturnParts))
-                && !connectIdUserInfoMap.isEmpty()) {
+        if (!CollectionUtils.isEmpty(needReturnParts)) {
+            Map<String, UserDeviceDeptInfo> connectIdUserInfoMap = userManage.getUserInfoInRoom(needReturnParts);
             // key:connectionId, value:participant
             Map<String, Participant> connectIdPartMap = needReturnParts.stream()
                     .collect(Collectors.toMap(Participant::getParticipantPublicId, Function.identity()));

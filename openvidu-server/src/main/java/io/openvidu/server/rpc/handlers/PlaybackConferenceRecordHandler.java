@@ -37,11 +37,6 @@ public class PlaybackConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
-        if (!isAdmin(rpcConnection.getUserUuid())) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PERMISSION_LIMITED);
-            return;
-        }
         // 回放操作
         conferenceRecordInfoManage.playbackConferenceRecord(conferenceRecordInfo, getUserByRpcConnection(rpcConnection));
 

@@ -18,6 +18,7 @@ import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.UserCorpInfo;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -181,4 +182,16 @@ public class RoomManageImpl implements RoomManage {
     public List<ConferencePartHistory> getConfRecordDetail(ConferencePartHistory search) {
         return conferencePartHistoryMapper.getConfRecordDetail(search);
     }
+
+    @Override
+    public String createShortUrl() {
+        String shortUrl = StringUtil.getNonce(8);
+        Conference conference = conferenceMapper.getConferenceByShortUrl(shortUrl);
+        while (Objects.nonNull(conference)) {
+            createShortUrl();
+        }
+        return shortUrl;
+    }
+
+
 }

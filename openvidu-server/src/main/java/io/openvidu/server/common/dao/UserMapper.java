@@ -48,4 +48,6 @@ public interface UserMapper {
     List<AllUserInfo> selectAllUserByUserIdsList(List<Long> userIds);
 
     User selectAdminUserByProject(String project);
+
+    List<User> selectCallUserByUuidList(List<String> uuids);
 }

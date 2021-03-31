@@ -1,0 +1,46 @@
+
+# send msg from 03 to 04
+POST http://localhost:4443/dev/test?id={{uuid}}&method=sendMsg
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "clientMsgId": "{{$randomInt}}",
+  "ruid": "f337d770-612d-4e7c-8f42-cb72d5899b56",
+  "roomId": "80103600003",
+  "timestamp": "{{$timestamp}}",
+  "msgType": 0,
+  "resendFlag": 0,
+  "operate": 0,
+  "reciverAccount": ["80103600004"],
+  "atAccount": [],
+  "senderAccount": "{{uuid}}",
+  "content": "{{uuid}} 说 你好3",
+  "ext": ""
+}
+
+
+###
+
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getMsgHistory
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid": "f337d770-612d-4e7c-8f42-cb72d5899b56",
+  "limit": 10
+}
+
+###
+
+POST http://localhost:4443/dev/test?id={{uuid}}&method=setImMode
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "{{roomId}}",
+  "operate": 2
+}

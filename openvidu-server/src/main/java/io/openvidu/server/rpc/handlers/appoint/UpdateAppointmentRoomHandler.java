@@ -7,7 +7,6 @@ import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
-import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.RespResult;
@@ -15,12 +14,12 @@ import io.openvidu.server.domain.resp.AppointmentRoomResp;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
+import io.openvidu.server.utils.LocalDateTimeUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import sun.security.krb5.internal.PAData;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -81,7 +80,7 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         }
 
         // 校验有效期
-        if (corporation.getExpireDate().getTime() + ONE_DAY_MILLIS < params.getEndTime()) {
+        if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate())  < params.getEndTime()) {
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
         }
 

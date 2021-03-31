@@ -19,10 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
-/**
- * @author even
- * @date 2021/3/19 12:01
- */
 @Slf4j
 @Component
 public class NotifyDeviceInfoUpdateHandler {

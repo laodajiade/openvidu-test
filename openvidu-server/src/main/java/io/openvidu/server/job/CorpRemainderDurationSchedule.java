@@ -111,7 +111,6 @@ public class CorpRemainderDurationSchedule {
                 if (Objects.nonNull(corporation.getRemainderDuration())) {
                     statisticsManage.statisticsRemainderDuration(corporation.getProject());
                     int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
-                    //log.info("当前企业：{} 剩余时长：{}", corporation.getProject(), remainderDuration);
                     if (remainderDuration > 0 && remainderDuration < durationLessThanTenHour ) {
                         String durationLessTenHour = cacheManage.getCorpRemainDurationLessTenHour(corporation.getProject());
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationLessTenHour)) {

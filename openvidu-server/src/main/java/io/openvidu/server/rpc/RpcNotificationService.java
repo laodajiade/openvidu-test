@@ -206,10 +206,15 @@ public class RpcNotificationService {
                 "successList:{}  failList:{}", method, params, successList, failList);
     }
 
+	public void sendBatchNotificationConcurrent(Set<Participant> participants, final String method, final Object params) {
+		List<String> collect = participants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+		sendBatchNotificationConcurrent(collect, method, params);
+	}
 	/**
 	 * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
 	 */
 	public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, final String method, final Object params) {
+		long start = System.currentTimeMillis();
 		List<String> successList = new ArrayList<>();
 		List<String> failList = new ArrayList<>();
 		int size = participantPrivateIds.size();

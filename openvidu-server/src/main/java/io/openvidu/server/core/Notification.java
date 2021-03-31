@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,6 +29,15 @@ public class Notification {
         this.method = method;
         this.params = params;
     }
+
+    public void setParticipantIds(List<String> participantIds) {
+        this.participantIds = participantIds;
+    }
+
+    public void setParticipantIds(String... participantIds) {
+        this.participantIds = Arrays.asList(participantIds);
+    }
+
 
     public void withParticipantIds(String roomId, SessionManager sessionManager) {
         participantIds = sessionManager.getParticipants(roomId).stream().filter(p -> Objects.equals(StreamType.MAJOR, p.getStreamType()))

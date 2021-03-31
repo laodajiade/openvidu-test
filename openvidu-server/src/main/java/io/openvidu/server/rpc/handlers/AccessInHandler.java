@@ -14,15 +14,19 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
+import io.openvidu.server.utils.LocalDateTimeUtils;
 import io.openvidu.server.utils.LocalDateUtils;
+import io.openvidu.server.utils.ValidPeriodHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -59,6 +63,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
+        String registrationId = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_REGISTRATION_ID_TYPE);
+        String nickName = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_NICKNAME_PARAM);
         String deviceName = null;
         Map userInfo = null;
         JsonObject object = new JsonObject();
@@ -135,6 +141,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                     request.getId(), object, errCode);
             return;
         }
+        if (!StringUtils.isEmpty(clientType)) {
+            cacheManage.updateTokenInfo(uuid, ProtocolElements.ACCESS_IN_CLIENT_TYPE, clientType);
+        }
 
         Long userId = Long.valueOf(String.valueOf(userInfo.get("userId")));
         String project = !StringUtils.isEmpty(userInfo.get("project")) ? String.valueOf(userInfo.get("project")) : CommonConstants.DEFAULT_PROJECT;
@@ -152,6 +161,9 @@ public class AccessInHandler extends RpcAbstractHandler {
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
         }
+        if (UserType.tourist.equals(userType)) {
+            rpcConnection.setUsername(nickName);
+        }
         rpcConnection.setProject(project);
 
         //save cache privateId
@@ -167,8 +179,8 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
-        object.addProperty("expireDate", DateUtil.getDateFormat(corporation.getExpireDate(),DateUtil.DEFAULT_YEAR_MONTH_DAY));
-        object.addProperty("validPeriod", ChronoUnit.DAYS.between(LocalDate.now(), LocalDateUtils.translateFromDate(corporation.getExpireDate())));
+        object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
+        object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
 
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);

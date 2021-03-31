@@ -233,6 +233,9 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 		roomInfoJson.addProperty("automatically", session.isAutomatically());
         roomInfoJson.addProperty("roomIdType", conference.getRoomIdType());
+        roomInfoJson.addProperty("ruid", conference.getRuid());
+        roomInfoJson.addProperty("moderatorAccount", conference.getModeratorUuid());
+		roomInfoJson.addProperty("moderatorName", conference.getModeratorName());
 		roomInfoJson.addProperty(ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM,participant.getPreset().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
@@ -243,6 +246,7 @@ public class SessionEventsHandler {
         if (org.apache.commons.lang.StringUtils.isNotEmpty(conference.getPassword())) {
 			roomInfoJson.addProperty("password", conference.getPassword());
 		}
+
 		result.add("value", resultArray);
 
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
@@ -332,10 +336,10 @@ public class SessionEventsHandler {
 			notifyFlag = notifyUpdateOrderLock.add(session.getSessionId());//在这期间只有第一个线程允许进行通知
 		}
 		if (notifyFlag) {
-			log.info("notifyUpdateOrder merge go on");
+			log.info("notifyUpdateOrder pass");
 			asyncNotifyUpdateOrder(session);
 		} else {
-			log.info("notifyUpdateOrder merge");
+			log.info("notifyUpdateOrder skip");
 		}
 	}
 
@@ -352,7 +356,7 @@ public class SessionEventsHandler {
             synchronized (notifyUpdateOrderLock) {
                 notifyUpdateOrderLock.remove(session.getSessionId());
             }
-
+			log.info("notifyUpdateOrder doing");
             Set<Participant> existParticipants =  session.getMajorPartEachConnect();
             if (!CollectionUtils.isEmpty(existParticipants)) {
                 JsonObject notifyParam = new JsonObject();

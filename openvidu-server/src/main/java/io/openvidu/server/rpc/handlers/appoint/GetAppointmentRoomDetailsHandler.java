@@ -155,7 +155,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
                 }
                 partInfo.addProperty("userIcon", "");
                 partInfo.addProperty("orgId", map.get(user.getId()));
-
+                partInfo.addProperty("accountType", user.getType());
                 partInfoArr.add(partInfo);
             }
 
@@ -208,7 +208,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("moderatorPassword", conference.getModeratorPassword());
             appointConfObj.addProperty("status", conference.getStatus());
             appointConfObj.addProperty("roomIdType", conference.getRoomIdType());
-
+            appointConfObj.addProperty("accountType", creator.getAccountType());
             appointConfObj.add("participants", constructAppointPartsInfo(participants));
 
             if (conference.getRuid().startsWith("appt-")) {
@@ -245,7 +245,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
                     partInfo.addProperty("username", partHistory.getUsername());
                     partInfo.addProperty("userIcon", "");
                     partInfo.addProperty("orgId", map.get(partHistory.getUserId()));
-
+                    partInfo.addProperty("accountType", TerminalTypeEnum.HDC.name().equals(partHistory.getTerminalType()) ? 1 : 0);
                     partInfoArr.add(partInfo);
                 }
             }

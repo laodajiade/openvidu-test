@@ -28,6 +28,7 @@ public class UpdateParticipantsOrderHandler extends RpcAbstractHandler {
         }
 
         JsonArray orderedParts = getParam(request, ProtocolElements.UPDATE_PARTICIPANTS_ORDER_ORDEREDPARTS_PARAM).getAsJsonArray();
+        ErrorCodeEnum errorCodeEnum = ErrorCodeEnum.SUCCESS;
         if (orderedParts.size() > 0) {
             Map<String, Integer> partOrderMap = new HashMap<>(orderedParts.size());
             for (JsonElement jsonElement : orderedParts) {
@@ -35,9 +36,13 @@ public class UpdateParticipantsOrderHandler extends RpcAbstractHandler {
                 partOrderMap.putIfAbsent(orderPart.get("account").getAsString(), orderPart.get("order").getAsInt());
             }
             Participant thorPart = sessionManager.getSession(rpcConnection.getSessionId()).getThorPart();
-            sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, orderedParts, thorPart);
+            errorCodeEnum = sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, orderedParts, thorPart);
         }
-
+        if (!ErrorCodeEnum.SUCCESS.equals(errorCodeEnum)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, errorCodeEnum);
+            return;
+        }
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

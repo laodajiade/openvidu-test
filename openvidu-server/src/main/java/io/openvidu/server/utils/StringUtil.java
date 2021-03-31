@@ -19,6 +19,12 @@ public class StringUtil {
 
     public static final String SPECIFIED_VERSION = "1.3.2";
 
+    public static final String MEETING_INVITE = "%s邀请您参加会议，会议主题：%s，时间：%s-%s";
+    public static final String MEETING_NOTIFY = "您有一个会议即将召开，会议主题：%s，时间：%s-%s";
+    public static final String ON_MEETING_INVITE = "%s邀请您参加会议，会议主题：%s";
+    public static final String INVITE_CONT = "会议邀请";
+    public static final String NOTIFY_CONT = "会议通知";
+
     public static void assertNotEmpty(String param, String paramName) {
         if (param == null)
             throw new NullPointerException("Parameter Is Null:" + paramName);

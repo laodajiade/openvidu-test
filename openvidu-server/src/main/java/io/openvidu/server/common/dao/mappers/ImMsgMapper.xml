@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.openvidu.server.common.dao.ImMsgMapper">
+  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.ImMsg">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="client_msg_id" jdbcType="VARCHAR" property="clientMsgId" />
+    <result column="ruid" jdbcType="VARCHAR" property="ruid" />
+    <result column="room_id" jdbcType="VARCHAR" property="roomId" />
+    <result column="timestamp" jdbcType="TIMESTAMP" property="timestamp" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="msg_type" jdbcType="INTEGER" property="msgType" />
+    <result column="operate" jdbcType="INTEGER" property="operate" />
+    <result column="at_account" jdbcType="VARCHAR" property="atAccount" />
+    <result column="sender_user_id" jdbcType="BIGINT" property="senderUserId" />
+    <result column="sender_uuid" jdbcType="CHAR" property="senderUuid" />
+    <result column="sender_username" jdbcType="VARCHAR" property="senderUsername" />
+    <result column="sender_terminal_type" jdbcType="VARCHAR" property="senderTerminalType" />
+    <result column="revicer_user_id" jdbcType="BIGINT" property="revicerUserId" />
+    <result column="revicer_uuid" jdbcType="CHAR" property="revicerUuid" />
+    <result column="revicer_username" jdbcType="VARCHAR" property="revicerUsername" />
+    <result column="revicer_terminal_type" jdbcType="VARCHAR" property="revicerTerminalType" />
+    <result column="ext" jdbcType="VARCHAR" property="ext" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, client_msg_id, ruid, room_id, `timestamp`, content, msg_type, operate, at_account, 
+    sender_user_id, sender_uuid, sender_username, sender_terminal_type, revicer_user_id, 
+    revicer_uuid, revicer_username, revicer_terminal_type, ext
+  </sql>
+  <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.ImMsgExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from sd_im_msg
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sd_im_msg
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sd_im_msg
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="io.openvidu.server.common.pojo.ImMsgExample">
+    delete from sd_im_msg
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.ImMsg" useGeneratedKeys="true">
+    insert into sd_im_msg (client_msg_id, ruid, room_id, 
+      `timestamp`, content, msg_type, 
+      operate, at_account, sender_user_id, 
+      sender_uuid, sender_username, sender_terminal_type, 
+      revicer_user_id, revicer_uuid, revicer_username, 
+      revicer_terminal_type, ext)
+    values (#{clientMsgId,jdbcType=VARCHAR}, #{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, 
+      #{timestamp,jdbcType=TIMESTAMP}, #{content,jdbcType=VARCHAR}, #{msgType,jdbcType=INTEGER}, 
+      #{operate,jdbcType=INTEGER}, #{atAccount,jdbcType=VARCHAR}, #{senderUserId,jdbcType=BIGINT}, 
+      #{senderUuid,jdbcType=CHAR}, #{senderUsername,jdbcType=VARCHAR}, #{senderTerminalType,jdbcType=VARCHAR}, 
+      #{revicerUserId,jdbcType=BIGINT}, #{revicerUuid,jdbcType=CHAR}, #{revicerUsername,jdbcType=VARCHAR}, 
+      #{revicerTerminalType,jdbcType=VARCHAR}, #{ext,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.ImMsg" useGeneratedKeys="true">
+    insert into sd_im_msg
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="clientMsgId != null">
+        client_msg_id,
+      </if>
+      <if test="ruid != null">
+        ruid,
+      </if>
+      <if test="roomId != null">
+        room_id,
+      </if>
+      <if test="timestamp != null">
+        `timestamp`,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+      <if test="msgType != null">
+        msg_type,
+      </if>
+      <if test="operate != null">
+        operate,
+      </if>
+      <if test="atAccount != null">
+        at_account,
+      </if>
+      <if test="senderUserId != null">
+        sender_user_id,
+      </if>
+      <if test="senderUuid != null">
+        sender_uuid,
+      </if>
+      <if test="senderUsername != null">
+        sender_username,
+      </if>
+      <if test="senderTerminalType != null">
+        sender_terminal_type,
+      </if>
+      <if test="revicerUserId != null">
+        revicer_user_id,
+      </if>
+      <if test="revicerUuid != null">
+        revicer_uuid,
+      </if>
+      <if test="revicerUsername != null">
+        revicer_username,
+      </if>
+      <if test="revicerTerminalType != null">
+        revicer_terminal_type,
+      </if>
+      <if test="ext != null">
+        ext,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="clientMsgId != null">
+        #{clientMsgId,jdbcType=VARCHAR},
+      </if>
+      <if test="ruid != null">
+        #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null">
+        #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="timestamp != null">
+        #{timestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null">
+        #{msgType,jdbcType=INTEGER},
+      </if>
+      <if test="operate != null">
+        #{operate,jdbcType=INTEGER},
+      </if>
+      <if test="atAccount != null">
+        #{atAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="senderUserId != null">
+        #{senderUserId,jdbcType=BIGINT},
+      </if>
+      <if test="senderUuid != null">
+        #{senderUuid,jdbcType=CHAR},
+      </if>
+      <if test="senderUsername != null">
+        #{senderUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="senderTerminalType != null">
+        #{senderTerminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="revicerUserId != null">
+        #{revicerUserId,jdbcType=BIGINT},
+      </if>
+      <if test="revicerUuid != null">
+        #{revicerUuid,jdbcType=CHAR},
+      </if>
+      <if test="revicerUsername != null">
+        #{revicerUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="revicerTerminalType != null">
+        #{revicerTerminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="ext != null">
+        #{ext,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="io.openvidu.server.common.pojo.ImMsgExample" resultType="java.lang.Long">
+    select count(*) from sd_im_msg
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update sd_im_msg
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.clientMsgId != null">
+        client_msg_id = #{record.clientMsgId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.ruid != null">
+        ruid = #{record.ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.roomId != null">
+        room_id = #{record.roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.timestamp != null">
+        `timestamp` = #{record.timestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.content != null">
+        content = #{record.content,jdbcType=VARCHAR},
+      </if>
+      <if test="record.msgType != null">
+        msg_type = #{record.msgType,jdbcType=INTEGER},
+      </if>
+      <if test="record.operate != null">
+        operate = #{record.operate,jdbcType=INTEGER},
+      </if>
+      <if test="record.atAccount != null">
+        at_account = #{record.atAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="record.senderUserId != null">
+        sender_user_id = #{record.senderUserId,jdbcType=BIGINT},
+      </if>
+      <if test="record.senderUuid != null">
+        sender_uuid = #{record.senderUuid,jdbcType=CHAR},
+      </if>
+      <if test="record.senderUsername != null">
+        sender_username = #{record.senderUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="record.senderTerminalType != null">
+        sender_terminal_type = #{record.senderTerminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.revicerUserId != null">
+        revicer_user_id = #{record.revicerUserId,jdbcType=BIGINT},
+      </if>
+      <if test="record.revicerUuid != null">
+        revicer_uuid = #{record.revicerUuid,jdbcType=CHAR},
+      </if>
+      <if test="record.revicerUsername != null">
+        revicer_username = #{record.revicerUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="record.revicerTerminalType != null">
+        revicer_terminal_type = #{record.revicerTerminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.ext != null">
+        ext = #{record.ext,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update sd_im_msg
+    set id = #{record.id,jdbcType=BIGINT},
+      client_msg_id = #{record.clientMsgId,jdbcType=VARCHAR},
+      ruid = #{record.ruid,jdbcType=VARCHAR},
+      room_id = #{record.roomId,jdbcType=VARCHAR},
+      `timestamp` = #{record.timestamp,jdbcType=TIMESTAMP},
+      content = #{record.content,jdbcType=VARCHAR},
+      msg_type = #{record.msgType,jdbcType=INTEGER},
+      operate = #{record.operate,jdbcType=INTEGER},
+      at_account = #{record.atAccount,jdbcType=VARCHAR},
+      sender_user_id = #{record.senderUserId,jdbcType=BIGINT},
+      sender_uuid = #{record.senderUuid,jdbcType=CHAR},
+      sender_username = #{record.senderUsername,jdbcType=VARCHAR},
+      sender_terminal_type = #{record.senderTerminalType,jdbcType=VARCHAR},
+      revicer_user_id = #{record.revicerUserId,jdbcType=BIGINT},
+      revicer_uuid = #{record.revicerUuid,jdbcType=CHAR},
+      revicer_username = #{record.revicerUsername,jdbcType=VARCHAR},
+      revicer_terminal_type = #{record.revicerTerminalType,jdbcType=VARCHAR},
+      ext = #{record.ext,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.ImMsg">
+    update sd_im_msg
+    <set>
+      <if test="clientMsgId != null">
+        client_msg_id = #{clientMsgId,jdbcType=VARCHAR},
+      </if>
+      <if test="ruid != null">
+        ruid = #{ruid,jdbcType=VARCHAR},
+      </if>
+      <if test="roomId != null">
+        room_id = #{roomId,jdbcType=VARCHAR},
+      </if>
+      <if test="timestamp != null">
+        `timestamp` = #{timestamp,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null">
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="msgType != null">
+        msg_type = #{msgType,jdbcType=INTEGER},
+      </if>
+      <if test="operate != null">
+        operate = #{operate,jdbcType=INTEGER},
+      </if>
+      <if test="atAccount != null">
+        at_account = #{atAccount,jdbcType=VARCHAR},
+      </if>
+      <if test="senderUserId != null">
+        sender_user_id = #{senderUserId,jdbcType=BIGINT},
+      </if>
+      <if test="senderUuid != null">
+        sender_uuid = #{senderUuid,jdbcType=CHAR},
+      </if>
+      <if test="senderUsername != null">
+        sender_username = #{senderUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="senderTerminalType != null">
+        sender_terminal_type = #{senderTerminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="revicerUserId != null">
+        revicer_user_id = #{revicerUserId,jdbcType=BIGINT},
+      </if>
+      <if test="revicerUuid != null">
+        revicer_uuid = #{revicerUuid,jdbcType=CHAR},
+      </if>
+      <if test="revicerUsername != null">
+        revicer_username = #{revicerUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="revicerTerminalType != null">
+        revicer_terminal_type = #{revicerTerminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="ext != null">
+        ext = #{ext,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.ImMsg">
+    update sd_im_msg
+    set client_msg_id = #{clientMsgId,jdbcType=VARCHAR},
+      ruid = #{ruid,jdbcType=VARCHAR},
+      room_id = #{roomId,jdbcType=VARCHAR},
+      `timestamp` = #{timestamp,jdbcType=TIMESTAMP},
+      content = #{content,jdbcType=VARCHAR},
+      msg_type = #{msgType,jdbcType=INTEGER},
+      operate = #{operate,jdbcType=INTEGER},
+      at_account = #{atAccount,jdbcType=VARCHAR},
+      sender_user_id = #{senderUserId,jdbcType=BIGINT},
+      sender_uuid = #{senderUuid,jdbcType=CHAR},
+      sender_username = #{senderUsername,jdbcType=VARCHAR},
+      sender_terminal_type = #{senderTerminalType,jdbcType=VARCHAR},
+      revicer_user_id = #{revicerUserId,jdbcType=BIGINT},
+      revicer_uuid = #{revicerUuid,jdbcType=CHAR},
+      revicer_username = #{revicerUsername,jdbcType=VARCHAR},
+      revicer_terminal_type = #{revicerTerminalType,jdbcType=VARCHAR},
+      ext = #{ext,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="getImgHistory" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_im_msg
+    where
+    ruid = #{ruid} and (sender_user_id= #{userId}  or operate = 1 or revicer_user_id = #{userId})
+    <if test="timestamp != null and reverse == 1 "  >
+      and `timestamp` >= #{timestamp}
+    </if>
+    <if test="timestamp != null and reverse == 2 "  >
+      and #{timestamp} >= `timestamp`
+    </if>
+    <if test="id != null and reverse == 1 "  >
+      and `id` > #{id}
+    </if>
+    <if test="id != null and reverse == 2 "  >
+      and #{id} > `id`
+    </if>
+    <if test="reverse == 1">
+      order by `timestamp` asc ,id asc
+    </if>
+    <if test="reverse == 2">
+      order by `timestamp` desc ,id desc
+    </if>
+  </select>
+</mapper>

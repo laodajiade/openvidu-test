@@ -82,6 +82,7 @@
     u.id AS userId,
     u.uuid,
     u.username,
+    u.type AS accountType,
     ud.id AS deptId,
     ud.dept_name AS deptName,
     d.serial_number AS serialNumber,
@@ -128,6 +129,17 @@
     <include refid="Base_Column_List"/>
     from sd_user
     where uuid in
+    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+      #{item,jdbcType=VARCHAR}
+    </foreach>
+  </select>
+
+  <select id="selectCallUserByUuidList" parameterType="java.util.List" resultMap="BaseResultMap">
+    select uuid, if(su.username is not null,su.username,sd.device_name) username
+    from sd_user su
+    left join sd_user_dev sud on su.id = sud.user_id
+    left join sd_device sd on sud.serial_number = sd.serial_number
+    where su.uuid in
     <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
       #{item,jdbcType=VARCHAR}
     </foreach>
@@ -397,7 +409,7 @@
 
   <select id="selectAdminUserByProject" resultMap="BaseResultMap" parameterType="java.lang.String">
     SELECT
-      u.*
+      u.id,u.uuid,spa.phone
     FROM
       sd_user u,
       sd_preset_admin spa

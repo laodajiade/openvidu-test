@@ -205,11 +205,10 @@ public class KurentoSessionManager extends SessionManager {
 				majorPart.changeShareStatus(ParticipantShareStatus.on);
 			}
 
-			// save part info;
+			// save part info
 			roomManage.storePartHistory(participant, conference);
 			// save max concurrent statistics
 			cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
-			long t4 = System.nanoTime();
 			//save max concurrent in conference
 			Conference concurrentCon = new Conference();
 			concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
@@ -617,13 +616,7 @@ public class KurentoSessionManager extends SessionManager {
 						"User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
 			}
 
-			// 如果是墙下，且服务器开启了媒体级联，则从分发服务器上进行接收
-//			if (!participant.getRole().needToPublish() && !session.getDeliveryKmsManagers().isEmpty()) {
-//				sdpAnswer = kParticipant.receiveMediaFromDelivery(senderParticipant, streamMode, sdpOffer, senderName, session.getDeliveryKmsManagers().get(0));
-//				//return;
-//			} else {
-				sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
-//			}
+			sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
 			if (sdpAnswer == null) {
 				throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 						"Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()

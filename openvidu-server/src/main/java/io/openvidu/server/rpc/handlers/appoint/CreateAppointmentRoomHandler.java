@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers.appoint;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
+import io.openvidu.server.common.dao.CallHistoryMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
@@ -92,7 +93,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         }
 
         // 校验有效期
-        if (corporation.getExpireDate().getTime() + ONE_DAY_MILLIS < params.getEndTime()) {
+        if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
         }
         // 判断是否会议冲突
@@ -106,6 +107,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         if (Objects.nonNull(users) && !users.isEmpty()) {
             appointParticipantMapper.batchInsert(constructBatchAppoints(params.getRuid(), users));
+            insertBatchCallHistory(params.getRoomId(), params.getRuid(), users);
         }
 
         // 创建定时任务
