@@ -74,6 +74,8 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                     if (Objects.nonNull(part)) {
                         part.changeMicStatus(micStatus);
                         accountArr.add(account);
+                    } else {
+                        log.warn("uuid:{} set audio status fail ,it not exist", account);
                     }
                 });
             }

@@ -27,8 +27,9 @@ import io.openvidu.server.common.events.StatusEvent;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-
+@Slf4j
 public class Participant {
 
 	protected String finalUserId; // ID to match this connection with a final user (HttpSession id)
@@ -240,6 +241,7 @@ public class Participant {
 
 	public void setMicStatus(ParticipantMicStatus micStatus) {
 		this.micStatus = micStatus;
+		log.info("set mic status uuid:{},publishId:{},micStatus:{}", uuid, participantPublicId, micStatus.name());
 	}
 
 	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }
