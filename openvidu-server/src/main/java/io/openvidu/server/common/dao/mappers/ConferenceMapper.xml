@@ -142,6 +142,9 @@
       <if test="password != null" >
         password,
       </if>
+      <if test="moderatorPassword != null" >
+        moderator_password,
+      </if>
       <if test="project != null" >
         project,
       </if>
@@ -197,6 +200,9 @@
       </if>
       <if test="password != null" >
         #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="moderatorPassword != null" >
+        #{moderatorPassword,jdbcType=VARCHAR},
       </if>
       <if test="project != null" >
         #{project,jdbcType=VARCHAR},
