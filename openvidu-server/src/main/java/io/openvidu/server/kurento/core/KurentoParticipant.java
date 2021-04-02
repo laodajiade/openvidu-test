@@ -33,18 +33,16 @@ import io.openvidu.server.kurento.endpoint.*;
 import io.openvidu.server.kurento.kms.EndpointLoadManager;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
-import lombok.Getter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
-import org.kurento.client.EventListener;
 import org.kurento.client.internal.server.KurentoServerException;
-import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -347,11 +345,9 @@ public class KurentoParticipant extends Participant {
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(senderName);
 		if (subscriber.getEndpoint() == null) {
 			subscriber = getNewOrExistingSubscriber(senderName);
-			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty()) {
+			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
 				DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
 				MediaChannel mediaChannel = senderPublisher.getMediaChannels().get(deliveryKms.getId());
-				MediaChannel mediaChannel2 = deliveryKms.getMediaChannel(kSender.getPublisherStreamId());
-				log.info("mediaChannel == mediaChannel2 ? {}", mediaChannel == mediaChannel2);
 				if (mediaChannel == null) {
 					log.warn("mediaChannel not exist");
 					synchronized (this) {
@@ -359,13 +355,16 @@ public class KurentoParticipant extends Participant {
 					}
 				}
 				log.info("mediaChannel state = {}", mediaChannel.getState().name());
-
-				log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
-						senderName);
-				log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
-						this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
-				senderPublisher = mediaChannel.getPublisher();
-				subscriber = getNewAndCompareSubscriber(senderName, mediaChannel.getTargetPipeline(), subscriber);
+				if (mediaChannel.waitToReady() && mediaChannel.getState().isAvailable()) {
+					log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
+							senderName);
+					log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
+							this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
+					senderPublisher = mediaChannel.getPublisher();
+					subscriber = getNewAndCompareSubscriber(senderName, mediaChannel.getTargetPipeline(), subscriber);
+				} else {
+					log.info("media channel not ready:{},use master kms", mediaChannel.getState().name());
+				}
 			}
 		}
 
