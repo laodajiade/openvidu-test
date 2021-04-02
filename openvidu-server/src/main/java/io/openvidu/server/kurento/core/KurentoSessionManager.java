@@ -304,11 +304,6 @@ public class KurentoSessionManager extends SessionManager {
 				if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
 					log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
 					session.setClosing(true);
-					if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
-						// stop recording
-						log.info("Last participant left. Stopping recording of session {}", sessionId);
-						stopRecording(sessionId);
-					}
 				}
 			}
 
@@ -410,11 +405,6 @@ public class KurentoSessionManager extends SessionManager {
 			// "SessionManager.closeSessionAndEmptyCollections"
 			if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
 				session.setClosing(true);
-				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
-					// stop recording
-					log.info("Last participant left. Stopping recording of session {}", sessionId);
-					stopRecording(sessionId);
-				}
 			}
 		}
 
