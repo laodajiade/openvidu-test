@@ -1437,6 +1437,7 @@ public class KurentoSessionManager extends SessionManager {
         }
 
 		log.info("Stop recording and sessionId is {}", sessionId);
+		session.setIsRecording(false);
         // pub stop recording task
         recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
                 .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());

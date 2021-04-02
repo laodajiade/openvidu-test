@@ -46,8 +46,6 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Autowired
     private RandomRoomIdGenerator randomRoomIdGenerator;
 
-    private static final long ONE_YEAR = 1000L * 60 * 60 * 24 * 366;
-
     @Transactional
     @Override
     public RespResult<AppointmentRoomResp> doProcess(RpcConnection rpcConnection, Request<AppointmentRoomVO> request, AppointmentRoomVO params) {
@@ -70,7 +68,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (params.getStartTime() != 0 && System.currentTimeMillis() > params.getStartTime()) {
             return RespResult.fail(ErrorCodeEnum.START_TIME_LATE);
         } else if (params.getStartTime() == 0) {
-            params.setStartTime(System.currentTimeMillis() + 15000);
+            params.setStartTime(System.currentTimeMillis() + 5000);
         }
 
         // 会议时长校验
