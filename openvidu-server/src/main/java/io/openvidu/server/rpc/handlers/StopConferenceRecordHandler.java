@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import io.openvidu.client.internal.ProtocolElements;
@@ -44,8 +45,7 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
 
         // 权限校验（非本人发起不可停止）
         ConferenceRecord record = new ConferenceRecord();
-        record.setRoomId(roomId);
-        record.setStatus(ConferenceRecordStatusEnum.PROCESS.getStatus());
+        record.setRuid(session.getRuid());
         List<ConferenceRecord> conferenceRecordList = conferenceRecordManage.getByCondition(record);
         if (CollectionUtils.isEmpty(conferenceRecordList)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -53,7 +53,19 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
-        if (!rpcConnection.getUserUuid().equals(conferenceRecordList.get(0).getRecorderUuid())) {
+        ConferenceRecord conferenceRecord = conferenceRecordList.get(0);
+        if (conferenceRecord.getStatus().equals(ConferenceRecordStatusEnum.WAIT.getStatus())) {
+            if (System.currentTimeMillis() - conferenceRecord.getRequestStartTime().getTime() < 15000) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
+                return;
+            }
+            log.error("会议录制开始超时,强行停止,record:{}", JSON.toJSONString(conferenceRecord));
+            conferenceRecord.setStatus(ConferenceRecordStatusEnum.FINISH.getStatus());
+            conferenceRecordManage.updateByPrimaryKey(conferenceRecord);
+        }
+
+        if (!rpcConnection.getUserUuid().equals(conferenceRecord.getRecorderUuid())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
@@ -80,6 +92,10 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
         sessionManager.stopRecording(roomId);
 
 
+        returnAndNotify(rpcConnection, request);
+    }
+
+    private void returnAndNotify(RpcConnection rpcConnection, Request<JsonObject> request) {
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         // 通知与会者停止录制
         notifyStopRecording(rpcConnection.getSessionId());
