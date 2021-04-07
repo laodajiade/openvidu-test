@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
@@ -27,6 +28,17 @@ public class RaiseHandHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.RAISE_HAND_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM);
+        Participant targetParticipant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId());
+        if (Objects.isNull(targetParticipant)) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+            return;
+        }
+        if (ParticipantHandStatus.speaker.equals(targetParticipant.getHandStatus())) {
+            log.info("participant handStatus:{} again call raiseHand then do nothing", targetParticipant.getHandStatus());
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+            return;
+        }
         sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId()).changeHandStatus(ParticipantHandStatus.up);
 
         List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
