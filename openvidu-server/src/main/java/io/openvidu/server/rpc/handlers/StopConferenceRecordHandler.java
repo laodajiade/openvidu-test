@@ -61,8 +61,6 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
                 return;
             }
             log.error("会议录制开始超时,强行停止,record:{}", JSON.toJSONString(conferenceRecord));
-            conferenceRecord.setStatus(ConferenceRecordStatusEnum.FINISH.getStatus());
-            conferenceRecordManage.updateByPrimaryKey(conferenceRecord);
         }
 
         if (!rpcConnection.getUserUuid().equals(conferenceRecord.getRecorderUuid())) {
@@ -85,6 +83,9 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
             return;
         }
+        // 录制文件处理补偿（当前录制KMS高概率出现无法回调结束录制事件）
+        conferenceRecord.setStatus(ConferenceRecordStatusEnum.FINISH.getStatus());
+        conferenceRecordManage.updateByPrimaryKey(conferenceRecord);
 
         sessionManager.setStopRecordingTime(session.getSessionId(), System.currentTimeMillis());
 
