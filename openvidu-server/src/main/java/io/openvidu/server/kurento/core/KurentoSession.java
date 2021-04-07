@@ -300,6 +300,9 @@ public class KurentoSession extends Session {
 	}
 
     private void createPipeline() {
+		if (pipeline != null) {
+			return;
+		}
 		synchronized (pipelineCreateLock) {
 			if (pipeline != null) {
 				return;

@@ -69,7 +69,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
 
-        UseTime.point("join room start");
         try {
             do {
                 // verify room join type
