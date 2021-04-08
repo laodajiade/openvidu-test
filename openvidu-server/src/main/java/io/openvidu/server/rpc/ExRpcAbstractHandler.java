@@ -1,6 +1,7 @@
 package io.openvidu.server.rpc;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -21,7 +22,7 @@ import java.lang.reflect.Type;
 @Slf4j
 @Component
 public abstract class ExRpcAbstractHandler<P> extends RpcAbstractHandler {
-
+    Gson gson = new GsonBuilder().create();
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -29,7 +30,8 @@ public abstract class ExRpcAbstractHandler<P> extends RpcAbstractHandler {
             Request<P> genRequest = convertParams(request);
             log.info("ex request:{}", genRequest);
             RespResult<?> respResult = doProcess(rpcConnection, genRequest, genRequest.getParams());
-            log.info("ex response:{}", new GsonBuilder().setPrettyPrinting().create().toJson(respResult));
+            //log.info("ex response:{}", new GsonBuilder().setPrettyPrinting().create().toJson(respResult));
+            log.info("ex response:{}", gson.toJson(respResult));
             if (!respResult.isOk()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, respResult.getCode());
