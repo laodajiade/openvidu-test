@@ -57,6 +57,8 @@
 		<version.kurento-client>6.11.0</version.kurento-client>
 		<version.kms-api-filters>6.11.0</version.kms-api-filters>
 		<version.org.springframework.kafka>2.2.6.RELEASE</version.org.springframework.kafka>
+		<rtc-user-client.version>1.0.0-SNAPSHOT</rtc-user-client.version>
+		<spring-cloud.version>2020.0.0-M6</spring-cloud.version>
 	</properties>
 
 	<profiles>
@@ -488,6 +490,50 @@
 			<artifactId>sentinel-transport-simple-http</artifactId>
 			<version>1.8.1</version>
 		</dependency>
+		<dependency>
+			<groupId>cn.suditech.rtc</groupId>
+			<artifactId>rtc-user-client</artifactId>
+			<version>${rtc-user-client.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>cn.suditech.rtc</groupId>
+			<artifactId>access-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.suditech.rtc</groupId>
+			<artifactId>access-client</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>Greenwich.SR2</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
+	</repositories>
 
 </project>

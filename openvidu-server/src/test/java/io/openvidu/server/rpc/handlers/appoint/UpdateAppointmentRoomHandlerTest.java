@@ -37,32 +37,6 @@ public class UpdateAppointmentRoomHandlerTest extends TestCase {
     @Test
     public void test() {
 
-        // clear conference
-        AppointConferenceExample example = new AppointConferenceExample();
-        example.createCriteria().andRoomIdEqualTo(roomId);
-        appointConferenceMapper.deleteByExample(example);
-
-        ClientSession session = new ClientSession("123456", null);
-        RpcConnection rpcConnection = new RpcConnection(session);
-
-        rpcConnection.setUserId(267L);
-        rpcConnection.setProject("alibb");
-        rpcConnection.setUserUuid("80101900003");
-
-        AppointmentRoomVO vo = generatorVO();
-        vo.setRuid("appt-10447b0965ce48c186c53684bec89d3e");
-        vo.setSubject("update");
-
-        RespResult<AppointmentRoomResp> result = handler.doProcess(rpcConnection, null, vo);
-
-
-        Assert.assertEquals(result.getCode(), ErrorCodeEnum.SUCCESS);
-        Assert.assertEquals(result.getResult().getRoomId(), vo.getRoomId());
-        Assert.assertNotNull(result.getResult().getRuid());
-
-
-        System.out.println("result ruid = " + result.getResult().getRuid());
-
     }
 
 

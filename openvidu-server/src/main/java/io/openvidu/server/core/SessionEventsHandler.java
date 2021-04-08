@@ -151,7 +151,7 @@ public class SessionEventsHandler {
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
                 participantJson.addProperty(ProtocolElements.JOINROOM_FUNCTIONALITY_PARAM, rpc.getFunctionality());
 				if (!Objects.isNull(rpc.getTerminalConfig())) {
-					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, rpc.getTerminalConfig());
+					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, new Gson().fromJson(rpc.getTerminalConfig(), JsonObject.class));
 				}
 				participantJson.addProperty("deviceVersion", rpc.getDeviceVersion());
             }
@@ -295,7 +295,7 @@ public class SessionEventsHandler {
 				notifParams.addProperty("order", participant.getOrder());
 			}
 			if (!Objects.isNull(rpcConnection.getTerminalConfig()))
-				notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, rpcConnection.getTerminalConfig());
+				notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, new Gson().fromJson(rpcConnection.getTerminalConfig(), JsonObject.class));
 		}
 
 		List<String> notifyList = new ArrayList<>();

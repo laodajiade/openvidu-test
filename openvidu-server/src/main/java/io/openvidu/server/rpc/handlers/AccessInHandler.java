@@ -153,7 +153,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setUserType(userType);
         rpcConnection.setAccessType(accessType);
         rpcConnection.setTerminalType(terminalType);
-        rpcConnection.setDeviceSerailNumber(deviceSerialNumber);
+        rpcConnection.setSerialNumber(deviceSerialNumber);
         rpcConnection.setUserId(userId);
         rpcConnection.setDeviceVersion(deviceVersion);
         Corporation corporation = corporationMapper.selectByCorpProject(project);
@@ -182,6 +182,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
         object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
 
+        rpcConnection.setLoginTime(System.currentTimeMillis());
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }
@@ -317,7 +318,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setUsername(device.getDeviceName());
         rpcConnection.setAbility(ability);
         rpcConnection.setFunctionality(functionality);
-        rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.getAsJsonObject() : null);
+        rpcConnection.setTerminalConfig(!Objects.isNull(terminalConfig) ? terminalConfig.toString() : null);
     }
 
 }
