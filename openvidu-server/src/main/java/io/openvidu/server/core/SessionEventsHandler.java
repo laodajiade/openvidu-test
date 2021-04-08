@@ -257,7 +257,6 @@ public class SessionEventsHandler {
 			roomInfoJson.add("layoutInfo", layoutInfoObj);
         }
 		result.add("roomInfo", roomInfoJson);
-		UseTime.point("join room p9");
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 
 		new Thread(() -> deliveryOnParticipantJoined(session)).start();

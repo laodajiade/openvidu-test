@@ -615,11 +615,13 @@ public abstract class SessionManager {
 		Set<Participant> participants = getParticipants(sessionId);
 
 		// set session status: closing
-//        session.setClosing(true);
+        session.setClosing(true);
 		boolean sessionClosedByLastParticipant = false;
-		/*if (openviduConfig.isRecordingModuleEnabled() || openviduConfig.isLivingModuleEnabled()) {
-			session.stopRecordAndLiving(0, EndReason.closeSessionByModerator);
-		}*/
+		if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
+			// stop recording
+			log.info("Stopping recording of close session {}", sessionId);
+			stopRecording(sessionId);
+		}
 		UseTime.point("closeSession");
 		UseTime.Point point = UseTime.getPoint("closeSession.evictParticipant");
 		for (Participant p : participants) {

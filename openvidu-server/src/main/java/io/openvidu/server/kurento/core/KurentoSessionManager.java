@@ -159,7 +159,9 @@ public class KurentoSessionManager extends SessionManager {
 			existingParticipants = getParticipants(sessionId);
 			participant.setApplicationContext(applicationContext);
 			//set the part order
+			UseTime.point("setMajorPartsOrder start");
 			kSession.setMajorPartsOrder(participant, rpcNotificationService);
+			UseTime.point("setMajorPartsOrder end");
 			// 第一个入会者是主持人，所有权限都打开
 			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				SessionPreset preset = getPresetInfo(sessionId);
@@ -196,24 +198,28 @@ public class KurentoSessionManager extends SessionManager {
 			}
 			// deal the default subtitle config
 			participant.setSubtitleConfig(kSession.getSubtitleConfig());
-
+			UseTime.point("join 1");
 			kSession.join(participant);
+			UseTime.point("join 2");
 			// record share status.
 			if (StreamType.SHARING.equals(participant.getStreamType())) {
 				participant.setShareStatus(ParticipantShareStatus.on);
 				Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
 				majorPart.changeShareStatus(ParticipantShareStatus.on);
 			}
-
+			UseTime.point("db 1");
 			// save part info
 			roomManage.storePartHistory(participant, conference);
+			UseTime.point("db 2");
 			// save max concurrent statistics
 			cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
+			UseTime.point("db 3");
 			//save max concurrent in conference
 			Conference concurrentCon = new Conference();
 			concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
 			concurrentCon.setId(conference.getId());
 			roomManage.storeConcurrentNumber(concurrentCon);
+			UseTime.point("db 4");
 		} catch (OpenViduException e) {
 			log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
 					sessionId, e);
@@ -303,11 +309,6 @@ public class KurentoSessionManager extends SessionManager {
 				if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
 					log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
 					session.setClosing(true);
-					if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
-						// stop recording
-						log.info("Last participant left. Stopping recording of session {}", sessionId);
-						stopRecording(sessionId);
-					}
 				}
 			}
 
@@ -409,11 +410,6 @@ public class KurentoSessionManager extends SessionManager {
 			// "SessionManager.closeSessionAndEmptyCollections"
 			if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
 				session.setClosing(true);
-				if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
-					// stop recording
-					log.info("Last participant left. Stopping recording of session {}", sessionId);
-					stopRecording(sessionId);
-				}
 			}
 		}
 
@@ -1430,6 +1426,7 @@ public class KurentoSessionManager extends SessionManager {
         }
 
 		log.info("Stop recording and sessionId is {}", sessionId);
+		session.setIsRecording(false);
         // pub stop recording task
         recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
                 .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());

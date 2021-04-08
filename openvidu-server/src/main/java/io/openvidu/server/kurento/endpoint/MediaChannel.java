@@ -282,4 +282,19 @@ public class MediaChannel {
         json.add("publisher", publisher.toJson());
         return json;
     }
+
+    public boolean waitToReady() {
+        int tryCnt = 0;
+        while (state.isInitStage()) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(10);
+                if (tryCnt++ > 300) {
+                    return !state.isInitStage();
+                }
+            } catch (InterruptedException e) {
+                return !state.isInitStage();
+            }
+        }
+        return !state.isInitStage();
+    }
 }

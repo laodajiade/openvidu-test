@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamType;
@@ -27,6 +28,13 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         Session session;
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
+
+        if (!Objects.isNull(session = sessionManager.getSessionNotActive(sessionId)) && rpcConnection.getAccessType() == AccessTypeEnum.web) {
+            closeRoomNotActive(rpcConnection, session);
+            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+            return;
+        }
+
         if (Objects.isNull(session = sessionManager.getSession(sessionId)) || session.isClosed()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
@@ -59,6 +67,9 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
+    public void closeRoomNotActive(RpcConnection rpcConnection, Session session) {
+        sessionManager.closeSessionAndEmptyCollections(session, EndReason.closeSessionByModerator);
+    }
 
     public void closeRoom(RpcConnection rpcConnection, Session session) {
         UseTime.point("closeRoom p1");
