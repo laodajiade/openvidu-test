@@ -70,7 +70,7 @@ public class HandlerController {
                 log.warn(
                         "No connection found for participant with privateId {} when trying to execute method '{}'. " +
                                 "Method 'Session.connect()' must be the first operation called in any session", request.getId(), request.getMethod());
-                //notificationService.sendRespWithConnTransaction(requestDTO.getParticipantPrivateId(), request.getId(), ErrorCodeEnum.ACCESS_IN_NEEDED);
+                //notificationService.sendResponse(requestDTO.getParticipantPrivateId(), request.getId(), ErrorCodeEnum.ACCESS_IN_NEEDED);
                 return RespResult.fail(ErrorCodeEnum.ACCESS_IN_NEEDED);
             }
             int hashCode = rpcConnection.hashCode();
