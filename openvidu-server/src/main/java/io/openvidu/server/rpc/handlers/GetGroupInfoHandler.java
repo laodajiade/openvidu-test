@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
 import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
 import io.openvidu.server.common.manage.HiddenUserHelper;
@@ -46,12 +47,19 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
+        boolean isChooseAll = getBooleanParam(request,"isChooseAll");
         Long groupId = getLongParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
         int pageNum = getIntParam(request, ProtocolElements.PAGENUM);
         int pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
         JSONObject resp = new JSONObject();
-        resp.put(ProtocolElements.PAGENUM, pageNum);
-        resp.put(ProtocolElements.PAGESIZE, pageSize);
+
+        if (isChooseAll) {
+            resp.put(ProtocolElements.PAGENUM,1);
+            resp.put(ProtocolElements.PAGESIZE,Integer.MAX_VALUE);
+        } else {
+            resp.put(ProtocolElements.PAGENUM, pageNum);
+            resp.put(ProtocolElements.PAGESIZE, pageSize);
+        }
 
         HiddenSpecifyVisibleDTO specifyVisibleRule = hiddenSpecifyVisibleManage.getSpecifyVisibleRule(rpcConnection.getUserUuid(),
                 rpcConnection.getUserId(), rpcConnection.getCorpId());

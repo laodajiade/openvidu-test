@@ -68,9 +68,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                 });
             } else {
                 accountTargets.forEach(account -> {
-                    KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                            .filter(s -> Objects.equals(account, s.getUuid())
-                                    && Objects.equals(StreamType.MAJOR, s.getStreamType())).findFirst().orElse(null);
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getSession(sessionId).getParticipantByUUID(account);
                     if (Objects.nonNull(part)) {
                         part.changeMicStatus(micStatus);
                         accountArr.add(account);
