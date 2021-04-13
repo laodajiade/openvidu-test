@@ -55,8 +55,6 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
         if (isChooseAll) {
             pageNum = 1;
             pageSize = Integer.MAX_VALUE;
-            resp.put(ProtocolElements.PAGENUM, 1);
-            resp.put(ProtocolElements.PAGESIZE, Integer.MAX_VALUE);
         } else {
             pageNum = getIntParam(request, ProtocolElements.PAGENUM);
             pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
