@@ -350,7 +350,9 @@ public class KurentoSession extends Session {
 	}
 
 	public Composite createSipComposite() {
-		sipComposite = new Composite.Builder(pipeline).build();
+		if (Objects.isNull(sipComposite)) {
+			sipComposite = new Composite.Builder(pipeline).build();
+		}
 		return sipComposite;
 	}
 

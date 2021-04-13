@@ -711,7 +711,10 @@ public class KurentoParticipant extends Participant {
 				releaseElement(getParticipantPublicId(), publisher.getEndpoint());
 //				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
 			}
-			this.streaming = false;
+			if (Objects.nonNull(publisher.getSipCompositeHubPort())) {
+				publisher.getSipCompositeHubPort().release();
+				new Thread(this.session::updateSipComposite).start();
+			}
 			this.session.deregisterPublisher();
 
 			publisher = null;
