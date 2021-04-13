@@ -47,20 +47,23 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
-        boolean isChooseAll = getBooleanParam(request,"isChooseAll");
+        boolean isChooseAll = getBooleanParam(request, "isChooseAll");
         Long groupId = getLongParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
-        int pageNum = getIntParam(request, ProtocolElements.PAGENUM);
-        int pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
+        int pageNum, pageSize;
         JSONObject resp = new JSONObject();
 
         if (isChooseAll) {
-            resp.put(ProtocolElements.PAGENUM,1);
-            resp.put(ProtocolElements.PAGESIZE,Integer.MAX_VALUE);
+            pageNum = 1;
+            pageSize = Integer.MAX_VALUE;
+            resp.put(ProtocolElements.PAGENUM, 1);
+            resp.put(ProtocolElements.PAGESIZE, Integer.MAX_VALUE);
         } else {
-            resp.put(ProtocolElements.PAGENUM, pageNum);
-            resp.put(ProtocolElements.PAGESIZE, pageSize);
+            pageNum = getIntParam(request, ProtocolElements.PAGENUM);
+            pageSize = getIntParam(request, ProtocolElements.PAGESIZE);
         }
 
+        resp.put(ProtocolElements.PAGENUM, pageNum);
+        resp.put(ProtocolElements.PAGESIZE, pageSize);
         HiddenSpecifyVisibleDTO specifyVisibleRule = hiddenSpecifyVisibleManage.getSpecifyVisibleRule(rpcConnection.getUserUuid(),
                 rpcConnection.getUserId(), rpcConnection.getCorpId());
         // 全部隐藏，直接返回空列表
