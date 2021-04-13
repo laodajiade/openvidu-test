@@ -47,7 +47,7 @@ public class GetGroupInfoHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
-        boolean isChooseAll = getBooleanParam(request, "isChooseAll");
+        boolean isChooseAll = getBooleanOptionalParam(request, "isChooseAll");
         Long groupId = getLongParam(request, ProtocolElements.GET_GROUP_INFO_GROUPID_PARAM);
         int pageNum, pageSize;
         JSONObject resp = new JSONObject();

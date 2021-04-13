@@ -172,6 +172,9 @@ public class CallDetailRecord {
 	}
 
 	public void stopSubscriber(String participantPublicId, String senderPublicId, String streamId, EndReason reason) {
+		if (streamId == null) {
+			return;
+		}
 		Set<CDREventWebrtcConnection> participantSubscriptions = this.subscriptions.get(participantPublicId);
 		if (participantSubscriptions != null) {
 			CDREventWebrtcConnection eventSubscriberEnd;
