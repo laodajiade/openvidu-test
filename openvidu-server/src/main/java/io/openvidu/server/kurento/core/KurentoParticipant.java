@@ -686,11 +686,6 @@ public class KurentoParticipant extends Participant {
 				this.session.publishedStreamIds.remove(this.getPublisherStreamId());
 			}
 
-			/*if (this.openviduConfig.isRecordingModuleEnabled()
-					&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
-				this.recordingManager.stopOneIndividualStreamRecording(session, this.getPublisherStreamId(),
-						kmsDisconnectionTime);
-			}*/
 			if (this.openviduConfig.isLivingModuleEnabled()
 					&& this.livingManager.sessionIsBeingLived(session.getSessionId())) {
 				this.livingManager.stopOneIndividualStreamLiving(session, this.getPublisherStreamId(),
@@ -712,7 +707,7 @@ public class KurentoParticipant extends Participant {
 //				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
 			}
 			if (Objects.nonNull(publisher.getSipCompositeHubPort())) {
-				publisher.getSipCompositeHubPort().release();
+				releaseElement(getParticipantPublicId(), publisher.getSipCompositeHubPort());
 				new Thread(this.session::updateSipComposite).start();
 			}
 			this.session.deregisterPublisher();

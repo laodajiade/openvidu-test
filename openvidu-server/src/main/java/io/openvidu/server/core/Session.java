@@ -438,6 +438,14 @@ public class Session implements SessionInterface {
 						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
 				.collect(Collectors.toSet());
 	}
+	public Set<Participant> getMajorSipPart() {
+		checkClosed();
+		return this.participants.values().stream()
+				.map(v -> v.get(StreamType.MAJOR.name()))
+				.filter(participant -> participant.getTerminalType()==TerminalTypeEnum.S)
+				.collect(Collectors.toSet());
+	}
+
 
 
 	public Set<Participant> getMajorPartExcludeModeratorConnect() {
@@ -1611,7 +1619,7 @@ public class Session implements SessionInterface {
 		}
 		kurentoParticipant.getPublisher().getEndpoint().connect(hubPort);
 //		kurentoParticipant.getPublisher().internalSinkConnect(kurentoParticipant.getPublisher().getEndpoint(), hubPort);
-		hubPortIds.add(kurentoParticipant.getPublisher().getSipCompositeHubPort().getId());
+		hubPortIds.add(hubPort.getId());
 		return ++mcuNum;
 	}
 

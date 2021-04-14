@@ -360,6 +360,14 @@ public class KurentoSession extends Session {
 		return sipComposite;
 	}
 
+	public void releaseSipComposite() {
+		if (Objects.nonNull(this.sipComposite)) {
+			Composite sipCompositeTmp = this.sipComposite;
+			this.sipComposite = null;
+			sipCompositeTmp.release();
+		}
+	}
+
 	private void closePipeline(Runnable callback) {
 		synchronized (pipelineReleaseLock) {
 			if (pipeline == null) {
