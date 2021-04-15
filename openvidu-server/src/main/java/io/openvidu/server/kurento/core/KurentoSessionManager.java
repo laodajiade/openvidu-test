@@ -324,7 +324,8 @@ public class KurentoSessionManager extends SessionManager {
 
 			// sip离会且会议中没sip，则将composite释放
 			if (participant.getTerminalType() == TerminalTypeEnum.S && session.getMajorSipPart().size() == 0) {
-				session.releaseSipComposite();
+				log.info("releaseSipComposite by last sip leaveRoom");
+				//todo 优化 session.releaseSipComposite();
 			}
 
 			if (session.isClosing()) {
