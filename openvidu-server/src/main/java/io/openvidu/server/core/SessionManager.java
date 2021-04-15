@@ -461,7 +461,8 @@ public abstract class SessionManager {
 			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
 				if (OpenViduRole.PUBLISHER.equals(participant.getRole()) || OpenViduRole.MODERATOR.equals(participant.getRole())
-						|| (OpenViduRole.ONLY_SHARE.equals(participant.getRole()) && participant.getStreamType().equals(StreamType.SHARING))
+						|| (OpenViduRole.ONLY_SHARE.equals(participant.getRole()) && participant.getStreamType().equals(StreamType.SHARING)
+						|| participant.getTerminalType() == TerminalTypeEnum.S)
 				) {
 					return true;
 				}

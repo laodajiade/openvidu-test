@@ -5,10 +5,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.constants.CacheKeyConstants;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantMicStatus;
-import io.openvidu.server.common.enums.ParticipantVideoStatus;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -44,7 +41,7 @@ public class PublishVideoHandler extends RpcAbstractHandler {
             SessionPreset preset = session.getPresetInfo();
             if (preset.getPollingStatusInRoom().equals(SessionPresetEnum.off)) {
                 // check part role
-                if (OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
+                if (OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole()) && participant.getTerminalType() != TerminalTypeEnum.S) {
                     notificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(), request.getId(),
                             null, ErrorCodeEnum.INVALID_METHOD_CALL);
                     return;
