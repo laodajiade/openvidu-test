@@ -110,7 +110,6 @@ public abstract class KmsManager {
 	}
 
 	/**
-	 * todo 获取负载最小的kms，现在阶段写死返回一个
 	 * @param excludeKms
 	 * @return
 	 */

@@ -8,6 +8,8 @@ import cn.suditech.access.domain.AccessNotification;
 import cn.suditech.access.domain.AccessResp;
 import cn.suditech.access.domain.enums.AccessCode;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -21,11 +23,15 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
+import javax.ws.rs.NotSupportedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,8 +40,7 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     @Autowired
     private IRpcConnection rpcConnections;
 
-    //todo 这里存在泄漏问题，需要处理, 使用定时任务删除过期的
-    private final ConcurrentHashMap<String, RpcConnection> transactions = new ConcurrentHashMap<>();
+    private final Cache<String, RpcConnection> transactions = CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build();
 
     @Autowired
     private AccessClient accessClient;
@@ -45,14 +50,17 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
             60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
             new ThreadFactoryBuilder().setNameFormat("notify_thread_pool-").setDaemon(true).build());
 
+    /**
+     * newRpcConnection 由access-server完成，信令不再负责创建
+     */
     @Override
     public RpcConnection newRpcConnection(Transaction t, Request<JsonObject> request) {
-        return null;   //todo yy
+        throw new NotSupportedException("newRpcConnection 由 access-server 完成，信令不再负责创建");
     }
 
     @Override
     public RpcConnection addTransaction(Transaction t, Request<JsonObject> request) {
-        return null;   //todo yy
+        throw new NotSupportedException("please used #addTransaction(RpcConnection rc, Request<JsonObject> request)");
     }
 
     @Override
@@ -282,12 +290,11 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
 
     @Override
     public void sendRespWithConnTransaction(Transaction t, Integer requestId, ErrorCodeEnum errorCode) {
-        //todo yy
+        throw new NotSupportedException("no support");
     }
 
     private RpcConnection getAndRemoveTransaction(String participantPrivateId, Integer transactionId) {
-
-        RpcConnection rpcSession = transactions.get(getTransactionId(participantPrivateId, transactionId));
+        RpcConnection rpcSession = transactions.getIfPresent(getTransactionId(participantPrivateId, transactionId));
         if (rpcSession == null) {
             log.warn("Invalid WebSocket session id {}, tid{}", participantPrivateId, transactionId);
             return null;
