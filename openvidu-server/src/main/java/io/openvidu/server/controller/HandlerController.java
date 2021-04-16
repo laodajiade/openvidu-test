@@ -66,11 +66,9 @@ public class HandlerController {
             RpcConnection rpcConnection = rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
 
             if (rpcConnection == null) {
-                // return errorCode:11007("please access in first") if any method is called before 'accessIn'
                 log.warn(
                         "No connection found for participant with privateId {} when trying to execute method '{}'. " +
                                 "Method 'Session.connect()' must be the first operation called in any session", request.getId(), request.getMethod());
-                //notificationService.sendResponse(requestDTO.getParticipantPrivateId(), request.getId(), ErrorCodeEnum.ACCESS_IN_NEEDED);
                 return RespResult.fail(ErrorCodeEnum.ACCESS_IN_NEEDED);
             }
             int hashCode = rpcConnection.hashCode();

@@ -59,7 +59,7 @@ public class RpcExHandler {
 
 
 	public void handleRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Thread.currentThread().setName(rpcConnection.getAccessInfo().getOrigin() + "-" + request.getId());
+		Thread.currentThread().setName(rpcConnection.getParticipantPrivateId() + "-" + request.getId());
 		String participantPrivateId;
 		try {
 			participantPrivateId = rpcConnection.getParticipantPrivateId();
