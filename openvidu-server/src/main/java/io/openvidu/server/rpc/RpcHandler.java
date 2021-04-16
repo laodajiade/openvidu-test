@@ -20,9 +20,7 @@ package io.openvidu.server.rpc;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
 import com.codahale.metrics.Timer;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
@@ -199,9 +197,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	public void handleTransportError(Session rpcSession, Throwable exception) throws Exception {
 		if (rpcSession != null) {
 			log.error("Transport exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
-					exception.getMessage());
+					exception.getMessage(), exception);
 		} else {
-			log.warn("Transport exception for WebSocket session occurred.");
+			log.warn("Transport exception for WebSocket session occurred.", exception);
 		}
 	}
 
@@ -209,9 +207,9 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	public void handleUncaughtException(Session rpcSession, Exception exception) {
 		if (rpcSession != null) {
 			log.error("Uncaught exception for WebSocket session: {} - Exception: {}", rpcSession.getSessionId(),
-					exception.getMessage());
+					exception.getMessage(), exception);
 		} else {
-			log.warn("Uncaught exception for WebSocket session occurred.");
+			log.warn("Uncaught exception for WebSocket session occurred.", exception);
 		}
 	}
 
