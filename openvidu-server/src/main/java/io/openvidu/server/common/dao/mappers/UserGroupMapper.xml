@@ -187,4 +187,10 @@
       group by g.id,g.group_name
       order by g.sort_number asc
 </select>
+
+  <select id="selectUserInGroup" parameterType="map" resultType="io.openvidu.server.common.pojo.Group">
+      SELECT a.id,a.group_name FROM sd_group a LEFT JOIN
+      sd_user_group b ON a.id = b.group_id where
+      a.corp_id = #{corpId} AND b.user_id = #{userId}
+    </select>
 </mapper>

@@ -114,7 +114,7 @@
   </update>
 
   <select id="selectRootDeptByUuid" resultType="io.openvidu.server.common.pojo.RootDept" parameterType="java.lang.String" >
-    select d.id,d.dept_name deptName,d.parent_id parentId,d.corp_id corpId
+    select d.id,d.dept_name deptName,d.parent_id parentId,d.corp_id corpId , su.id AS userId
     from sd_user_dept sud
     left join sd_user su on sud.user_id = su.id
     left join sd_department d on sud.dept_id = d.id
