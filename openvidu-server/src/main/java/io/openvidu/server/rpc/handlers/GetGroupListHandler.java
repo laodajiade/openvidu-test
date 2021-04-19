@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -55,16 +52,13 @@ public class GetGroupListHandler extends RpcAbstractHandler {
         JsonObject resp = new JsonObject();
         JsonArray array = new JsonArray();
         if (!CollectionUtils.isEmpty(groups) && !StringUtils.isEmpty(userInGroup)) {
-            for (Group group : groups) {
-                for (Group userInfoGroup : userInGroup) {
-                    if (userInfoGroup.getId().equals(group.getId())) {
-                        JsonObject jsonObject = new JsonObject();
-                        jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPNAME_PARAM, group.getGroupName());
-                        jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPID_PARAM, group.getId());
-                        jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_NUMOFPEOPLE_PARAM, group.getNumOfPeople());
-                        array.add(jsonObject);
-                    }
-                }
+            List<Group> result = groups.stream().filter((group) -> userInGroup.stream().map(Group::getId).collect(Collectors.toList()).contains(group.getId())).collect(Collectors.toList());
+            for (Group group : result) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPNAME_PARAM, group.getGroupName());
+                jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPID_PARAM, group.getId());
+                jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_NUMOFPEOPLE_PARAM, group.getNumOfPeople());
+                array.add(jsonObject);
             }
         }
         PageInfo<Group> pageInfo = new PageInfo<>(groups);
