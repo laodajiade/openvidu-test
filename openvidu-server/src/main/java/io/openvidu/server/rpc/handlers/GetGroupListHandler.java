@@ -61,7 +61,7 @@ public class GetGroupListHandler extends RpcAbstractHandler {
                 array.add(jsonObject);
             }
         }
-        PageInfo<Group> pageInfo = new PageInfo<>(groups);
+        PageInfo<Group> pageInfo = new PageInfo<>(userInGroup);
         resp.addProperty(ProtocolElements.PAGENUM, pageNum);
         resp.addProperty(ProtocolElements.PAGESIZE, pageSize);
         resp.addProperty(ProtocolElements.TOTAL, pageInfo.getTotal());
