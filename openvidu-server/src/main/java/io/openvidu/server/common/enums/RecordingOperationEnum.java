@@ -2,6 +2,7 @@ package io.openvidu.server.common.enums;
 
 import com.google.gson.JsonObject;
 import io.openvidu.server.kurento.core.ConferenceRecordingProperties;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * @author chosongi
@@ -20,6 +21,7 @@ public enum RecordingOperationEnum {
             params.addProperty("layoutMode", recordingProperties.getLayoutMode());
             params.addProperty("outPutMode", recordingProperties.getOutputMode().name());
             params.addProperty("mediaProfileSpecType", recordingProperties.getMediaProfileSpecType().name());
+            params.addProperty("serialId", RandomStringUtils.randomAlphabetic(6));
             params.add("mediaSources", recordingProperties.getMediaSources());
 
             return wrapperMsg(params);
