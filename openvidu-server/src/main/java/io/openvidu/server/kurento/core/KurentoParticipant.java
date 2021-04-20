@@ -191,6 +191,9 @@ public class KurentoParticipant extends Participant {
 			log.info("SIP terminal:{} published and create sipComposite", getUuid());
 			Composite sipComposite = this.session.createSipComposite();
 			this.publisher.createSipCompositeHubPort(sipComposite);
+		}
+
+		if (Objects.nonNull(session.getSipComposite())) {
 			session.asyncUpdateSipComposite();
 		}
 
