@@ -208,7 +208,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("moderatorPassword", conference.getModeratorPassword());
             appointConfObj.addProperty("status", conference.getStatus());
             appointConfObj.addProperty("roomIdType", conference.getRoomIdType());
-            appointConfObj.addProperty("accountType", creator.getAccountType());
+            appointConfObj.addProperty("accountType", creator != null ? creator.getAccountType().toString() : "");
             appointConfObj.add("participants", constructAppointPartsInfo(participants));
 
             if (conference.getRuid().startsWith("appt-")) {

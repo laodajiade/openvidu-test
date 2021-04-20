@@ -6,6 +6,7 @@ import io.openvidu.server.common.pojo.UserGroupVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface UserGroupMapper {
@@ -43,4 +44,11 @@ public interface UserGroupMapper {
     int updateByPrimaryKey(UserGroup record);
 
     List<Group> selectByCorpIds(Long corpId);
+
+    /**
+     * 查询群组中的用户是否存在
+     * @return
+     */
+    List<Group> selectUserInGroup(Map<String,Object> map);
+
 }

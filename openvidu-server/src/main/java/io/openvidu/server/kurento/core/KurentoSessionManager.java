@@ -1492,15 +1492,22 @@ public class KurentoSessionManager extends SessionManager {
             if (ConferenceModeEnum.SFU == kurentoSession.getConferenceMode()) {
                 List<Participant> parts = kurentoSession.getOrderedMajorAndOnWallParts();
                 recordingProperties.setLayoutMode(parts.size());
+				boolean haveMajorStream = false;
                 if (Objects.nonNull(speakerPart)) {
-					passThruList.add(constructPartRecordInfo(speakerPart,order));
+					haveMajorStream = true;
+					passThruList.add(constructPartRecordInfo(speakerPart, order));
 					order++;
 				}
 				List<Participant> notSpeakerParts = parts.stream().filter(participant -> !ParticipantHandStatus.speaker.equals(participant.getHandStatus())).collect(Collectors.toList());
-                for (Participant participant : notSpeakerParts) {
-                    passThruList.add(constructPartRecordInfo(participant, order));
-                    order++;
-                }
+				for (Participant participant : notSpeakerParts) {
+					if (haveMajorStream) {
+						passThruList.add(constructPartRecordInfo(demotionMinorStream(participant, kurentoSession), order));
+					} else {
+						haveMajorStream = true;
+						passThruList.add(constructPartRecordInfo(participant, order));
+					}
+					order++;
+				}
             } else {
                 recordingProperties.setLayoutMode(kurentoSession.getLayoutMode().getMode());
                 JsonArray majorShareMixLinkedArr = kurentoSession.getMajorShareMixLinkedArr();
@@ -1524,11 +1531,11 @@ public class KurentoSessionManager extends SessionManager {
 			// specific recording layout
 			passThruList.add(constructPartRecordInfo(sharingPart, 1));
 			if (Objects.isNull(speakerPart)) {
-				passThruList.add(constructPartRecordInfo(moderatorPart, 2));
+				passThruList.add(constructPartRecordInfo(demotionMinorStream(moderatorPart, kurentoSession), 2));
 				recordingProperties.setLayoutMode(LayoutModeEnum.TWO.getMode());
 			} else {
-				passThruList.add(constructPartRecordInfo(speakerPart, 2));
-				passThruList.add(constructPartRecordInfo(moderatorPart, 3));
+				passThruList.add(constructPartRecordInfo(demotionMinorStream(speakerPart, kurentoSession), 2));
+				passThruList.add(constructPartRecordInfo(demotionMinorStream(moderatorPart, kurentoSession), 3));
 				recordingProperties.setLayoutMode(LayoutModeEnum.THREE.getMode());
 			}
 		}
@@ -1545,10 +1552,23 @@ public class KurentoSessionManager extends SessionManager {
 		return true;
 	}
 
+	/**
+	 * 降级选择子流
+	 * @param part 需要降级的参会者，必须是硬终端
+	 * @return 如果有子流则返回子流，否则返回主流
+	 */
+	private Participant demotionMinorStream(Participant part, KurentoSession kurentoSession) {
+		if (part.getTerminalType() != TerminalTypeEnum.HDC) {
+			return part;
+		}
+		Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
+		return minorPart == null ? part : minorPart;
+	}
+
 	private JsonObject constructPartRecordInfo(Participant part, int order) {
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
-		log.info("construct participant:{}, osd:{}, order:{}, role:{}, handStatus:{}, steamType:{} record info.",
-				part.getParticipantPublicId(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(),
+		log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{}, steamType:{} record info.",
+				part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(),
 				part.getStreamType().name());
 
 		PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
@@ -1563,6 +1583,8 @@ public class KurentoSessionManager extends SessionManager {
 		if (Objects.nonNull(publisherEndpoint.getPassThru())) {
 			jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
 			jsonObject.addProperty("order", order);
+			jsonObject.addProperty("uuid", part.getUuid());
+			jsonObject.addProperty("streamType", part.getStreamType().name());
 			jsonObject.addProperty("osd", part.getUsername());
 
 		}

@@ -16,4 +16,6 @@ public class RootDept {
     private Long parentId;
 
     private Long corpId;
+
+    private Long userId;
 }
