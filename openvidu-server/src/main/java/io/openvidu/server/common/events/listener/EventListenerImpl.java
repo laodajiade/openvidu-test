@@ -40,7 +40,7 @@ public class EventListenerImpl {
         if ("handStatus".equals(statusEvent.getField()) || "shareStatus".equals(statusEvent.getField())) {
             Session session = sessionManager.getSession(statusEvent.getSessionId());
             if (Objects.nonNull(session) && Objects.nonNull(((KurentoSession) session).getSipComposite())) {
-                session.updateSipComposite();
+                ((KurentoSession) session).asyncUpdateSipComposite();
             }
         }
     }

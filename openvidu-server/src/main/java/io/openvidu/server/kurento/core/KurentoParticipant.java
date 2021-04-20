@@ -191,7 +191,7 @@ public class KurentoParticipant extends Participant {
 			log.info("SIP terminal:{} published and create sipComposite", getUuid());
 			Composite sipComposite = this.session.createSipComposite();
 			this.publisher.createSipCompositeHubPort(sipComposite);
-			new Thread(this.session::updateSipComposite).start();
+			session.asyncUpdateSipComposite();
 		}
 
 		this.publisher.setEndpointName(publisherStreamId);
@@ -706,7 +706,7 @@ public class KurentoParticipant extends Participant {
 			}
 			if (Objects.nonNull(publisher.getSipCompositeHubPort())) {
 				releaseElement(getParticipantPublicId(), publisher.getSipCompositeHubPort());
-				new Thread(this.session::updateSipComposite).start();
+				session.asyncUpdateSipComposite();
 			}
 			this.session.deregisterPublisher();
 

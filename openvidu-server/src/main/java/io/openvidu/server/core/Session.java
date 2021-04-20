@@ -50,10 +50,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1566,97 +1563,7 @@ public class Session implements SessionInterface {
 		this.endTime = endTime;
 	}
 
-	public void updateSipComposite() {
-		int mcuNum = 0;
-		JsonArray hubPortIds = new JsonArray(3);
-		Participant moderator = null,  sharing = null,speaker = null;
-		Set<Participant> participants = getParticipants();
-		KurentoSession kurentoSession = (KurentoSession) this;
-		if (!CollectionUtils.isEmpty(participants)) {
-			for (Participant participant : participants) {
-				if (OpenViduRole.MODERATOR == participant.getRole() && StreamType.MAJOR == participant.getStreamType()) {
-					moderator = participant;
-				}
-				if (StreamType.SHARING == participant.getStreamType()) {
-					sharing = participant;
-				}
-				if (StreamType.MAJOR == participant.getStreamType() && ParticipantHandStatus.speaker == participant.getHandStatus()) {
-					speaker = participant;
-				}
-			}
 
-			// set composite order
-			if (Objects.nonNull(sharing)) {
-				log.info("sip found sharing");
-				mcuNum = getSipCompositeElements(kurentoSession, sharing, hubPortIds, mcuNum);
-			}
-			if (Objects.nonNull(speaker)) {
-				log.info("sip found speaker");
-				mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);
-			}
-			if (Objects.nonNull(moderator)) {
-				log.info("sip found moderator");
-				mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
-			}
-			log.info("SIP MCU composite number:{} and composite hub port ids:{}", mcuNum, hubPortIds.toString());
-			if (mcuNum > 0) {
-				try {
-					kurentoSession.getKms().getKurentoClient()
-							.sendJsonRpcRequest(composeLayoutRequestForSip(kurentoSession.getPipeline().getId(),
-									sessionId, hubPortIds, LayoutModeEnum.getLayoutMode(mcuNum)));
-				} catch (IOException e) {
-					log.error("Send Sip Composite Layout Exception:\n", e);
-				}
-			}
-		} else {
-			log.warn("participants is empty");
-		}
-	}
 
-	private int getSipCompositeElements(KurentoSession kurentoSession, Participant participant, JsonArray hubPortIds, int mcuNum) {
-		HubPort hubPort = null;
-		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
-		if (Objects.isNull(hubPort = kurentoParticipant.getPublisher().getSipCompositeHubPort())) {
-			hubPort = kurentoParticipant.getPublisher().createSipCompositeHubPort(kurentoSession.getSipComposite());
-		}
-		kurentoParticipant.getPublisher().getEndpoint().connect(hubPort);
-//		kurentoParticipant.getPublisher().internalSinkConnect(kurentoParticipant.getPublisher().getEndpoint(), hubPort);
-		hubPortIds.add(hubPort.getId());
-		return ++mcuNum;
-	}
 
-	private Request<JsonObject> composeLayoutRequestForSip(String pipelineId, String sessionId, JsonArray hubPortIds, LayoutModeEnum layoutMode) {
-		Request<JsonObject> kmsRequest = new Request<>();
-		JsonObject params = new JsonObject();
-		params.addProperty("object", pipelineId);
-		params.addProperty("operation", "setLayout");
-		params.addProperty("sessionId", sessionId);
-
-		// construct composite layout info
-		JsonArray layoutInfos = new JsonArray(3);
-		JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutMode);
-		AtomicInteger index = new AtomicInteger(0);
-		layoutCoordinates.forEach(coordinates -> {
-			if (index.get() < layoutMode.getMode()) {
-				JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
-				elementsLayout.addProperty("connectionId", "connectionId");
-				elementsLayout.addProperty("streamType", "streamType");
-				elementsLayout.addProperty("object", hubPortIds.get(index.get()).getAsString());
-				elementsLayout.addProperty("hasVideo", true);
-				elementsLayout.addProperty("onlineStatus", "online");
-
-				index.incrementAndGet();
-				layoutInfos.add(elementsLayout);
-			}
-		});
-
-		JsonObject operationParams = new JsonObject();
-		operationParams.add("layoutInfo", layoutInfos);
-		params.add("operationParams", operationParams);
-		kmsRequest.setMethod("invoke");
-		kmsRequest.setParams(params);
-		log.info("send sip composite setLayout params:{}", params);
-
-		return kmsRequest;
-	}
 }

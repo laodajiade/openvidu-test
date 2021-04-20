@@ -17,28 +17,34 @@
 
 package io.openvidu.server.kurento.core;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.kms.Kms;
-import org.kurento.client.*;
+import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.kurento.client.EventListener;
+import org.kurento.client.*;
+import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
+import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -67,7 +73,8 @@ public class KurentoSession extends Session {
 
 	private Composite sipComposite;
 
-	private Map<String, Participant> SipStreamIdMap = new ConcurrentHashMap<>();
+	private Set<String> sipStreamIdSet = new HashSet<>();
+	private ThreadPoolExecutor sipCompositeThreadPoolExes;
 
 	private final Object pipelineCreateLock = new Object();
 	private final Object pipelineReleaseLock = new Object();
@@ -101,6 +108,8 @@ public class KurentoSession extends Session {
 		this.compositeService = new CompositeService(sessionNotActive);
 		log.info("New SESSION instance with id '{}'", sessionId);
 		this.leaseThread.start();
+		sipCompositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
+				new LinkedBlockingQueue<>(), new ThreadFactoryBuilder().setNameFormat("sip-composite-thread-" + sessionId + "-%d").setDaemon(true).build());
 	}
 
 	@Override
@@ -362,12 +371,122 @@ public class KurentoSession extends Session {
 		return sipComposite;
 	}
 
-	public void releaseSipComposite() {
-		if (Objects.nonNull(this.sipComposite)) {
-			Composite sipCompositeTmp = this.sipComposite;
-			this.sipComposite = null;
-			sipCompositeTmp.release();
+	/**
+	 * 对比sip中的辅流是否有发生改变，如果有则返回true
+	 */
+	public boolean equalsSipCompositeStream(Participant... participants) {
+		Set<String> newStreamSet = Arrays.stream(participants).filter(Objects::nonNull).map(Participant::getPublisherStreamId).collect(Collectors.toSet());
+		boolean equalCollection = CollectionUtils.isEqualCollection(newStreamSet, sipStreamIdSet);
+		if (!equalCollection) {
+			sipStreamIdSet = newStreamSet;
 		}
+		return equalCollection;
+	}
+
+	public void asyncUpdateSipComposite() {
+		sipCompositeThreadPoolExes.submit(this::updateSipComposite);
+	}
+
+	private void updateSipComposite() {
+		int mcuNum = 0;
+		JsonArray hubPortIds = new JsonArray(3);
+		Participant moderator = null, sharing = null, speaker = null;
+		Set<Participant> participants = getParticipants();
+		KurentoSession kurentoSession = (KurentoSession) this;
+		if (!CollectionUtils.isEmpty(participants)) {
+			for (Participant participant : participants) {
+				if (OpenViduRole.MODERATOR == participant.getRole() && StreamType.MAJOR == participant.getStreamType()) {
+					moderator = participant;
+					Participant minorModerator = getPartByPrivateIdAndStreamType(moderator.getParticipantPrivateId(), StreamType.MINOR);
+					moderator = Optional.ofNullable(minorModerator).orElse(moderator);
+				}
+				if (StreamType.SHARING == participant.getStreamType()) {
+					sharing = participant;
+				}
+				if (StreamType.MAJOR == participant.getStreamType() && ParticipantHandStatus.speaker == participant.getHandStatus()) {
+					speaker = participant;
+				}
+			}
+
+			if (!kurentoSession.equalsSipCompositeStream(moderator, sharing, speaker)) {
+				log.info("sip composite stream list no change");
+				return;
+			}
+
+			// set composite order
+			if (Objects.nonNull(sharing)) {
+				log.info("sip found sharing");
+				mcuNum = getSipCompositeElements(kurentoSession, sharing, hubPortIds, mcuNum);
+			}
+			if (Objects.nonNull(speaker)) {
+				log.info("sip found speaker");
+				mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);
+			}
+			if (Objects.nonNull(moderator)) {
+				log.info("sip found moderator");
+				mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
+			}
+			log.info("SIP MCU composite number:{} and composite hub port ids:{}", mcuNum, hubPortIds.toString());
+			if (mcuNum > 0) {
+				try {
+					kurentoSession.getKms().getKurentoClient()
+							.sendJsonRpcRequest(composeLayoutRequestForSip(kurentoSession.getPipeline().getId(),
+									sessionId, hubPortIds, LayoutModeEnum.getLayoutMode(mcuNum)));
+					TimeUnit.MILLISECONDS.sleep(300);
+				} catch (Exception e) {
+					log.error("Send Sip Composite Layout Exception:\n", e);
+				}
+			}
+		} else {
+			log.warn("participants is empty");
+		}
+	}
+
+	private int getSipCompositeElements(KurentoSession kurentoSession, Participant participant, JsonArray hubPortIds, int mcuNum) {
+		HubPort hubPort = null;
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+		if (Objects.isNull(hubPort = kurentoParticipant.getPublisher().getSipCompositeHubPort())) {
+			hubPort = kurentoParticipant.getPublisher().createSipCompositeHubPort(kurentoSession.getSipComposite());
+		}
+		kurentoParticipant.getPublisher().getEndpoint().connect(hubPort);
+//		kurentoParticipant.getPublisher().internalSinkConnect(kurentoParticipant.getPublisher().getEndpoint(), hubPort);
+		hubPortIds.add(hubPort.getId());
+		return ++mcuNum;
+	}
+
+	private Request<JsonObject> composeLayoutRequestForSip(String pipelineId, String sessionId, JsonArray hubPortIds, LayoutModeEnum layoutMode) {
+		Request<JsonObject> kmsRequest = new Request<>();
+		JsonObject params = new JsonObject();
+		params.addProperty("object", pipelineId);
+		params.addProperty("operation", "setLayout");
+		params.addProperty("sessionId", sessionId);
+
+		// construct composite layout info
+		JsonArray layoutInfos = new JsonArray(3);
+		JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutMode);
+		AtomicInteger index = new AtomicInteger(0);
+		layoutCoordinates.forEach(coordinates -> {
+			if (index.get() < layoutMode.getMode()) {
+				JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
+				elementsLayout.addProperty("connectionId", "connectionId");
+				elementsLayout.addProperty("streamType", "streamType");
+				elementsLayout.addProperty("object", hubPortIds.get(index.get()).getAsString());
+				elementsLayout.addProperty("hasVideo", true);
+				elementsLayout.addProperty("onlineStatus", "online");
+
+				index.incrementAndGet();
+				layoutInfos.add(elementsLayout);
+			}
+		});
+
+		JsonObject operationParams = new JsonObject();
+		operationParams.add("layoutInfo", layoutInfos);
+		params.add("operationParams", operationParams);
+		kmsRequest.setMethod("invoke");
+		kmsRequest.setParams(params);
+		log.info("send sip composite setLayout params:{}", params);
+
+		return kmsRequest;
 	}
 
 	private void closePipeline(Runnable callback) {
