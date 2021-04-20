@@ -24,13 +24,15 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.kms.Kms;
-import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
@@ -38,7 +40,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -405,7 +406,7 @@ public class KurentoSession extends Session {
 				}
 			}
 
-			if (!kurentoSession.equalsSipCompositeStream(moderator, sharing, speaker)) {
+			if (kurentoSession.equalsSipCompositeStream(moderator, sharing, speaker)) {
 				log.info("sip composite stream list no change");
 				return;
 			}
