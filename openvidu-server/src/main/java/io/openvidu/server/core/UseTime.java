@@ -13,7 +13,7 @@ public class UseTime {
     private static final ThreadLocal<List<Point>> threadLocal = new ThreadLocal<>();
 
     public static void start() {
-        List<Point> list = new ArrayList<>();
+        List<Point> list = new ArrayList<>(2);
         Point point = new Point("start", System.currentTimeMillis());
         list.add(point);
         threadLocal.set(list);
@@ -38,7 +38,7 @@ public class UseTime {
         return point;
     }
 
-    public static long elapse(){
+    public static long elapse() {
         long now = System.currentTimeMillis();
         List<Point> list = threadLocal.get();
         if (list == null) {
@@ -52,14 +52,12 @@ public class UseTime {
     }
 
     public static String endAndPrint() {
-        Point point = new Point("end", System.currentTimeMillis());
+        point("end");
+        return print();
+    }
+
+    private static String print() {
         List<Point> list = threadLocal.get();
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        list.add(point);
-
-
         StringBuilder msg = new StringBuilder();
 
         Point pre = list.get(0);
@@ -91,12 +89,12 @@ public class UseTime {
             return time;
         }
 
-        public void updateTime(){
+        public void updateTime() {
             time = System.currentTimeMillis();
         }
     }
 
-    public static void clear(){
+    public static void clear() {
         threadLocal.remove();
     }
 }

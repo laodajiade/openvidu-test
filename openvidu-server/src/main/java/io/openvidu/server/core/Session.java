@@ -68,7 +68,6 @@ public class Session implements SessionInterface {
 	protected RecordingManager recordingManager;
 	protected LivingManager livingManager;
 
-  //protected final ConcurrentMap<String, Participant> participants = new ConcurrentHashMap<>();
 	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
 	protected String ruid;
@@ -1570,7 +1569,7 @@ public class Session implements SessionInterface {
 	public void updateSipComposite() {
 		int mcuNum = 0;
 		JsonArray hubPortIds = new JsonArray(3);
-		Participant moderator = null, speaker = null;
+		Participant moderator = null,  sharing = null,speaker = null;
 		Set<Participant> participants = getParticipants();
 		KurentoSession kurentoSession = (KurentoSession) this;
 		if (!CollectionUtils.isEmpty(participants)) {
@@ -1579,8 +1578,7 @@ public class Session implements SessionInterface {
 					moderator = participant;
 				}
 				if (StreamType.SHARING == participant.getStreamType()) {
-					log.info("sip found sharing");
-					mcuNum = getSipCompositeElements(kurentoSession, participant, hubPortIds, mcuNum);
+					sharing = participant;
 				}
 				if (StreamType.MAJOR == participant.getStreamType() && ParticipantHandStatus.speaker == participant.getHandStatus()) {
 					speaker = participant;
@@ -1588,6 +1586,10 @@ public class Session implements SessionInterface {
 			}
 
 			// set composite order
+			if (Objects.nonNull(sharing)) {
+				log.info("sip found sharing");
+				mcuNum = getSipCompositeElements(kurentoSession, sharing, hubPortIds, mcuNum);
+			}
 			if (Objects.nonNull(speaker)) {
 				log.info("sip found speaker");
 				mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);

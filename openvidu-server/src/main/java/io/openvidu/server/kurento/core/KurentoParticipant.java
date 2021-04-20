@@ -674,10 +674,8 @@ public class KurentoParticipant extends Participant {
 		if (publisher != null && publisher.getEndpoint() != null) {
 			// 释放分发资源
 			if (!publisher.getMediaChannels().isEmpty()) {
-				log.info("release mediaChannels {}",reason);
-				for (MediaChannel mediaChannel : publisher.getMediaChannels().values()) {
-					mediaChannel.release();
-				}
+				log.info("release mediaChannels reason {}", reason);
+				publisher.getMediaChannels().values().forEach(MediaChannel::release);
 				publisher.getMediaChannels().clear();
 			}
 

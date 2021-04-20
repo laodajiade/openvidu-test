@@ -67,6 +67,8 @@ public class KurentoSession extends Session {
 
 	private Composite sipComposite;
 
+	private Map<String, Participant> SipStreamIdMap = new ConcurrentHashMap<>();
+
 	private final Object pipelineCreateLock = new Object();
 	private final Object pipelineReleaseLock = new Object();
 	private final Object joinOrLeaveLock = new Object();
