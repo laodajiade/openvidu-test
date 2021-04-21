@@ -97,7 +97,7 @@ public class KurentoSession extends Session {
 	public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
 
 	public KurentoSession(Session sessionNotActive, Kms kms, KurentoSessionEventsHandler kurentoSessionHandler,
-			KurentoParticipantEndpointConfig kurentoEndpointConfig, boolean destroyKurentoClient) {
+						  KurentoParticipantEndpointConfig kurentoEndpointConfig, boolean destroyKurentoClient) {
 		super(sessionNotActive);
 		this.kms = kms;
 		this.destroyKurentoClient = destroyKurentoClient;
@@ -107,7 +107,8 @@ public class KurentoSession extends Session {
 		log.info("New SESSION instance with id '{}'", sessionId);
 		this.leaseThread.start();
 		sipCompositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<>(), new ThreadFactoryBuilder().setNameFormat("sip-composite-thread-" + sessionId + "-%d").setDaemon(true).build());
+				new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("sip-composite-thread-" + sessionId + "-%d").setDaemon(true).build()
+				, new ThreadPoolExecutor.DiscardPolicy());
 	}
 
 	@Override
