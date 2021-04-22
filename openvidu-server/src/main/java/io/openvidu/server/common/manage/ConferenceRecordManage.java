@@ -39,4 +39,12 @@ public interface ConferenceRecordManage {
     void updatePreRecordErrorStatus(ConferenceRecord record);
 
     BigDecimal getCorpRecordStorage(String project);
+
+
+    /**
+     * 根据ruId 查询录制状态
+     * @param ruId
+     * @return
+     */
+    ConferenceRecord getByRuIdRecordStatus(String ruId);
 }
