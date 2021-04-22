@@ -18,6 +18,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -151,6 +152,21 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
         // 通知录制服务
         sessionManager.startRecording(roomId);
+
+        //查询录制状态是否在录制中  如果没有通知客户端录制失败重新录制
+        ConferenceRecord byRuIdRecordStatus = conferenceRecordManage.getByRuIdRecordStatus(rpcConnection.getUdid());
+        try {
+            Thread.sleep(3000);
+            if (ConferenceRecordStatusEnum.WAIT.getStatus().equals(byRuIdRecordStatus.getStatus())){
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
+            }
+        }catch (Exception e){
+            log.info(e.getMessage());
+        }
+
+
+
 
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
