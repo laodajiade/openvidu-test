@@ -32,11 +32,11 @@ import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
-import io.openvidu.server.kurento.endpoint.MediaChannel;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
 import io.openvidu.server.kurento.kms.Kms;
@@ -95,6 +95,9 @@ public class KurentoSessionManager extends SessionManager {
 
 	@Resource
 	private RecordingKafkaProducer recordingTaskProducer;
+
+	@Resource
+	private RecordingRedisPublisher recordingRedisPublisher;
 
 	@Resource
     private RedisPublisher redisPublisher;
@@ -1413,7 +1416,7 @@ public class KurentoSessionManager extends SessionManager {
 		// construct needed media source according to participants that joined the room
 		if (constructMediaSources(recordingProperties, kurentoSession)) {
             // pub start recording task
-            recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
+			recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
         }
 	}
 
@@ -1428,7 +1431,7 @@ public class KurentoSessionManager extends SessionManager {
 		log.info("Stop recording and sessionId is {}", sessionId);
 		session.setIsRecording(false);
         // pub stop recording task
-        recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
+		recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
                 .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
     }
 
@@ -1444,7 +1447,7 @@ public class KurentoSessionManager extends SessionManager {
 
 			if (constructMediaSources(recordingProperties, kurentoSession)) {
 				// pub update recording task
-				recordingTaskProducer.sendRecordingTask(RecordingOperationEnum.updateRecording.buildMqMsg(recordingProperties).toString());
+				recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateRecording.buildMqMsg(recordingProperties).toString());
 			} else {
 				log.warn("Not found required participant and do not update the recording.");
 			}
