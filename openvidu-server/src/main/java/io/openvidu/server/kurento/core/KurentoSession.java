@@ -72,7 +72,7 @@ public class KurentoSession extends Session {
 	private Composite sipComposite;
 
 	private Set<String> sipStreamIdSet = new HashSet<>();
-	private ThreadPoolExecutor sipCompositeThreadPoolExes;
+	private final ThreadPoolExecutor sipCompositeThreadPoolExes;
 
 	private final Object pipelineCreateLock = new Object();
 	private final Object pipelineReleaseLock = new Object();

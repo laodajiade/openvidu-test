@@ -159,7 +159,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         Corporation corporation = corporationMapper.selectByCorpProject(project);
         rpcConnection.setCorpId(corporation.getId());
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
-            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
+            rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : "用户");
         }
         if (UserType.tourist.equals(userType)) {
             rpcConnection.setUsername(nickName);

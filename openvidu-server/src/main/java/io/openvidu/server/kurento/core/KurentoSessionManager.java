@@ -1585,8 +1585,7 @@ public class KurentoSessionManager extends SessionManager {
 			jsonObject.addProperty("order", order);
 			jsonObject.addProperty("uuid", part.getUuid());
 			jsonObject.addProperty("streamType", part.getStreamType().name());
-			//jsonObject.addProperty("osd", part.getUsername());
-			jsonObject.addProperty("osd", Optional.ofNullable(part.getUsername()).orElse("sip000"));
+			jsonObject.addProperty("osd", part.getUsername());
 
 		}
 		return jsonObject;
