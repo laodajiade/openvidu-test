@@ -85,7 +85,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
         // 录制服务是否启用（在有效期内）
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        if (!recordService){
+        if (!recordService) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);
             return;
@@ -141,6 +141,8 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         ConferenceRecord condition = new ConferenceRecord();
         condition.setRuid(session.getRuid());
         List<ConferenceRecord> existRecordList = conferenceRecordManage.getByCondition(condition);
+
+
         if (CollectionUtils.isEmpty(existRecordList)) {
             conferenceRecordManage.insertSelective(constructConferenceRecord(rpcConnection, session));
         } else {
@@ -153,21 +155,17 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 通知录制服务
         sessionManager.startRecording(roomId);
 
-        //查询录制状态是否在录制中  如果没有通知客户端录制失败重新录制
-        ConferenceRecord byRuIdRecordStatus = conferenceRecordManage.getByRuIdRecordStatus(rpcConnection.getUdid());
+        //查询录制状态是否在录制中  如果状态==0  通知客户端录制失败重新录制
+        ConferenceRecord recordStatus = conferenceRecordManage.getByRuIdRecordStatus(session.getRuid());
         try {
             Thread.sleep(3000);
-            if (ConferenceRecordStatusEnum.WAIT.getStatus().equals(byRuIdRecordStatus.getStatus())){
+            if (ConferenceRecordStatusEnum.WAIT.getStatus().equals(recordStatus.getStatus())){
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
+                        null, ErrorCodeEnum.RECORD_FAIL);
             }
         }catch (Exception e){
             log.info(e.getMessage());
         }
-
-
-
-
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 

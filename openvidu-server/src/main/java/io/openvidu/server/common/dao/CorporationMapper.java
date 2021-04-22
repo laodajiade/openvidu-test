@@ -37,11 +37,4 @@ public interface CorporationMapper {
 
     UserCorpInfo getUserCorpInfo(String uuid);
 
-    /**
-     * 根据ruId 查询录制状态
-     * @param ruId
-     * @return
-     */
-    ConferenceRecord getByRuIdRecordStatus(String ruId);
-
 }

@@ -33,4 +33,10 @@ public interface ConferenceRecordMapper {
 
     void updatePreRecordErrorStatus(ConferenceRecord record);
 
+    /**
+     * 根据ruId 查询录制状态
+     * @param ruId
+     * @return
+     */
+    ConferenceRecord getByRuIdRecordStatus(String ruId);
 }

@@ -294,6 +294,6 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
 
     @Override
     public ConferenceRecord getByRuIdRecordStatus(String ruId) {
-        return corporationMapper.getByRuIdRecordStatus(ruId);
+        return conferenceRecordMapper.getByRuIdRecordStatus(ruId);
     }
 }
