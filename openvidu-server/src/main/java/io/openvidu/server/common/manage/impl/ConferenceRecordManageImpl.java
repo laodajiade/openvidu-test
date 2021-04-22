@@ -15,6 +15,7 @@ import io.openvidu.server.common.enums.YesNoEnum;
 import io.openvidu.server.common.kafka.RecordingKafkaProducer;
 import io.openvidu.server.common.manage.ConferenceRecordManage;
 import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,9 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
 
     @Resource
     private RecordingKafkaProducer recordingKafkaProducer;
+
+    @Resource
+    private RecordingRedisPublisher recordingRedisPublisher;
 
     @Resource
     private CorporationMapper corporationMapper;
@@ -222,7 +226,7 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
         params.addProperty("method", CommonConstants.MQ_METHOD_DEL_RECORDING_FILE);
         params.add("params", object);
 
-        recordingKafkaProducer.sendRecordingFileOperationTask(params.toString());
+        recordingRedisPublisher.sendRecordingFileOperationTask(params.toString());
 
     }
 
@@ -260,7 +264,7 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
         params.addProperty("method", CommonConstants.MQ_METHOD_DEL_RECORDING_FILE);
         params.add("params", filesObj);
 
-        recordingKafkaProducer.sendRecordingFileOperationTask(params.toString());
+        recordingRedisPublisher.sendRecordingFileOperationTask(params.toString());
     }
 
     @Override
@@ -288,4 +292,8 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
                 corporation.getRecordingCapacity() * 1024 : 0).setScale(2, RoundingMode.UP);
     }
 
+    @Override
+    public ConferenceRecord getByRuIdRecordStatus(String ruId) {
+        return corporationMapper.getByRuIdRecordStatus(ruId);
+    }
 }

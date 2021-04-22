@@ -30,6 +30,14 @@
     delete from sd_conference_record
     where id = #{id,jdbcType=BIGINT}
   </delete>
+
+  <select id="getByRuIdRecordStatus" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_conference_record
+    where ruid = #{ruId,jdbcType=BIGINT}
+  </select>
+
   <insert id="insert" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
     insert into sd_conference_record (id, ruid, room_id,
       record_count, total_duration, status,
@@ -40,7 +48,7 @@
       #{recorderUuid,jdbcType=VARCHAR}, #{recorderName,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR},
       #{accessKey,jdbcType=VARCHAR}, #{requestStartTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
+  <insert id="insertSelective" parameterType="io.openvidu.server.common.pojo.ConferenceRecord" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
     insert into sd_conference_record
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

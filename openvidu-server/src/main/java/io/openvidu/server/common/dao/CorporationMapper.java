@@ -1,5 +1,6 @@
 package io.openvidu.server.common.dao;
 
+import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.UserCorpInfo;
 import org.apache.ibatis.annotations.Mapper;
@@ -35,5 +36,12 @@ public interface CorporationMapper {
     int updateCorpRemainderDuration(Corporation record);
 
     UserCorpInfo getUserCorpInfo(String uuid);
+
+    /**
+     * 根据ruId 查询录制状态
+     * @param ruId
+     * @return
+     */
+    ConferenceRecord getByRuIdRecordStatus(String ruId);
 
 }
