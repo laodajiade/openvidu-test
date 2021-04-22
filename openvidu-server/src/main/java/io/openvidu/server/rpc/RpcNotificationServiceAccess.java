@@ -227,8 +227,8 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
                         participantPrivateId, e);
             }
         }
-        log.info("\nbatch WebSocket notification- Notification method:{} and params: \n{}" +
-                "\nsuccessList:{}  failList:{}", method, params, successList, failList);
+        log.info("batch WebSocket notification- Notification method:{} and params: {}" +
+                "successList:{}  failList:{}", method, params, successList, failList);
     }
 
     @Override
