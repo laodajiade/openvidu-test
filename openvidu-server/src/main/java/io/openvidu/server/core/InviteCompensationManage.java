@@ -43,6 +43,11 @@ public class InviteCompensationManage {
     private static ConcurrentHashMap<String, InviteCompensationScheduler> map = new ConcurrentHashMap<>();
 
     public void activateInviteCompensation(String account, JsonElement jsonElement, Long expireTime) {
+        InviteCompensationScheduler old = map.remove(account);
+        if (old != null) {
+            old.disable();
+        }
+
         map.computeIfAbsent(account, accountKey -> {
             log.info("Activate Invite Compensation account:{}, expireTime:{}", account, expireTime);
             InviteCompensationScheduler scheduler = new InviteCompensationScheduler(account, jsonElement, expireTime);
