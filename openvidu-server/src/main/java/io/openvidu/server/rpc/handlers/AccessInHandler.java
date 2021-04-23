@@ -13,10 +13,7 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.DateUtil;
-import io.openvidu.server.utils.LocalDateTimeUtils;
-import io.openvidu.server.utils.LocalDateUtils;
-import io.openvidu.server.utils.ValidPeriodHelper;
+import io.openvidu.server.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +42,8 @@ public class AccessInHandler extends RpcAbstractHandler {
     @Value("${request.expired-duration}")
     private long reqExpiredDuration;
 
+    private static final String VERSION = "1.3.7";
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
@@ -71,6 +70,12 @@ public class AccessInHandler extends RpcAbstractHandler {
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
         do {
+
+            if (!StringUtil.compareVersion(VERSION, deviceVersion)) {
+                errCode = ErrorCodeEnum.VERSION_LOW;
+                break;
+            }
+
             // check if request expired
             object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
             if (Math.abs(getLongParam(request, ProtocolElements.ACCESS_IN_CLIENTTIMESTAMP_PARAM) - System.currentTimeMillis()) > reqExpiredDuration) {
@@ -80,7 +85,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             // check if token valid
             userInfo = cacheManage.getUserInfoByUUID(uuid);
-            if (!ErrorCodeEnum.SUCCESS.equals(errCode  = userInfo.isEmpty() ?
+            if (!ErrorCodeEnum.SUCCESS.equals(errCode = userInfo.isEmpty() ?
                     ErrorCodeEnum.TOKEN_INVALID : (!Objects.equals(token, userInfo.get("token")) ? ErrorCodeEnum.TOKEN_ERROR : errCode))) {
                 log.error("request token:{}, cache token info:{}", token, userInfo);
                 break;
@@ -131,7 +136,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             // deal web thor login
             if (AccessTypeEnum.web.equals(accessType)
-                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection,uuid))) {
+                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection, uuid))) {
                 break;
             }
         } while (false);
@@ -167,7 +172,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setProject(project);
 
         //save cache privateId
-        cacheManage.saveAccessInParticipantPrivateId(uuid,rpcConnection.getParticipantPrivateId());
+        cacheManage.saveAccessInParticipantPrivateId(uuid, rpcConnection.getParticipantPrivateId());
         log.info("access in relation privateId={},uuid={}", rpcConnection.getParticipantPrivateId(), uuid);
         // update user online status in cache
         if (AccessTypeEnum.terminal.equals(accessType)) {
@@ -186,7 +191,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }
 
-    private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection,String userUuid) {
+    private ErrorCodeEnum dealWebLogin(Request<JsonObject> request, RpcConnection previousRpc, RpcConnection rpcConnection, String userUuid) {
         User user = userMapper.selectByUUID(userUuid);
         if (Objects.isNull(user)) {
             return ErrorCodeEnum.USER_NOT_EXIST;

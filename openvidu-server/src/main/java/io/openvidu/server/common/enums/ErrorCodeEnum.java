@@ -53,6 +53,7 @@ public enum ErrorCodeEnum {
     CORP_SERVICE_EXPIRED(11006, "服务已到期"),
     ACCESS_IN_NEEDED(11007, "重新链接服务器中"),
     RATE_LIMITER(11011, "请稍后再试"),
+    VERSION_LOW(11012, "当前服务暂不支持，请对平台服务进行升级"),
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
