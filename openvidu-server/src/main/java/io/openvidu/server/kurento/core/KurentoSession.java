@@ -32,7 +32,9 @@ import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
+import io.openvidu.server.utils.SafeSleep;
 import org.apache.commons.collections4.CollectionUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
@@ -362,6 +364,8 @@ public class KurentoSession extends Session {
 	public Composite createSipComposite() {
 		if (Objects.isNull(sipComposite)) {
 			sipComposite = new Composite.Builder(pipeline).build();
+			sipComposite.setName(sessionId + "-sipComposite");
+			log.info("create sip composite {}, name {}", sipComposite.getId(), sipComposite.getName());
 		}
 		return sipComposite;
 	}
@@ -374,8 +378,11 @@ public class KurentoSession extends Session {
 	 * 对比sip中的辅流是否有发生改变，如果有则返回true
 	 */
 	public boolean equalsSipCompositeStream(Participant... participants) {
-		Set<String> newStreamSet = Arrays.stream(participants).filter(Objects::nonNull).map(Participant::getPublisherStreamId).collect(Collectors.toSet());
+		Set<String> newStreamSet = Arrays.stream(participants).filter(Objects::nonNull)
+				.map(p -> ((KurentoParticipant) p).getPublisher()).filter(Objects::nonNull)
+				.map(MediaEndpoint::getStreamId).collect(Collectors.toSet());
 		boolean equalCollection = CollectionUtils.isEqualCollection(newStreamSet, sipStreamIdSet);
+		log.info("oldSipStreamIdSet {}, newSipStreamIdSet {}", sipStreamIdSet, newStreamSet);
 		if (!equalCollection) {
 			sipStreamIdSet = newStreamSet;
 		}
@@ -383,10 +390,11 @@ public class KurentoSession extends Session {
 	}
 
 	public void asyncUpdateSipComposite() {
-		sipCompositeThreadPoolExes.submit(this::updateSipComposite);
+		sipCompositeThreadPoolExes.execute(this::updateSipComposite);
 	}
 
 	private void updateSipComposite() {
+		SafeSleep.sleepMilliSeconds(200);
 		int mcuNum = 0;
 		JsonArray hubPortIds = new JsonArray(3);
 		Participant moderator = null, sharing = null, speaker = null;
@@ -413,28 +421,32 @@ public class KurentoSession extends Session {
 			}
 
 			// set composite order
-			if (Objects.nonNull(sharing)) {
-				log.info("sip found sharing");
-				mcuNum = getSipCompositeElements(kurentoSession, sharing, hubPortIds, mcuNum);
-			}
-			if (Objects.nonNull(speaker)) {
-				log.info("sip found speaker");
-				mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);
-			}
-			if (Objects.nonNull(moderator)) {
-				log.info("sip found moderator");
-				mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
-			}
-			log.info("SIP MCU composite number:{} and composite hub port ids:{}", mcuNum, hubPortIds.toString());
-			if (mcuNum > 0) {
-				try {
-					kurentoSession.getKms().getKurentoClient()
-							.sendJsonRpcRequest(composeLayoutRequestForSip(kurentoSession.getPipeline().getId(),
-									sessionId, hubPortIds, LayoutModeEnum.getLayoutMode(mcuNum)));
-					TimeUnit.MILLISECONDS.sleep(300);
-				} catch (Exception e) {
-					log.error("Send Sip Composite Layout Exception:\n", e);
+			try {
+				if (Objects.nonNull(sharing)) {
+					log.info("sip found sharing");
+					mcuNum = getSipCompositeElements(kurentoSession, sharing, hubPortIds, mcuNum);
 				}
+				if (Objects.nonNull(speaker)) {
+					log.info("sip found speaker");
+					mcuNum = getSipCompositeElements(kurentoSession, speaker, hubPortIds, mcuNum);
+				}
+				if (Objects.nonNull(moderator)) {
+					log.info("sip found moderator");
+					mcuNum = getSipCompositeElements(kurentoSession, moderator, hubPortIds, mcuNum);
+				}
+				log.info("sip MCU composite number:{} and composite hub port ids:{}", mcuNum, hubPortIds.toString());
+				if (mcuNum > 0) {
+					try {
+						kurentoSession.getKms().getKurentoClient()
+								.sendJsonRpcRequest(composeLayoutRequestForSip(kurentoSession.getPipeline().getId(),
+										sessionId, hubPortIds, LayoutModeEnum.getLayoutMode(mcuNum)));
+						TimeUnit.MILLISECONDS.sleep(300);
+					} catch (Exception e) {
+						log.error("Send Sip Composite Layout Exception:\n", e);
+					}
+				}
+			} catch (Exception e) {
+				log.error("getSipCompositeElements error", e);
 			}
 		} else {
 			log.warn("participants is empty");
