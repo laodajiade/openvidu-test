@@ -13,18 +13,23 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.DateUtil;
-import io.openvidu.server.utils.StringUtil;
-import io.openvidu.server.utils.ValidPeriodHelper;
+import io.openvidu.server.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author geedow
@@ -64,7 +69,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         JsonObject object = new JsonObject();
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
-
         do {
 
             if (!StringUtils.isEmpty(deviceVersion)) {
@@ -73,7 +77,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                     break;
                 }
             }
-
 
             // check if request expired
             object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
