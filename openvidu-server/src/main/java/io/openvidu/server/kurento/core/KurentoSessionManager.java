@@ -508,7 +508,8 @@ public class KurentoSessionManager extends SessionManager {
 
 		sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
 				kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType);
-
+		// http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
+		kParticipant.getPublisher().internalAddIceCandidateCache();
 		if (sdpAnswer == null) {
 			OpenViduException e = new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
 					"Error generating SDP response for publishing user " + participant.getParticipantPublicId());
