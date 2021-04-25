@@ -155,10 +155,11 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 通知录制服务
         sessionManager.startRecording(roomId);
 
-        //查询录制状态是否在录制中  如果状态==0  通知客户端录制失败重新录制
-        ConferenceRecord recordStatus = conferenceRecordManage.getByRuIdRecordStatus(session.getRuid());
+
         try {
             Thread.sleep(3000);
+            //查询录制状态是否在录制中  如果状态==0  通知客户端录制失败重新录制
+            ConferenceRecord recordStatus = conferenceRecordManage.getByRuIdRecordStatus(session.getRuid());
             if (ConferenceRecordStatusEnum.WAIT.getStatus().equals(recordStatus.getStatus())){
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.RECORD_FAIL);
