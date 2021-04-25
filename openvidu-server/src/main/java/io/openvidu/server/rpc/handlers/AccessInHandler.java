@@ -7,6 +7,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.core.AppVersion;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -42,8 +43,6 @@ public class AccessInHandler extends RpcAbstractHandler {
     @Value("${request.expired-duration}")
     private long reqExpiredDuration;
 
-    private static final String VERSION = "1.3.7";
-
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
@@ -72,7 +71,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         do {
 
             if (!StringUtils.isEmpty(deviceVersion)) {
-                if (!StringUtil.compareVersion(VERSION, deviceVersion)) {
+                if (!StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion)) {
                     errCode = ErrorCodeEnum.VERSION_LOW;
                     break;
                 }
