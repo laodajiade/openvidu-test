@@ -90,7 +90,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 校验录制存储空间
         // 小于20MB时，拒绝录制，返回13050（record storage exhausted）
         // 小于100MB时，返回13052（record storage less than 100MB）
-        List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
+        /*List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
                 .project(rpcConnection.getProject()).build());
         long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
         long remainStorageSpace = conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).longValue() * 1024 * 1024 - usedSpaceSize;
@@ -102,7 +102,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.RECORD_STORAGE_NOT_ENOUGH);
             return;
-        }
+        }*/
 
         // 校验会议从结束到开始时间间隔
         Long stopRecordingTime;
