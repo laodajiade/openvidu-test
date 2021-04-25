@@ -71,7 +71,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         do {
 
             if (!StringUtils.isEmpty(deviceVersion)) {
-                if (!StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion)) {
+                boolean version = StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion);
+                if (!version) {
                     errCode = ErrorCodeEnum.VERSION_LOW;
                     break;
                 }
