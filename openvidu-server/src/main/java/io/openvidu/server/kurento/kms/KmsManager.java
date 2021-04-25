@@ -214,20 +214,21 @@ public abstract class KmsManager {
             connected = false;
 			kms.setKurentoClientConnected(connected);
 
-			if (kms.getTryThread()==null) {
+			if (kms.getTryThread() == null) {
 				kms.setTryThread(new Thread(() -> {
 					while (true) {
 						try {
 							TimeUnit.MINUTES.sleep(1);
 							MediaPipeline mediaPipeline = kms.getKurentoClient().createMediaPipeline();
-							log.info("KMS try thread {} reconnection {}",kms.getId(),kms.getUri());
+							log.info("Kurento Client KMS try thread {} reconnection {}", kms.getId(), kms.getUri());
 							mediaPipeline.release();
 							kms.setTryThread(null);
-							break;
+							kms.setKurentoClientConnected(true);
+							return;
 						} catch (Exception e) {
-							log.info("eeeeeeeeeeeeeee");
+							kms.setKurentoClientConnected(false);
+							log.error("Kurento Client disconnected try thread error {}", e.toString());
 						}
-
 					}
 				}));
 				kms.getTryThread().start();
