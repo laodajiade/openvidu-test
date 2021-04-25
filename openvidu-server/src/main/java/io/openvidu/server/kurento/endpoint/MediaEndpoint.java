@@ -189,9 +189,11 @@ public abstract class MediaEndpoint {
 			} catch (InterruptedException e) {
 				log.info("Exception:", e);
 			}
-			while (!candidates.isEmpty()) {
-				internalAddIceCandidate(candidates.removeFirst());
-			}
+
+			// http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
+//			while (!candidates.isEmpty()) {
+//				internalAddIceCandidate(candidates.removeFirst());
+//			}
 		}
 		return old;
 	}
@@ -476,6 +478,15 @@ public abstract class MediaEndpoint {
 				log.warn("EP {}: Internal endpoint failed to start gathering candidates", endpointName, cause);
 			}
 		});
+	}
+
+	public void internalAddIceCandidateCache() throws OpenViduException {
+		if (this.isWeb()) {
+			// http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
+			while (!candidates.isEmpty()) {
+				internalAddIceCandidate(candidates.removeFirst());
+			}
+		}
 	}
 
 	private void internalAddIceCandidate(IceCandidate candidate) throws OpenViduException {

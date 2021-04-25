@@ -138,6 +138,7 @@ public class TimerManager {
         public void dealPollingCheck(Session session, RpcNotificationService notificationService) {
             if (Objects.isNull(session)) {
                 log.info("start polling undo when session is null");
+                pollingTask.cancel(false);
                 return;
             }
             Set<Participant> pollingPartSet = session.getPartsExcludeModeratorAndSpeaker();
