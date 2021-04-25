@@ -71,10 +71,10 @@ public class AccessInHandler extends RpcAbstractHandler {
 
         do {
 
-            if (!StringUtil.compareVersion(VERSION, deviceVersion)) {
+            /*if (!StringUtil.compareVersion(VERSION, deviceVersion)) {
                 errCode = ErrorCodeEnum.VERSION_LOW;
                 break;
-            }
+            }*/
 
             // check if request expired
             object.addProperty(ProtocolElements.ACCESS_IN_SERVERTIMESTAMP_PARAM, System.currentTimeMillis());
