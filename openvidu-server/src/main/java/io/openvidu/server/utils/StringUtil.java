@@ -3,6 +3,7 @@ package io.openvidu.server.utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -121,11 +122,6 @@ public class StringUtil {
     }
 
     public static boolean isNumeric(String str){
-        Pattern pattern = Pattern.compile("[0-9]*");
-        Matcher isNum = pattern.matcher(str);
-        if( !isNum.matches() ){
-            return false;
-        }
-        return true;
+        return StringUtils.isNumeric(str);
     }
 }

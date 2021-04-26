@@ -55,7 +55,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String clientType;
         TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
                 ? TerminalTypeEnum.valueOf(clientType) : null;
-        String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+        String deviceVersion = getStringParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
         String functionality = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_FUNCTIONALITY_PARAM);
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
@@ -71,21 +71,10 @@ public class AccessInHandler extends RpcAbstractHandler {
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
         do {
-            if (!StringUtils.isEmpty(deviceVersion)) {
-                if (!StringUtil.isNumeric(deviceVersion)) {
-                    String version = deviceVersion.replace(".", "") + "0";
-                    boolean compareVersion = StringUtil.compareVersion(AppVersion.SERVER_VERSION, version);
-                    if (!compareVersion) {
-                        errCode = ErrorCodeEnum.VERSION_LOW;
-                        break;
-                    }
-                }else {
-                    boolean compareVersion = StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion);
-                    if (!compareVersion) {
-                        errCode = ErrorCodeEnum.VERSION_LOW;
-                        break;
-                    }
-                }
+            deviceVersion = StringUtil.isNumeric(deviceVersion) ? deviceVersion : deviceVersion.replace(".", "") + "0";
+            if (!StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion)) {
+                errCode = ErrorCodeEnum.VERSION_LOW;
+                break;
             }
 
             // check if request expired
