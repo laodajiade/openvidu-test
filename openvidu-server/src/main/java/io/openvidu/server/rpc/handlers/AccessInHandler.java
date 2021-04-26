@@ -66,15 +66,25 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceName = null;
         Map userInfo = null;
         JsonObject object = new JsonObject();
+
+
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
         do {
-
             if (!StringUtils.isEmpty(deviceVersion)) {
-                boolean version = StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion);
-                if (!version) {
-                    errCode = ErrorCodeEnum.VERSION_LOW;
-                    break;
+                if (!StringUtil.isNumeric(deviceVersion)) {
+                    String version = deviceVersion.replace(".", "") + "0";
+                    boolean compareVersion = StringUtil.compareVersion(AppVersion.SERVER_VERSION, version);
+                    if (!compareVersion) {
+                        errCode = ErrorCodeEnum.VERSION_LOW;
+                        break;
+                    }
+                }else {
+                    boolean compareVersion = StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion);
+                    if (!compareVersion) {
+                        errCode = ErrorCodeEnum.VERSION_LOW;
+                        break;
+                    }
                 }
             }
 

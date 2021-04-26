@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -119,4 +120,12 @@ public class StringUtil {
         return version1.compareTo(version2) > 0;
     }
 
+    public static boolean isNumeric(String str){
+        Pattern pattern = Pattern.compile("[0-9]*");
+        Matcher isNum = pattern.matcher(str);
+        if( !isNum.matches() ){
+            return false;
+        }
+        return true;
+    }
 }
