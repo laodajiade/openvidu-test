@@ -70,8 +70,11 @@ public class AccessInHandler extends RpcAbstractHandler {
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
         do {
+
             deviceVersion = StringUtil.isNumeric(deviceVersion) ? deviceVersion : deviceVersion.replace(".", "") + "0";
+            log.info("版本号{}",deviceVersion);
             boolean compareVersion = StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion);
+            log.info("版本号{}",compareVersion);
             if (!compareVersion) {
                 errCode = ErrorCodeEnum.VERSION_LOW;
                 break;
