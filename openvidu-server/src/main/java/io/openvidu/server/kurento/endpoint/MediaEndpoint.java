@@ -191,7 +191,9 @@ public abstract class MediaEndpoint {
 			}
 
 			while (!candidates.isEmpty()) {
-				internalAddIceCandidate(candidates.removeFirst());
+				IceCandidate iceCandidate = candidates.removeFirst();
+				log.info("internal add iceCandidate {}",iceCandidate.getCandidate());
+				internalAddIceCandidate(iceCandidate);
 			}
 		}
 		return old;
