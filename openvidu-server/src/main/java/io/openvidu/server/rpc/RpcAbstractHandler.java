@@ -19,6 +19,7 @@ import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.common.pojo.SoftUser;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.vo.CallHistoryVo;
+import io.openvidu.server.config.EnvConfig;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.InviteCompensationManage;
@@ -60,6 +61,8 @@ import java.util.stream.Collectors;
 public abstract class RpcAbstractHandler {
 
     protected static final Gson gson = new GsonBuilder().create();
+    @Autowired
+    protected EnvConfig envConfig;
 
     @Resource
     protected OpenviduConfig openviduConfig;
