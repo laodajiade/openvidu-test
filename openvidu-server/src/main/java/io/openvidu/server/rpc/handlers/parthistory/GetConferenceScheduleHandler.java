@@ -123,15 +123,21 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
             appointConference.setUserId(userId);
             appointConference.setProject(this.project);
             appointConference.setOnlyCreator(vo.getOnlyCreator() != null && vo.getOnlyCreator());
-
-            if (StringUtils.isNotBlank(vo.getDate())) {
-                try {
+            try {
+                if (StringUtils.isNotBlank(vo.getDate())) {
                     appointConference.setStartTime(DateUtils.parseDate(vo.getDate() + " 00:00:00", "yyyy-MM-dd HH:mm:ss"));
                     appointConference.setEndTime(DateUtils.parseDate(vo.getDate() + " 23:59:59", "yyyy-MM-dd HH:mm:ss"));
-                } catch (ParseException e) {
-                    log.error("date parse error error", e);
-                    throw new BindValidateException("date parse error date=" + vo.getDate());
+                } else {
+                    if (StringUtils.isNotBlank(vo.getStartDate())) {
+                        appointConference.setStartTime(DateUtils.parseDate(vo.getStartDate() + " 00:00:00", "yyyy-MM-dd HH:mm:ss"));
+                    }
+                    if (StringUtils.isNotBlank(vo.getEndDate())) {
+                        appointConference.setEndTime(DateUtils.parseDate(vo.getEndDate() + " 23:59:59", "yyyy-MM-dd HH:mm:ss"));
+                    }
                 }
+            } catch (ParseException e) {
+                log.error("date parse error error", e);
+                throw new BindValidateException("date parse error VO = " + vo.toString());
             }
             return appointConference;
         }

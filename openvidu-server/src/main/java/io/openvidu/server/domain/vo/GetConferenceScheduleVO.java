@@ -7,6 +7,8 @@ public class GetConferenceScheduleVO extends PageVO {
 
     private String status;
     private String date;
+    private String startDate;
+    private String endDate;
 
     private Boolean onlyCreator = false;
 
