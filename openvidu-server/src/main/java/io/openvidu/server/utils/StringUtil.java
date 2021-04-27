@@ -130,7 +130,7 @@ public class StringUtil {
             return deviceVersion;
         }
         if (Pattern.matches("\\d.\\d.\\d(\\(.*?\\))?", deviceVersion)) {
-            return deviceVersion.replaceAll("\\.|(\\(.*?\\))", "");
+            return deviceVersion.replaceAll("\\.|(\\(.*?\\))", "") + "0";
         }
         throw new IllegalArgumentException("device version " + deviceVersion + " illegal");
     }
