@@ -190,10 +190,11 @@ public abstract class MediaEndpoint {
 				log.info("Exception:", e);
 			}
 
-			// http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
-//			while (!candidates.isEmpty()) {
-//				internalAddIceCandidate(candidates.removeFirst());
-//			}
+			while (!candidates.isEmpty()) {
+				IceCandidate iceCandidate = candidates.removeFirst();
+				log.info("internal add iceCandidate {}",iceCandidate.getCandidate());
+				internalAddIceCandidate(iceCandidate);
+			}
 		}
 		return old;
 	}
@@ -481,7 +482,7 @@ public abstract class MediaEndpoint {
 	}
 
 	public void internalAddIceCandidateCache() throws OpenViduException {
-		if (this.isWeb()) {
+		if (this.isWeb()&&false) {
 			// http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
 			while (!candidates.isEmpty()) {
 				internalAddIceCandidate(candidates.removeFirst());
