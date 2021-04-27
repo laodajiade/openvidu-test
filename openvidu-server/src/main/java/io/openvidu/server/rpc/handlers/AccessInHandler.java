@@ -75,7 +75,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             try {
                 deviceVersion = StringUtil.verifiedAndTransformVersion(deviceVersion);
             } catch (IllegalArgumentException e) {
-                errCode = ErrorCodeEnum.VERSION_LOW;
+                errCode = ErrorCodeEnum.ILLEGAL_VERSION;
                 break;
             }
 
