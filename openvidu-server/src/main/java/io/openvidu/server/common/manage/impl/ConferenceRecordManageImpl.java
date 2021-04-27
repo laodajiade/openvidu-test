@@ -12,7 +12,6 @@ import io.openvidu.server.common.dao.RoomRecordSummaryMapper;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.RecordState;
 import io.openvidu.server.common.enums.YesNoEnum;
-import io.openvidu.server.common.kafka.RecordingKafkaProducer;
 import io.openvidu.server.common.manage.ConferenceRecordManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.redis.RecordingRedisPublisher;
@@ -51,9 +50,6 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
 
     @Resource
     private RoomRecordSummaryMapper recordSummaryMapper;
-
-    @Resource
-    private RecordingKafkaProducer recordingKafkaProducer;
 
     @Resource
     private RecordingRedisPublisher recordingRedisPublisher;
