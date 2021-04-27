@@ -124,4 +124,14 @@ public class StringUtil {
     public static boolean isNumeric(String str){
         return StringUtils.isNumeric(str);
     }
+
+    public static String verifiedAndTransformVersion(String deviceVersion) {
+        if (Pattern.matches("\\d{4}", deviceVersion)) {
+            return deviceVersion;
+        }
+        if (Pattern.matches("\\d.\\d.\\d(\\(.*?\\))?", deviceVersion)) {
+            return deviceVersion.replaceAll("\\.|(\\(.*?\\))", "");
+        }
+        throw new IllegalArgumentException("device version " + deviceVersion + " illegal");
+    }
 }

@@ -43,6 +43,8 @@ public class AccessInHandler extends RpcAbstractHandler {
     @Value("${request.expired-duration}")
     private long reqExpiredDuration;
 
+    private static final String DEFAULT_DEVICE_VERSION = "1350";
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, ProtocolElements.ACCESS_IN_UUID_PARAM);
@@ -55,7 +57,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String clientType;
         TerminalTypeEnum terminalType = !StringUtils.isEmpty(clientType = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_CLIENT_TYPE))
                 ? TerminalTypeEnum.valueOf(clientType) : null;
-        String deviceVersion = getStringParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM);
+        String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM, DEFAULT_DEVICE_VERSION);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
         String functionality = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_FUNCTIONALITY_PARAM);
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
@@ -70,14 +72,14 @@ public class AccessInHandler extends RpcAbstractHandler {
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
 
         do {
-            log.info("版本号{}",deviceVersion);
-            log.error("版本号{}",deviceVersion);
-            deviceVersion = StringUtil.isNumeric(deviceVersion) ? deviceVersion : deviceVersion.replace(".", "") + "0";
+            try {
+                deviceVersion = StringUtil.verifiedAndTransformVersion(deviceVersion);
+            } catch (IllegalArgumentException e) {
+                errCode = ErrorCodeEnum.VERSION_LOW;
+                break;
+            }
 
-            boolean compareVersion = StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion);
-            log.info("版本号{}",compareVersion);
-            log.error("版本号{}",compareVersion);
-            if (!compareVersion) {
+            if (!StringUtil.compareVersion(AppVersion.SERVER_VERSION, deviceVersion)) {
                 errCode = ErrorCodeEnum.VERSION_LOW;
                 break;
             }
