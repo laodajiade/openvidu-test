@@ -5,6 +5,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
 import io.openvidu.server.common.enums.ConferenceStatus;
+import io.openvidu.server.common.enums.DeployTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
@@ -104,19 +105,21 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 校验录制存储空间
         // 小于20MB时，拒绝录制，返回13050（record storage exhausted）
         // 小于100MB时，返回13052（record storage less than 100MB）
-        /*List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
-                .project(rpcConnection.getProject()).build());
-        long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
-        long remainStorageSpace = conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).longValue() * 1024 * 1024 - usedSpaceSize;
-        if (remainStorageSpace <= lowerLimit) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.RECORD_STORAGE_EXHAUSTED);
-            return;
-        } else if (remainStorageSpace <= upperLimit && !forceRec) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.RECORD_STORAGE_NOT_ENOUGH);
-            return;
-        }*/
+        if (envConfig.deployType == DeployTypeEnum.SASS){
+            List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
+                    .project(rpcConnection.getProject()).build());
+            long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
+            long remainStorageSpace = conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).longValue() * 1024 * 1024 - usedSpaceSize;
+            if (remainStorageSpace <= lowerLimit) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.RECORD_STORAGE_EXHAUSTED);
+                return;
+            } else if (remainStorageSpace <= upperLimit && !forceRec) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.RECORD_STORAGE_NOT_ENOUGH);
+                return;
+            }
+        }
 
         // 校验会议从结束到开始时间间隔
         Long stopRecordingTime;
