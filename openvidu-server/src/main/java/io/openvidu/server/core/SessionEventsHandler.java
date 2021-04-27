@@ -141,11 +141,6 @@ public class SessionEventsHandler {
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
 						UserOnlineStatusEnum.offline.name());
 			} else {
-
-//				Map userInfo = cacheManage.getUserInfoByUUID(rpc.getUserUuid());
-//				String status = Objects.isNull(userInfo) ? UserOnlineStatusEnum.offline.name() :
-//						UserOnlineStatusEnum.offline.name().equals(String.valueOf(userInfo.get("status"))) ?
-//								UserOnlineStatusEnum.offline.name() : UserOnlineStatusEnum.online.name();
 				String status = UserOnlineStatusEnum.online.name();
 				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
                 participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());

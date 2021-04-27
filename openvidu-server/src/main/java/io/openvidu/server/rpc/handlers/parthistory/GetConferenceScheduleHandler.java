@@ -136,7 +136,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                     }
                 }
             } catch (ParseException e) {
-                log.error("date parse error error", e);
+                log.error("date parse error", e);
                 throw new BindValidateException("date parse error VO = " + vo.toString());
             }
             return appointConference;
