@@ -1595,7 +1595,7 @@ public class KurentoSessionManager extends SessionManager {
                 session = sessionOptional.get();
                 switch (jsonObject.get("method").getAsString()) {
                     case CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE:
-                        stopRecordAndNotify(session);
+                        stopRecordAndNotify(session, CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE);
                         break;
                     case CommonConstants.RECORD_STOP_BY_MODERATOR:
                         changeRoomRecordStatusAndNotify(session);
@@ -1668,13 +1668,13 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    private void stopRecordAndNotify(Session session) {
+    private void stopRecordAndNotify(Session session,String reason) {
         if (session.sessionAllowedToStopRecording()) {
             // stop the recording
             stopRecording(session.getSessionId());
             // send the stopping recording notify
             JsonObject notify = new JsonObject();
-            notify.addProperty("reason", CommonConstants.RECORD_STOP_BY_FILL_IN_STORAGE);
+            notify.addProperty("reason", reason);
             session.getParticipants().forEach(participant -> {
                 if (StreamType.MAJOR.equals(participant.getStreamType())) {
                     rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);

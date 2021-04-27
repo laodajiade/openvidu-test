@@ -1,6 +1,7 @@
 package io.openvidu.server.common.broker;
 
 import io.openvidu.server.common.constants.BrokerChannelConstans;
+import io.openvidu.server.core.SessionManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,9 @@ public class RedisSubscriber {
 
     @Autowired
     NotifyDeviceUploadLogHandler notifyDeviceUploadLogHandler;
+
+    @Autowired
+    private SessionManager sessionManager;
 
     public void receiveMessage(String message, String channel) {
         switch (channel) {
@@ -33,6 +37,9 @@ public class RedisSubscriber {
                 break;
             case BrokerChannelConstans.DEVICE_NAME_UPDATE_CHANNEL:
                 NotifyDeviceInfoUpdateHandler.notifyDeviceInfoUpdate(message);
+                break;
+            case BrokerChannelConstans.TOPIC_ROOM_RECORDER_ERROR:
+                sessionManager.handleRecordErrorEvent(message);
                 break;
             default:
                 log.error("Unrecognized listening channel:{}", channel);
