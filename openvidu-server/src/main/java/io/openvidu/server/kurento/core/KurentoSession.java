@@ -36,6 +36,7 @@ import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.utils.SafeSleep;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
@@ -364,7 +365,7 @@ public class KurentoSession extends Session {
 	public Composite createSipComposite() {
 		if (Objects.isNull(sipComposite)) {
 			sipComposite = new Composite.Builder(pipeline).build();
-			sipComposite.setName(sessionId + "-sipComposite");
+			sipComposite.setName(sessionId + "-sipComposite-" + RandomStringUtils.randomAlphabetic(5));
 			log.info("create sip composite {}, name {}", sipComposite.getId(), sipComposite.getName());
 		}
 		return sipComposite;
