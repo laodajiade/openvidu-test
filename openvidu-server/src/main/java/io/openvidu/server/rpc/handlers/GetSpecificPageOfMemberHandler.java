@@ -80,7 +80,8 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
             PageHelper.startPage(pageNum, pageSize);
         }
         List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId, notInUser, specifyVisibleRule.getVisibleUser());
-
+        List<AllUserInfo> sipUserList = userMapper.selectSipUserList(deptId);
+        allUserInfos.addAll(sipUserList);
         hiddenPhoneManage.hiddenPhone2(allUserInfos);
 
         JsonArray jsonArray = new JsonArray();

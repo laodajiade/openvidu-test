@@ -50,4 +50,11 @@ public interface UserMapper {
     User selectAdminUserByProject(String project);
 
     List<User> selectCallUserByUuidList(List<String> uuids);
+
+    /**
+     * 根据部门id查询 部门下的所有SIP用户
+     * @param deptId
+     * @return
+     */
+    List<AllUserInfo> selectSipUserList(Long deptId);
 }

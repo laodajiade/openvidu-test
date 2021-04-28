@@ -152,6 +152,16 @@
     where id = #{id,jdbcType=BIGINT}
   </select>
 
+  <!-- 查询部门下的所有SIP用户 -->
+  <select id="selectSipUserList" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.AllUserInfo" >
+      SELECT su.username AS userName,
+           su.uuid,
+           su.phone,
+           su.type,
+           sp.sip_number
+      FROM sd_sip sp INNER JOIN sd_user su ON sp.uuid = su.uuid WHERE sp.department_id = #{deptId}
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from sd_user
     where id = #{id,jdbcType=BIGINT}
