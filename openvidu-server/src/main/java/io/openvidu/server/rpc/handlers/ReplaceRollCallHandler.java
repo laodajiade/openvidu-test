@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 /**
- * @author geedow
- * @date 2019/11/5 17:05
+ * 2021年4月28日 和SDK沟通过，暂时没有在使用这个接口
  */
 @Service
 public class ReplaceRollCallHandler extends RpcAbstractHandler {

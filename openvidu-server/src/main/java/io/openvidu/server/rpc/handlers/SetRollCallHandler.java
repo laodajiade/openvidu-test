@@ -6,6 +6,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -41,6 +42,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         if (moderatorPart == null) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     new JsonObject(),ErrorCodeEnum.MODERATOR_NOT_FOUND);
+            return;
+        }
+
+        if (targetPart.getTerminalType() == TerminalTypeEnum.S) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SIP_CANNOT_BE_A_SPEAKER);
             return;
         }
 

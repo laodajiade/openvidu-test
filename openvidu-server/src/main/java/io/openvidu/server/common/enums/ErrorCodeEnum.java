@@ -116,6 +116,7 @@ public enum ErrorCodeEnum {
     POLLING_IS_NOT_STARTED(13069, "轮询尚未开始"),
     NO_RECORD_SERVICE(13070, "未开通录制服务，请联系管理员"),
     SENSITIVE_WORD(13071, "晨浩憨憨"),
+    SIP_CANNOT_BE_A_SPEAKER(13074	, "sip不能成为发言者"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
