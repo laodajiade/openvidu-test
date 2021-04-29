@@ -69,6 +69,7 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
 
         Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
 
+
         if (isChooseAll) {
             PageHelper.startPage(1, Integer.MAX_VALUE);
         } else {
@@ -79,11 +80,9 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
             }
             PageHelper.startPage(pageNum, pageSize);
         }
-        List<AllUserInfo> allUserInfos = userMapper.selectAllUserList(deptId, notInUser, specifyVisibleRule.getVisibleUser());
-        List<AllUserInfo> sipUserList = userMapper.selectSipUserList(deptId);
-        allUserInfos.addAll(sipUserList);
-        hiddenPhoneManage.hiddenPhone2(allUserInfos);
+        List<AllUserInfo>  allUserInfos = userMapper.selectAllUserList(deptId, notInUser, specifyVisibleRule.getVisibleUser());
 
+        hiddenPhoneManage.hiddenPhone2(allUserInfos);
         JsonArray jsonArray = new JsonArray();
         if (!CollectionUtils.isEmpty(allUserInfos)) {
             allUserInfos.forEach(e -> {
@@ -102,6 +101,7 @@ public class GetSpecificPageOfMemberHandler extends RpcAbstractHandler {
             });
         }
         PageInfo<AllUserInfo> pageInfo = new PageInfo<>(allUserInfos);
+
         JsonObject respJson = new JsonObject();
         respJson.addProperty("total", pageInfo.getTotal());
         respJson.addProperty("pageNum", pageInfo.getPageNum());
