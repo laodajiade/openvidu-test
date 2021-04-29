@@ -342,7 +342,7 @@
         #{item,jdbcType=BIGINT}
       </foreach>
     </if>
-    order by sort_number desc
+    order by type asc,sort_number desc
   </select>
 
   <select id="selectAllUserByUuidList" parameterType="java.util.List" resultType="io.openvidu.server.common.pojo.AllUserInfo">
