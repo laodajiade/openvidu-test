@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -34,6 +35,13 @@ public class RaiseHandHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
             return;
         }
+
+        if (rpcConnection.getTerminalType() == TerminalTypeEnum.S) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SIP_CANNOT_BE_A_SPEAKER);
+            return;
+        }
+
         if (ParticipantHandStatus.speaker.equals(targetParticipant.getHandStatus())) {
             log.info("participant handStatus:{} again call raiseHand then do nothing", targetParticipant.getHandStatus());
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
