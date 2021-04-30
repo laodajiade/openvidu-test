@@ -719,6 +719,7 @@ public class KurentoParticipant extends Participant {
 			this.session.deregisterPublisher();
 
 			publisher = null;
+			setStreaming(false);
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
 		}
