@@ -45,10 +45,12 @@ public class OnlineStatusFixRunner implements ApplicationRunner {
             for (String key : keys) {
                 String uuid = key.replace(CacheKeyConstants.APP_TOKEN_PREFIX_KEY, "");
                 Map info = cacheManage.getUserInfoByUUID(uuid);
-                String status = info.get("status").toString();
-                if (!Objects.equals(DeviceStatus.offline.name(), status)) {
-                    log.info("update {} status: offline", uuid);
-                    cacheManage.updateTokenInfo(uuid, "status", DeviceStatus.offline.name());
+                if (info.containsKey("status")){
+                    String status = info.get("status").toString();
+                    if (!Objects.equals(DeviceStatus.offline.name(), status)) {
+                        log.info("update {} status: offline", uuid);
+                        cacheManage.updateTokenInfo(uuid, "status", DeviceStatus.offline.name());
+                    }
                 }
             }
         }
