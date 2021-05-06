@@ -34,6 +34,13 @@
     where serial_number = #{serialNumber, jdbcType=VARCHAR}
   </select>
 
+  <select id="selectBySerialNumber" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sd_device
+    where serial_number = #{serialNumber, jdbcType=VARCHAR}
+  </select>
+
   <select id="selectDevSerialNumsByDeptIds" parameterType="java.util.List" resultType="java.lang.String">
     select serial_number
     from sd_device_dept
