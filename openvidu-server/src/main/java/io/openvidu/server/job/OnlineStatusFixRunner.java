@@ -35,7 +35,6 @@ public class OnlineStatusFixRunner implements ApplicationRunner {
                 String deviceNumber = key.replace(CacheKeyConstants.DEV_PREFIX_KEY, "");
                 String status = cacheManage.getDeviceStatus(deviceNumber);
                 if (!Objects.equals(DeviceStatus.offline.name(), status)) {
-                    log.info("update {} status: offline", deviceNumber);
                     cacheManage.setDeviceStatus(deviceNumber, DeviceStatus.offline.name());
                 }
             }
@@ -48,7 +47,6 @@ public class OnlineStatusFixRunner implements ApplicationRunner {
                 if (info != null && info.containsKey("status")) {
                     String status = info.get("status").toString();
                     if (!Objects.equals(DeviceStatus.offline.name(), status)) {
-                        log.info("update {} status: offline", uuid);
                         cacheManage.updateTokenInfo(uuid, "status", DeviceStatus.offline.name());
                     }
                 }
