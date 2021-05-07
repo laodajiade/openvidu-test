@@ -43,17 +43,18 @@ public class GetGroupListHandler extends RpcAbstractHandler {
         PageHelper.startPage(pageNum, pageSize);
 
         List<Group> groups = userGroupMapper.selectByCorpIds(rootDept.getCorpId());
-
+        log.info("groups{}",groups);
         Map<String, Object> map = new HashMap<>();
         map.put("userId", rootDept.getUserId());
         map.put("corpId", rootDept.getCorpId());
         List<Group> userInGroup = userGroupMapper.selectUserInGroup(map);
-
+        log.info("userInGroup{}",userInGroup);
         JsonObject resp = new JsonObject();
         JsonArray array = new JsonArray();
         if (!CollectionUtils.isEmpty(groups) && !StringUtils.isEmpty(userInGroup)) {
             List<Group> result = groups.stream().filter((group) -> userInGroup.stream().map(Group::getId).collect(Collectors.toList()).contains(group.getId())).collect(Collectors.toList());
             for (Group group : result) {
+                log.info("result{}",request);
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPNAME_PARAM, group.getGroupName());
                 jsonObject.addProperty(ProtocolElements.GET_GROUP_LIST_GROUPID_PARAM, group.getId());
@@ -61,6 +62,7 @@ public class GetGroupListHandler extends RpcAbstractHandler {
                 array.add(jsonObject);
             }
         }
+        log.info("array{}",array);
         PageInfo<Group> pageInfo = new PageInfo<>(userInGroup);
         resp.addProperty(ProtocolElements.PAGENUM, pageNum);
         resp.addProperty(ProtocolElements.PAGESIZE, pageSize);
