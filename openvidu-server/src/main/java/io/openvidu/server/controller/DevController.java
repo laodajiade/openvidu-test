@@ -89,7 +89,12 @@ public class DevController {
             rpcHandler.handRpcRequest(connection, request);
         } catch (Exception e) {
             e.printStackTrace();
-            rpcHandler.setNotificationService(notificationService);
+        } finally {
+            if (notificationService.getClass().getName().equals("io.openvidu.server.rpc.RpcNotificationService")) {
+                rpcHandler.setNotificationService(notificationService);
+            } else {
+                System.err.println(notificationService.getClass().getName());
+            }
         }
         return new GsonBuilder().setPrettyPrinting().create().toJson(result);
     }

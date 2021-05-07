@@ -67,6 +67,7 @@ Content-Type: application/json
   "ruid": "{{global.ruid}}"
 }
 
+
 ###
 
 # 删除预约会议
@@ -75,6 +76,21 @@ Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json
 
+#{
+#  "ruid": "{{global.ruid}}"
+#}
 {
-  "ruid": "{{global.ruid}}"
+  "ruid": "appt-e7653b42b0314affb81a34426d36e652"
+}
+
+
+###
+# 获取详情
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getAppointmentRoomDetails
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid": "appt-e7653b42b0314affb81a34426d36e652"
 }

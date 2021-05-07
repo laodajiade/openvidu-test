@@ -172,9 +172,22 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             if (conference == null) {
                 throw new BizException(ErrorCodeEnum.CONFERENCE_RECORD_NOT_EXIST);
             }
-
             // 根据ruid获取所有参会者列表
             List<ConferencePartHistory> conferencePartHistories = conferencePartHistoryMapper.selectConfPartHistoryByRuids(singletonList(ruid));
+
+            if (conference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
+                if (Objects.equals(conference.getModeratorUuid(), rpcConnection.getUserUuid())) {
+                    if (conference.getDel() == 1) {
+                        throw new BizException(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                    }
+                } else {
+                    Optional<ConferencePartHistory> findOp = conferencePartHistories.stream()
+                            .filter(hist -> Objects.equals(hist.getUserId(), rpcConnection.getUserId())).findFirst();
+                    if (!findOp.isPresent() || findOp.get().getDel() == 1) {
+                        throw new BizException(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                    }
+                }
+            }
 
             // 获取到所有预约会议发起人对象
             UserDeviceDeptInfo creator = userMapper.queryUserInfoByUserId(conference.getUserId());
@@ -202,7 +215,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("createorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
             appointConfObj.addProperty("creatorAccount", Objects.nonNull(creator) ? creator.getUuid() : "");
             appointConfObj.addProperty("creatorUserIcon", "");
-            appointConfObj.addProperty("isStart", conference.getStatus() != 0 ||conference.getStartTime().before(new Date()));
+            appointConfObj.addProperty("isStart", conference.getStatus() != 0 || conference.getStartTime().before(new Date()));
             appointConfObj.addProperty("project", conference.getProject());
             appointConfObj.addProperty("password", conference.getPassword());
             appointConfObj.addProperty("moderatorPassword", conference.getModeratorPassword());

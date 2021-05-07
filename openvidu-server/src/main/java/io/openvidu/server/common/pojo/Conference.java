@@ -48,5 +48,7 @@ public class Conference {
 
     private String shortUrl;
 
+    private Integer del;
+
     private String moderatorName;
 }
