@@ -19,7 +19,6 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -139,8 +138,10 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
     }
 
     private void sendJpushMessage(List<String> targetIds, String moderatorName, String subject, String ruid) {
+        log.info("会议邀请 极光推送,ruid {},targetIds:{}", ruid, targetIds);
         Map<String, RpcConnection> rpcMap = this.notificationService.getRpcConnections().stream().collect(Collectors.toMap(RpcConnection::getUserUuid, Function.identity()));
         targetIds.forEach(uuid -> {
+            boolean send = false;
             Map userInfo = cacheManage.getUserInfoByUUID(uuid);
             if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
                 if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
@@ -156,13 +157,18 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                         map.put("message", jpushManage.getJpushMsgTemp(ruid, title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
                         if (TerminalTypeEnum.A.name().equals(type)) {
                             jpushManage.sendToAndroid(title, alert, map, registrationId);
+                            send = true;
                         } else if (TerminalTypeEnum.I.name().equals(type)) {
                             IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                             jpushManage.sendToIos(iosAlert, map, registrationId);
+                            send = true;
                         }
                         jpushManage.saveJpushMsg(uuid, ruid, JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
                     }
                 }
+            }
+            if (!send) {
+                log.info("会议邀请 极光推送 不推送 {}", uuid);
             }
         });
     }
