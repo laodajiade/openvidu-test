@@ -147,7 +147,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                 if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
                     //bug-fix:http://task.sudi.best/browse/BASE121-2631
                     RpcConnection rpcConnection = rpcMap.get(uuid);
-                    if (Objects.isNull(rpcConnection) || Objects.isNull(rpcConnection.getSessionId())) {
+                    if (Objects.isNull(rpcConnection) || !Objects.equals(TerminalStatus.meeting.name(), userInfo.get("status"))) {
                         String type = userInfo.get("type").toString();
                         String registrationId = userInfo.get("registrationId").toString();
                         Date createDate = new Date();
