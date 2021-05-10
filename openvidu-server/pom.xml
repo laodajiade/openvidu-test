@@ -56,7 +56,6 @@
 		<version.com.sensedigit.cock-crow>1.0.0</version.com.sensedigit.cock-crow>
 		<version.kurento-client>6.11.0</version.kurento-client>
 		<version.kms-api-filters>6.11.0</version.kms-api-filters>
-		<version.org.springframework.kafka>2.2.6.RELEASE</version.org.springframework.kafka>
 	</properties>
 
 	<profiles>
@@ -456,11 +455,6 @@
 			<version>${version.com.grithub.pagehelper}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
-			<version>${version.org.springframework.kafka}</version>
-		</dependency>
 		<dependency>
 			<groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-core</artifactId>

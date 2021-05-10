@@ -100,10 +100,18 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("terminalType", kurentoParticipant.getTerminalType().name());
         userObj.addProperty("shareStatus", kurentoParticipant.getShareStatus().name());
         userObj.addProperty("handStatus", kurentoParticipant.getHandStatus().name());
-        userObj.addProperty("audioActive",
-                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isAudioActive());
-        userObj.addProperty("videoActive",
-                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
+        try {
+            userObj.addProperty("audioActive",
+                    kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isAudioActive());
+            userObj.addProperty("videoActive",
+                    kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
+        } catch (Exception e) {
+            //todo 偶现问题，怀疑是isStreaming不正确，观察两个月错误日志2021年4月30日，如果没有报错可以删除
+            log.error("getPartInfo error,kurentoParticipant uuid {}, isStreaming {},isPublisherStreaming {}"
+                    ,kurentoParticipant.getUuid(),kurentoParticipant.isStreaming(),kurentoParticipant.isPublisherStreaming());
+            throw e;
+        }
+
         userObj.addProperty("micStatus", kurentoParticipant.getMicStatus().name());
         userObj.addProperty("videoStatus", kurentoParticipant.getVideoStatus().name());
         userObj.addProperty("speakerStatus", kurentoParticipant.getSpeakerStatus().name());

@@ -53,6 +53,7 @@ public enum ErrorCodeEnum {
     CORP_SERVICE_EXPIRED(11006, "服务已到期"),
     ACCESS_IN_NEEDED(11007, "重新链接服务器中"),
     RATE_LIMITER(11011, "请稍后再试"),
+    VERSION_LOW(11012, "当前服务暂不支持，请对平台服务进行升级"),
 
     TOKEN_INVALID(12003, "token已失效"),
     TOKEN_ERROR(12004, "token错误"),
@@ -116,6 +117,7 @@ public enum ErrorCodeEnum {
     POLLING_IS_NOT_STARTED(13069, "轮询尚未开始"),
     NO_RECORD_SERVICE(13070, "未开通录制服务，请联系管理员"),
     SENSITIVE_WORD(13071, "晨浩憨憨"),
+    ILLEGAL_VERSION(13072, "非法版本号"),
     SIP_CANNOT_BE_A_SPEAKER(13074	, "sip不能成为发言者"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),

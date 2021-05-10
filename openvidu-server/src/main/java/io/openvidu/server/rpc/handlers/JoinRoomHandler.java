@@ -20,7 +20,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author geedow
@@ -71,6 +74,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
+
+        String speakerStatus = "on";
 
         try {
             do {
@@ -211,6 +216,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM))) {
                             videoStatus = partInfo.get(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM).toString();
                         }
+                        if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM))) {
+                            speakerStatus = partInfo.get(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM).toString();
+                        }
 
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
                                 Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
@@ -223,15 +231,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
-                // check ever joinRoom duplicately
-                /*if (!isReconnected && StreamType.MAJOR.equals(streamType) && sessionManager.joinRoomDuplicately(rpcConnection.getUserUuid())) {
-//                if (!isReconnected  && sessionManager.joinRoomDuplicately(sessionId, rpcConnection.getUserUuid(), streamType)) {
-                    errCode = ErrorCodeEnum.JOIN_ROOM_DUPLICATELY;
-                    break;
-                }*/
-
                 GeoLocation location = null;
-                boolean recorder = false;
+                boolean recorder = getBooleanOptionalParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
 
                 // verify room capacity limit.
                 if (!Objects.isNull(sessionManager.getSession(sessionId)) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
@@ -271,13 +272,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                                 null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
                         return;
                     }
-                }
-
-
-                try {
-                    recorder = getBooleanParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
-                } catch (RuntimeException e) {
-                    // Nothing happens. 'recorder' param to false
                 }
 
                 boolean generateRecorderParticipant = false;
@@ -343,6 +337,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setProject(rpcConnection.getProject());
                 participant.setMicStatus(StringUtils.isEmpty(micStatus) ? ParticipantMicStatus.on : ParticipantMicStatus.valueOf(micStatus));
                 participant.setVideoStatus(StringUtils.isEmpty(videoStatus) ? ParticipantVideoStatus.on : ParticipantVideoStatus.valueOf(videoStatus));
+                //1.3.7 不修复，在1.3.8修复
+                //participant.setSpeakerStatus(StringUtils.isEmpty(speakerStatus) ? ParticipantSpeakerStatus.on : ParticipantSpeakerStatus.valueOf(speakerStatus));
                 participant.setVoiceMode(voiceMode);
                 if (StringUtils.isEmpty(serialNumber)) {
                     if (UserType.register.equals(participant.getUserType()) && TerminalTypeEnum.S != rpcConnection.getTerminalType()) {

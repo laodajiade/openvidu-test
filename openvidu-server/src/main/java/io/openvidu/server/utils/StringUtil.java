@@ -3,11 +3,13 @@ package io.openvidu.server.utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -119,4 +121,17 @@ public class StringUtil {
         return version1.compareTo(version2) > 0;
     }
 
+    public static boolean isNumeric(String str){
+        return StringUtils.isNumeric(str);
+    }
+
+    public static String verifiedAndTransformVersion(String deviceVersion) {
+        if (Pattern.matches("\\d{4}", deviceVersion)) {
+            return deviceVersion;
+        }
+        if (Pattern.matches("\\d.\\d.\\d(\\(.*?\\))?", deviceVersion)) {
+            return deviceVersion.replaceAll("\\.|(\\(.*?\\))", "") + "0";
+        }
+        throw new IllegalArgumentException("device version " + deviceVersion + " illegal");
+    }
 }

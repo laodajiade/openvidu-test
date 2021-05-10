@@ -1,5 +1,6 @@
 package io.openvidu.server.common.dao;
 
+import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.UserCorpInfo;
 import org.apache.ibatis.annotations.Mapper;

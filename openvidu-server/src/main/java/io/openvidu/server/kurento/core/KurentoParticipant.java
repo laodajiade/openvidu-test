@@ -532,6 +532,7 @@ public class KurentoParticipant extends Participant {
 		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
 		try {
 			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, mediaChannel.getPublisher() , streamMode);
+			subscriber.internalAddIceCandidateCache();
 			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
 			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
 					senderName, this.session.getSessionId());
@@ -714,6 +715,7 @@ public class KurentoParticipant extends Participant {
 			this.session.deregisterPublisher();
 
 			publisher = null;
+			setStreaming(false);
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
 		}

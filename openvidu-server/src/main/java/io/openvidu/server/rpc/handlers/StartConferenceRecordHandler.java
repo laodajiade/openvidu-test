@@ -3,12 +3,10 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.constants.CommonConstants;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -84,7 +81,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
         // 录制服务是否启用（在有效期内）
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        if (!recordService){
+        if (!recordService) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);
             return;
@@ -103,18 +100,20 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 校验录制存储空间
         // 小于20MB时，拒绝录制，返回13050（record storage exhausted）
         // 小于100MB时，返回13052（record storage less than 100MB）
-        List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
-                .project(rpcConnection.getProject()).build());
-        long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
-        long remainStorageSpace = conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).longValue() * 1024 * 1024 - usedSpaceSize;
-        if (remainStorageSpace <= lowerLimit) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.RECORD_STORAGE_EXHAUSTED);
-            return;
-        } else if (remainStorageSpace <= upperLimit && !forceRec) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.RECORD_STORAGE_NOT_ENOUGH);
-            return;
+        if (envConfig.deployType == DeployTypeEnum.SASS) {
+            List<RoomRecordSummary> roomRecordSummaries = conferenceRecordManage.getAllRoomRecordSummaryByProject(ConferenceRecordSearch.builder()
+                    .project(rpcConnection.getProject()).build());
+            long usedSpaceSize = CollectionUtils.isEmpty(roomRecordSummaries) ? 0L : roomRecordSummaries.stream().mapToLong(RoomRecordSummary::getOccupation).sum();
+            long remainStorageSpace = conferenceRecordManage.getCorpRecordStorage(rpcConnection.getProject()).longValue() * 1024 * 1024 - usedSpaceSize;
+            if (remainStorageSpace <= lowerLimit) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.RECORD_STORAGE_EXHAUSTED);
+                return;
+            } else if (remainStorageSpace <= upperLimit && !forceRec) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.RECORD_STORAGE_NOT_ENOUGH);
+                return;
+            }
         }
 
         // 校验会议从结束到开始时间间隔
@@ -140,6 +139,8 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         ConferenceRecord condition = new ConferenceRecord();
         condition.setRuid(session.getRuid());
         List<ConferenceRecord> existRecordList = conferenceRecordManage.getByCondition(condition);
+
+
         if (CollectionUtils.isEmpty(existRecordList)) {
             conferenceRecordManage.insertSelective(constructConferenceRecord(rpcConnection, session));
         } else {
@@ -152,11 +153,34 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 通知录制服务
         sessionManager.startRecording(roomId);
 
-
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
         // 通知与会者开始录制
         notifyStartRecording(rpcConnection.getSessionId());
+
+        asyncCheckRecordStatus(roomId, session, participant);
+    }
+
+    private void asyncCheckRecordStatus(String roomId, Session session, Participant participant) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                //查询录制状态是否在录制中  如果状态==0  通知客户端录制失败重新录制
+                ConferenceRecord recordStatus = conferenceRecordManage.getByRuIdRecordStatus(session.getRuid());
+                if (ConferenceRecordStatusEnum.WAIT.getStatus().equals(recordStatus.getStatus())) {
+                    log.warn("会议录制没有正常开始 {},{}", session.getSessionId(), session.getRuid());
+                    // 通知录制服务停止录制视频
+                    sessionManager.stopRecording(roomId);
+
+                    JsonObject notify = new JsonObject();
+                    // notify.addProperty("reason", "serverInternalError");
+                    notify.addProperty("reason", CommonConstants.SERVER_INTERNAL_ERROR);
+                    notificationService.sendBatchNotificationConcurrent(session.getMajorPartEachConnect(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
+                }
+            } catch (Exception e) {
+                log.info("asyncCheckRecordStatus error ", e);
+            }
+        }).start();
     }
 
     private void notifyStartRecording(String sessionId) {

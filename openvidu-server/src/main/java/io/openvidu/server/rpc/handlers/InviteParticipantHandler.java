@@ -1,18 +1,22 @@
 package io.openvidu.server.rpc.handlers;
 
+import cn.jpush.api.push.model.notification.IosAlert;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.core.JpushMsgEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author geedow
@@ -63,7 +69,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         Collection<Session> sessions = sessionManager.getSessions();
         if (Objects.nonNull(sessions)) {
             AtomicInteger limitCapacity = new AtomicInteger();
-            sessions.forEach(e ->{
+            sessions.forEach(e -> {
                 if (rpcConnection.getProject().equals(e.getConference().getProject())) {
                     limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
                 }
@@ -73,7 +79,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             if (Objects.nonNull(corporation.getCapacity()) && targetIds.size() + limitCapacity.get() > corporation.getCapacity()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                return ;
+                return;
             }
         }
 
@@ -97,7 +103,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         List<User> invitees = userMapper.selectCallUserByUuidList(targetIds);
         if (!CollectionUtils.isEmpty(invitees)) {
             invitees.forEach(invitee -> {
-                cacheManage.saveInviteInfo(sessionId,invitee.getUuid());
+                cacheManage.saveInviteInfo(sessionId, invitee.getUuid());
                 addInviteCompensation(invitee.getUuid(), params, expireTime);
             });
         }
@@ -107,7 +113,9 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         Conference conference = sessionManager.getSession(sessionId).getConference();
         saveCallHistoryUsers(invitees, sessionId, conference.getRuid());
         //极光推送
-        sendJpushMessage(targetIds, moderatorName, conference.getConferenceSubject(), conference.getRuid());
+        Thread thread = new Thread(() -> sendJpushMessage(targetIds, moderatorName, conference.getConferenceSubject(), conference.getRuid()));
+        thread.setName("invite-jpush-thread-" + sessionId);
+        thread.start();
 
     }
 
@@ -127,6 +135,42 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                 }
             }
         }
+    }
+
+    private void sendJpushMessage(List<String> targetIds, String moderatorName, String subject, String ruid) {
+        log.info("会议邀请 极光推送,ruid {},targetIds:{}", ruid, targetIds);
+        Map<String, RpcConnection> rpcMap = this.notificationService.getRpcConnections().stream().collect(Collectors.toMap(RpcConnection::getUserUuid, Function.identity()));
+        targetIds.forEach(uuid -> {
+            boolean send = false;
+            Map userInfo = cacheManage.getUserInfoByUUID(uuid);
+            if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
+                if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
+                    //bug-fix:http://task.sudi.best/browse/BASE121-2631
+                    RpcConnection rpcConnection = rpcMap.get(uuid);
+                    if (Objects.isNull(rpcConnection) || !Objects.equals(TerminalStatus.meeting.name(), userInfo.get("status"))) {
+                        String type = userInfo.get("type").toString();
+                        String registrationId = userInfo.get("registrationId").toString();
+                        Date createDate = new Date();
+                        String title = StringUtil.INVITE_CONT;
+                        String alert = String.format(StringUtil.ON_MEETING_INVITE, moderatorName, subject);
+                        Map<String, String> map = new HashMap<>(1);
+                        map.put("message", jpushManage.getJpushMsgTemp(ruid, title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
+                        if (TerminalTypeEnum.A.name().equals(type)) {
+                            jpushManage.sendToAndroid(title, alert, map, registrationId);
+                            send = true;
+                        } else if (TerminalTypeEnum.I.name().equals(type)) {
+                            IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
+                            jpushManage.sendToIos(iosAlert, map, registrationId);
+                            send = true;
+                        }
+                        jpushManage.saveJpushMsg(uuid, ruid, JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
+                    }
+                }
+            }
+            if (!send) {
+                log.info("会议邀请 极光推送 不推送 {}", uuid);
+            }
+        });
     }
 
 }

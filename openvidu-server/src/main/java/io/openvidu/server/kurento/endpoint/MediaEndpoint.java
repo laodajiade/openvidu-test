@@ -189,8 +189,11 @@ public abstract class MediaEndpoint {
 			} catch (InterruptedException e) {
 				log.info("Exception:", e);
 			}
+
 			while (!candidates.isEmpty()) {
-				internalAddIceCandidate(candidates.removeFirst());
+				IceCandidate iceCandidate = candidates.removeFirst();
+				log.info("internal add iceCandidate {}",iceCandidate.getCandidate());
+				internalAddIceCandidate(iceCandidate);
 			}
 		}
 		return old;
@@ -476,6 +479,15 @@ public abstract class MediaEndpoint {
 				log.warn("EP {}: Internal endpoint failed to start gathering candidates", endpointName, cause);
 			}
 		});
+	}
+
+	public void internalAddIceCandidateCache() throws OpenViduException {
+		if (this.isWeb()&&false) {
+			// http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
+			while (!candidates.isEmpty()) {
+				internalAddIceCandidate(candidates.removeFirst());
+			}
+		}
 	}
 
 	private void internalAddIceCandidate(IceCandidate candidate) throws OpenViduException {

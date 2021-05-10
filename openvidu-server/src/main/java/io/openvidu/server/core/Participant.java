@@ -241,7 +241,6 @@ public class Participant {
 
 	public void setMicStatus(ParticipantMicStatus micStatus) {
 		this.micStatus = micStatus;
-		log.info("set mic status uuid:{},publishId:{},micStatus:{}", uuid, participantPublicId, micStatus.name());
 	}
 
 	public ParticipantVideoStatus getVideoStatus() { return videoStatus; }

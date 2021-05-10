@@ -17,11 +17,12 @@
     <result column="project" property="project" jdbcType="VARCHAR" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="del" property="del" jdbcType="TINYINT" />
     <result column="only_share" property="onlyShare" jdbcType="TINYINT" />
   </resultMap>
   <sql id="Base_Column_List" >
     id, ruid, user_id, uuid, username, user_type, terminal_type, status, start_time, end_time, duration, access_key, project, create_time,
-    update_time, only_share
+    update_time, del, only_share
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
     select

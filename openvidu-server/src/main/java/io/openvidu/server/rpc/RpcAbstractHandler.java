@@ -7,10 +7,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
-import io.openvidu.server.common.enums.DeviceStatus;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.common.enums.TerminalTypeEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.*;
 import io.openvidu.server.common.pojo.CallHistory;
 import io.openvidu.server.common.pojo.Conference;
@@ -19,6 +16,7 @@ import io.openvidu.server.common.pojo.DeviceDept;
 import io.openvidu.server.common.pojo.SoftUser;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.vo.CallHistoryVo;
+import io.openvidu.server.config.EnvConfig;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.InviteCompensationManage;
@@ -42,13 +40,9 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +54,8 @@ import java.util.stream.Collectors;
 public abstract class RpcAbstractHandler {
 
     protected static final Gson gson = new GsonBuilder().create();
+    @Autowired
+    protected EnvConfig envConfig;
 
     @Resource
     protected OpenviduConfig openviduConfig;
@@ -543,28 +539,5 @@ public abstract class RpcAbstractHandler {
         }
     }
 
-    @Async
-    public void sendJpushMessage(List<String> targetIds, String moderatorName, String subject, String ruid) {
-        targetIds.forEach(uuid ->{
-            Map userInfo = cacheManage.getUserInfoByUUID(uuid);
-            if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
-                if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
-                    String type = userInfo.get("type").toString();
-                    String registrationId = userInfo.get("registrationId").toString();
-                    Date createDate = new Date();
-                    String title = StringUtil.INVITE_CONT;
-                    String alert = String.format(StringUtil.ON_MEETING_INVITE, moderatorName, subject);
-                    Map<String,String> map = new HashMap<>(1);
-                    map.put("message", jpushManage.getJpushMsgTemp(ruid, title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
-                    if (TerminalTypeEnum.A.name().equals(type)) {
-                        jpushManage.sendToAndroid(title, alert, map, registrationId);
-                    } else if(TerminalTypeEnum.I.name().equals(type)){
-                        IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
-                        jpushManage.sendToIos(iosAlert, map, registrationId);
-                    }
-                    jpushManage.saveJpushMsg(uuid, ruid, JpushMsgEnum.MEETING_INVITE.getMessage(), alert, createDate);
-                }
-            }
-        });
-    }
+
 }

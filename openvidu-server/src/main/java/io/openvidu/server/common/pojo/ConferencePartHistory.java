@@ -40,5 +40,7 @@ public class ConferencePartHistory {
 
     private Integer onlyShare;
 
+    private Integer del;
+
     private String phone;
 }

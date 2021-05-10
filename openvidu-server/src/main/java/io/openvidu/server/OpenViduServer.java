@@ -23,6 +23,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.server.cdr.CDRLogger;
 import io.openvidu.server.cdr.CDRLoggerFile;
 import io.openvidu.server.cdr.CallDetailRecord;
+import io.openvidu.server.config.EnvConfig;
 import io.openvidu.server.config.HttpHandshakeInterceptor;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.*;
@@ -53,6 +54,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
@@ -201,6 +203,12 @@ public class OpenViduServer implements JsonRpcConfigurer {
 		executor.setWaitForTasksToCompleteOnShutdown(true);
 		executor.setAwaitTerminationSeconds(60);
 		return executor;
+	}
+
+	@Bean
+	@ConfigurationProperties(prefix = "env.config")
+	public EnvConfig envConfig(){
+		return new EnvConfig();
 	}
 
 	@Override

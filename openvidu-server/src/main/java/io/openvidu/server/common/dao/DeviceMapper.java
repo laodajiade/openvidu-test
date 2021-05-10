@@ -24,6 +24,8 @@ public interface DeviceMapper {
 
     Device selectBySearchCondition(DeviceSearch search);
 
+    Device selectBySerialNumber(@Param("serialNumber") String  serialNumber);
+
     List<String> selectDevSerialNumsByDeptIds(List<Long> subDeptIds);
 
     List<Device> getDevicesBySerialNumsList(List<String> deviceSerialNumbers);

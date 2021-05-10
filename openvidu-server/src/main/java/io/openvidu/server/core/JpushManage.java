@@ -44,11 +44,13 @@ public class JpushManage {
         }
     }
 
-    public void sendToAndroid(String title, String alert, Map<String,String> map, String ... registrationId) {
+    public void sendToAndroid(String title, String alert, Map<String, String> map, String... registrationId) {
         try {
             jPushClient.sendAndroidNotificationWithRegistrationID(title, alert, map, registrationId);
         } catch (APIConnectionException | APIRequestException e) {
             log.error("极光消息推送Android异常：", e);
+        } catch (Exception e) {
+            log.error("极光消息推送异常：", e);
         }
     }
 
@@ -57,6 +59,8 @@ public class JpushManage {
             jPushClient.sendIosNotificationWithRegistrationID(alert, extras, registrationId);
         } catch (APIConnectionException | APIRequestException e) {
             log.error("极光消息推送iOS异常：", e);
+        } catch (Exception e) {
+            log.error("极光消息推送异常：", e);
         }
     }
 
