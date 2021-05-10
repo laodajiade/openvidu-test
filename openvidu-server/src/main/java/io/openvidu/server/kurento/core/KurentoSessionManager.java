@@ -318,6 +318,12 @@ public class KurentoSessionManager extends SessionManager {
                 updateRecording(session.getSessionId());
             }
 
+            // sip离会且会议中没sip，则将composite释放
+            if (participant.getTerminalType() == TerminalTypeEnum.S && session.getMajorSipPart().size() == 0) {
+                log.info("releaseSipComposite by last sip leaveRoom");
+                //todo 优化 session.releaseSipComposite();
+            }
+
             if (session.isClosing()) {
                 getMajorParticipants(sessionId).forEach(p -> rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
                         ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject()));
