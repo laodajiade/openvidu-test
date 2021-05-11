@@ -59,7 +59,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
-        String registrationId = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_REGISTRATION_ID_TYPE);
         String nickName = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_NICKNAME_PARAM);
         String deviceName = null;
         Map userInfo = null;

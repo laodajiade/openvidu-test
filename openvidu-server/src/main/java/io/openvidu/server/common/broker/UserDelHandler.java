@@ -74,7 +74,9 @@ public class UserDelHandler {
                 try {
                     delUserObj = gson.fromJson(delUserInfos.take(), JsonObject.class);
                     if (delUserObj.has("userId")
-                            && Objects.isNull(userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong()))) {
+                           // && Objects.isNull(userManage.getUserByUserId(userId = delUserObj.get("userId").getAsLong())
+                    ) {
+                        userId = delUserObj.get("userId").getAsLong();
                         // find the websocket connection with userId
                         RpcConnection delUserRpcConnection = rpcNotificationService.getRpcConnections()
                                 .stream().filter(rpcConnection -> Objects.equals(userId, rpcConnection.getUserId())
