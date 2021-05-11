@@ -166,7 +166,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setUserId(userId);
         rpcConnection.setDeviceVersion(deviceVersion);
         Corporation corporation = corporationMapper.selectByCorpProject(project);
-        rpcConnection.setCorpId(corporation.getId());
+        rpcConnection.setCorpId(UserType.tourist.equals(userType) ? 0L : corporation.getId());
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null);
         }
