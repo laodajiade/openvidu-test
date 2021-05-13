@@ -187,9 +187,10 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
-        object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
-        object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
-
+        if (!UserType.tourist.equals(userType)) {
+            object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
+            object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
+        }
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }
