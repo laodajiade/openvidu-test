@@ -14,13 +14,15 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -45,13 +47,13 @@ public class CorpExpireSchedule {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void corpExpiredNotify() {
-        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
+        List<Corporation> corporations = corporationMapper.listCorpExpire();
         corporations.forEach(corp -> corpServiceExpiredNotifyHandler.notify(corp.getId().toString()));
     }
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void doProcess() {
-        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
+        List<Corporation> corporations = corporationMapper.listCorpExpire();
 
         if (corporations.isEmpty()) {
             cacheManage.dropCorpExpiredCollect();
