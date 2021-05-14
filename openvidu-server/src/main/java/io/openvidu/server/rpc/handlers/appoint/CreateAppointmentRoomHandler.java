@@ -111,6 +111,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         // 创建定时任务
         JsonObject respJson = new JsonObject();
         respJson.addProperty("ruid", params.getRuid());
+        params.setAccessType(rpcConnection.getAccessType());
         createTimer(params, new HashSet<>(params.getParticipants()), respJson);
 
         AppointmentRoomResp resp = new AppointmentRoomResp();
