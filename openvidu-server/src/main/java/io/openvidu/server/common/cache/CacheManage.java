@@ -75,11 +75,6 @@ public interface CacheManage {
 
     Map getInviteInfo(String sessionId);
 
-    void saveAccessInParticipantPrivateId(String uuid,String privateId);
-
-    String getAccessInParticipantPrivateId(String uuid);
-
-    void delAccessInParticipantPrivateId(String uuid);
 
     boolean getCorpExpired(String project);
 

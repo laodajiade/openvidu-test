@@ -175,7 +175,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setProject(project);
 
         //save cache privateId
-        cacheManage.saveAccessInParticipantPrivateId(uuid, rpcConnection.getParticipantPrivateId());
         log.info("access in relation privateId={},uuid={}", rpcConnection.getParticipantPrivateId(), uuid);
         // update user online status in cache
         if (AccessTypeEnum.terminal.equals(accessType)) {
