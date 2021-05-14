@@ -4,6 +4,7 @@ import io.openvidu.server.common.pojo.ConfStatisticSearch;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -45,4 +46,6 @@ public interface ConferenceMapper {
     List<Conference> getNotFinishConference();
 
     Conference getConferenceByShortUrl(String shortUrl);
+
+    Conference selectUsedConference(String roomId);
 }
