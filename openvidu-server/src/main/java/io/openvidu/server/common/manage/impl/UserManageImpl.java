@@ -135,6 +135,11 @@ public class UserManageImpl implements UserManage {
     }
 
     @Override
+    public User selectTerminalInfo(String uuid) {
+        return userMapper.selectTerminalInfo(uuid);
+    }
+
+    @Override
     public List<User> queryByUuidList(List<String> uuids) {
         return userMapper.selectUserByUuidList(uuids);
     }

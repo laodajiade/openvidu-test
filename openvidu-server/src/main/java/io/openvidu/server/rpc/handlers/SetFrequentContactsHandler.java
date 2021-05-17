@@ -11,10 +11,13 @@ import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 删除或者添加常用联系人
@@ -35,6 +38,12 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String methodType = getStringOptionalParam(request, "operate");
         String uuid = getStringOptionalParam(request, "uuid");
+
+        if (StringUtils.isEmpty(uuid)){
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.USER_NOT_EXIST);
+        }
+
         Long userId = rpcConnection.getUserId();
         if ("add".equals(methodType)) {
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), addOftenContacts(uuid, userId));
@@ -53,6 +62,13 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
         User userInfo = userMapper.selectByUUID(uuid);
         if (userInfo == null) {
             return ErrorCodeEnum.USER_NOT_EXIST;
+        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("uuid",uuid);
+        map.put("userId",userId);
+        final boolean isOftenContacts = oftenContactsMapper.isOftenContacts(map);
+        if (isOftenContacts){
+            return ErrorCodeEnum.REPEAT_ADD_CONTACTS;
         }
         OftenContacts oftenContacts = new OftenContacts();
         oftenContacts.setContactsUserId(userInfo.getId());
