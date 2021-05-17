@@ -40,17 +40,18 @@ Content-Type: application/json
   "duration": 120,
   "isReconnected": false,
   "joinType": "active",
-  "metadata": "{\"account\":{{uuid}}}",
+  "metadata": "{\"account\":80103600004}",
   "micStatus": "on",
+  "nickname": "a004的会议",
   "password": "",
   "platform": "windows",
   "role": "PUBLISHER",
+  "ruid": "appt-0d23bd7afe064a5d9ef2f0ea6776639f",
   "secret": "",
-  "session": "{{roomId}}",
+  "session": "10360001",
   "streamType": "MAJOR",
   "useIdInRoom": "allParticipants",
-  "videoStatus": "on",
-  "ruid": "appt-e38e20479d9d41c08d6c3185425bca62"
+  "videoStatus": "on"
 }
 
 

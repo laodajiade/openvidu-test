@@ -105,6 +105,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             }
             sessionId = conference.getRoomId();
             roomIdType = RoomIdTypeEnums.parse(conference.getRoomIdType());
+        } else {
+            roomIdType = RoomIdTypeEnums.calculationRoomType(sessionId);
         }
 
         ErrorCodeEnum result;
