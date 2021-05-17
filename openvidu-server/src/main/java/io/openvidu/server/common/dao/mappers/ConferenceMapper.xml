@@ -422,4 +422,13 @@
     from sd_conference
     where short_url = #{shortUrl,jdbcType=VARCHAR}
   </select>
+
+  <select id="selectUsedConference" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sd_conference
+    where status in (0,1)
+    and room_id = #{roomId,jdbcType=VARCHAR}
+  </select>
+
 </mapper>

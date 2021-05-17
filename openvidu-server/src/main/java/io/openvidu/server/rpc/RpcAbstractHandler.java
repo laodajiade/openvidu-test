@@ -311,30 +311,6 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key);
     }
 
-    protected boolean isExistingRoom(String sessionId) {
-        // verify room id ever exists
-        ConferenceSearch search = new ConferenceSearch();
-        search.setRoomId(sessionId);
-        // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
-        search.setStatus(1);
-        AtomicBoolean exitFlag = new AtomicBoolean(false);
-        try {
-            List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
-
-            if (conferences != null && !conferences.isEmpty()) {
-                conferences.forEach(conference -> {
-                    Session session = sessionManager.getSession(conference.getRoomId());
-                    if (Objects.nonNull(session) && !session.isClosed()) {
-                        log.warn("conference:{} already exist.", session.getSessionId());
-                        exitFlag.set(true);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            log.info("isExistingRoom ", e);
-        }
-        return exitFlag.get();
-    }
 
     protected JsonArray deviceList(List<DeviceDept> devices) {
         JsonArray DeviceList = new JsonArray();

@@ -116,8 +116,7 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("password", appointConference.getPassword());
             appointConfObj.addProperty("moderatorPassword", appointConference.getModeratorPassword());
             appointConfObj.addProperty("status", appointConference.getStatus());
-            appointConfObj.addProperty("roomIdType", Objects.equals(appointConference.getRoomId(), creator.getUuid()) ?
-                    RoomIdTypeEnums.personal.name() : RoomIdTypeEnums.random.name());
+            appointConfObj.addProperty("roomIdType", RoomIdTypeEnums.calculationRoomType(appointConference.getRoomId()).name());
 
             appointConfObj.add("participants", constructAppointPartsInfo(parts));
 

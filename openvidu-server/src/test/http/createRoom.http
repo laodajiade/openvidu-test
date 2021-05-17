@@ -44,3 +44,26 @@ Content-Type: application/json
   "useIdInRoom": "allParticipants",
   "videoStatusInRoom": "on"
 }
+
+### create fixed roome
+POST http://localhost:4443/dev/test?id={{uuid}}&method=createRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "allowPartOperMic": "on",
+  "allowPartOperShare": "on",
+  "conferenceMode": "SFU",
+  "duration": 120,
+  "micStatusInRoom": "on",
+  "moderatorPassword": "211896",
+  "password": "",
+  "quietStatusInRoom": "smart",
+  "roomId": "10360001",
+  "roomIdType": "personal",
+  "sharePowerInRoom": "on",
+  "subject": "0002的会议",
+  "useIdInRoom": "allParticipants",
+  "videoStatusInRoom": "on"
+}

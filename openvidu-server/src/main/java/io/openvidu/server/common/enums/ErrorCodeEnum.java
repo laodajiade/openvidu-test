@@ -119,6 +119,8 @@ public enum ErrorCodeEnum {
     SENSITIVE_WORD(13071, "晨浩憨憨"),
     ILLEGAL_VERSION(13072, "非法版本号"),
     SIP_CANNOT_BE_A_SPEAKER(13074	, "sip不能成为发言者"),
+    FIXED_ROOM_EXPIRED(13076	, "固定会议室已到期"),
+    ROOM_IS_IN_USE(13077, "会议室正在使用中"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
