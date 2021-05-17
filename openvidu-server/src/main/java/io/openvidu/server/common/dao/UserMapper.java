@@ -4,9 +4,11 @@ import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.SoftUser;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
+import io.openvidu.server.common.pojo.vo.UserDeptInfo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface UserMapper {
@@ -57,4 +59,11 @@ public interface UserMapper {
      * @return
      */
     List<AllUserInfo> selectSipUserList(Long deptId);
+
+    /**
+     * 查询用户信息以及所在的部门
+     * @param uuid
+     * @return
+     */
+    UserDeptInfo selectUserDept(String uuid);
 }

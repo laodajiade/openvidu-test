@@ -329,9 +329,14 @@ public class RpcHandlerFactory {
     private GetScrollingBannersHandler getScrollingBannersHandler;
     @Resource
     private SaveJpushHandler saveJpushHandler;
+    @Resource
+    private GetFrequentContactsHandler getFrequentContactsHandler;
+    @Resource
+    private SetFrequentContactsHandler setFrequentContactsHandler;
 
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
+
 
     @PostConstruct
     public void init() {
@@ -455,6 +460,9 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SET_SCROLLING_BANNERS_METHOD,                  setScrollingBannersHandler);
         handlersMap.put(ProtocolElements.GET_SCROLLING_BANNERS_METHOD,                  getScrollingBannersHandler);
         handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD,                             saveJpushHandler);
+        handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD,                             saveJpushHandler);
+        handlersMap.put(ProtocolElements.GET_FREQUENT_CONTACTS,                         getFrequentContactsHandler);
+        handlersMap.put(ProtocolElements.SET_FREQUENT_CONTACTS,                         setFrequentContactsHandler);
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {

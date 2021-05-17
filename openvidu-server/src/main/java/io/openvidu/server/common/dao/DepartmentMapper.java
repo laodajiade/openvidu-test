@@ -34,4 +34,12 @@ public interface DepartmentMapper {
     List<Department> selectByParentIds(List<Long> deptIds);
 
     Department getRootDept(String project);
+
+
+    /**
+     * 查询部门信息
+     * @param parentId
+     * @return
+     */
+    Department selectByParentId(Long parentId);
 }
