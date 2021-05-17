@@ -4,12 +4,11 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
+import io.openvidu.server.common.dao.FixedRoomManagerMapper;
+import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
-import io.openvidu.server.common.pojo.AppointConference;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.Corporation;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -24,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +52,10 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
     @Resource
     private ConferencePartHistoryMapper conferencePartHistoryMapper;
+    @Autowired
+    private FixedRoomMapper fixedRoomMapper;
+    @Autowired
+    private FixedRoomManagerMapper fixedRoomManagerMapper;
 
     @Transactional
     @Override
@@ -63,38 +67,13 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         String moderatorPassword = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MODERATORPASSWORD_PARAM);
         ConferenceModeEnum conferenceMode = ConferenceModeEnum.valueOf(getStringParam(request,
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
-        String roomIdType = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal");
+        RoomIdTypeEnums roomIdType = RoomIdTypeEnums.parse(getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal"));
 
-
-        //判断发起会议时是否超出企业人数上限
-        Collection<Session> sessions = sessionManager.getSessions();
-        if (Objects.nonNull(sessions)) {
-            AtomicInteger limitCapacity = new AtomicInteger();
-            sessions.forEach(e -> {
-                if (rpcConnection.getProject().equals(e.getConference().getProject())) {
-                    limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
-                }
-            });
-            //query sd_corporation info
-            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-            if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                return;
-            }
-        }
-        //判断通话时长是否不足
-        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-            return;
-        }
 
         AppointConference appt = null;
         String moderatorUuid = rpcConnection.getUserUuid();
 
-        if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random.name().equals(roomIdType) || StringUtils.isEmpty(sessionId))) {
+        if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random == roomIdType || StringUtils.isEmpty(sessionId))) {
             sessionId = randomRoomIdGenerator.offerRoomId();
         } else if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-")) {
             appt = appointConferenceManage.getByRuid(ruid);
@@ -109,7 +88,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 return;
             }
             sessionId = appt.getRoomId();
-            roomIdType = RoomIdTypeEnums.random.name();
+            roomIdType = RoomIdTypeEnums.calculationRoomType(sessionId);
             moderatorUuid = appt.getModeratorUuid();
             moderatorPassword = appt.getModeratorPassword();
         } else if (!StringUtils.isEmpty(ruid)) {
@@ -125,17 +104,28 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 return;
             }
             sessionId = conference.getRoomId();
-            roomIdType = conference.getRoomIdType();
+            roomIdType = RoomIdTypeEnums.parse(conference.getRoomIdType());
         }
 
-        if (isExistingRoom(sessionId)) {
-            // 如果是预约会议已开始则假装创建成功
-            if (!StringUtils.isEmpty(ruid)) {
+        ErrorCodeEnum result;
+        if ((result = checkService(rpcConnection, sessionId)) != ErrorCodeEnum.SUCCESS) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, result);
+        }
+
+        Optional<Conference> processConference;
+        if ((processConference = getProcessConference(sessionId)).isPresent()) {
+            if (roomIdType == RoomIdTypeEnums.fixed) {
+                if (!Objects.equals(ruid, processConference.get().getRuid())) {
+                    notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                            null, ErrorCodeEnum.ROOM_IS_IN_USE);
+                    return;
+                }
+            } else if (!StringUtils.isEmpty(ruid)) { // 如果是预约会议已开始则假装创建成功
                 JsonObject respJson = new JsonObject();
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
-                Session session = sessionManager.getSession(sessionId);
-                respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, session.getRuid());
-                log.info("param ruid={}, actual ruid = {}", ruid, session.getRuid());
+                respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, processConference.get().getRuid());
+                log.info("param ruid={}, actual ruid = {}", ruid, processConference.get().getRuid());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
                 return;
             }
@@ -176,7 +166,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             conference.setStartTime(new Date());
             conference.setProject(rpcConnection.getProject());
             conference.setModeratorPassword(StringUtils.isEmpty(moderatorPassword) ? StringUtil.getRandomPassWord(6) : moderatorPassword);
-            conference.setRoomIdType(roomIdType);
+            conference.setRoomIdType(roomIdType.name());
             conference.setModeratorUuid(moderatorUuid);
             conference.setShortUrl(roomManage.createShortUrl());
             conference.setModeratorName(rpcConnection.getUsername());
@@ -211,6 +201,65 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         }
     }
 
+    protected Optional<Conference> getProcessConference(String sessionId) {
+        // verify room id ever exists
+        ConferenceSearch search = new ConferenceSearch();
+        search.setRoomId(sessionId);
+        // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
+        search.setStatus(ConferenceStatus.PROCESS.getStatus());
+        List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
+        return conferences.isEmpty() ? Optional.empty() : Optional.of(conferences.get(0));
+    }
+
+    private ErrorCodeEnum checkService(RpcConnection rpcConnection, String roomId) {
+        if (RoomIdTypeEnums.calculationRoomType(roomId) == RoomIdTypeEnums.fixed) {
+            return fixedVerification(rpcConnection, roomId);
+        } else {
+            return generalVerification(rpcConnection);
+        }
+    }
+
+    private ErrorCodeEnum fixedVerification(RpcConnection rpcConnection, String roomId) {
+        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(roomId);
+        if (fixedRoom == null || fixedRoom.getStatus() == 0) {
+            return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+        }
+
+        if (fixedRoom.getStatus() == 2 || fixedRoom.getExpireDate().isBefore(LocalDateTime.now())) {
+            return ErrorCodeEnum.FIXED_ROOM_EXPIRED;
+        }
+
+        FixedRoomManager fixedRoomManager = fixedRoomManagerMapper.selectByUserId(rpcConnection.getUserId(), fixedRoom.getRoomId());
+        if (fixedRoomManager == null) {
+            return ErrorCodeEnum.PERMISSION_LIMITED;
+        }
+        return ErrorCodeEnum.SUCCESS;
+    }
+
+    private ErrorCodeEnum generalVerification(RpcConnection rpcConnection) {
+        //判断发起会议时是否超出企业人数上限
+        Collection<Session> sessions = sessionManager.getSessions();
+        if (Objects.nonNull(sessions)) {
+            AtomicInteger limitCapacity = new AtomicInteger();
+            sessions.forEach(e -> {
+                if (rpcConnection.getProject().equals(e.getConference().getProject())) {
+                    limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                }
+            });
+            //query sd_corporation info
+            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+            if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
+                return ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED;
+            }
+        }
+        //判断通话时长是否不足
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+            return ErrorCodeEnum.REMAINDER_DURATION_USE_UP;
+        }
+        return ErrorCodeEnum.SUCCESS;
+    }
+
     public void inviteParticipant(CountDownLatch countDownLatch, AppointConference appt) {
         if (!appt.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
             return;
@@ -240,7 +289,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
                 List<String> targets = users.stream().filter(user -> !appt.getModeratorUuid().equals(user.getUuid()))
                         .map(User::getUuid).collect(Collectors.toList());
-                targets.forEach(uuid ->{
+                targets.forEach(uuid -> {
                     cacheManage.saveInviteInfo(appt.getRoomId(), uuid);
                 });
                 log.info("invite participant in create room, targets = {}", targets);

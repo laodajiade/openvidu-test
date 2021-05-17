@@ -38,4 +38,13 @@ public enum RoomIdTypeEnums {
     public static boolean isFixed(String roomId) {
         return calculationRoomType(roomId) == fixed;
     }
+
+    public static RoomIdTypeEnums parse(String roomIdType) {
+        for (RoomIdTypeEnums value : RoomIdTypeEnums.values()) {
+            if (value.name().equals(roomIdType)) {
+                return value;
+            }
+        }
+        throw new IllegalArgumentException("roomIdType error " + roomIdType);
+    }
 }
