@@ -111,7 +111,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                     break;
                 } else {
-                    ruid = conference.get(0).getRuid();
+                    Conference cfc = conference.get(0);
+                    if (cfc.getRoomIdType().equals("fixed") && StringUtils.startsWithIgnoreCase(ruid, "appt-")
+                            && !Objects.equals(ruid, cfc.getRuid())) {
+                        errCode = ErrorCodeEnum.ROOM_IS_IN_USE;
+                        break;
+                    }
+                    ruid = cfc.getRuid();
                 }
 
                 // v.1.3.2 如果会议室有人，则不删除房间，无法通过预约邀请新加入房间

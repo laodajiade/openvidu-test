@@ -61,7 +61,7 @@ Content-Type: application/json
   "password": "",
   "quietStatusInRoom": "smart",
   "roomId": "10360001",
-  "roomIdType": "personal",
+  "roomIdType": "fixed",
   "sharePowerInRoom": "on",
   "subject": "0002的会议",
   "useIdInRoom": "allParticipants",

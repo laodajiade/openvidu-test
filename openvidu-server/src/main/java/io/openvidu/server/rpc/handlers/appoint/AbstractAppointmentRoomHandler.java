@@ -9,18 +9,11 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.CallHistoryMapper;
-import io.openvidu.server.common.dao.JpushMessageMapper;
-import io.openvidu.server.common.enums.ConferenceJobTypeEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.JobGroupEnum;
-import io.openvidu.server.common.enums.TerminalTypeEnum;
+import io.openvidu.server.common.dao.FixedRoomManagerMapper;
+import io.openvidu.server.common.dao.FixedRoomMapper;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.ConferenceJobManage;
-import io.openvidu.server.common.pojo.AppointParticipant;
-import io.openvidu.server.common.pojo.CallHistory;
-import io.openvidu.server.common.pojo.ConferenceJob;
-import io.openvidu.server.common.pojo.JpushMessage;
-import io.openvidu.server.common.pojo.JpushMsgTemp;
-import io.openvidu.server.common.pojo.User;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import io.openvidu.server.core.JpushManage;
@@ -30,13 +23,16 @@ import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.CrowOnceInfoManager;
 import io.openvidu.server.utils.DateUtil;
+import io.openvidu.server.utils.LocalDateTimeUtils;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,6 +53,13 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
 
     @Resource
     private CallHistoryMapper callHistoryMapper;
+
+
+    @Autowired
+    protected FixedRoomMapper fixedRoomMapper;
+
+    @Autowired
+    protected FixedRoomManagerMapper fixedRoomManagerMapper;
 
     /**
      * 创建定时任务
@@ -201,13 +204,13 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                         Date createDate = new Date();
                         String title = StringUtil.INVITE_CONT;
                         String alert = String.format(StringUtil.MEETING_INVITE, userName, vo.getSubject(),
-                                DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
+                                DateUtil.getDateFormat(new Date(vo.getStartTime()), DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
                                 DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
-                        Map<String,String> map = new HashMap<>(1);
+                        Map<String, String> map = new HashMap<>(1);
                         map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_INVITE.getMessage()));
                         if (TerminalTypeEnum.A.name().equals(type)) {
                             jpushManage.sendToAndroid(title, alert, map, registrationId);
-                        } else if(TerminalTypeEnum.I.name().equals(type)){
+                        } else if (TerminalTypeEnum.I.name().equals(type)) {
                             IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                             jpushManage.sendToIos(iosAlert, map, registrationId);
                         }
@@ -221,24 +224,24 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
     @Async
     public void sendNotificationWithMeetingToBegin(Set<String> uuidSet, AppointmentRoomVO vo) {
         if (!CollectionUtils.isEmpty(uuidSet)) {
-            uuidSet.forEach(uuid ->{
+            uuidSet.forEach(uuid -> {
                 Map userInfo = cacheManage.getUserInfoByUUID(uuid);
                 if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
                     if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
                         String type = userInfo.get("type").toString();
                         String registrationId = userInfo.get("registrationId").toString();
-                        log.info("send jpush message type:{} registrationId:{}",type, registrationId);
+                        log.info("send jpush message type:{} registrationId:{}", type, registrationId);
                         Date createDate = new Date();
                         String title = StringUtil.NOTIFY_CONT;
                         String alert = String.format(StringUtil.MEETING_NOTIFY, vo.getSubject(),
-                                DateUtil.getDateFormat(new Date(vo.getStartTime()),DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
+                                DateUtil.getDateFormat(new Date(vo.getStartTime()), DateUtil.DEFAULT_MONTH_DAY_HOUR_MIN),
                                 DateUtil.getTimeOfDate(DateUtil.getEndDate(new Date(vo.getStartTime()), vo.getDuration(), Calendar.MINUTE).getTime()));
-                        Map<String,String> map = new HashMap<>(1);
+                        Map<String, String> map = new HashMap<>(1);
                         map.put("message", jpushManage.getJpushMsgTemp(vo.getRuid(), title, alert, createDate, JpushMsgEnum.MEETING_NOTIFY.getMessage()));
 
                         if (TerminalTypeEnum.A.name().equals(type)) {
                             jpushManage.sendToAndroid(title, alert, map, registrationId);
-                        } else if(TerminalTypeEnum.I.name().equals(type)){
+                        } else if (TerminalTypeEnum.I.name().equals(type)) {
                             IosAlert iosAlert = IosAlert.newBuilder().setTitleAndBody(title, null, alert).build();
                             jpushManage.sendToIos(iosAlert, map, registrationId);
                         }
@@ -247,5 +250,55 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                 }
             });
         }
+    }
+
+    protected ErrorCodeEnum checkService(RpcConnection rpcConnection, AppointmentRoomVO params) {
+        if (RoomIdTypeEnums.calculationRoomType(params.getRoomId()) == RoomIdTypeEnums.fixed) {
+            return fixedVerification(rpcConnection, params);
+        } else {
+            return generalVerification(rpcConnection, params);
+        }
+    }
+
+    protected ErrorCodeEnum fixedVerification(RpcConnection rpcConnection, AppointmentRoomVO params) {
+        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(params.getRoomId());
+        if (fixedRoom == null || fixedRoom.getStatus() == 0) {
+            return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+        }
+        if (fixedRoom.getStatus() == 2 || fixedRoom.getExpireDate().isBefore(LocalDateTime.now())) {
+            return ErrorCodeEnum.FIXED_ROOM_EXPIRED;
+        }
+
+        FixedRoomManager fixedRoomManager = fixedRoomManagerMapper.selectByUserId(rpcConnection.getUserId(), fixedRoom.getRoomId());
+        if (fixedRoomManager == null) {
+            return ErrorCodeEnum.PERMISSION_LIMITED;
+        }
+
+        // 检验容量
+        params.setRoomCapacity(fixedRoom.getRoomCapacity());
+        if (fixedRoom.getRoomCapacity() < params.getParticipants().size()) {
+            return ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
+        }
+
+        return ErrorCodeEnum.SUCCESS;
+    }
+
+    protected ErrorCodeEnum generalVerification(RpcConnection rpcConnection, AppointmentRoomVO params) {
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        //判断通话时长是否不足
+        if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+            return ErrorCodeEnum.REMAINDER_DURATION_USE_UP;
+        }
+        // 检验容量
+        params.setRoomCapacity(corporation.getCapacity());
+        if (corporation.getCapacity() < params.getParticipants().size()) {
+            return ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
+        }
+
+        // 校验有效期
+        if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
+            return ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED;
+        }
+        return ErrorCodeEnum.SUCCESS;
     }
 }

@@ -7,14 +7,12 @@ import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
-import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.resp.AppointmentRoomResp;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
-import io.openvidu.server.utils.LocalDateTimeUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,16 +70,9 @@ public class UpdateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         params.setUserId(appt.getUserId());
 
-        // 检验容量
-        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        params.setRoomCapacity(corporation.getCapacity());
-        if (corporation.getCapacity() < params.getParticipants().size()) {
-            return RespResult.fail(ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
-        }
-
-        // 校验有效期
-        if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate())  < params.getEndTime()) {
-            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
+        ErrorCodeEnum errorCodeEnum;
+        if ((errorCodeEnum = checkService(rpcConnection, params)) != ErrorCodeEnum.SUCCESS) {
+            return RespResult.fail(errorCodeEnum);
         }
 
         // 判断是否会议冲突
