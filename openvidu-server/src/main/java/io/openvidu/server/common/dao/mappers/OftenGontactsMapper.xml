@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.openvidu.server.common.dao.OftenContactsMapper">
+    <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.OftenContacts">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="contacts_user_id" property="contactsUserId" jdbcType="BIGINT"/>
+        <result column="contacts_uuid" property="contactsUuid" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 获取常用联系人列表 -->
+    <select id="getOftenContactsList" parameterType="java.lang.Long"
+            resultType="io.openvidu.server.common.pojo.vo.OftenContactsVo">
+        SELECT su.phone,su.username,su.uuid,su.id,type FROM sd_often_contacts soc INNER JOIN
+        sd_user su ON soc.contacts_user_id = su.id WHERE soc.user_id = #{userId}
+    </select>
+
+    <!-- 添加常用联系人 -->
+    <insert id="addOftenContacts" parameterType="io.openvidu.server.common.pojo.OftenContacts">
+        insert into sd_often_contacts (contacts_user_id, contacts_uuid, user_id, create_time, update_time)
+        values (#{contactsUserId}, #{contactsUuid}, #{userId}, now(), now())
+    </insert>
+
+    <!-- 删除常用联系人 -->
+    <delete id="delOftenContacts" parameterType="java.lang.String">
+        delete from sd_often_contacts where contacts_uuid = #{uuid}
+    </delete>
+
+    <!-- 查看是否是常用联系人 -->
+    <select id="isOftenContacts" parameterType="java.util.Map"
+            resultType="java.lang.Boolean">
+        SELECT case when count(id) >= 1
+                    then 1
+                    else 0
+                    end isFrequentContact
+         FROM sd_often_contacts WHERE contacts_uuid = #{uuid} AND user_id = #{userId};
+    </select>
+</mapper>

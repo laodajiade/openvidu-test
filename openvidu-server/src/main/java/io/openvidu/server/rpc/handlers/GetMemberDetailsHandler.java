@@ -1,6 +1,7 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.dao.OftenContactsMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.User;
@@ -14,6 +15,10 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Slf4j
 @Service
@@ -24,6 +29,9 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
 
     @Autowired
     private DepartmentService departmentService;
+
+    @Resource
+    private OftenContactsMapper oftenContactsMapper;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -37,7 +45,10 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
         }
 
         UserDept userDept = userDeptService.getByUserId(user.getId());
-
+        Map<String,Object> map = new HashMap<>();
+        map.put("uuid",uuid);
+        map.put("userId",rpcConnection.getUserId());
+        final boolean isFrequentContact = oftenContactsMapper.isOftenContacts(map);
         long deptId = userDept.getDeptId();
         String deptPath = "";
         do {
@@ -58,6 +69,7 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
         jsonObject.addProperty("phone",user.getPhone());
         jsonObject.addProperty("email",user.getEmail());
         jsonObject.addProperty("department",deptPath);
+        jsonObject.addProperty("isFrequentContact",isFrequentContact);
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
