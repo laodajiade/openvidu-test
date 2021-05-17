@@ -76,11 +76,8 @@ Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json
 
-#{
-#  "ruid": "{{global.ruid}}"
-#}
 {
-  "ruid": "appt-e7653b42b0314affb81a34426d36e652"
+  "ruid": "{{global.ruid}}"
 }
 
 
@@ -92,5 +89,32 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "ruid": "appt-e7653b42b0314affb81a34426d36e652"
+  "ruid": "{{global.ruid}}"
 }
+
+###
+# 创建固定预约会议室
+POST http://localhost:4443/dev/test?id={{uuid}}&method=createAppointmentRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "conferenceMode": "SFU",
+  "autoCall": true,
+  "desc": "test desc",
+  "duration": 1,
+  "participants": [
+    "{{$uuid}}",
+    "80101900005",
+    "80101900006",
+    "80101900007"
+  ],
+  "password": "",
+  "roomId": "10360001",
+  "moderatorPassword": "",
+  "startTime": 0,
+  "roomIdType": "fixed",
+  "subject": "fixed appt{{$randomInt}}"
+}
+> {% client.global.set("global.ruid",response.body.result.ruid) %}

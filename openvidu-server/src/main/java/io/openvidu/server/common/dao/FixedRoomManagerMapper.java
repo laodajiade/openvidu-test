@@ -2,10 +2,13 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.FixedRoomManager;
 import io.openvidu.server.common.pojo.FixedRoomManagerExample;
-import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.ResultMap;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Mapper
 @Repository
@@ -31,4 +34,8 @@ public interface FixedRoomManagerMapper {
     int updateByPrimaryKeySelective(FixedRoomManager record);
 
     int updateByPrimaryKey(FixedRoomManager record);
+
+    @Select("select * from sd_fixed_room_manager where user_id = #{userId} and room_id = #{roomId} and deleted = 0")
+    @ResultMap("BaseResultMap")
+    FixedRoomManager selectByUserId(@Param("userId") Long userId, @Param("roomId") String roomId);
 }

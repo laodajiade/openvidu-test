@@ -3,12 +3,15 @@ package io.openvidu.server.rpc.handlers.appoint;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
-import io.openvidu.server.common.dao.CallHistoryMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
+import io.openvidu.server.common.dao.FixedRoomManagerMapper;
+import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.Corporation;
+import io.openvidu.server.common.pojo.FixedRoom;
+import io.openvidu.server.common.pojo.FixedRoomManager;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.resp.AppointmentRoomResp;
@@ -47,6 +50,12 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     @Autowired
     private RandomRoomIdGenerator randomRoomIdGenerator;
 
+    @Autowired
+    private FixedRoomMapper fixedRoomMapper;
+
+    @Autowired
+    private FixedRoomManagerMapper fixedRoomManagerMapper;
+
     @Transactional
     @Override
     public RespResult<AppointmentRoomResp> doProcess(RpcConnection rpcConnection, Request<AppointmentRoomVO> request, AppointmentRoomVO params) {
@@ -56,6 +65,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (RoomIdTypeEnums.random == params.getRoomIdType()) {
             params.setRoomId(randomRoomIdGenerator.offerRoomId());
         }
+        BindValidate.notEmpty(params::getRoomId);
 
         if (params.getStartTime() != 0) {
             LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(params.getStartTime()), BeiJingZoneOffset.of());
@@ -79,21 +89,30 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
         params.setEndTime(params.getStartTime() + (params.getDuration() * 60000));
 
-        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-        //判断通话时长是否不足
-        if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
-            return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
-        }
-        // 检验容量
-        params.setRoomCapacity(corporation.getCapacity());
-        if (corporation.getCapacity() < params.getParticipants().size()) {
-            return RespResult.fail(ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
+        if (RoomIdTypeEnums.fixed == params.getRoomIdType()) {
+            ErrorCodeEnum res = validFixedRoom(params, rpcConnection);
+            if (res != ErrorCodeEnum.SUCCESS) {
+                return RespResult.fail(res);
+            }
+        } else {
+            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+            //判断通话时长是否不足
+            if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+                return RespResult.fail(ErrorCodeEnum.REMAINDER_DURATION_USE_UP);
+            }
+            // 检验容量
+            params.setRoomCapacity(corporation.getCapacity());
+            if (corporation.getCapacity() < params.getParticipants().size()) {
+                return RespResult.fail(ErrorCodeEnum.ROOM_CAPACITY_LIMITED);
+            }
+
+            // 校验有效期
+            if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
+                return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
+            }
+
         }
 
-        // 校验有效期
-        if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
-            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED);
-        }
         // 判断是否会议冲突
         if (appointConferenceManage.isConflict(params)) {
             return RespResult.fail(ErrorCodeEnum.APPOINT_CONFERENCE_CONFLICT);
@@ -117,6 +136,29 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         resp.setRuid(params.getRuid());
         resp.setRoomId(params.getRoomId());
         return RespResult.ok(resp);
+    }
+
+    private ErrorCodeEnum validFixedRoom(AppointmentRoomVO params, RpcConnection rpcConnection) {
+        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(params.getRoomId());
+        if (fixedRoom == null || fixedRoom.getStatus() == 0) {
+            return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+        }
+        if (fixedRoom.getStatus() == 2 || fixedRoom.getExpireDate().isBefore(LocalDateTime.now())) {
+            return ErrorCodeEnum.FIXED_ROOM_EXPIRED;
+        }
+
+        FixedRoomManager fixedRoomManager = fixedRoomManagerMapper.selectByUserId(rpcConnection.getUserId(), fixedRoom.getRoomId());
+        if (fixedRoomManager == null) {
+            return ErrorCodeEnum.PERMISSION_LIMITED;
+        }
+
+        // 检验容量
+        params.setRoomCapacity(fixedRoom.getRoomCapacity());
+        if (fixedRoom.getRoomCapacity() < params.getParticipants().size()) {
+            return ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
+        }
+
+        return ErrorCodeEnum.SUCCESS;
     }
 
 

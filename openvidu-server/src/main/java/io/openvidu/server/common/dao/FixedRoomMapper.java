@@ -2,7 +2,9 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.FixedRoom;
 import io.openvidu.server.common.pojo.FixedRoomExample;
+
 import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.ResultMap;
@@ -37,5 +39,9 @@ public interface FixedRoomMapper {
     @Select("select a.* from sd_fixed_room a INNER JOIN sd_fixed_room_manager b on a.id = b.fixed_id " +
             " where a.deleted = 0 and b.deleted = 0 and a.status != 0 and b.user_id = #{userId} and a.corp_id = #{corpId}")
     @ResultMap("BaseResultMap")
-    List<FixedRoom> getFixedRoomList(@Param("userId") long userId,@Param("corpId")  long corpId);
+    List<FixedRoom> getFixedRoomList(@Param("userId") long userId, @Param("corpId") long corpId);
+
+    @Select("select * from sd_fixed_room where room_id = #{roomId}")
+    @ResultMap("BaseResultMap")
+    FixedRoom selectByRoomId(String roomId);
 }
