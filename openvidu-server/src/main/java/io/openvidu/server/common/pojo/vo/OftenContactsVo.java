@@ -12,6 +12,6 @@ public class OftenContactsVo {
     private String uuid;
     private String phone;
     private String userName;
-    private String type;
+    private Integer accountType;
     private String status;
 }

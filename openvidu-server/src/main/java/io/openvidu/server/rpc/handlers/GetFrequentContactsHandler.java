@@ -42,7 +42,7 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
         List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(rpcConnection.getUserId());
         if (!CollectionUtils.isEmpty(oftenContactsList)) {
             for (OftenContactsVo oftenContactsVo : oftenContactsList) {
-                if (oftenContactsVo.getType().equals(1)) {
+                if (oftenContactsVo.getAccountType().equals(1)) {
                     UserDevice userDevSearch = new UserDevice();
                     userDevSearch.setUserId(oftenContactsVo.getUserId());
                     UserDevice userDevice = userDeviceMapper.selectByCondition(userDevSearch);
@@ -52,6 +52,7 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
                 } else {
                     oftenContactsVo.setStatus(cacheManage.getTerminalStatus(oftenContactsVo.getUuid()));
                 }
+                oftenContactsVo.setAccountType(Integer.valueOf(oftenContactsVo.getAccountType()) >= 1 ? 1 : 0);
             }
         }
         PageInfo<OftenContactsVo> pageInfo = new PageInfo<>(oftenContactsList);

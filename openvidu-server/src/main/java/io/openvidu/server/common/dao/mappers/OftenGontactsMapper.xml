@@ -13,7 +13,7 @@
     <!-- 获取常用联系人列表 -->
     <select id="getOftenContactsList" parameterType="java.lang.Long"
             resultType="io.openvidu.server.common.pojo.vo.OftenContactsVo">
-        SELECT su.phone,su.username,su.uuid,su.id,type FROM sd_often_contacts soc INNER JOIN
+        SELECT su.phone,su.username,su.uuid,su.id,type as accountType FROM sd_often_contacts soc INNER JOIN
         sd_user su ON soc.contacts_user_id = su.id WHERE soc.user_id = #{userId}
     </select>
 
