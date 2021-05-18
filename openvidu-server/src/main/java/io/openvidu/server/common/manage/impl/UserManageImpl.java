@@ -140,6 +140,11 @@ public class UserManageImpl implements UserManage {
     }
 
     @Override
+    public String selectSipUserNumber(String uuid) {
+        return userMapper.selectSipUserNumber(uuid);
+    }
+
+    @Override
     public List<User> queryByUuidList(List<String> uuids) {
         return userMapper.selectUserByUuidList(uuids);
     }

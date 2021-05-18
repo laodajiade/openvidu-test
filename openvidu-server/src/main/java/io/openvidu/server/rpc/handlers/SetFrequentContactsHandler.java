@@ -39,51 +39,37 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
         String methodType = getStringOptionalParam(request, "operate");
         String uuid = getStringOptionalParam(request, "uuid");
 
-        if (StringUtils.isEmpty(uuid)){
+        if (StringUtils.isEmpty(uuid)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.USER_NOT_EXIST);
+            return;
         }
-
         Long userId = rpcConnection.getUserId();
         if ("add".equals(methodType)) {
-            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), addOftenContacts(uuid, userId));
-        } else if ("del".equals(methodType)) {
-            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), delOftenContacts(uuid));
+            User userInfo = userMapper.selectByUUID(uuid);
+            if (userInfo == null) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.USER_NOT_EXIST);
+                return;
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("uuid", uuid);
+            map.put("userId", userId);
+            final boolean isOftenContacts = oftenContactsMapper.isOftenContacts(map);
+            if (isOftenContacts) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.REPEAT_ADD_CONTACTS);
+                return;
+            }
+            OftenContacts oftenContacts = new OftenContacts();
+            oftenContacts.setContactsUserId(userInfo.getId());
+            oftenContacts.setContactsUuid(uuid);
+            oftenContacts.setUserId(userId);
+            oftenContactsMapper.addOftenContacts(oftenContacts);
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+        } else if ("cancel".equals(methodType)) {
+            oftenContactsMapper.delOftenContacts(uuid);
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         }
-    }
-
-
-    /**
-     * 添加联系人
-     *
-     * @return
-     */
-    public ErrorCodeEnum addOftenContacts(String uuid, Long userId) {
-        User userInfo = userMapper.selectByUUID(uuid);
-        if (userInfo == null) {
-            return ErrorCodeEnum.USER_NOT_EXIST;
-        }
-        Map<String,Object> map = new HashMap<>();
-        map.put("uuid",uuid);
-        map.put("userId",userId);
-        final boolean isOftenContacts = oftenContactsMapper.isOftenContacts(map);
-        if (isOftenContacts){
-            return ErrorCodeEnum.REPEAT_ADD_CONTACTS;
-        }
-        OftenContacts oftenContacts = new OftenContacts();
-        oftenContacts.setContactsUserId(userInfo.getId());
-        oftenContacts.setContactsUuid(uuid);
-        oftenContacts.setUserId(userId);
-        oftenContactsMapper.addOftenContacts(oftenContacts);
-        return ErrorCodeEnum.SUCCESS;
-    }
-
-
-    /**
-     * 删除联系人
-     */
-    public ErrorCodeEnum delOftenContacts(String uuid) {
-        oftenContactsMapper.delOftenContacts(uuid);
-        return ErrorCodeEnum.SUCCESS;
     }
 }

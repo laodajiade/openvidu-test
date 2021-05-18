@@ -36,13 +36,33 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, "uuid");
-        String accountType = getStringParam(request, "accountType");
-        User user = "1".equals(accountType) ? userManage.selectTerminalInfo(uuid) : userManage.queryByUuid(uuid);
+
+        User user = userManage.queryByUuid(uuid);
+        String phone = null;
+
         if (user == null) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.USER_NOT_EXIST);
             return;
         }
+
+        switch (user.getType()) {
+            //软终端用户
+            case 0:
+                phone = user.getPhone();
+                break;
+            //硬终端用户
+            case 1:
+                phone = userManage.selectTerminalInfo(uuid).getUuid();
+                break;
+            //SIP用户
+            case 2:
+                phone = userManage.selectSipUserNumber(uuid);
+                break;
+            default:
+                break;
+        }
+
 
         UserDept userDept = userDeptService.getByUserId(user.getId());
 
@@ -68,8 +88,9 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
         jsonObject.addProperty("uuid", user.getUuid());
         jsonObject.addProperty("userName", user.getUsername());
         jsonObject.addProperty("userIcon", user.getIcon());
-        jsonObject.addProperty("phone", user.getPhone());
+        jsonObject.addProperty("phone", phone);
         jsonObject.addProperty("email", user.getEmail());
+        jsonObject.addProperty("accountType", Integer.valueOf(user.getType()) >= 1 ? 1 : 0);
         jsonObject.addProperty("department", deptPath);
         jsonObject.addProperty("isFrequentContact", isFrequentContact);
 

@@ -39,4 +39,11 @@ public interface UserManage {
      * @return
      */
     User selectTerminalInfo(String uuid);
+
+    /**
+     * 查询sip用户的设备号
+     * @param uuid
+     * @return
+     */
+    String selectSipUserNumber(String uuid);
 }
