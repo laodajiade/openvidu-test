@@ -45,6 +45,12 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
             return;
         }
         Long userId = rpcConnection.getUserId();
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("uuid", uuid);
+        map.put("userId", userId);
+        final boolean isOftenContacts = oftenContactsMapper.isOftenContacts(map);
+
         if ("add".equals(methodType)) {
             User userInfo = userMapper.selectByUUID(uuid);
             if (userInfo == null) {
@@ -52,10 +58,6 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.USER_NOT_EXIST);
                 return;
             }
-            Map<String, Object> map = new HashMap<>();
-            map.put("uuid", uuid);
-            map.put("userId", userId);
-            final boolean isOftenContacts = oftenContactsMapper.isOftenContacts(map);
             if (isOftenContacts) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.REPEAT_ADD_CONTACTS);
@@ -68,6 +70,11 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
             oftenContactsMapper.addOftenContacts(oftenContacts);
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         } else if ("cancel".equals(methodType)) {
+            if (!isOftenContacts) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.REPEAT_DEL_CONTACTS);
+                return;
+            }
             oftenContactsMapper.delOftenContacts(uuid);
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         }
