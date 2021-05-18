@@ -66,4 +66,12 @@ public interface UserMapper {
      * @return
      */
     UserDeptInfo selectUserDept(String uuid);
+
+
+    /**
+     * 查询硬终端信息
+     * @param uuid
+     * @return
+     */
+    User selectTerminalInfo(String uuid);
 }

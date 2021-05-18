@@ -35,6 +35,13 @@
     where uuid = #{uuid,jdbcType=BIGINT}
   </select>
 
+  <select id="selectTerminalInfo" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    SELECT su.id, sdv.serial_number AS uuid, sdv.device_name AS username, su.phone, su.email, su.password,
+    su.title, su.project, su.type, su.create_time, su.update_time FROM sd_user su
+    INNER JOIN sd_user_dev sud ON su.id = sud.user_id
+    INNER JOIN sd_device sdv ON sud.serial_number = sdv.serial_number WHERE su.uuid = #{uuid}
+  </select>
+
   <select id="selectUserIdsByDeptIds" parameterType="java.util.List" resultType="java.lang.Long">
     select user_id
     from sd_user_dept

@@ -122,6 +122,8 @@ public enum ErrorCodeEnum {
     FIXED_ROOM_EXPIRED(13076	, "固定会议室已到期"),
     ROOM_IS_IN_USE(13077, "会议室正在使用中"),
 
+    REPEAT_ADD_CONTACTS(14000, "已经是常用联系人,请勿重复添加"),
+
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
 

@@ -36,8 +36,8 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, "uuid");
-        User user = userManage.queryByUuid(uuid);
-
+        String accountType = getStringParam(request, "accountType");
+        User user = "1".equals(accountType) ? userManage.selectTerminalInfo(uuid) : userManage.queryByUuid(uuid);
         if (user == null) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.USER_NOT_EXIST);
@@ -45,11 +45,13 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
         }
 
         UserDept userDept = userDeptService.getByUserId(user.getId());
-        Map<String,Object> map = new HashMap<>();
-        map.put("uuid",uuid);
-        map.put("userId",rpcConnection.getUserId());
-        final boolean isFrequentContact = oftenContactsMapper.isOftenContacts(map);
+
         long deptId = userDept.getDeptId();
+        Map<String, Object> map = new HashMap<>();
+        map.put("uuid", uuid);
+        map.put("userId", rpcConnection.getUserId());
+        final boolean isFrequentContact = oftenContactsMapper.isOftenContacts(map);
+
         String deptPath = "";
         do {
             Department department = departmentService.getById(deptId);
@@ -63,13 +65,13 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
         } while (deptId != 0L);
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("uuid",user.getUuid());
-        jsonObject.addProperty("userName",user.getUsername());
-        jsonObject.addProperty("userIcon",user.getIcon());
-        jsonObject.addProperty("phone",user.getPhone());
-        jsonObject.addProperty("email",user.getEmail());
-        jsonObject.addProperty("department",deptPath);
-        jsonObject.addProperty("isFrequentContact",isFrequentContact);
+        jsonObject.addProperty("uuid", user.getUuid());
+        jsonObject.addProperty("userName", user.getUsername());
+        jsonObject.addProperty("userIcon", user.getIcon());
+        jsonObject.addProperty("phone", user.getPhone());
+        jsonObject.addProperty("email", user.getEmail());
+        jsonObject.addProperty("department", deptPath);
+        jsonObject.addProperty("isFrequentContact", isFrequentContact);
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }

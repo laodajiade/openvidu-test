@@ -32,4 +32,11 @@ public interface UserManage {
     void saveUserLoginHistroy(UserLoginHistory userLoginHistory);
 
     User getAdminUserByProject(String project);
+
+    /**
+     * 查询硬终端信息
+     * @param uuid
+     * @return
+     */
+    User selectTerminalInfo(String uuid);
 }
