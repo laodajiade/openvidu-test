@@ -18,6 +18,8 @@ public class RedisSubscriber {
     NotifyDeviceUploadLogHandler notifyDeviceUploadLogHandler;
 
     @Autowired
+    ToOpenviduNotifyHandler toOpenviduNotifyHandler;
+    @Autowired
     private SessionManager sessionManager;
 
     public void receiveMessage(String message, String channel) {
@@ -40,6 +42,9 @@ public class RedisSubscriber {
                 break;
             case BrokerChannelConstans.TOPIC_ROOM_RECORDER_ERROR:
                 sessionManager.handleRecordErrorEvent(message);
+                break;
+            case BrokerChannelConstans.TO_OPENVIDU_CHANNEL:
+                toOpenviduNotifyHandler.notify(message);
                 break;
             default:
                 log.error("Unrecognized listening channel:{}", channel);

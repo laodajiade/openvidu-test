@@ -21,3 +21,13 @@ Content-Type: application/json
 {
   "roomId": "10360001"
 }
+
+#### urgedPeopleToEnd
+POST http://localhost:4443/dev/test?id={{uuid}}&method=urgedPeopleToEnd
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "{{uuid}}"
+}
