@@ -11,6 +11,7 @@ import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
+import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.RandomRoomIdGenerator;
@@ -187,6 +188,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
             SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                     roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
+            if (roomIdType == RoomIdTypeEnums.fixed) {
+                preset.setAllowRecord(fixedRoomMapper.selectByRoomId(sessionId).getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+            }
             sessionManager.setPresetInfo(sessionId, preset);
 
             // store this inactive session

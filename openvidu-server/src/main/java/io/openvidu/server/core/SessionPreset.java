@@ -4,6 +4,7 @@ import io.openvidu.server.common.enums.IMModeEnum;
 import io.openvidu.server.common.pojo.ScrollingBannersConfig;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.util.StringUtils;
 
 import java.util.Objects;
@@ -29,6 +30,10 @@ public class SessionPreset {
     private SessionPresetEnum allowPartOperShare;
 
     private SessionPresetEnum allowPartOperSpeaker;
+
+    @Getter
+    @Setter
+    private SessionPresetEnum allowRecord  = SessionPresetEnum.on;//允许录制
 
     private SessionPresetEnum quietStatusInRoom;
 
@@ -139,6 +144,7 @@ public class SessionPreset {
         this.allowPartOperMic = SessionPresetEnum.off;
         this.allowPartOperShare = SessionPresetEnum.off;
         this.allowPartOperSpeaker = SessionPresetEnum.on;
+        this.allowRecord = SessionPresetEnum.on;
         this.quietStatusInRoom = SessionPresetEnum.smart;
     }
 

@@ -12,6 +12,7 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
+import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
@@ -70,6 +71,9 @@ public class AppointConferenceJobHandler {
 
     @Resource
     private RoomManage roomManage;
+
+    @Autowired
+    private FixedRoomMapper fixedRoomMapper;
 
     /**
      * 预约会议通知
@@ -146,17 +150,14 @@ public class AppointConferenceJobHandler {
                 return ReturnT.SUCCESS;
             }
 
-//            if (appointConference.getAutoInvite().intValue() != AutoInviteEnum.AUTO_INVITE.getValue().intValue()) {
-//                // 删除定时任务
-//                crowOnceHelper.delCrowOnce(jobId);
-//                return ReturnT.SUCCESS;
-//            }
-
             // 是否自动呼叫、房间是否被使用中
             if (!isRoomInUse(appointConference.getRoomId())) {
                 SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
                 sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
+                if (RoomIdTypeEnums.parse(appointConference.getRoomId()) == RoomIdTypeEnums.fixed) {
+                    preset.setAllowRecord(fixedRoomMapper.selectByRoomId(appointConference.getRoomId()).getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+                }
 
                 // change the conference status
                 Conference conference = constructConf(appointConference);
