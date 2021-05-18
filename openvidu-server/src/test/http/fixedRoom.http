@@ -1,0 +1,23 @@
+
+# getFixedRoomList
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getFixedRoomList
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "pageNum": 1,
+  "pageSize": 10,
+  "isChooseAll": true
+}
+
+
+#### getRoomInfo
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getRoomInfo
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "10360001"
+}
