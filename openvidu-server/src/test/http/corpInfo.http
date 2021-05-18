@@ -1,0 +1,10 @@
+
+# getCorpInfo
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getCorpInfo
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+}
+

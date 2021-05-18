@@ -44,4 +44,7 @@ public interface FixedRoomMapper {
     @Select("select * from sd_fixed_room where room_id = #{roomId}")
     @ResultMap("BaseResultMap")
     FixedRoom selectByRoomId(String roomId);
+
+    @Select("select count(*) from sd_fixed_room where status != 0 and  corp_id = #{corpId}")
+    int countActivationRoom(long corpId);
 }
