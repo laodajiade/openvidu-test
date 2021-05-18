@@ -39,6 +39,14 @@ public enum RoomIdTypeEnums {
         return calculationRoomType(roomId) == fixed;
     }
 
+    public static boolean isShortId(String roomId) {
+        if (StringUtils.isBlank(roomId)) {
+            return false;
+        }
+        return roomId.length() == 4;
+    }
+
+
     public static RoomIdTypeEnums parse(String roomIdType) {
         for (RoomIdTypeEnums value : RoomIdTypeEnums.values()) {
             if (value.name().equals(roomIdType)) {

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.vo.CallHistoryVo;
@@ -36,6 +37,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
     private static final RateLimiter rateLimiter = RateLimiter.create(30);
 
     private static final Object joinRoomLock = new Object();
+
+    private FixedRoomMapper fixedRoomMapper;
 
     @Value("${joinroom.rate.limiter:30}")
     public void setRateLimiter(double rate) {
@@ -87,6 +90,15 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // verify room join type
                 String joinType = getStringParam(request, ProtocolElements.JOINROOM_TYPE_PARAM);
 
+                // 短号入会
+                if (RoomIdTypeEnums.isShortId(sessionId)) {
+                    FixedRoom fixedRoom = fixedRoomMapper.selectByShortId(sessionId);
+                    if (fixedRoom == null) {
+                        errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+                        break;
+                    }
+                    sessionId = fixedRoom.getRoomId();
+                }
 
                 ConferenceSearch search = new ConferenceSearch();
                 search.setRoomId(sessionId);
