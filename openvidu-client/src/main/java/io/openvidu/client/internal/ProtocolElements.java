@@ -872,6 +872,7 @@ public class ProtocolElements {
 	public static  final  String DEVICE_INFO_UPDATE_NOTIFY_METHOD = "deviceInfoUpdateNotify";
 
 	public static final String GET_FIXED_ROOM_LIST_METHOD = "getFixedRoomList";
+	public static final String GET_ROOM_INFO_METHOD = "getRoomInfo";
 
 	public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
