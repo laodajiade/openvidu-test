@@ -873,8 +873,15 @@ public class ProtocolElements {
 
 	public static final String GET_FIXED_ROOM_LIST_METHOD = "getFixedRoomList";
 	public static final String GET_ROOM_INFO_METHOD = "getRoomInfo";
-	public static final String URGED_PEOPLE_TO_END = "urgedPeopleToEnd";
-	public static final String URGED_PEOPLE_TO_END_NOTIFY = "urgedPeopleToEndNotify";
+
+	public static final String URGED_PEOPLE_TO_END_METHOD = "urgedPeopleToEnd";
+	public static final String URGED_PEOPLE_TO_END_NOTIFY_METHOD = "urgedPeopleToEndNotify";
+
+	public static final String DELAY_CONFERENCE_METHOD = "delayConference";
+
+	public static final String APPOINTMENT_CONFERENCE_CANCEL_NOTIFY_METHOD = "appointmentConferenceCancelNotify";
+
+
 
 	public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
 			GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,

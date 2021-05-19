@@ -78,16 +78,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             }
             return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
         }
-
-        // 获取定时任务的id
-        List<Long> jobIds = conferenceJobManage.deleteConferenceJobByRuid(ruid);
-        // 删除定时任务
-        for (Long jobId : jobIds) {
-            crowOnceHelper.delCrowOnce(jobId);
-        }
-
-        appointConferenceManage.deleteByRuid(ruid);
-        appointParticipantMapper.deleteByConferenceRuid(ruid);
+        cancelApponitment(ruid);
 
         // 销毁未活跃的房间
         Session sessionNotActive = sessionManager.getSessionNotActive(appointConference.getRoomId());
@@ -104,6 +95,18 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         }
 
         return RespResult.ok(new JsonObject());
+    }
+
+    public void cancelApponitment(String ruid) {
+        // 获取定时任务的id
+        List<Long> jobIds = conferenceJobManage.deleteConferenceJobByRuid(ruid);
+        // 删除定时任务
+        for (Long jobId : jobIds) {
+            crowOnceHelper.delCrowOnce(jobId);
+        }
+
+        appointConferenceManage.deleteByRuid(ruid);
+        appointParticipantMapper.deleteByConferenceRuid(ruid);
     }
 
     /**

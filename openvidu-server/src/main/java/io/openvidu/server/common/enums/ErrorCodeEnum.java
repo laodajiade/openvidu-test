@@ -42,6 +42,7 @@ public enum ErrorCodeEnum {
     SUCCESS(0, "成功"),
     REQUEST_EXPIRED(10002, "request expired"),
     REQUEST_PARAMS_ERROR(10006, "请求参数错误"),
+    CANNOT_BE_OPERATED(10010, "不能如此操作"),
     REQUEST_TOO_FREQUENT(10012,"请求过于频繁"),
 
     SERVER_UNKNOWN_ERROR(11000, "未知错误"),

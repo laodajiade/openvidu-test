@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class RpcNotificationService {
 
@@ -210,6 +211,14 @@ public class RpcNotificationService {
 		List<String> collect = participants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
 		sendBatchNotificationConcurrent(collect, method, params);
 	}
+
+    public void sendBatchNotificationUuidConcurrent(Collection<String> uuids, final String method, final Object params) {
+        final Set<String> uuidSet = new HashSet<>(uuids);
+        List<String> privateIdList = rpcConnections.values().stream().filter(rpcConnection -> uuidSet.contains(rpcConnection.getUserUuid()))
+                .map(RpcConnection::getParticipantPrivateId).collect(Collectors.toList());
+        sendBatchNotificationConcurrent(privateIdList, method, params);
+    }
+
 	/**
 	 * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
 	 */
