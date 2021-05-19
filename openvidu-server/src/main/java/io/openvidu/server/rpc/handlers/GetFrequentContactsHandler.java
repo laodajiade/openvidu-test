@@ -44,7 +44,7 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
             for (OftenContactsVo oftenContactsVo : oftenContactsList) {
                 if (oftenContactsVo.getAccountType().equals(1)) {
                     UserDevice userDevSearch = new UserDevice();
-                    userDevSearch.setUserId(oftenContactsVo.getUserId());
+                    userDevSearch.setUserId(oftenContactsVo.getId());
                     UserDevice userDevice = userDeviceMapper.selectByCondition(userDevSearch);
                     oftenContactsVo.setUserName(Objects.isNull(userDevice.getDeviceName()) ? null : userDevice.getDeviceName());
                     String deviceStatus = Objects.isNull(userDevice.getSerialNumber()) ? null : cacheManage.getDeviceStatus(userDevice.getSerialNumber());
