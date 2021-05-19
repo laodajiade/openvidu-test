@@ -19,6 +19,7 @@ import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.AppointConference;
+import io.openvidu.server.common.pojo.AppointJob;
 import io.openvidu.server.common.pojo.AppointParticipant;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
@@ -26,8 +27,10 @@ import io.openvidu.server.core.*;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
+import io.openvidu.server.service.AppointJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -74,6 +77,73 @@ public class AppointConferenceJobHandler {
 
     @Autowired
     private FixedRoomMapper fixedRoomMapper;
+
+    @Autowired
+    private AppointJobService appointJobService;
+
+    @Scheduled(cron = "0/5 * * * * ?")
+    public void appointmentJob() {
+        List<AppointJob> appointJobs = appointJobService.selectNextJobs();
+        if (appointJobs.isEmpty()) {
+            return;
+        }
+
+        for (AppointJob appointJob : appointJobs) {
+            try {
+                if (!appointJobService.doExec(appointJob)) {
+                    log.info("job id:{} can`t get lock", appointJob.getId());
+                    continue;
+                }
+                String scheduleName = appointJob.getScheduleName();
+                switch (scheduleName) {
+                    case "FiveMinuteBeforeTheBegin":
+                        fiveMinuteBeforeTheBegin(appointJob);
+                        break;
+                    case "TwoMinuteBeforeTheBegin":
+                        twoMinuteBeforeTheBegin(appointJob);
+                        break;
+                }
+                appointJobService.finishExec(appointJob);
+            } catch (Exception e) {
+                log.error("appointmentJob error {}", appointJob, e);
+                appointJobService.errorExec(appointJob);
+            }
+        }
+    }
+
+    private void twoMinuteBeforeTheBegin(AppointJob job) {
+        nextConferenceToBeginNotify(job.getRuid(), 1);
+    }
+
+    /**
+     * 向冲突的主持人推送下个会议开始的推送
+     */
+    private void fiveMinuteBeforeTheBegin(AppointJob job) {
+        nextConferenceToBeginNotify(job.getRuid(), 5);
+    }
+
+    private void nextConferenceToBeginNotify(String ruid, int countdown) {
+        AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
+        if (appointConference == null || appointConference.getStatus() != 0) {
+            return;
+        }
+
+        Session session = sessionManager.getSession(appointConference.getRoomId());
+        if (session == null) {
+            return;
+        }
+
+        List<Participant> moderatorAndThorPart = session.getModeratorAndThorPart();
+        if (!moderatorAndThorPart.isEmpty()) {
+            JsonObject params = new JsonObject();
+            params.addProperty("countdown", countdown);
+            params.addProperty("startTime", appointConference.getStartTime().getTime());
+            params.addProperty("moderatorName", appointConference.getModeratorName());
+            params.addProperty("conferenceSubject", appointConference.getConferenceSubject());
+            notificationService.sendBatchNotificationConcurrent(new HashSet<>(moderatorAndThorPart), "nextConferenceToBeginNotify", params);
+        }
+    }
+
 
     /**
      * 预约会议通知
@@ -348,7 +418,7 @@ public class AppointConferenceJobHandler {
                     log.info("conferenceBeginJobHandler inviteParticipant uuid={}", rpcConnection.getUserUuid());
                     params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserId());
                     notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
-                    cacheManage.saveInviteInfo(conference.getRoomId(),rpcConnection.getUserUuid());
+                    cacheManage.saveInviteInfo(conference.getRoomId(), rpcConnection.getUserUuid());
                 });
     }
 
