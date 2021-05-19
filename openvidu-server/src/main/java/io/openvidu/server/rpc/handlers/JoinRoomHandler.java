@@ -92,7 +92,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // 短号入会
                 if (RoomIdTypeEnums.isShortId(sessionId)) {
-                    FixedRoom fixedRoom = fixedRoomMapper.selectByShortId(sessionId);
+                    FixedRoom fixedRoom = fixedRoomMapper.selectByShortId(sessionId, rpcConnection.getCorpId());
                     if (fixedRoom == null) {
                         errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
                         break;
