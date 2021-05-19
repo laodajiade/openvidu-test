@@ -31,3 +31,15 @@ Content-Type: application/json
 {
   "roomId": "{{uuid}}"
 }
+
+
+#### urgedPeopleToEnd
+POST http://localhost:4443/dev/test?id={{uuid}}&method=delayConference
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "{{uuid}}",
+  "delayMinute": "5"
+}

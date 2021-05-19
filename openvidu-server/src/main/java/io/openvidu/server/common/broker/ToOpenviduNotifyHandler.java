@@ -44,7 +44,7 @@ public class ToOpenviduNotifyHandler {
             JsonObject params = obj.getAsJsonObject("params");
 
             switch (method) {
-                case ProtocolElements.URGED_PEOPLE_TO_END:
+                case ProtocolElements.URGED_PEOPLE_TO_END_METHOD:
                     urgedPeopleToEndHandler.notifyToModerator(params);
                     break;
             }

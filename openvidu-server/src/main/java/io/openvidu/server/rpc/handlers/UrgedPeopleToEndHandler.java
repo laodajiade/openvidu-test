@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 
-@Service(ProtocolElements.URGED_PEOPLE_TO_END)
+@Service(ProtocolElements.URGED_PEOPLE_TO_END_METHOD)
 public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
 
 
@@ -24,7 +24,7 @@ public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
         String roomId = getStringParam(request, "roomId");
 
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("method", ProtocolElements.URGED_PEOPLE_TO_END);
+        jsonObject.addProperty("method", ProtocolElements.URGED_PEOPLE_TO_END_METHOD);
 
         JsonObject param = new JsonObject();
         jsonObject.add("params", param);
@@ -46,6 +46,6 @@ public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
         json.addProperty("roomId", roomId);
         json.addProperty("timestamp", System.currentTimeMillis());
         notificationService.sendBatchNotification(new HashSet<>(session.getModeratorAndThorPart()),
-                ProtocolElements.URGED_PEOPLE_TO_END_NOTIFY, json.toString());
+                ProtocolElements.URGED_PEOPLE_TO_END_NOTIFY_METHOD, json.toString());
     }
 }

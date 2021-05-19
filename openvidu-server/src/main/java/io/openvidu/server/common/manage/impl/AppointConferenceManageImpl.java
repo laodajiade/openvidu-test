@@ -15,10 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -36,6 +33,15 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
     @Override
     public void updateById(AppointConference appt) {
         appointConferenceMapper.updateByPrimaryKey(appt);
+    }
+
+    @Override
+    public AppointConference getConflict(Date startTime, String roomId) {
+        AppointConferenceExample example = new AppointConferenceExample();
+        example.createCriteria().andRoomIdEqualTo(roomId).andStartTimeLessThan(startTime).andStatusEqualTo(0);
+        example.setOrderByClause("start_time asc");
+        List<AppointConference> list = appointConferenceMapper.selectByExample(example);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     //

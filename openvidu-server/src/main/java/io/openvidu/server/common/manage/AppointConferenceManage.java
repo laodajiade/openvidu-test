@@ -4,6 +4,8 @@ import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 
+import java.util.Date;
+
 public interface AppointConferenceManage {
 
     boolean isConflict(AppointmentRoomVO vo);
@@ -17,4 +19,6 @@ public interface AppointConferenceManage {
     void deleteByRuid(String ruid);
 
     void updateById(AppointConference appt);
+
+    AppointConference getConflict(Date startTime, String roomIde);
 }
