@@ -161,4 +161,17 @@
     where su.uuid = #{uuid,jdbcType=VARCHAR}
   </select>
 
+  <!-- 查询企业是否充值过并发方数 -->
+  <select id="selectIsRechargeConcurrent" parameterType="java.lang.String" resultType="java.lang.Boolean">
+        <![CDATA[select case when count(spc.id) >= 1
+                 then 1
+                 else 0
+                 end isRechargeConcurrent
+        from sd_prepaid_card spc
+        LEFT JOIN sd_prepaid_package spp on spc.package_id = spp.id
+        LEFT JOIN sd_corporation sc on spc.used_corp_id = sc.id
+        LEFT JOIN sd_user su on spc.used_user_id = su.id
+        WHERE sc.project = #{corpId} AND spp.package_type = 1 ]]>
+    </select>
+
 </mapper>

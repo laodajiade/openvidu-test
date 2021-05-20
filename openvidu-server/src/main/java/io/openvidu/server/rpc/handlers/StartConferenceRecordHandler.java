@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.constants.CommonConstants;
+import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
@@ -16,7 +17,9 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +30,9 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
     @Value("${min.interval.stop}")
     private Long minIntervalStop;
+
+    @Resource
+    private FixedRoomMapper fixedRoomMapper;
 
     @Value("${record.service:true}")
     private boolean recordService = true;
@@ -46,6 +52,27 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
             return;
+        }
+
+
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+
+        //查询固定会议室是否充值过录制存储空间和存储空间是否失效
+        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(roomId);
+        if (!StringUtils.isEmpty(fixedRoom)) {
+            final boolean isRechargeStorage = fixedRoomMapper.selectISRechargeCardRecord(roomId);
+            if (!isRechargeStorage){
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.NO_RECORD_SERVICE);
+                return;
+            }
+
+            if (LocalDateTimeUtils.toEpochMilli(corporation.getRecordingExpireDate()) < System.currentTimeMillis()) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.RECORD_SERVICE_INVALID);
+                return;
+            }
+
         }
 
         // 校验会议
@@ -80,7 +107,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         }
 
         // 录制服务是否启用（在有效期内）
-        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
         if (!recordService) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);

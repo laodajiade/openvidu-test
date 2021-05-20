@@ -1,11 +1,13 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.Role;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
@@ -32,10 +34,40 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.USER_NOT_EXIST);
             return;
         }
+        User user = userMapper.selectByUUID(uuid);
 
-        Role role = roleMapper.selectUserOperationPermission(uuid);
+        if (user == null) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.USER_NOT_EXIST);
+            return;
+        }
+
         JSONObject jsonObject = new JSONObject();
+
+        List<Integer> list = null;
+        switch (user.getType()) {
+            case 1:
+                list = getHardTerminalUser(user.getProject());
+                break;
+            case 0:
+                list = getSoftTerminalUser(uuid);
+                break;
+            default:
+                break;
+        }
+        jsonObject.put("list", list);
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
+    }
+
+    /**
+     * 获取软终端用户权限
+     *
+     * @param uuid
+     * @return
+     */
+    public List<Integer> getSoftTerminalUser(String uuid) {
         List<Integer> list = new ArrayList<>();
+        Role role = roleMapper.selectUserOperationPermission(uuid);
         if (!StringUtils.isEmpty(role)) {
 
             for (String split : role.getPrivilege().split(",")) {
@@ -57,7 +89,17 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
                 }
             }
         }
-        jsonObject.put("list",list);
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
+        return list;
+    }
+
+
+    /**
+     * 查询硬终端用户权限
+     *
+     * @return
+     */
+    public List<Integer> getHardTerminalUser(String project) {
+        boolean isRechargeConcurrent = corporationMapper.selectIsRechargeConcurrent(project);
+        return isRechargeConcurrent ? Lists.newArrayList(0, 1, 2) : Lists.newArrayList(0);
     }
 }

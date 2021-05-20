@@ -37,4 +37,10 @@ public interface CorporationMapper {
 
     UserCorpInfo getUserCorpInfo(String uuid);
 
+    /**
+     * 查询企业是否充值过
+     * @param project
+     * @return
+     */
+    boolean selectIsRechargeConcurrent(String project);
 }
