@@ -329,6 +329,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     break;
                 }
 
+                if (Objects.nonNull(session) && session.getPresetInfo().getAllowPart() != 0 && !Objects.equals(session.getConference().getProject(), rpcConnection.getProject())) {
+                    log.info("not allow join room by outsiders,{}", rpcConnection.getUserUuid());
+                    errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;
+                    break;
+                }
+
                 Participant participant;
                 if (generateRecorderParticipant) {
                     participant = sessionManager.newRecorderParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata, role.name(), streamType.name());
@@ -385,7 +391,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 rpcConnection.setSessionId(sessionId);
                 UseTime.point("join room p1");
-                if (session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
+                if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
                     UseTime.point("join room p1.1");
                     sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
                 } else {
