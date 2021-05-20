@@ -32,7 +32,7 @@ public class AppointJobService {
         addJob(job);
     }
 
-    public void TwoMinuteBeforeTheBegin(String ruid, Date endTime) {
+    public void OneMinuteBeforeTheBegin(String ruid, Date endTime) {
         AppointJob job = new AppointJob();
         job.setScheduleName("TwoMinuteBeforeTheBegin");
         job.setRuid(ruid);

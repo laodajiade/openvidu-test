@@ -11,6 +11,7 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.handlers.appoint.CancelAppointmentRoomHandler;
+import io.openvidu.server.service.AppointJobService;
 import io.openvidu.server.utils.BindValidate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
@@ -36,6 +37,9 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Autowired
     private AppointParticipantMapper appointParticipantMapper;
+
+    @Autowired
+    private AppointJobService appointJobService;
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
@@ -70,6 +74,8 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
                     notifyParams.addProperty("roomSubject", conflictConference.getConferenceSubject());
                     notifyParams.addProperty("reason", reason);
                     notificationService.sendBatchNotificationUuidConcurrent(uuids, method, notifyParams);
+                } else {
+                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), DateUtils.addMinutes(new Date(), delayMinute));
                 }
             }
         } catch (Exception e) {

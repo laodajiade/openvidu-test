@@ -111,7 +111,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
 
         if (vo.getRoomIdType() != RoomIdTypeEnums.fixed) {
             appointJobService.FiveMinuteBeforeTheBegin(vo.getRuid(), new Date(vo.getStartTime()));
-            appointJobService.TwoMinuteBeforeTheBegin(vo.getRuid(), new Date(vo.getStartTime()));
+            appointJobService.OneMinuteBeforeTheBegin(vo.getRuid(), new Date(vo.getStartTime()));
         }
     }
 
