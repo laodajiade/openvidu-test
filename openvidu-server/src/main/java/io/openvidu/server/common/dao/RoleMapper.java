@@ -21,4 +21,10 @@ public interface RoleMapper {
     @Select("select dept_limit from sd_role a join sd_user_role b on a.id = b.role_id where b.user_id = #{userId}")
     Integer getDeptLimitByUserId(@Param("userId") long userId);
 
+    /**
+     * 查询当前用户的操作权限
+     * @param uuid
+     * @return
+     */
+    Role selectUserOperationPermission(String uuid);
 }

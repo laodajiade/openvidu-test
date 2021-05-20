@@ -333,7 +333,8 @@ public class RpcHandlerFactory {
     private GetFrequentContactsHandler getFrequentContactsHandler;
     @Resource
     private SetFrequentContactsHandler setFrequentContactsHandler;
-
+    @Resource
+    private QueryOperationPermissionHandler queryOperationPermissionHandler;
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
 
@@ -463,6 +464,8 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD,                             saveJpushHandler);
         handlersMap.put(ProtocolElements.GET_FREQUENT_CONTACTS,                         getFrequentContactsHandler);
         handlersMap.put(ProtocolElements.SET_FREQUENT_CONTACTS,                         setFrequentContactsHandler);
+        handlersMap.put(ProtocolElements.QUERY_OPERATION_PERMISSION,                    queryOperationPermissionHandler);
+
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
