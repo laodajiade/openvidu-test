@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service(ProtocolElements.GET_ROOM_INFO_METHOD)
-public class GetRoomInfoListHandler extends ExRpcAbstractHandler<JsonObject> {
+public class GetRoomInfoHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Autowired
     private FixedRoomMapper fixedRoomMapper;

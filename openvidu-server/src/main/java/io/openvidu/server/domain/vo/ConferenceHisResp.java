@@ -1,5 +1,6 @@
 package io.openvidu.server.domain.vo;
 
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import lombok.Data;
 
 @Data
@@ -67,5 +68,7 @@ public class ConferenceHisResp {
     private String creatorUserIcon;
 
     private Integer status;
+
+    private RoomIdTypeEnums roomIdType = RoomIdTypeEnums.unknown;
 
 }
