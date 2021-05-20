@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
@@ -54,6 +55,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
 
         PageResult<ConferenceHisResp> result = getInstance(rpcConnection, params).getList();
         fetchUpCreator(result.getList());
+        result.getList().forEach(c -> c.setRoomIdType(RoomIdTypeEnums.calculationRoomType(c.getRoomId())));
         return RespResult.ok(result);
     }
 
