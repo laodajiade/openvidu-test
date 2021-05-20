@@ -44,11 +44,11 @@ public class AppointJobService {
         addJob(job);
     }
 
-    public void closeRoomSchedule(String ruid, Date endTime) {
+    public void closeRoomSchedule(String ruid, Date colseTime) {
         AppointJob job = new AppointJob();
         job.setScheduleName("closeRoomSchedule");
         job.setRuid(ruid);
-        job.setStartTime(LocalDateTimeUtils.translateFromDate(DateUtils.addMinutes(endTime, -2)));
+        job.setStartTime(LocalDateTimeUtils.translateFromDate(colseTime));
         job.setRemark("关闭会议1分钟倒计时");
         job.setParams("{}");
         addJob(job);

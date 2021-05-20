@@ -55,6 +55,8 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
         }
         String ruid = session.getRuid();
 
+        appointJobService.cancelCloseRoomSchedule(ruid);
+
         Date minStartDate = DateUtils.addMinutes(new Date(), delayMinute);
         AppointConference conflictConference = appointConferenceManage.getConflict(minStartDate, roomId);
         try {

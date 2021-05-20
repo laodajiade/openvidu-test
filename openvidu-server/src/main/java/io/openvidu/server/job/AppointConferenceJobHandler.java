@@ -103,12 +103,28 @@ public class AppointConferenceJobHandler {
                     case "OneMinuteBeforeTheBegin":
                         oneMinuteBeforeTheBegin(appointJob);
                         break;
+                    case "closeRoomSchedule":
+                        closeRoomSchedule(appointJob);
+                        break;
+
                 }
                 appointJobService.finishExec(appointJob);
             } catch (Exception e) {
                 log.error("appointmentJob error {}", appointJob, e);
                 appointJobService.errorExec(appointJob);
             }
+        }
+    }
+
+    private void closeRoomSchedule(AppointJob appointJob) {
+        Conference conference = conferenceMapper.selectByRuid(appointJob.getRuid());
+        if (conference == null || conference.getStatus() != 1) {
+            return;
+        }
+
+        Session session = sessionManager.getSession(conference.getRoomId());
+        if (session != null) {
+            session.close(EndReason.sessionClosedByServer);
         }
     }
 
@@ -146,7 +162,9 @@ public class AppointConferenceJobHandler {
 
         // 创建一个1分钟倒计时关闭会议
         // 这里使用62而不是60是因为多给端上2秒的反应时间
-        appointJobService.closeRoomSchedule(session.getRuid(), DateUtils.addSeconds(new Date(), 62));
+        if (countdown == 1) {
+            appointJobService.closeRoomSchedule(session.getRuid(), DateUtils.addSeconds(new Date(), 62));
+        }
     }
 
 
