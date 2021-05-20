@@ -52,4 +52,11 @@ public interface FixedRoomMapper {
 
     @Select("select count(*) from sd_fixed_room where status != 0 and  corp_id = #{corpId}")
     int countActivationRoom(long corpId);
+
+    /**
+     * 查询固定会议室是否充值过录制存储记录
+     * @param roomId
+     * @return
+     */
+    boolean selectISRechargeCardRecord(String roomId);
 }

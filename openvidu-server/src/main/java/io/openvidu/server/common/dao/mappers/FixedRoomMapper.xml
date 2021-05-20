@@ -104,6 +104,20 @@
     from sd_fixed_room
     where id = #{id,jdbcType=BIGINT}
   </select>
+
+
+  <!--查询固定会议室是否有录制存储充值记录-->
+  <select id="selectISRechargeCardRecord" parameterType="java.lang.String" resultType="java.util.List">
+        SELECT case when count(spc.id) >= 1
+               then 1
+               else 0
+               end isRechargeStorage
+        FROM sd_prepaid_card spc
+        INNER JOIN sd_prepaid_package spp ON spc.package_id = spp.id
+        INNER JOIN sd_fixed_room sfr ON sfr.card_id = spc.id
+        WHERE sfr.room_id = #{roomId}
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from sd_fixed_room
     where id = #{id,jdbcType=BIGINT}
