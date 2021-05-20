@@ -21,6 +21,7 @@ import io.openvidu.server.core.JpushMsgEnum;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.service.AppointJobService;
 import io.openvidu.server.utils.CrowOnceInfoManager;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.LocalDateTimeUtils;
@@ -60,6 +61,9 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
 
     @Autowired
     protected FixedRoomManagerMapper fixedRoomManagerMapper;
+
+    @Autowired
+    private AppointJobService appointJobService;
 
     /**
      * 创建定时任务
@@ -103,6 +107,11 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         if (!list.isEmpty()) {
             // 保存ruid和jobId关系
             conferenceJobManage.batchInsert(list);
+        }
+
+        if (vo.getRoomIdType() != RoomIdTypeEnums.fixed) {
+            appointJobService.FiveMinuteBeforeTheBegin(vo.getRuid(), new Date(vo.getStartTime()));
+            appointJobService.OneMinuteBeforeTheBegin(vo.getRuid(), new Date(vo.getStartTime()));
         }
     }
 
