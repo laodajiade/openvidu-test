@@ -34,6 +34,7 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
         }
 
         Role role = roleMapper.selectUserOperationPermission(uuid);
+        JSONObject jsonObject = new JSONObject();
         List<Integer> list = new ArrayList<>();
         if (!StringUtils.isEmpty(role)) {
 
@@ -56,6 +57,7 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
                 }
             }
         }
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), list);
+        jsonObject.put("list",list);
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
 }
