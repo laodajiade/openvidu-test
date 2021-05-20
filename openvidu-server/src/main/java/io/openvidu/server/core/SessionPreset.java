@@ -35,6 +35,10 @@ public class SessionPreset {
     @Setter
     private SessionPresetEnum allowRecord  = SessionPresetEnum.on;//允许录制
 
+    @Getter
+    @Setter
+    private Integer allowPart  = 0;//0=不限制
+
     private SessionPresetEnum quietStatusInRoom;
 
     private SessionPresetEnum pollingStatusInRoom = SessionPresetEnum.off;

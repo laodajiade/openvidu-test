@@ -189,7 +189,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                     roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
             if (roomIdType == RoomIdTypeEnums.fixed) {
-                preset.setAllowRecord(fixedRoomMapper.selectByRoomId(sessionId).getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+                FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
+                preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+                preset.setAllowPart(fixedRoom.getAllowPart());
             }
             sessionManager.setPresetInfo(sessionId, preset);
 

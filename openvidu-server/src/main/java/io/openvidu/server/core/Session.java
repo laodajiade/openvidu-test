@@ -54,6 +54,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -119,6 +121,8 @@ public class Session implements SessionInterface {
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private Set<String> languages = new HashSet<>();
 	private JsonObject subtitleExtraConfig = null;
+	@Getter
+	private final Lock joinOrLeaveReentrantLock = new ReentrantLock();
 	protected ConcurrentHashMap<String,Integer> reconnectPartOrderMap = new ConcurrentHashMap<>();
 
 	public Session(Session previousSession) {

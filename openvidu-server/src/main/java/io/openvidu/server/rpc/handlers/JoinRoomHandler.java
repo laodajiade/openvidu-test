@@ -15,6 +15,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -23,8 +24,6 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author geedow
@@ -36,8 +35,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
     private static final RateLimiter rateLimiter = RateLimiter.create(30);
 
-    private static final Object joinRoomLock = new Object();
-
+    @Autowired
     private FixedRoomMapper fixedRoomMapper;
 
     @Value("${joinroom.rate.limiter:30}")
@@ -134,9 +132,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // v.1.3.2 如果会议室有人，则不删除房间，无法通过预约邀请新加入房间
                 // 未来的版本会对预约会议做功能上优化，这段代码可能可以删除
-                if (!Objects.equals(joinType, ParticipantJoinType.invited.name()) && (!Objects.isNull(sessionManager.getSession(sessionId)))
-                        && sessionManager.getSession(sessionId).getRuid().startsWith("appt-")) {
-                    AppointConference appointConference = appointConferenceManage.getByRuid(sessionManager.getSession(sessionId).getRuid());
+                Session session = sessionManager.getSession(sessionId);
+                if (!Objects.equals(joinType, ParticipantJoinType.invited.name()) && (!Objects.isNull(session))
+                        && session.getRuid().startsWith("appt-")) {
+                    AppointConference appointConference = appointConferenceManage.getByRuid(session.getRuid());
                     if (appointConference == null) {
                         errCode = ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST;
                         break;
@@ -187,8 +186,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // verify conference ever locked
-                if (!rpcConnection.isReconnected() && !Objects.isNull(sessionManager.getSession(sessionId)) &&
-                        sessionManager.getSession(sessionId).isLocking()) {
+                if (!rpcConnection.isReconnected() && !Objects.isNull(session) &&
+                        session.isLocking()) {
                     log.error("room:{} is locked.", sessionId);
                     errCode = ErrorCodeEnum.CONFERENCE_IS_LOCKED;
                     break;
@@ -197,7 +196,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // remove previous participant if reconnect
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-                    Session session = sessionManager.getSession(sessionId);
                     String roomId = Objects.isNull(!partInfo.isEmpty() ? partInfo.get("roomId") : null) ? null : partInfo.get("roomId").toString();
                     if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(roomId)) {
                         log.info("remove previous participant if reconnect " + partInfo.toString());
@@ -221,7 +219,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                                 }
 
                                 //save previous order if reconnect
-                                sessionManager.getSession(sessionId).saveOriginalPartOrder(originalPart);
+                                session.saveOriginalPartOrder(originalPart);
                             } else {
                                 log.warn("reconnect warn,because originalPart is null");
                             }
@@ -253,8 +251,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 boolean recorder = getBooleanOptionalParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
 
                 // verify room capacity limit.
-                if (!Objects.isNull(sessionManager.getSession(sessionId)) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
-                    Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
+                if (!Objects.isNull(session) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
+                    Set<Participant> majorParts = session.getMajorPartEachConnect();
                     if (StreamType.MAJOR.equals(streamType) && majorParts.size() > preset.getRoomCapacity() - 1) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
                         errCode = ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED;
@@ -262,8 +260,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断发起会议时是否超出企业人数上限
-                if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(sessionManager.getSession(sessionId))) {
-                    String project = sessionManager.getSession(sessionId).getConference().getProject();
+                if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(session)) {
+                    String project = session.getConference().getProject();
                     Collection<Session> sessions = sessionManager.getSessions();
                     if (Objects.nonNull(sessions)) {
                         AtomicInteger limitCapacity = new AtomicInteger();
@@ -282,8 +280,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断通话时长是否不足
-                if (!Objects.isNull(sessionManager.getSession(sessionId))) {
-                    String project = sessionManager.getSession(sessionId).getConference().getProject();
+                if (!Objects.isNull(session)) {
+                    String project = session.getConference().getProject();
                     Corporation corporation = corporationMapper.selectByCorpProject(project);
                     if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
                         notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
@@ -309,8 +307,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 JsonObject clientMetadataObj = gson.fromJson(clientMetadata, JsonObject.class);
                 clientMetadataObj.addProperty("account", rpcConnection.getUserUuid());
                 // change participant role if web THOR invite the same user
-                if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(sessionManager.getSession(sessionId))) {
-                    Participant thorPart = sessionManager.getSession(sessionId).getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
+                if (!Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web) && !Objects.isNull(session)) {
+                    Participant thorPart = session.getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
                     if (!Objects.isNull(thorPart) && thorPart.getUuid().equals(clientMetadataObj.get("account").getAsString()) &&
                             !Objects.equals(OpenViduRole.THOR, role) && streamType.equals(StreamType.MAJOR)) {
@@ -325,8 +323,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 clientMetadata = clientMetadataObj.toString();
 
                 // check ever already exits share part
-                Session session;
-                if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session = sessionManager.getSession(sessionId))
+                if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session)
                         && session.getParticipants().stream().anyMatch(participant -> StreamType.SHARING.equals(participant.getStreamType()))) {
                     errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;
                     break;
@@ -388,9 +385,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 rpcConnection.setSessionId(sessionId);
                 UseTime.point("join room p1");
-                synchronized (joinRoomLock) {
+                if (session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
                     UseTime.point("join room p1.1");
                     sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                } else {
+                    log.warn("{} join room timeout", rpcConnection.getUserUuid());
+                    errCode = ErrorCodeEnum.JOIN_ROOM_TIMEOUT;
                 }
                 UseTime.point("join room p2");
             } while (false);
