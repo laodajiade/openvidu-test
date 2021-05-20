@@ -29,6 +29,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import io.openvidu.server.service.AppointJobService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -99,8 +100,8 @@ public class AppointConferenceJobHandler {
                     case "FiveMinuteBeforeTheBegin":
                         fiveMinuteBeforeTheBegin(appointJob);
                         break;
-                    case "TwoMinuteBeforeTheBegin":
-                        twoMinuteBeforeTheBegin(appointJob);
+                    case "OneMinuteBeforeTheBegin":
+                        oneMinuteBeforeTheBegin(appointJob);
                         break;
                 }
                 appointJobService.finishExec(appointJob);
@@ -111,7 +112,7 @@ public class AppointConferenceJobHandler {
         }
     }
 
-    private void twoMinuteBeforeTheBegin(AppointJob job) {
+    private void oneMinuteBeforeTheBegin(AppointJob job) {
         nextConferenceToBeginNotify(job.getRuid(), 1);
     }
 
@@ -142,6 +143,10 @@ public class AppointConferenceJobHandler {
             params.addProperty("conferenceSubject", appointConference.getConferenceSubject());
             notificationService.sendBatchNotificationConcurrent(new HashSet<>(moderatorAndThorPart), "nextConferenceToBeginNotify", params);
         }
+
+        // 创建一个1分钟倒计时关闭会议
+        // 这里使用62而不是60是因为多给端上2秒的反应时间
+        appointJobService.closeRoomSchedule(session.getRuid(), DateUtils.addSeconds(new Date(), 62));
     }
 
 

@@ -2,10 +2,10 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.AppointJob;
 import io.openvidu.server.common.pojo.AppointJobExample;
-import java.util.List;
-
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Mapper
 @Repository
@@ -51,4 +51,7 @@ public interface AppointJobMapper {
 
     @Update("update sd_appoint_job set status = 3,exec_time = now()  where id = #{id}")
     int errorExec(Integer id);
+
+    @Update("update sd_appoint_job set status = 4 where ruid = #{ruid} and schedule_name = #{name}")
+    int cancelByRuid(@Param("ruid") String ruid, @Param("name") String name);
 }

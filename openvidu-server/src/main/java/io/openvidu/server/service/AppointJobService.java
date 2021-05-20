@@ -2,8 +2,10 @@ package io.openvidu.server.service;
 
 import io.openvidu.server.common.dao.AppointJobMapper;
 import io.openvidu.server.common.pojo.AppointJob;
+import io.openvidu.server.common.pojo.AppointJobExample;
 import io.openvidu.server.utils.LocalDateTimeUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,12 +36,26 @@ public class AppointJobService {
 
     public void OneMinuteBeforeTheBegin(String ruid, Date endTime) {
         AppointJob job = new AppointJob();
-        job.setScheduleName("TwoMinuteBeforeTheBegin");
+        job.setScheduleName("OneMinuteBeforeTheBegin");
         job.setRuid(ruid);
         job.setStartTime(LocalDateTimeUtils.translateFromDate(DateUtils.addMinutes(endTime, -2)));
         job.setRemark("会议开始前2分钟");
         job.setParams("{}");
         addJob(job);
+    }
+
+    public void closeRoomSchedule(String ruid, Date endTime) {
+        AppointJob job = new AppointJob();
+        job.setScheduleName("closeRoomSchedule");
+        job.setRuid(ruid);
+        job.setStartTime(LocalDateTimeUtils.translateFromDate(DateUtils.addMinutes(endTime, -2)));
+        job.setRemark("关闭会议1分钟倒计时");
+        job.setParams("{}");
+        addJob(job);
+    }
+
+    public void cancelCloseRoomSchedule(String ruid) {
+        appointJobMapper.cancelByRuid(ruid, "closeRoomSchedule");
     }
 
     public void addJob(AppointJob job) {
