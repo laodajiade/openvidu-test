@@ -29,9 +29,6 @@ public class CorpExpireSchedule {
     @Resource
     private CorporationMapper corporationMapper;
 
-    @Resource
-    private SessionManager sessionManager;
-
     @Autowired
     protected RpcNotificationService notificationService;
     @Resource
@@ -49,46 +46,5 @@ public class CorpExpireSchedule {
         corporations.forEach(corp -> corpServiceExpiredNotifyHandler.notify(corp.getId().toString()));
     }
 
-    @Scheduled(cron = "0 0/1 * * * ?")
-    public void doProcess() {
-        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
-
-        if (corporations.isEmpty()) {
-            cacheManage.dropCorpExpiredCollect();
-            return;
-        }
-
-        Set<String> expiredSet = corporations.stream().map(Corporation::getProject).collect(Collectors.toSet());
-
-        cacheManage.setCorpExpired(expiredSet);
-
-        Collection<Session> sessions = sessionManager.getSessions();
-
-        for (Session session : sessions) {
-            String project = session.getConference().getProject();
-
-            // close room and notify
-            if (expiredSet.contains(project)) {
-                JsonObject params = new JsonObject();
-                params.addProperty("reason", "serviceExpired");
-
-                Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
-
-                participants.forEach(p -> {
-                    if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                        return;
-                    }
-                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
-                    RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
-                    if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
-                        cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
-                    }
-                });
-
-                sessionManager.stopRecording(session.getSessionId());
-                sessionManager.closeSession(session.getSessionId(), EndReason.serviceExpired);
-            }
-        }
-    }
 
 }

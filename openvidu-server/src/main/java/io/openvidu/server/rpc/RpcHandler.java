@@ -108,11 +108,11 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			return;
 		}
 
-		if (ProtocolElements.CORP_SERVICE_EXPIRED_FILTERS.contains(request.getMethod()) && cacheManage.getCorpExpired(rpcConnection.getProject())) {
-			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-					null, ErrorCodeEnum.CORP_SERVICE_EXPIRED);
-			return;
-		}
+//		if (ProtocolElements.CORP_SERVICE_EXPIRED_FILTERS.contains(request.getMethod()) && cacheManage.getCorpExpired(rpcConnection.getProject())) {
+//			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//					null, ErrorCodeEnum.CORP_SERVICE_EXPIRED);
+//			return;
+//		}
 
 		// 如果是会控,且终端主持人退出了会议，报错MODERATOR_NOT_FOUND
 		if (rpcConnection.getAccessType() == AccessTypeEnum.web &&

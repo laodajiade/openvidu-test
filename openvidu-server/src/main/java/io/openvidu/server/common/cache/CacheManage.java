@@ -79,14 +79,6 @@ public interface CacheManage {
 
     String getAccessInParticipantPrivateId(String uuid);
 
-    void delAccessInParticipantPrivateId(String uuid);
-
-    boolean getCorpExpired(String project);
-
-    void setCorpExpired(Set<String> projects);
-
-    void dropCorpExpiredCollect();
-
     void publish(String channel, String message);
 
     void setCorpRemainDuration(String project,int remainderDuration);

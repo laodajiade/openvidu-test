@@ -909,10 +909,10 @@ public class ProtocolElements {
     /**
      * 如果企业到期，以下接口无法使用
      */
-    public static final Set<String> CORP_SERVICE_EXPIRED_FILTERS = new HashSet<>(Arrays.asList(
-            CREATE_ROOM_METHOD, JOINROOM_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
-            MODIFY_PASSWORD_METHOD, CREATE_APPOINTMENT_ROOM_METHOD, UPDATE_APPOINTMENT_ROOM_METHOD
-    ));
+//    public static final Set<String> CORP_SERVICE_EXPIRED_FILTERS = new HashSet<>(Arrays.asList(
+//            CREATE_ROOM_METHOD, JOINROOM_METHOD, START_CONF_RECORD_METHOD, GET_CONF_RECORD_STATUS_METHOD,
+//            MODIFY_PASSWORD_METHOD, CREATE_APPOINTMENT_ROOM_METHOD, UPDATE_APPOINTMENT_ROOM_METHOD
+//    ));
 
     /**
      * 会控主持人不在的情况下，接口黑名单
