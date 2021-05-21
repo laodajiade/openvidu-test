@@ -1,0 +1,50 @@
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getFrequentContacts
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "isChooseAll":false,
+  "pageNum":1,
+  "pageSize":10
+}
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=setFrequentContacts
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "operate":"cancel",
+  "uuid":"80100212780"
+}
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=setFrequentContacts
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "operate":"add",
+  "uuid":"80100212780"
+}
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getMemberDetails
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "uuid":"80100212780"
+}
+
+### 获取用户权限
+POST http://localhost:4443/dev/test?id={{uuid}}&method=queryOperationPermission
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "uuid":"80100212781"
+}

@@ -38,4 +38,11 @@ public interface FixedRoomManagerMapper {
     @Select("select * from sd_fixed_room_manager where user_id = #{userId} and room_id = #{roomId} and deleted = 0")
     @ResultMap("BaseResultMap")
     FixedRoomManager selectByUserId(@Param("userId") Long userId, @Param("roomId") String roomId);
+
+    /**
+     * 查询是否是固定会议室管理员
+     * @param uuid
+     * @return
+     */
+    boolean selectIsFixedRoomAdmin(String uuid);
 }
