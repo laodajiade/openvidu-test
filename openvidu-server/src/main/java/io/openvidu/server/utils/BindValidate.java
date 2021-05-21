@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.exception.BindValidateException;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.ws.rs.NotSupportedException;
 import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -55,6 +56,33 @@ public class BindValidate {
         if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
             throw new BindValidateException(jsonPath + " 不能为 empty");
         }
+    }
+
+    public static String notEmptyAndGet(JsonObject param, String jsonPath) {
+        if (!param.has(jsonPath)) {
+            throw new BindValidateException(jsonPath + " 不能为 empty");
+        }
+        if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
+            throw new BindValidateException(jsonPath + " 不能为 empty");
+        }
+        return param.get(jsonPath).getAsString();
+    }
+
+    public static <T> T notEmptyAndGet(JsonObject param, String jsonPath, Class<T> clazz) {
+        if (!param.has(jsonPath)) {
+            throw new BindValidateException(jsonPath + " 不能为 empty");
+        }
+        if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
+            throw new BindValidateException(jsonPath + " 不能为 empty");
+        }
+
+        if (clazz == String.class) {
+            return (T) param.get(jsonPath).getAsString();
+        }
+        if (clazz == Integer.class) {
+            return (T) Integer.valueOf(param.get(jsonPath).getAsString());
+        }
+        throw new NotSupportedException("类型不支持，还在施工");
     }
 
     /**
