@@ -248,7 +248,7 @@ public class AppointConferenceJobHandler {
                 SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
                 sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
-                if (RoomIdTypeEnums.parse(appointConference.getRoomId()) == RoomIdTypeEnums.fixed) {
+                if (RoomIdTypeEnums.calculationRoomType(appointConference.getRoomId()) == RoomIdTypeEnums.fixed) {
                     preset.setAllowRecord(fixedRoomMapper.selectByRoomId(appointConference.getRoomId()).getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
                 }
 
