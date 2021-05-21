@@ -1,109 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.openvidu.server.common.dao.FixedRoomManagerMapper">
-  <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.FixedRoomManager">
-    <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="fixed_id" jdbcType="BIGINT" property="fixedId" />
-    <result column="room_id" jdbcType="VARCHAR" property="roomId" />
-    <result column="corp_id" jdbcType="BIGINT" property="corpId" />
-    <result column="user_id" jdbcType="INTEGER" property="userId" />
-    <result column="uuid" jdbcType="VARCHAR" property="uuid" />
-    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
-    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
-    <result column="deleted" jdbcType="BIT" property="deleted" />
-  </resultMap>
-  <sql id="Example_Where_Clause">
-    <where>
-      <foreach collection="oredCriteria" item="criteria" separator="or">
-        <if test="criteria.valid">
-          <trim prefix="(" prefixOverrides="and" suffix=")">
-            <foreach collection="criteria.criteria" item="criterion">
-              <choose>
-                <when test="criterion.noValue">
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue">
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue">
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue">
-                  and ${criterion.condition}
-                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
+    <resultMap id="BaseResultMap" type="io.openvidu.server.common.pojo.FixedRoomManager">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="fixed_id" jdbcType="BIGINT" property="fixedId"/>
+        <result column="room_id" jdbcType="VARCHAR" property="roomId"/>
+        <result column="corp_id" jdbcType="BIGINT" property="corpId"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="uuid" jdbcType="VARCHAR" property="uuid"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="deleted" jdbcType="BIT" property="deleted"/>
+    </resultMap>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="("
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
             </foreach>
-          </trim>
-        </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Update_By_Example_Where_Clause">
-    <where>
-      <foreach collection="example.oredCriteria" item="criteria" separator="or">
-        <if test="criteria.valid">
-          <trim prefix="(" prefixOverrides="and" suffix=")">
-            <foreach collection="criteria.criteria" item="criterion">
-              <choose>
-                <when test="criterion.noValue">
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue">
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue">
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue">
-                  and ${criterion.condition}
-                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="("
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
             </foreach>
-          </trim>
-        </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Base_Column_List">
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
     id, fixed_id, room_id, corp_id, user_id, uuid, create_time, update_time, deleted
   </sql>
-  <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomManagerExample" resultMap="BaseResultMap">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    <include refid="Base_Column_List" />
-    from sd_fixed_room_manager
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
-  </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-    select 
-    <include refid="Base_Column_List" />
-    from sd_fixed_room_manager
-    where id = #{id,jdbcType=BIGINT}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomManagerExample"
+            resultMap="BaseResultMap">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List"/>
+        from sd_fixed_room_manager
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>``
+    </select>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sd_fixed_room_manager
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <!--查看是否是固定会议室管理员-->
+    <select id="selectIsFixedRoomAdmin" parameterType="java.lang.String" resultType="java.lang.Boolean">
+        SELECT case when count(id) >= 1
+                    then 1
+                    else 0
+                    end isFixedRoomAdmin
+         FROM sd_fixed_room_manager
+         WHERE uuid = #{uuid}
+    </select>
+
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from sd_fixed_room_manager
     where id = #{id,jdbcType=BIGINT}
   </delete>
-  <delete id="deleteByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomManagerExample">
-    delete from sd_fixed_room_manager
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-  </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.FixedRoomManager" useGeneratedKeys="true">
+    <delete id="deleteByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomManagerExample">
+        delete from sd_fixed_room_manager
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.FixedRoomManager"
+            useGeneratedKeys="true">
     insert into sd_fixed_room_manager (fixed_id, room_id, corp_id, 
       user_id, uuid, create_time, 
       update_time, deleted)
@@ -111,148 +126,150 @@
       #{userId,jdbcType=INTEGER}, #{uuid,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
       #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BIT})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.FixedRoomManager" useGeneratedKeys="true">
-    insert into sd_fixed_room_manager
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="fixedId != null">
-        fixed_id,
-      </if>
-      <if test="roomId != null">
-        room_id,
-      </if>
-      <if test="corpId != null">
-        corp_id,
-      </if>
-      <if test="userId != null">
-        user_id,
-      </if>
-      <if test="uuid != null">
-        uuid,
-      </if>
-      <if test="createTime != null">
-        create_time,
-      </if>
-      <if test="updateTime != null">
-        update_time,
-      </if>
-      <if test="deleted != null">
-        deleted,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="fixedId != null">
-        #{fixedId,jdbcType=BIGINT},
-      </if>
-      <if test="roomId != null">
-        #{roomId,jdbcType=VARCHAR},
-      </if>
-      <if test="corpId != null">
-        #{corpId,jdbcType=BIGINT},
-      </if>
-      <if test="userId != null">
-        #{userId,jdbcType=INTEGER},
-      </if>
-      <if test="uuid != null">
-        #{uuid,jdbcType=VARCHAR},
-      </if>
-      <if test="createTime != null">
-        #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null">
-        #{updateTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="deleted != null">
-        #{deleted,jdbcType=BIT},
-      </if>
-    </trim>
-  </insert>
-  <select id="countByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomManagerExample" resultType="java.lang.Long">
-    select count(*) from sd_fixed_room_manager
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-  </select>
-  <update id="updateByExampleSelective" parameterType="map">
-    update sd_fixed_room_manager
-    <set>
-      <if test="record.id != null">
-        id = #{record.id,jdbcType=BIGINT},
-      </if>
-      <if test="record.fixedId != null">
+    <insert id="insertSelective" keyColumn="id" keyProperty="id"
+            parameterType="io.openvidu.server.common.pojo.FixedRoomManager" useGeneratedKeys="true">
+        insert into sd_fixed_room_manager
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="fixedId != null">
+                fixed_id,
+            </if>
+            <if test="roomId != null">
+                room_id,
+            </if>
+            <if test="corpId != null">
+                corp_id,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="uuid != null">
+                uuid,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="fixedId != null">
+                #{fixedId,jdbcType=BIGINT},
+            </if>
+            <if test="roomId != null">
+                #{roomId,jdbcType=VARCHAR},
+            </if>
+            <if test="corpId != null">
+                #{corpId,jdbcType=BIGINT},
+            </if>
+            <if test="userId != null">
+                #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="uuid != null">
+                #{uuid,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                #{deleted,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomManagerExample"
+            resultType="java.lang.Long">
+        select count(*) from sd_fixed_room_manager
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update sd_fixed_room_manager
+        <set>
+            <if test="record.id != null">
+                id = #{record.id,jdbcType=BIGINT},
+            </if>
+            <if test="record.fixedId != null">
+                fixed_id = #{record.fixedId,jdbcType=BIGINT},
+            </if>
+            <if test="record.roomId != null">
+                room_id = #{record.roomId,jdbcType=VARCHAR},
+            </if>
+            <if test="record.corpId != null">
+                corp_id = #{record.corpId,jdbcType=BIGINT},
+            </if>
+            <if test="record.userId != null">
+                user_id = #{record.userId,jdbcType=INTEGER},
+            </if>
+            <if test="record.uuid != null">
+                uuid = #{record.uuid,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.updateTime != null">
+                update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.deleted != null">
+                deleted = #{record.deleted,jdbcType=BIT},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update sd_fixed_room_manager
+        set id = #{record.id,jdbcType=BIGINT},
         fixed_id = #{record.fixedId,jdbcType=BIGINT},
-      </if>
-      <if test="record.roomId != null">
         room_id = #{record.roomId,jdbcType=VARCHAR},
-      </if>
-      <if test="record.corpId != null">
         corp_id = #{record.corpId,jdbcType=BIGINT},
-      </if>
-      <if test="record.userId != null">
         user_id = #{record.userId,jdbcType=INTEGER},
-      </if>
-      <if test="record.uuid != null">
         uuid = #{record.uuid,jdbcType=VARCHAR},
-      </if>
-      <if test="record.createTime != null">
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.updateTime != null">
         update_time = #{record.updateTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.deleted != null">
-        deleted = #{record.deleted,jdbcType=BIT},
-      </if>
-    </set>
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByExample" parameterType="map">
-    update sd_fixed_room_manager
-    set id = #{record.id,jdbcType=BIGINT},
-      fixed_id = #{record.fixedId,jdbcType=BIGINT},
-      room_id = #{record.roomId,jdbcType=VARCHAR},
-      corp_id = #{record.corpId,jdbcType=BIGINT},
-      user_id = #{record.userId,jdbcType=INTEGER},
-      uuid = #{record.uuid,jdbcType=VARCHAR},
-      create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      update_time = #{record.updateTime,jdbcType=TIMESTAMP},
-      deleted = #{record.deleted,jdbcType=BIT}
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.FixedRoomManager">
-    update sd_fixed_room_manager
-    <set>
-      <if test="fixedId != null">
-        fixed_id = #{fixedId,jdbcType=BIGINT},
-      </if>
-      <if test="roomId != null">
-        room_id = #{roomId,jdbcType=VARCHAR},
-      </if>
-      <if test="corpId != null">
-        corp_id = #{corpId,jdbcType=BIGINT},
-      </if>
-      <if test="userId != null">
-        user_id = #{userId,jdbcType=INTEGER},
-      </if>
-      <if test="uuid != null">
-        uuid = #{uuid,jdbcType=VARCHAR},
-      </if>
-      <if test="createTime != null">
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null">
-        update_time = #{updateTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="deleted != null">
-        deleted = #{deleted,jdbcType=BIT},
-      </if>
-    </set>
-    where id = #{id,jdbcType=BIGINT}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.FixedRoomManager">
+        deleted = #{record.deleted,jdbcType=BIT}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="io.openvidu.server.common.pojo.FixedRoomManager">
+        update sd_fixed_room_manager
+        <set>
+            <if test="fixedId != null">
+                fixed_id = #{fixedId,jdbcType=BIGINT},
+            </if>
+            <if test="roomId != null">
+                room_id = #{roomId,jdbcType=VARCHAR},
+            </if>
+            <if test="corpId != null">
+                corp_id = #{corpId,jdbcType=BIGINT},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId,jdbcType=INTEGER},
+            </if>
+            <if test="uuid != null">
+                uuid = #{uuid,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="io.openvidu.server.common.pojo.FixedRoomManager">
     update sd_fixed_room_manager
     set fixed_id = #{fixedId,jdbcType=BIGINT},
       room_id = #{roomId,jdbcType=VARCHAR},
