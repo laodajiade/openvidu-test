@@ -391,12 +391,18 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 rpcConnection.setSessionId(sessionId);
                 UseTime.point("join room p1");
-                if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
-                    UseTime.point("join room p1.1");
-                    sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
-                } else {
-                    log.warn("{} join room timeout", rpcConnection.getUserUuid());
-                    errCode = ErrorCodeEnum.JOIN_ROOM_TIMEOUT;
+                try {
+                    if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
+                        UseTime.point("join room p1.1");
+                        sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                    } else {
+                        log.warn("{} join room timeout", rpcConnection.getUserUuid());
+                        errCode = ErrorCodeEnum.JOIN_ROOM_TIMEOUT;
+                    }
+                } finally {
+                    if (session != null) {
+                        session.getJoinOrLeaveReentrantLock().unlock();
+                    }
                 }
                 UseTime.point("join room p2");
             } while (false);
