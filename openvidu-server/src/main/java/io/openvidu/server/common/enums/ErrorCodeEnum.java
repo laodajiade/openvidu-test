@@ -126,6 +126,7 @@ public enum ErrorCodeEnum {
     REPEAT_DEL_CONTACTS(13079, "此用户不是常用联系人,删除失败"),
     JOIN_ROOM_TIMEOUT(13080, "请稍后再试"),
     APPOINTMENT_STATUS_ERROR(13081, "预约会议状态错误"),
+    SERVICE_NOT_ACTIVATION_OR_EXPIRED(13082, "服务未生效或已到期"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

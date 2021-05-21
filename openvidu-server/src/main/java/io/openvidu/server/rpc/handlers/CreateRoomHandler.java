@@ -70,7 +70,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         RoomIdTypeEnums roomIdType = RoomIdTypeEnums.parse(getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal"));
 
-
         AppointConference appt = null;
         String moderatorUuid = rpcConnection.getUserUuid();
 
@@ -109,6 +108,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         } else {
             roomIdType = RoomIdTypeEnums.calculationRoomType(sessionId);
         }
+
 
         ErrorCodeEnum result;
         if ((result = checkService(rpcConnection, sessionId)) != ErrorCodeEnum.SUCCESS) {
@@ -192,6 +192,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
                 preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
                 preset.setAllowPart(fixedRoom.getAllowPart());
+                preset.setRoomCapacity(fixedRoom.getRoomCapacity());
             }
             sessionManager.setPresetInfo(sessionId, preset);
 
@@ -245,6 +246,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     }
 
     private ErrorCodeEnum generalVerification(RpcConnection rpcConnection) {
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
         //判断发起会议时是否超出企业人数上限
         Collection<Session> sessions = sessionManager.getSessions();
         if (Objects.nonNull(sessions)) {
@@ -255,16 +257,19 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 }
             });
             //query sd_corporation info
-            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
             if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
                 return ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED;
             }
         }
         //判断通话时长是否不足
-        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
         if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
             return ErrorCodeEnum.REMAINDER_DURATION_USE_UP;
         }
+
+        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
+            return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;
+        }
+
         return ErrorCodeEnum.SUCCESS;
     }
 

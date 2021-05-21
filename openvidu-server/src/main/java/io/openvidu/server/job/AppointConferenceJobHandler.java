@@ -18,10 +18,7 @@ import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
 import io.openvidu.server.common.manage.RoomManage;
-import io.openvidu.server.common.pojo.AppointConference;
-import io.openvidu.server.common.pojo.AppointJob;
-import io.openvidu.server.common.pojo.AppointParticipant;
-import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.*;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
@@ -29,6 +26,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import io.openvidu.server.service.AppointJobService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -249,7 +247,9 @@ public class AppointConferenceJobHandler {
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
                 sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
                 if (RoomIdTypeEnums.calculationRoomType(appointConference.getRoomId()) == RoomIdTypeEnums.fixed) {
-                    preset.setAllowRecord(fixedRoomMapper.selectByRoomId(appointConference.getRoomId()).getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+                    FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
+                    preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+                    preset.setRoomCapacity(fixedRoom.getRoomCapacity());
                 }
 
                 // change the conference status
