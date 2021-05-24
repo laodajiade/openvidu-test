@@ -38,7 +38,7 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
     private String kmsUris;
 
     @Resource
-    private KmsRegistrationMapper kmsRegistrationMapper;
+    protected KmsRegistrationMapper kmsRegistrationMapper;
 
     @Override
     public List<String> getAllRegisterKms() throws Exception {
@@ -75,10 +75,7 @@ public class KmsRegistrationManageImpl implements KmsRegistrationManage {
             kmsRegistrations.forEach(kmsRegistration -> {
                 String uri = kmsRegistration.getKmsUri().endsWith("/") ?
                         kmsRegistration.getKmsUri() + URI_SUFFIX : kmsRegistration.getKmsUri() + "/" + URI_SUFFIX;
-                if (!kmsUrisSet.contains(uri = eraseIllegalCharacter(uri))) {
-                    recentRegisterKms.add(uri);
-                    kmsUrisSet.add(uri);
-                }
+                recentRegisterKms.add(eraseIllegalCharacter(uri));
             });
         }
         return recentRegisterKms;

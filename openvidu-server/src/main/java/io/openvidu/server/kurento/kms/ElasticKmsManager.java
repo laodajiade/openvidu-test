@@ -17,18 +17,25 @@
 
 package io.openvidu.server.kurento.kms;
 
+import io.openvidu.server.common.dao.KmsRegistrationMapper;
+import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.exception.NoSuchKmsException;
+import io.openvidu.server.kurento.core.DeliveryKmsManager;
+import io.openvidu.server.kurento.core.KurentoSession;
 import org.kurento.client.KurentoClient;
 import org.kurento.commons.exception.KurentoException;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ElasticKmsManager extends KmsManager {
 
-    private final Map<String, Kms> availableKmss = new ConcurrentHashMap<>();
+    private final Map<String, Kms> kmsMap = new ConcurrentHashMap<>();
 
-    private final Map<String, Kms> unavailableKmss = new ConcurrentHashMap<>();
+    @Resource
+    protected KmsRegistrationMapper kmsRegistrationMapper;
 
     @Override
     public List<Kms> initializeKurentoClients(List<String> kmsUris) {
@@ -37,6 +44,7 @@ public class ElasticKmsManager extends KmsManager {
             Kms kms = initializeClient(kmsUri);
             if (Objects.nonNull(kms)) {
                 kmsList.add(kms);
+                kmsMap.put(kmsUri, kms);
             }
         }
         return kmsList;
@@ -57,6 +65,52 @@ public class ElasticKmsManager extends KmsManager {
 
         kms.setKurentoClient(kClient);
         this.addKms(kms);
+        return kms;
+    }
+
+    @Override
+    public void reloadKms() throws Exception {
+        List<String> recentRegisterKms = kmsRegistrationManage.getRecentRegisterKms();
+
+        if (recentRegisterKms.isEmpty()) {
+            return;
+        }
+
+        Set<String> existKmss = new HashSet<>(kmsMap.keySet());
+
+        for (String kmsUri : recentRegisterKms) {
+            if (existKmss.remove(kmsUri)) {
+                continue;
+            }
+            Kms kms = initializeClient(kmsUri);
+            kmsMap.put(kmsUri, kms);
+        }
+
+        for (String kmsUri : existKmss) {
+            Kms kms = kmsMap.remove(kmsUri);
+            removeKms(kms.getId());
+        }
+
+    }
+
+    @Override
+    public synchronized Kms removeKms(String kmsId) {
+        Kms kms = super.removeKms(kmsId);
+        Collection<Session> sessions = sessionManager.getSessions();
+        for (Session session : sessions) {
+            KurentoSession kSession = (KurentoSession) session;
+            if (kSession.getKms().getId().equals(kms.getId())) {
+                log.info("close session {} by remove kms from reload kms", session.getRuid());
+                sessionManager.closeSession(kSession.getSessionId(), EndReason.sessionClosedByServer);
+            }
+            for (DeliveryKmsManager deliveryKmsManager : kSession.getDeliveryKmsManagers()) {
+                if (deliveryKmsManager.getKms().getId().equals(kms.getId())) {
+                    log.info("close session {} by remove kms in delivery kms from reload kms", session.getRuid());
+                    sessionManager.closeSession(kSession.getSessionId(), EndReason.sessionClosedByServer);
+                }
+            }
+        }
+        kms.getKurentoClient().destroy();
         return kms;
     }
 
@@ -86,8 +140,6 @@ public class ElasticKmsManager extends KmsManager {
     @Override
     protected void connected(String kmsId) {
         super.connected(kmsId);
-        unavailableKmss.remove(kmsId);
-        availableKmss.put(kmsId, kmss.get(kmsId));
     }
 
     @Override

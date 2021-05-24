@@ -19,12 +19,9 @@ package io.openvidu.server.rest;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.kms.EndpointLoadManager;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.kurento.kms.KmsManager;
-import io.openvidu.server.recording.service.RecordingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +70,17 @@ public class KmsRestController {
 
         log.info("GET /kms/info resp content:{}", json.toString());
         return new ResponseEntity<>(json.toString(), getResponseHeaders(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/reload", method = RequestMethod.GET)
+    public ResponseEntity<?> kmsReload() {
+        log.info("REST API: GET /kms/reload");
+        try {
+            kmsManager.reloadKms();
+        } catch (Exception e) {
+            log.error("kmsReload error", e);
+        }
+        return kmsInfo();
     }
 
     private HttpHeaders getResponseHeaders() {

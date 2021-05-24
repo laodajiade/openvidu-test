@@ -315,9 +315,9 @@
     and sc.status = 2
   </select>
 
-  <select id="countProcessPartHistory" parameterType="java.lang.String">
+  <select id="countProcessPartHistory" parameterType="java.lang.String" resultType="INTEGER">
     select
-    count(*)
+    count(*) cnt
     from sd_conf_part_history scph INNER JOIN sd_conference sc on scph.ruid = sc.ruid
     where scph.end_time is null
     and scph.status = 0
