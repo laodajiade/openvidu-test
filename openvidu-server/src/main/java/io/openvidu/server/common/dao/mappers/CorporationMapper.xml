@@ -171,7 +171,7 @@
         LEFT JOIN sd_prepaid_package spp on spc.package_id = spp.id
         LEFT JOIN sd_corporation sc on spc.used_corp_id = sc.id
         LEFT JOIN sd_user su on spc.used_user_id = su.id
-        WHERE sc.project = #{corpId} AND spp.package_type = 1 ]]>
+        WHERE sc.project = #{corpId} AND spp.package_type = 1 AND spp.expire_date >= NOW() ]]>
     </select>
 
 </mapper>
