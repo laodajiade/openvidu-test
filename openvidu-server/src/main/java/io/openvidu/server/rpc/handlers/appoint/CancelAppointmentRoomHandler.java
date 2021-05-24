@@ -42,9 +42,6 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
     private ConferenceMapper conferenceMapper;
 
     @Resource
-    private ConferencePartHistoryMapper conferencePartHistoryMapper;
-
-    @Resource
     private DeleteConferenceHistoryHandler deleteConferenceHistoryHandler;
 
     @Autowired

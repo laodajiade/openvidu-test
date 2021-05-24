@@ -1,18 +1,29 @@
 package io.openvidu.server.common.broker;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.dao.AppointConferenceMapper;
+import io.openvidu.server.common.dao.FixedRoomMapper;
+import io.openvidu.server.common.pojo.AppointConference;
+import io.openvidu.server.common.pojo.AppointConferenceExample;
+import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.Session;
+import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.UrgedPeopleToEndHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author chosongi
@@ -34,25 +45,34 @@ public class ToOpenviduNotifyHandler {
     @Resource
     private CacheManage cacheManage;
 
-    @Value("${device.upload.url}")
-    private String devUploadUrl;
+    @Autowired
+    FixedRoomExpiredHandler fixedRoomExpiredHandler;
+
+    private
+
+    ExecutorService executorService = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("ToOpenviduNotifyHandler-thread-%d").setDaemon(true).build());
 
     void notify(String message) {
-        try {
-            JsonObject obj = gson.fromJson(message, JsonObject.class);
-            String method = obj.get("method").getAsString();
-            JsonObject params = obj.getAsJsonObject("params");
+        log.info("channel:to:openvidu recv {}", message);
+        JsonObject obj = gson.fromJson(message, JsonObject.class);
+        String method = obj.get("method").getAsString();
+        JsonObject params = obj.getAsJsonObject("params");
 
-            switch (method) {
-                case ProtocolElements.URGED_PEOPLE_TO_END_METHOD:
-                    urgedPeopleToEndHandler.notifyToModerator(params);
-                    break;
+        executorService.execute(() -> {
+            try {
+                switch (method) {
+                    case ProtocolElements.URGED_PEOPLE_TO_END_METHOD:
+                        urgedPeopleToEndHandler.notifyToModerator(params);
+                        break;
+                    case "fixedRoomExpired":
+                        fixedRoomExpiredHandler.processor(params);
+                }
+            } catch (Exception e) {
+                log.error("ToOpenviduNotifyHandler error", e);
             }
-
-        } catch (Exception e) {
-            log.error("ToOpenviduNotifyHandler error", e);
-        }
-
+        });
 
     }
+
+
 }
