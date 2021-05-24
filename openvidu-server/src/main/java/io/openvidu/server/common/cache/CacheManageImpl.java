@@ -280,28 +280,6 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
-    public void delAccessInParticipantPrivateId(String uuid) {
-        String key = CacheKeyConstants.ACCESSIN_PRIVATEID_PREFIX_KEY + uuid;
-        tokenStringTemplate.delete(key);
-    }
-
-
-    public boolean getCorpExpired(String project) {
-        return tokenStringTemplate.opsForSet().isMember("corp_expired_col", project);
-    }
-
-    public void setCorpExpired(Set<String> projects) {
-        dropCorpExpiredCollect();
-        String key = "corp_expired_col";
-        tokenStringTemplate.opsForSet().add(key, projects.toArray(new String[0]));
-    }
-
-    public void dropCorpExpiredCollect(){
-        String key = "corp_expired_col";
-        tokenStringTemplate.delete(key);
-    }
-
-    @Override
     public void publish(String channel, String message) {
         tokenStringTemplate.convertAndSend(channel, message);
     }

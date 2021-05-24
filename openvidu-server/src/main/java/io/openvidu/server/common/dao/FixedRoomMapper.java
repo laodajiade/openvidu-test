@@ -41,6 +41,10 @@ public interface FixedRoomMapper {
     @ResultMap("BaseResultMap")
     List<FixedRoom> getFixedRoomList(@Param("userId") long userId, @Param("corpId") long corpId);
 
+    @Select("select a.* from sd_fixed_room a where a.deleted = 0 and a.status != 0 and a.corp_id = #{corpId}")
+    @ResultMap("BaseResultMap")
+    List<FixedRoom> getCorpFixedRoomList(@Param("corpId") long corpId);
+
     @Select("select * from sd_fixed_room where room_id = #{roomId}")
     @ResultMap("BaseResultMap")
     FixedRoom selectByRoomId(String roomId);

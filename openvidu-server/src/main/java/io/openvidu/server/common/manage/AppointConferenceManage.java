@@ -10,6 +10,8 @@ public interface AppointConferenceManage {
 
     boolean isConflict(AppointmentRoomVO vo);
 
+    boolean isConflict(String ruid, String roomId, Date startTime, Date endTime);
+
     void insert(AppointmentRoomVO params, RpcConnection rpcConnection);
 
     AppointConference getByRuid(String ruid);

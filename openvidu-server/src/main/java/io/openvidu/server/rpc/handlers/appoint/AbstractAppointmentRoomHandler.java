@@ -308,6 +308,10 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
             return ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED;
         }
+
+        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
+            return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;
+        }
         return ErrorCodeEnum.SUCCESS;
     }
 }

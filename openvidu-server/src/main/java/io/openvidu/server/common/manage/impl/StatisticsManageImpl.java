@@ -70,11 +70,11 @@ public class StatisticsManageImpl implements StatisticsManage {
     @Override
     public Map<String, Integer> statisticsRemainderDuration(String project) {
 
-        Map<String,Integer> map = new HashMap<>(2);
+        Map<String, Integer> map = new HashMap<>(2);
         int remainderDuration = cacheManage.getCorpRemainDuration(project);
         if (remainderDuration <= 0) {
             Corporation corporation = corporationMapper.selectByCorpProject(project);
-            cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
+            cacheManage.setCorpRemainDuration(project, corporation.getRemainderDuration());
             remainderDuration = corporation.getRemainderDuration();
         }
         if (remainderDuration > 0) {
@@ -83,24 +83,21 @@ public class StatisticsManageImpl implements StatisticsManage {
         if (remainderDuration >= durationLessThanTenHour) {
             cacheManage.delCorpRemainDurationLessTenHour(project);
         }
-        map.put("remainderHour",remainderDuration/60);
-        map.put("remainderMinute",remainderDuration%60);
-        List<ConferencePartHistory> conferencePartHistories = conferencePartHistoryMapper.selectProcessPartHistory(project);
-        if (!CollectionUtils.isEmpty(conferencePartHistories)) {
-            int totalUsedDuration = 0;
-            for (ConferencePartHistory conferencePartHistory : conferencePartHistories) {
-                totalUsedDuration ++;
-            }
+        map.put("remainderHour", remainderDuration / 60);
+        map.put("remainderMinute", remainderDuration % 60);
+        int count = conferencePartHistoryMapper.countProcessPartHistory(project);
+        if (count >= 0) {
+            int totalUsedDuration = count;
             int remainderTotalDuration = remainderDuration - totalUsedDuration;
-            log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}",project, totalUsedDuration, remainderTotalDuration);
-            int remainderHour = remainderTotalDuration/60;
-            int remainderMinute = remainderTotalDuration%60;
-            cacheManage.setCorpRemainDuration(project,remainderTotalDuration);
-            map.put("remainderHour",remainderHour);
-            map.put("remainderMinute",remainderMinute);
+            log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}", project, totalUsedDuration, remainderTotalDuration);
+            int remainderHour = remainderTotalDuration / 60;
+            int remainderMinute = remainderTotalDuration % 60;
+            cacheManage.setCorpRemainDuration(project, remainderTotalDuration);
+            map.put("remainderHour", remainderHour);
+            map.put("remainderMinute", remainderMinute);
         } else {
             Corporation corporation = corporationMapper.selectByCorpProject(project);
-            cacheManage.setCorpRemainDuration(project,corporation.getRemainderDuration());
+            cacheManage.setCorpRemainDuration(project, corporation.getRemainderDuration());
         }
         return map;
     }

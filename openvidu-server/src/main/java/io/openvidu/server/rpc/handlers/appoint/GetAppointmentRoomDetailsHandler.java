@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
+import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.*;
@@ -38,6 +39,9 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
 
     @Resource
     private ConferencePartHistoryMapper conferencePartHistoryMapper;
+
+    @Autowired
+    private FixedRoomMapper fixedRoomMapper;
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
@@ -116,7 +120,13 @@ public class GetAppointmentRoomDetailsHandler extends ExRpcAbstractHandler<JsonO
             appointConfObj.addProperty("password", appointConference.getPassword());
             appointConfObj.addProperty("moderatorPassword", appointConference.getModeratorPassword());
             appointConfObj.addProperty("status", appointConference.getStatus());
-            appointConfObj.addProperty("roomIdType", RoomIdTypeEnums.calculationRoomType(appointConference.getRoomId()).name());
+            RoomIdTypeEnums roomIdType = RoomIdTypeEnums.calculationRoomType(appointConference.getRoomId());
+            appointConfObj.addProperty("roomIdType", roomIdType.name());
+
+            if (roomIdType== RoomIdTypeEnums.fixed) {
+                FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
+                appointConfObj.addProperty("roomName", fixedRoom.getRoomName());
+            }
 
             appointConfObj.add("participants", constructAppointPartsInfo(parts));
 

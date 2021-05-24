@@ -44,7 +44,7 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         return list.isEmpty() ? null : list.get(0);
     }
 
-    //
+
     public boolean isConflict(AppointmentRoomVO vo) {
 
         // 判断会议是否冲突
@@ -54,6 +54,18 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setEndTime(DateUtil.getEndDate(ac.getStartTime(), vo.getDuration(), Calendar.MINUTE));
         ac.setRuid(vo.getRuid());
 
+
+        List<AppointConference> list = appointConferenceMapper.getConflictAppointConferenceList(ac);
+        return Objects.nonNull(list) && !list.isEmpty();
+    }
+
+    public boolean isConflict(String ruid, String roomId, Date startTime, Date endTime) {
+        // 判断会议是否冲突
+        AppointConference ac = new AppointConference();
+        ac.setRoomId(roomId);
+        ac.setStartTime(startTime);
+        ac.setEndTime(endTime);
+        ac.setRuid(ruid);
 
         List<AppointConference> list = appointConferenceMapper.getConflictAppointConferenceList(ac);
         return Objects.nonNull(list) && !list.isEmpty();

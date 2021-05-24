@@ -1,12 +1,12 @@
 package io.openvidu.server.common.dao;
 
-import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.UserCorpInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -39,8 +39,28 @@ public interface CorporationMapper {
 
     /**
      * 查询企业是否充值过
+     *
      * @param project
      * @return
      */
     boolean selectIsRechargeConcurrent(String project);
+
+    /**
+     * 是否在并发服务期间
+     */
+    default boolean isConcurrentServiceDuration(long corpId) {
+        Corporation corporation = selectByPrimaryKey(corpId);
+        return isConcurrentServiceDuration(corporation);
+    }
+
+    /**
+     * 是否在并发服务期间
+     */
+    default boolean isConcurrentServiceDuration(Corporation corporation) {
+        if (corporation == null) {
+            return false;
+        }
+        return corporation.getActivationDate().isBefore(LocalDateTime.now()) && corporation.getExpireDate().isAfter(LocalDateTime.now());
+    }
+
 }

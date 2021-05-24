@@ -315,12 +315,13 @@
     and sc.status = 2
   </select>
 
-  <select id="selectProcessPartHistory" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="countProcessPartHistory" parameterType="java.lang.String">
     select
-    <include refid="Base_Column_List" />
-    from sd_conf_part_history scph
+    count(*)
+    from sd_conf_part_history scph INNER JOIN sd_conference sc on scph.ruid = sc.ruid
     where scph.end_time is null
     and scph.status = 0
+    and sc.room_id_type != 'fixed'
     and scph.project = #{project,jdbcType=VARCHAR}
   </select>
 

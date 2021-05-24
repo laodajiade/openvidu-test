@@ -119,3 +119,16 @@ Content-Type: application/json
   "subject": "fixed appt{{$randomInt}}"
 }
 > {% client.global.set("global.ruid",response.body.result.ruid) %}
+
+###
+# 创建固定预约会议室
+POST http://localhost:4443/dev/test?id={{uuid}}&method=changeMeetingRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ruid": "appt-5091d7dc411748e98627c6a782b99e0a",
+  "roomId": "",
+  "roomIdType": "random"
+}
