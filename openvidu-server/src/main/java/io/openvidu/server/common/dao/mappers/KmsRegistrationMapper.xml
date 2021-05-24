@@ -14,5 +14,6 @@
       select
       <include refid="Base_Column_List" />
       from sd_kms_registration
+      where `status`=1
     </select>
 </mapper>
