@@ -178,12 +178,13 @@
         where user_id = #{userId,jdbcType=BIGINT} AND group_id = #{groupId,jdbcType=BIGINT}
   </delete>
 
-  <select id="selectByCorpIds" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.Group">
+  <select id="selectByCorpIds" parameterType="java.util.Map" resultType="io.openvidu.server.common.pojo.Group">
       select g.id,g.group_name groupName,count(ug.group_id) numOfPeople
       from sd_group g
       left join sd_user_group ug
       on g.id = ug.group_id
       where g.corp_id =  #{corpId,jdbcType=BIGINT}
+      AND ug.group_id IN (SELECT group_id from sd_user_group  WHERE user_id  = #{userId})
       group by g.id,g.group_name
       order by g.sort_number asc
 </select>

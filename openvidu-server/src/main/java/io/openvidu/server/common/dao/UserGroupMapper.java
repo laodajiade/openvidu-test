@@ -43,7 +43,7 @@ public interface UserGroupMapper {
 
     int updateByPrimaryKey(UserGroup record);
 
-    List<Group> selectByCorpIds(Long corpId);
+    List<Group> selectByCorpIds(Map<String,Object> map);
 
     /**
      * 查询群组中的用户是否存在

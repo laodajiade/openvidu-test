@@ -7,18 +7,13 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -68,19 +63,20 @@ public class InviteCompensationManage {
         Map inviteInfo = cacheManage.getInviteInfo(roomId);
         if (!inviteInfo.isEmpty()) {
             for (Object key : inviteInfo.keySet()) {
-                String account  = (String) key;
+                String account = (String) key;
                 InviteCompensationScheduler scheduler = map.remove(account);
                 if (!Objects.isNull(scheduler)) {
                     log.info("Close Room Disable Invite Compensation account:{}", account);
                     scheduler.disable();
                 }
-                String participantPrivateId = cacheManage.getAccessInParticipantPrivateId(account);
-                log.info("Close Room cancelInvite participantPrivateId:{}",participantPrivateId);
-                if (StringUtils.isNotEmpty(participantPrivateId)) {
-                    log.info("Close Room CANCELINVITE_NOTIFY_METHOD account:{}", account);
-                    notificationService.sendNotification(participantPrivateId,
+
+                Optional<RpcConnection> connectionOptional = notificationService.getRpcConnections().stream()
+                        .filter(c -> c.getUserUuid().equals(account)).findFirst();
+                connectionOptional.ifPresent(rpcConnection -> {
+                    log.info("Close Room CANCEL_INVITE_NOTIFY_METHOD account:{}", account);
+                    notificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
                             ProtocolElements.CANCELINVITE_NOTIFY_METHOD, new JsonObject());
-                }
+                });
             }
         }
     }
