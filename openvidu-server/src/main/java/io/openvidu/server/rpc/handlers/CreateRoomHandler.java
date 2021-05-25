@@ -114,6 +114,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         if ((result = checkService(rpcConnection, sessionId)) != ErrorCodeEnum.SUCCESS) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, result);
+            return;
         }
 
         Optional<Conference> processConference;

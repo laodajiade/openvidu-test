@@ -1,5 +1,6 @@
 package io.openvidu.server.domain.vo;
 
+import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import lombok.AllArgsConstructor;
@@ -36,4 +37,7 @@ public class AppointmentRoomVO {
     private Long userId;
 
     private RoomIdTypeEnums roomIdType;
+
+
+    private AccessTypeEnum accessType;
 }

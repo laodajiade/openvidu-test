@@ -23,10 +23,9 @@ public class UpdateUsernameHandler extends RpcAbstractHandler {
         User update = new User();
         update.setId(rpcConnection.getUserId());
         update.setUsername(username);
-        update.setUuid(rpcConnection.getUserUuid());
-        userManage.updateUserInfo(update);
-
         rpcConnection.setUsername(username);
+
+        userManage.updateUserInfo(update);
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

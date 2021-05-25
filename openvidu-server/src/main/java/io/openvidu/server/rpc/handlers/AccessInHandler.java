@@ -165,7 +165,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setUserId(userId);
         rpcConnection.setDeviceVersion(deviceVersion);
         Corporation corporation = corporationMapper.selectByCorpProject(project);
-        rpcConnection.setCorpId(corporation.getId());
+        rpcConnection.setCorpId(UserType.tourist.equals(userType) ? 0L : corporation.getId());
         if (StringUtils.isEmpty(rpcConnection.getSerialNumber())) {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : "用户");
         }
@@ -175,7 +175,6 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setProject(project);
 
         //save cache privateId
-        cacheManage.saveAccessInParticipantPrivateId(uuid, rpcConnection.getParticipantPrivateId());
         log.info("access in relation privateId={},uuid={}", rpcConnection.getParticipantPrivateId(), uuid);
         // update user online status in cache
         if (AccessTypeEnum.terminal.equals(accessType)) {
@@ -187,9 +186,10 @@ public class AccessInHandler extends RpcAbstractHandler {
                     .terminalType(terminalType.getDesc()).serialNumber(deviceSerialNumber).version(deviceVersion).project(project).build());
         }
         object.addProperty("userName", org.apache.commons.lang.StringUtils.isEmpty(deviceName) ? !StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : null : deviceName);
-        object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
-        object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
-
+        if (!UserType.tourist.equals(userType)) {
+            object.addProperty("expireDate", corporation.getExpireDate().format(DateTimeFormatter.ofPattern(DateUtil.DEFAULT_YEAR_MONTH_DAY)));
+            object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
+        }
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }

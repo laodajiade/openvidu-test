@@ -266,18 +266,6 @@ public class CacheManageImpl implements CacheManage {
         return tokenStringTemplate.opsForHash().entries(key);
     }
 
-    @Override
-    public void saveAccessInParticipantPrivateId(String uuid, String privateId) {
-        String key = CacheKeyConstants.ACCESSIN_PRIVATEID_PREFIX_KEY + uuid;
-        tokenStringTemplate.opsForValue().set(key, privateId);
-        tokenStringTemplate.expire(key, CacheKeyConstants.DEFAULT_CONFERENCE_EXPIRE, TimeUnit.SECONDS);
-    }
-
-    @Override
-    public String getAccessInParticipantPrivateId(String uuid) {
-        String key = CacheKeyConstants.ACCESSIN_PRIVATEID_PREFIX_KEY + uuid;
-        return tokenStringTemplate.opsForValue().get(key);
-    }
 
     @Override
     public void publish(String channel, String message) {

@@ -43,7 +43,7 @@
     select
     <include refid="Base_Column_List" />
     from sd_corporation
-    where #{expire} > expire_date
+    where now() > expire_date
   </select>
 
   <select id="listByCorpRecordExpireDay" resultType="io.openvidu.server.common.pojo.Corporation">

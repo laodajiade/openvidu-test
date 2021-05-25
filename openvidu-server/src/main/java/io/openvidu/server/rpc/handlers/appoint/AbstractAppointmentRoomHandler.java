@@ -12,6 +12,8 @@ import io.openvidu.server.common.dao.CallHistoryMapper;
 import io.openvidu.server.common.dao.FixedRoomManagerMapper;
 import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.dao.JpushMessageMapper;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.ConferenceJobManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
@@ -126,7 +128,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
                 : StringUtils.isEmpty(creator.getUsername()) ? creator.getDeviceName() : creator.getUsername();
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_CREATOR_PARAM, userName);
         notificationService.getRpcConnections().forEach(rpcConnection1 -> {
-            if (!Objects.equals(rpcConnection1.getUserId(), vo.getUserId()) && uuidSet.contains(rpcConnection1.getUserUuid())) {
+            if (uuidSet.contains(rpcConnection1.getUserUuid()) && !(Objects.equals(rpcConnection1.getUserId(), vo.getUserId()) && vo.getAccessType() == AccessTypeEnum.terminal)) {
                 notificationService.sendNotification(rpcConnection1.getParticipantPrivateId(), ProtocolElements.APPOINTMENT_CONFERENCE_CREATED_METHOD, jsonObject);
             }
         });
