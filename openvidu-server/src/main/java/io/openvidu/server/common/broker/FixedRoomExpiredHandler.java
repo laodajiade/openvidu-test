@@ -27,12 +27,16 @@ public class FixedRoomExpiredHandler {
     @Autowired
     private CancelAppointmentRoomHandler cancelAppointmentRoomHandler;
 
+
+    @Autowired
+    private CorpServiceExpiredNotifyHandler corpServiceExpiredNotifyHandler;
+
     public void processor(JsonObject params) {
         String roomId = params.get("roomId").getAsString();
 
         Session session = sessionManager.getSession(roomId);
         if (session != null) {
-            sessionManager.closeSession(roomId, EndReason.fixedRoomServiceExpired);
+            corpServiceExpiredNotifyHandler.closeRoomAndNotify(session, EndReason.fixedRoomServiceExpired);
         }
 
         AppointConferenceExample example = new AppointConferenceExample();

@@ -80,26 +80,30 @@ public class CorpServiceExpiredNotifyHandler {
         for (Session session : sessions) {
             // close room and notify
             if (Objects.equals(project, session.getConference().getProject())) {
-                JsonObject params = new JsonObject();
-                params.addProperty("reason", "serviceExpired");
-
-                Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
-
-                participants.forEach(p -> {
-                    if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                        return;
-                    }
-                    notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
-                    RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
-                    if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
-                        cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
-                    }
-                });
-
-                sessionManager.stopRecording(session.getSessionId());
-                sessionManager.closeSession(session.getSessionId(), EndReason.serviceExpired);
+                closeRoomAndNotify(session, EndReason.serviceExpired);
             }
         }
+    }
+
+    public void closeRoomAndNotify(Session session, EndReason reason) {
+        JsonObject params = new JsonObject();
+        params.addProperty("reason", reason.name());
+
+        Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
+
+        participants.forEach(p -> {
+            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+                return;
+            }
+            notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
+            RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
+            if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
+                cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
+            }
+        });
+
+        sessionManager.stopRecording(session.getSessionId());
+        sessionManager.closeSession(session.getSessionId(), EndReason.serviceExpired);
     }
 
 }
