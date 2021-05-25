@@ -1,27 +1,16 @@
 package io.openvidu.server.job;
 
-import com.google.gson.JsonObject;
-import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.broker.CorpServiceExpiredNotifyHandler;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.CorporationMapper;
-import io.openvidu.server.common.enums.DeviceStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Corporation;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Component
 public class CorpExpireSchedule {
@@ -42,7 +31,7 @@ public class CorpExpireSchedule {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void corpExpiredNotify() {
-        List<Corporation> corporations = corporationMapper.listCorpExpire(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
+        List<Corporation> corporations = corporationMapper.listCorpExpire();
         corporations.forEach(corp -> corpServiceExpiredNotifyHandler.notify(corp.getId().toString()));
     }
 

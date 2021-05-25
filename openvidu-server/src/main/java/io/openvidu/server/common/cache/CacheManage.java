@@ -7,7 +7,6 @@ import io.openvidu.server.rpc.RpcConnection;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author geedow
@@ -74,10 +73,6 @@ public interface CacheManage {
     void saveInviteInfo(String sessionId, String entryValue);
 
     Map getInviteInfo(String sessionId);
-
-    void saveAccessInParticipantPrivateId(String uuid,String privateId);
-
-    String getAccessInParticipantPrivateId(String uuid);
 
     void publish(String channel, String message);
 
