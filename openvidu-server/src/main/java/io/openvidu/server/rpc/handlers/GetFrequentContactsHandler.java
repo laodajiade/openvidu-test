@@ -7,16 +7,20 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.OftenContactsMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
 import io.openvidu.server.common.pojo.UserDevice;
+import io.openvidu.server.common.pojo.dto.HiddenSpecifyVisibleDTO;
 import io.openvidu.server.common.pojo.vo.OftenContactsVo;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,15 +34,30 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
 
     @Resource
     private OftenContactsMapper oftenContactsMapper;
-
+    @Autowired
+    private HiddenSpecifyVisibleManage hiddenSpecifyVisibleManage;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         boolean isChooseAll = getBooleanOptionalParam(request, "isChooseAll");
         int pageNum = isChooseAll ? 1 : getIntParam(request, ProtocolElements.PAGENUM);
         int pageSize = isChooseAll ? Integer.MAX_VALUE : getIntParam(request, ProtocolElements.PAGESIZE);
-        PageHelper.startPage(pageNum, pageSize);
+
         JSONObject resp = new JSONObject();
+        resp.put(ProtocolElements.PAGENUM, pageNum);
+        resp.put(ProtocolElements.PAGESIZE, pageSize);
+
+        HiddenSpecifyVisibleDTO specifyVisibleRule = hiddenSpecifyVisibleManage.getSpecifyVisibleRule(rpcConnection.getUserUuid(),
+                rpcConnection.getUserId(), rpcConnection.getCorpId());
+        // 全部隐藏，直接返回空列表
+        if (specifyVisibleRule.getType() == 0) {
+            resp.put(ProtocolElements.TOTAL, 0);
+            resp.put(ProtocolElements.PAGES, 0);
+            resp.put(ProtocolElements.GET_GROUP_INFO_ACCOUNT_LIST, new ArrayList<>(0));
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resp);
+        }
+
+        PageHelper.startPage(pageNum, pageSize);
         List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(rpcConnection.getUserId());
         if (!CollectionUtils.isEmpty(oftenContactsList)) {
             for (OftenContactsVo oftenContactsVo : oftenContactsList) {
@@ -56,11 +75,10 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
             }
         }
         PageInfo<OftenContactsVo> pageInfo = new PageInfo<>(oftenContactsList);
-        resp.put(ProtocolElements.PAGENUM, pageNum);
-        resp.put(ProtocolElements.PAGESIZE, pageSize);
         resp.put(ProtocolElements.TOTAL, pageInfo.getTotal());
         resp.put(ProtocolElements.PAGES, pageInfo.getPages());
         resp.put(ProtocolElements.GET_GROUP_INFO_ACCOUNT_LIST, pageInfo.getList());
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resp);
+
+        notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resp);
     }
 }
