@@ -375,52 +375,62 @@ public class FixedRoomExample {
             return (Criteria) this;
         }
 
-        public Criteria andShortIdEqualTo(Integer value) {
+        public Criteria andShortIdEqualTo(String value) {
             addCriterion("short_id =", value, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdNotEqualTo(Integer value) {
+        public Criteria andShortIdNotEqualTo(String value) {
             addCriterion("short_id <>", value, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdGreaterThan(Integer value) {
+        public Criteria andShortIdGreaterThan(String value) {
             addCriterion("short_id >", value, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdGreaterThanOrEqualTo(Integer value) {
+        public Criteria andShortIdGreaterThanOrEqualTo(String value) {
             addCriterion("short_id >=", value, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdLessThan(Integer value) {
+        public Criteria andShortIdLessThan(String value) {
             addCriterion("short_id <", value, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdLessThanOrEqualTo(Integer value) {
+        public Criteria andShortIdLessThanOrEqualTo(String value) {
             addCriterion("short_id <=", value, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdIn(List<Integer> values) {
+        public Criteria andShortIdLike(String value) {
+            addCriterion("short_id like", value, "shortId");
+            return (Criteria) this;
+        }
+
+        public Criteria andShortIdNotLike(String value) {
+            addCriterion("short_id not like", value, "shortId");
+            return (Criteria) this;
+        }
+
+        public Criteria andShortIdIn(List<String> values) {
             addCriterion("short_id in", values, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdNotIn(List<Integer> values) {
+        public Criteria andShortIdNotIn(List<String> values) {
             addCriterion("short_id not in", values, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdBetween(Integer value1, Integer value2) {
+        public Criteria andShortIdBetween(String value1, String value2) {
             addCriterion("short_id between", value1, value2, "shortId");
             return (Criteria) this;
         }
 
-        public Criteria andShortIdNotBetween(Integer value1, Integer value2) {
+        public Criteria andShortIdNotBetween(String value1, String value2) {
             addCriterion("short_id not between", value1, value2, "shortId");
             return (Criteria) this;
         }
@@ -1172,6 +1182,66 @@ public class FixedRoomExample {
 
         public Criteria andAllowRecordNotBetween(Boolean value1, Boolean value2) {
             addCriterion("allow_record not between", value1, value2, "allowRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordIsNull() {
+            addCriterion("support_record is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordIsNotNull() {
+            addCriterion("support_record is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordEqualTo(Boolean value) {
+            addCriterion("support_record =", value, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordNotEqualTo(Boolean value) {
+            addCriterion("support_record <>", value, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordGreaterThan(Boolean value) {
+            addCriterion("support_record >", value, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordGreaterThanOrEqualTo(Boolean value) {
+            addCriterion("support_record >=", value, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordLessThan(Boolean value) {
+            addCriterion("support_record <", value, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordLessThanOrEqualTo(Boolean value) {
+            addCriterion("support_record <=", value, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordIn(List<Boolean> values) {
+            addCriterion("support_record in", values, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordNotIn(List<Boolean> values) {
+            addCriterion("support_record not in", values, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordBetween(Boolean value1, Boolean value2) {
+            addCriterion("support_record between", value1, value2, "supportRecord");
+            return (Criteria) this;
+        }
+
+        public Criteria andSupportRecordNotBetween(Boolean value1, Boolean value2) {
+            addCriterion("support_record not between", value1, value2, "supportRecord");
             return (Criteria) this;
         }
 

@@ -6,7 +6,7 @@
     <result column="room_name" jdbcType="VARCHAR" property="roomName" />
     <result column="room_id" jdbcType="VARCHAR" property="roomId" />
     <result column="corp_id" jdbcType="BIGINT" property="corpId" />
-    <result column="short_id" jdbcType="INTEGER" property="shortId" />
+    <result column="short_id" jdbcType="CHAR" property="shortId" />
     <result column="card_id" jdbcType="BIGINT" property="cardId" />
     <result column="room_capacity" jdbcType="INTEGER" property="roomCapacity" />
     <result column="password" jdbcType="VARCHAR" property="password" />
@@ -19,6 +19,7 @@
     <result column="allow_part" jdbcType="INTEGER" property="allowPart" />
     <result column="status" jdbcType="INTEGER" property="status" />
     <result column="allow_record" jdbcType="BIT" property="allowRecord" />
+    <result column="support_record" jdbcType="BIT" property="supportRecord" />
     <result column="deleted" jdbcType="BIT" property="deleted" />
   </resultMap>
   <sql id="Example_Where_Clause">
@@ -82,7 +83,7 @@
   <sql id="Base_Column_List">
     id, room_name, room_id, corp_id, short_id, card_id, room_capacity, `password`, moderator_password, 
     project, create_time, update_time, activation_date, expire_date, allow_part, `status`, 
-    allow_record, deleted
+    allow_record, support_record, deleted
   </sql>
   <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.FixedRoomExample" resultMap="BaseResultMap">
     select
@@ -104,20 +105,6 @@
     from sd_fixed_room
     where id = #{id,jdbcType=BIGINT}
   </select>
-
-
-  <!--查询固定会议室是否有录制存储充值记录-->
-  <select id="selectISRechargeCardRecord" parameterType="java.lang.String" resultType="java.lang.Boolean">
-        SELECT case when count(spc.id) >= 1
-               then 1
-               else 0
-               end isRechargeStorage
-        FROM sd_prepaid_card spc
-        INNER JOIN sd_prepaid_package spp ON spc.package_id = spp.id
-        INNER JOIN sd_fixed_room sfr ON sfr.card_id = spc.id
-        WHERE sfr.room_id = #{roomId}
-  </select>
-
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from sd_fixed_room
     where id = #{id,jdbcType=BIGINT}
@@ -134,13 +121,15 @@
       `password`, moderator_password, project, 
       create_time, update_time, activation_date, 
       expire_date, allow_part, `status`, 
-      allow_record, deleted)
+      allow_record, support_record, deleted
+      )
     values (#{roomName,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{corpId,jdbcType=BIGINT}, 
-      #{shortId,jdbcType=INTEGER}, #{cardId,jdbcType=BIGINT}, #{roomCapacity,jdbcType=INTEGER}, 
+      #{shortId,jdbcType=CHAR}, #{cardId,jdbcType=BIGINT}, #{roomCapacity,jdbcType=INTEGER}, 
       #{password,jdbcType=VARCHAR}, #{moderatorPassword,jdbcType=VARCHAR}, #{project,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{activationDate,jdbcType=TIMESTAMP}, 
       #{expireDate,jdbcType=TIMESTAMP}, #{allowPart,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, 
-      #{allowRecord,jdbcType=BIT}, #{deleted,jdbcType=BIT})
+      #{allowRecord,jdbcType=BIT}, #{supportRecord,jdbcType=BIT}, #{deleted,jdbcType=BIT}
+      )
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="io.openvidu.server.common.pojo.FixedRoom" useGeneratedKeys="true">
     insert into sd_fixed_room
@@ -193,6 +182,9 @@
       <if test="allowRecord != null">
         allow_record,
       </if>
+      <if test="supportRecord != null">
+        support_record,
+      </if>
       <if test="deleted != null">
         deleted,
       </if>
@@ -208,7 +200,7 @@
         #{corpId,jdbcType=BIGINT},
       </if>
       <if test="shortId != null">
-        #{shortId,jdbcType=INTEGER},
+        #{shortId,jdbcType=CHAR},
       </if>
       <if test="cardId != null">
         #{cardId,jdbcType=BIGINT},
@@ -246,6 +238,9 @@
       <if test="allowRecord != null">
         #{allowRecord,jdbcType=BIT},
       </if>
+      <if test="supportRecord != null">
+        #{supportRecord,jdbcType=BIT},
+      </if>
       <if test="deleted != null">
         #{deleted,jdbcType=BIT},
       </if>
@@ -273,7 +268,7 @@
         corp_id = #{record.corpId,jdbcType=BIGINT},
       </if>
       <if test="record.shortId != null">
-        short_id = #{record.shortId,jdbcType=INTEGER},
+        short_id = #{record.shortId,jdbcType=CHAR},
       </if>
       <if test="record.cardId != null">
         card_id = #{record.cardId,jdbcType=BIGINT},
@@ -311,6 +306,9 @@
       <if test="record.allowRecord != null">
         allow_record = #{record.allowRecord,jdbcType=BIT},
       </if>
+      <if test="record.supportRecord != null">
+        support_record = #{record.supportRecord,jdbcType=BIT},
+      </if>
       <if test="record.deleted != null">
         deleted = #{record.deleted,jdbcType=BIT},
       </if>
@@ -325,7 +323,7 @@
       room_name = #{record.roomName,jdbcType=VARCHAR},
       room_id = #{record.roomId,jdbcType=VARCHAR},
       corp_id = #{record.corpId,jdbcType=BIGINT},
-      short_id = #{record.shortId,jdbcType=INTEGER},
+      short_id = #{record.shortId,jdbcType=CHAR},
       card_id = #{record.cardId,jdbcType=BIGINT},
       room_capacity = #{record.roomCapacity,jdbcType=INTEGER},
       `password` = #{record.password,jdbcType=VARCHAR},
@@ -338,6 +336,7 @@
       allow_part = #{record.allowPart,jdbcType=INTEGER},
       `status` = #{record.status,jdbcType=INTEGER},
       allow_record = #{record.allowRecord,jdbcType=BIT},
+      support_record = #{record.supportRecord,jdbcType=BIT},
       deleted = #{record.deleted,jdbcType=BIT}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -356,7 +355,7 @@
         corp_id = #{corpId,jdbcType=BIGINT},
       </if>
       <if test="shortId != null">
-        short_id = #{shortId,jdbcType=INTEGER},
+        short_id = #{shortId,jdbcType=CHAR},
       </if>
       <if test="cardId != null">
         card_id = #{cardId,jdbcType=BIGINT},
@@ -394,6 +393,9 @@
       <if test="allowRecord != null">
         allow_record = #{allowRecord,jdbcType=BIT},
       </if>
+      <if test="supportRecord != null">
+        support_record = #{supportRecord,jdbcType=BIT},
+      </if>
       <if test="deleted != null">
         deleted = #{deleted,jdbcType=BIT},
       </if>
@@ -405,7 +407,7 @@
     set room_name = #{roomName,jdbcType=VARCHAR},
       room_id = #{roomId,jdbcType=VARCHAR},
       corp_id = #{corpId,jdbcType=BIGINT},
-      short_id = #{shortId,jdbcType=INTEGER},
+      short_id = #{shortId,jdbcType=CHAR},
       card_id = #{cardId,jdbcType=BIGINT},
       room_capacity = #{roomCapacity,jdbcType=INTEGER},
       `password` = #{password,jdbcType=VARCHAR},
@@ -418,8 +420,8 @@
       allow_part = #{allowPart,jdbcType=INTEGER},
       `status` = #{status,jdbcType=INTEGER},
       allow_record = #{allowRecord,jdbcType=BIT},
+      support_record = #{supportRecord,jdbcType=BIT},
       deleted = #{deleted,jdbcType=BIT}
     where id = #{id,jdbcType=BIGINT}
   </update>
-
 </mapper>
