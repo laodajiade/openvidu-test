@@ -43,78 +43,78 @@ public class KurentoParticipantEndpointConfig {
 
 	public void addEndpointListeners(MediaEndpoint endpoint, String typeOfEndpoint) {
 
-		endpoint.getWebEndpoint().addMediaFlowInStateChangeListener(event -> {
-			String msg = "KMS event [MediaFlowInStateChange] -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | state: " + event.getState() + " | pad: " + event.getPadName()
-					+ " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
-			KmsEvent kmsEvent = new KmsMediaEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					event.getMediaType(), endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-			log.info(msg);
-		});
+//		endpoint.getWebEndpoint().addMediaFlowInStateChangeListener(event -> {
+//			String msg = "KMS event [MediaFlowInStateChange] -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | state: " + event.getState() + " | pad: " + event.getPadName()
+//					+ " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
+//			KmsEvent kmsEvent = new KmsMediaEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					event.getMediaType(), endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+//			log.info(msg);
+//		});
 
-		endpoint.getWebEndpoint().addMediaFlowOutStateChangeListener(event -> {
-			String msg = "KMS event [MediaFlowOutStateChange] -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | state: " + event.getState() + " | pad: " + event.getPadName()
-					+ " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
-			KmsEvent kmsEvent = new KmsMediaEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					event.getMediaType(), endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-			log.info(msg);
-		});
+//		endpoint.getWebEndpoint().addMediaFlowOutStateChangeListener(event -> {
+//			String msg = "KMS event [MediaFlowOutStateChange] -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | state: " + event.getState() + " | pad: " + event.getPadName()
+//					+ " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
+//			KmsEvent kmsEvent = new KmsMediaEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					event.getMediaType(), endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+//			log.info(msg);
+//		});
 
-		endpoint.getWebEndpoint().addIceGatheringDoneListener(event -> {
-			String msg = "KMS event [IceGatheringDone] -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | timestamp: " + event.getTimestampMillis();
-			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-			log.info(msg);
-		});
+//		endpoint.getWebEndpoint().addIceGatheringDoneListener(event -> {
+//			String msg = "KMS event [IceGatheringDone] -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | timestamp: " + event.getTimestampMillis();
+//			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+//			log.info(msg);
+//		});
 
-		endpoint.getWebEndpoint().addConnectionStateChangedListener(event -> {
-			String msg = "KMS event [ConnectionStateChanged]: -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | oldState: " + event.getOldState() + " | newState: " + event.getNewState()
-					+ " | timestamp: " + event.getTimestampMillis();
-			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-			log.info(msg);
-		});
+//		endpoint.getWebEndpoint().addConnectionStateChangedListener(event -> {
+//			String msg = "KMS event [ConnectionStateChanged]: -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | oldState: " + event.getOldState() + " | newState: " + event.getNewState()
+//					+ " | timestamp: " + event.getTimestampMillis();
+//			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+//			log.info(msg);
+//		});
 
-		endpoint.getWebEndpoint().addNewCandidatePairSelectedListener(event -> {
-			endpoint.selectedLocalIceCandidate = event.getCandidatePair().getLocalCandidate();
-			endpoint.selectedRemoteIceCandidate = event.getCandidatePair().getRemoteCandidate();
-			String msg = "KMS event [NewCandidatePairSelected]: -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | local: " + endpoint.selectedLocalIceCandidate + " | remote: "
-					+ endpoint.selectedRemoteIceCandidate + " | timestamp: " + event.getTimestampMillis();
-			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-			log.info(msg);
-		});
+//		endpoint.getWebEndpoint().addNewCandidatePairSelectedListener(event -> {
+//			endpoint.selectedLocalIceCandidate = event.getCandidatePair().getLocalCandidate();
+//			endpoint.selectedRemoteIceCandidate = event.getCandidatePair().getRemoteCandidate();
+//			String msg = "KMS event [NewCandidatePairSelected]: -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | local: " + endpoint.selectedLocalIceCandidate + " | remote: "
+//					+ endpoint.selectedRemoteIceCandidate + " | timestamp: " + event.getTimestampMillis();
+//			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+//			log.info(msg);
+//		});
 
-		endpoint.getEndpoint().addMediaTranscodingStateChangeListener(event -> {
-			String msg = "KMS event [MediaTranscodingStateChange]: -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | state: " + event.getState().name() + " | mediaType: " + event.getMediaType()
-					+ " | binName: " + event.getBinName() + " | timestamp: " + event.getTimestampMillis();
-			KmsEvent kmsEvent = new KmsMediaEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					event.getMediaType(), endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-			log.info(msg);
-		});
+//		endpoint.getEndpoint().addMediaTranscodingStateChangeListener(event -> {
+//			String msg = "KMS event [MediaTranscodingStateChange]: -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | state: " + event.getState().name() + " | mediaType: " + event.getMediaType()
+//					+ " | binName: " + event.getBinName() + " | timestamp: " + event.getTimestampMillis();
+//			KmsEvent kmsEvent = new KmsMediaEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					event.getMediaType(), endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+//			log.info(msg);
+//		});
 
 		endpoint.getWebEndpoint().addIceComponentStateChangeListener(event -> {
 			// if (!event.getState().equals(IceComponentState.READY)) {
@@ -128,6 +128,9 @@ public class KurentoParticipantEndpointConfig {
 			this.CDR.log(kmsEvent);
 			this.infoHandler.sendInfo(msg);
 			log.info(msg);
+			if (event.getState().name() == "CONNECTED") {
+				endpoint.notifyEndpointPass(typeOfEndpoint);
+			}
 			// }
 		});
 

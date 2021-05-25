@@ -27,12 +27,15 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.endpoint.MediaEndpoint;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import org.kurento.client.*;
 import org.kurento.client.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.print.attribute.standard.Media;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -497,4 +500,9 @@ public class KurentoSession extends Session {
         }
     }
 
+	public void notifyPublishChannelPass(KurentoParticipant kurentoParticipant, PublisherEndpoint endpoint) {
+		kurentoSessionHandler.notifyPublishMedias(kurentoParticipant, kurentoParticipant.getPublisherStreamId(),
+				kurentoParticipant.getPublisher().createdAt(), getSessionId(), endpoint.getMediaOptions(),
+				getParticipants(), true, 0, null);
+	}
 }

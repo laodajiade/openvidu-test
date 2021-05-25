@@ -72,6 +72,7 @@ public class KurentoParticipant extends Participant {
 
 	private final String strMSTagDebugMCUParticipant = "debugMCUParticipant";
 	private final String strMSTagDebugEndpointName = "debugEndpointName";
+	private final String strMSTagDebugPassThroughName = "debugPassThroughName";
 
 
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
@@ -194,9 +195,11 @@ public class KurentoParticipant extends Participant {
 			new Thread(this.session::updateSipComposite).start();
 		}
 
+		String debugRandomID = RandomStringUtils.randomAlphabetic(6);
 		this.publisher.setEndpointName(publisherStreamId);
 		this.publisher.getEndpoint().setName(publisherStreamId);
-		this.publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub");
+		this.publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub_cid_" + debugRandomID);
+		this.publisher.getPassThru().addTag(strMSTagDebugPassThroughName, getParticipantName() + "_pt_cid_" + debugRandomID);
 		this.publisher.setStreamId(publisherStreamId);
 		endpointConfig.addEndpointListeners(this.publisher, "publisher");
 
@@ -395,7 +398,8 @@ public class KurentoParticipant extends Participant {
 
 			subscriber.setEndpointName(subscriberEndpointName);
 			subscriber.getEndpoint().setName(subscriberEndpointName);
-			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub");
+			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + kSender.getUuid() +
+					"_" + kSender.getStreamType() + "_cid_" + RandomStringUtils.randomAlphabetic(6));
 			subscriber.setStreamId(kSender.getPublisherStreamId());
 
 			endpointConfig.addEndpointListeners(subscriber, "subscriber");
@@ -516,7 +520,8 @@ public class KurentoParticipant extends Participant {
 
 			subscriber.setEndpointName(subscriberEndpointName);
 			subscriber.getEndpoint().setName(subscriberEndpointName);
-			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub");
+			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + kSender.getUuid() +
+					"_" + kSender.getStreamType() + "_cid_" + RandomStringUtils.randomAlphabetic(6));
 			subscriber.setStreamId(kSender.getPublisherStreamId());
 
 			endpointConfig.addEndpointListeners(subscriber, "subscriber");
@@ -886,6 +891,10 @@ public class KurentoParticipant extends Participant {
 			log.info("PARTICIPANT {}: Is not subscriber {} from {} in room {}",
 					this.getParticipantPublicId(), mediaType,this.getParticipantPublicId(), this.session.getSessionId());
 		}
+	}
+
+	public void notifyPublishChannelPass(PublisherEndpoint endpoint) {
+		session.notifyPublishChannelPass(this, endpoint);
 	}
 
 }

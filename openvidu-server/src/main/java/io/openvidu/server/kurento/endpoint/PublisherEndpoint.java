@@ -83,6 +83,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private ConcurrentHashMap<String, String> othersConToSelfHubportIns = new ConcurrentHashMap<>(50);
 
 	private boolean connected = false;
+	private boolean isChannelPassed = false;
 
 	@Getter
 	private final ConcurrentMap<String, MediaChannel> mediaChannels = new ConcurrentHashMap<>();
@@ -119,6 +120,17 @@ public class PublisherEndpoint extends MediaEndpoint {
 		unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
+		}
+	}
+
+	@Override
+	public void notifyEndpointPass(String typeOfEndpoint) {
+		if (typeOfEndpoint.compareTo("publisher") == 0 && !isChannelPassed) {
+			isChannelPassed = true;
+			new Thread(() -> {
+				KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
+				kParticipant.notifyPublishChannelPass(this);
+			}).start();
 		}
 	}
 

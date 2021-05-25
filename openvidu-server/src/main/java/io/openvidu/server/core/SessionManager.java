@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -1014,6 +1015,8 @@ public abstract class SessionManager {
 	public abstract void stopRecording(String sessionId);
 
 	public abstract void updateRecording(String sessionId);
+
+	public abstract void updateRecording(String sessionId, Participant curParticipant);
 
     public abstract void handleRecordErrorEvent(Object msg);
 
