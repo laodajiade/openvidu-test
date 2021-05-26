@@ -160,7 +160,7 @@ public class AppointConferenceJobHandler {
 
         // 创建一个1分钟倒计时关闭会议
         // 这里使用62而不是60是因为多给端上2秒的反应时间
-        if (countdown == 1) {
+        if (countdown == 2) {
             appointJobService.closeRoomSchedule(session.getRuid(), DateUtils.addSeconds(new Date(), 62));
         }
     }
