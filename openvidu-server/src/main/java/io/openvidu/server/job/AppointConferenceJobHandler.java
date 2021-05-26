@@ -89,10 +89,10 @@ public class AppointConferenceJobHandler {
         for (AppointJob appointJob : appointJobs) {
             try {
                 log.info("appointJob {}", appointJob.getId());
-                if (!appointJobService.doExec(appointJob)) {
-                    log.info("job id:{} can`t get lock", appointJob.getId());
-                    // continue;
-                }
+//                if (!appointJobService.doExec(appointJob)) {
+//                    log.info("job id:{} can`t get lock", appointJob.getId());
+//                    // continue;
+//                }
                 String scheduleName = appointJob.getScheduleName();
                 switch (scheduleName) {
                     case "FiveMinuteBeforeTheBegin":
