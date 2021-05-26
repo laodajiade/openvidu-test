@@ -61,10 +61,8 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
         AppointConference conflictConference = appointConferenceManage.getConflict(minStartDate, roomId);
         try {
             if (conflictConference != null) {
-                String method;
-                System.out.println(conflictConference.getEndTime().getTime() - minStartDate.getTime());
                 if (conflictConference.getEndTime().getTime() - minStartDate.getTime() <= FIVE_MINUTE_MILLION_SECOND) {
-                    method = ProtocolElements.APPOINTMENT_CONFERENCE_CANCEL_NOTIFY_METHOD;
+                    String method = ProtocolElements.APPOINTMENT_CONFERENCE_CANCEL_NOTIFY_METHOD;
                     List<AppointParticipant> appointParticipants = appointParticipantMapper.selectByRuids(singletonList(conflictConference.getRuid()));
                     cancelAppointmentRoomHandler.cancelApponitment(conflictConference.getRuid());
                     String reason = "cancelByDelay";
