@@ -62,11 +62,10 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
         try {
             if (conflictConference != null) {
                 String method;
-                List<AppointParticipant> appointParticipants;
                 System.out.println(conflictConference.getEndTime().getTime() - minStartDate.getTime());
                 if (conflictConference.getEndTime().getTime() - minStartDate.getTime() <= FIVE_MINUTE_MILLION_SECOND) {
                     method = ProtocolElements.APPOINTMENT_CONFERENCE_CANCEL_NOTIFY_METHOD;
-                    appointParticipants = appointParticipantMapper.selectByRuids(singletonList(ruid));
+                    List<AppointParticipant> appointParticipants = appointParticipantMapper.selectByRuids(singletonList(conflictConference.getRuid()));
                     cancelAppointmentRoomHandler.cancelApponitment(conflictConference.getRuid());
                     String reason = "cancelByDelay";
                     Set<String> uuids = appointParticipants.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
@@ -77,7 +76,7 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
                     notifyParams.addProperty("reason", reason);
                     notificationService.sendBatchNotificationUuidConcurrent(uuids, method, notifyParams);
                 } else {
-                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), DateUtils.addMinutes(new Date(), delayMinute-2));
+                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), DateUtils.addMinutes(new Date(), delayMinute - 2));
                 }
             }
         } catch (Exception e) {
