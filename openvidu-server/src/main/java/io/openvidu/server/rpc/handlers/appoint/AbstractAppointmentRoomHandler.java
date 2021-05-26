@@ -74,7 +74,6 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         String jobDesc = vo.getSubject() + "_" + vo.getRuid();
         Date startTime = new Date(vo.getStartTime());
         Date now = new Date();
-        SafeSleep.sleepMilliSeconds(2000);
         List<ConferenceJob> list = new ArrayList<>();
         // 定时任务（会议开始时自动呼入）
         if (true) {
