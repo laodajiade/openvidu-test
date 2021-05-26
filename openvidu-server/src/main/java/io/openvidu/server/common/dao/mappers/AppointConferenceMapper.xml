@@ -538,7 +538,7 @@
       and ruid != #{ruid,jdbcType=VARCHAR}
     </if>
     and start_time <![CDATA[<=]]> #{endTime,jdbcType=TIMESTAMP} and end_time >= #{startTime,jdbcType=TIMESTAMP}
-    and status!=2
+    and status!= 2
   </select>
   <select id="getMaybeEndAppointment"  resultMap="BaseResultMap">
     select * from sd_appoint_conference where now() > end_time and `status` !=2

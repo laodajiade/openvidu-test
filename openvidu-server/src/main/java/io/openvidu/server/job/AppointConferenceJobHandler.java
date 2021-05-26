@@ -260,18 +260,20 @@ public class AppointConferenceJobHandler {
                 //todo 修改定时任务在下一分钟
             }
 
-            if (isSameRoom(appointConference.getRoomId(), ruid) && appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
-                // sendNotify
-                List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
+            if (isSameRoom(appointConference.getRoomId(), ruid)) {
+                if (appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
+                    // sendNotify
+                    List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
 
-                if (Objects.isNull(appointParts) || appointParts.isEmpty()) {
-                    log.error("conferenceBeginJobHandler appointParts is empty, ruid:{}", ruid);
-                    return ReturnT.FAIL;
+                    if (Objects.isNull(appointParts) || appointParts.isEmpty()) {
+                        log.error("conferenceBeginJobHandler appointParts is empty, ruid:{}", ruid);
+                        return ReturnT.FAIL;
+                    }
+                    // 邀请通知
+                    Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
+                    log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
+                    inviteParticipant(appointConference, uuidSet);
                 }
-                // 邀请通知
-                Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
-                log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
-                inviteParticipant(appointConference, uuidSet);
             }
 
 
@@ -448,11 +450,14 @@ public class AppointConferenceJobHandler {
      * @return
      */
     public boolean isRoomInUse(String roomId) {
-        boolean isRoomInUse = !Objects.isNull(sessionManager.getSession(roomId)) || !Objects.isNull(sessionManager.getSessionNotActive(roomId));
-        if (isRoomInUse) {
-            log.info("conferenceBeginJobHandler roomId={} is in use", roomId);
-        }
-        return isRoomInUse;
+//        boolean isRoomInUse = !Objects.isNull(sessionManager.getSession(roomId)) || !Objects.isNull(sessionManager.getSessionNotActive(roomId));
+//        if (isRoomInUse) {
+//            log.info("conferenceBeginJobHandler roomId={} is in use", roomId);
+//        }
+//        return isRoomInUse;
+
+        Conference conference = conferenceMapper.selectUsedConference(roomId);
+        return conference != null;
     }
 
     /**

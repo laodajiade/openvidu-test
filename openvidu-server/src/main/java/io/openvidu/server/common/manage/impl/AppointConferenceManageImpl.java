@@ -1,10 +1,14 @@
 package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.server.common.dao.AppointConferenceMapper;
+import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.UserMapper;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
+import io.openvidu.server.common.pojo.Conference;
+import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DateUtil;
@@ -12,6 +16,7 @@ import io.openvidu.server.utils.RuidHelper;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,6 +28,9 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
 
     @Resource
     AppointConferenceMapper appointConferenceMapper;
+
+    @Resource
+    ConferenceMapper conferenceMapper;
 
     public void deleteByRuid(String ruid) {
         AppointConferenceExample example = new AppointConferenceExample();
@@ -45,7 +53,6 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
 
 
     public boolean isConflict(AppointmentRoomVO vo) {
-
         // 判断会议是否冲突
         AppointConference ac = new AppointConference();
         ac.setRoomId(vo.getRoomId());
@@ -53,9 +60,21 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setEndTime(DateUtil.getEndDate(ac.getStartTime(), vo.getDuration(), Calendar.MINUTE));
         ac.setRuid(vo.getRuid());
 
-
         List<AppointConference> list = appointConferenceMapper.getConflictAppointConferenceList(ac);
-        return Objects.nonNull(list) && !list.isEmpty();
+        boolean isConflict = Objects.nonNull(list) && !list.isEmpty();
+        if (isConflict) {
+            return isConflict;
+        }
+
+        // 如果开始时间再2分钟内，则判断现在有没有固定会议室在开会
+        if ((vo.getStartTime() - System.currentTimeMillis() <= 120000) && RoomIdTypeEnums.isFixed(vo.getRoomId())) {
+            Conference conference = conferenceMapper.selectUsedConference(vo.getRoomId());
+            if (conference != null) {
+                log.info("create appoint conflict because exist fixed used ruid {}", conference.getRuid());
+            }
+            return conference != null;
+        }
+        return false;
     }
 
     public boolean isConflict(String ruid, String roomId, Date startTime, Date endTime) {
