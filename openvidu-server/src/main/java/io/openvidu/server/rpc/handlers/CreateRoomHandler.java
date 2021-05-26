@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +58,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     private FixedRoomMapper fixedRoomMapper;
     @Autowired
     private FixedRoomManagerMapper fixedRoomManagerMapper;
+
+    private static final ReentrantLock lock = new ReentrantLock();
+
 
     @Transactional
     @Override
@@ -140,75 +144,87 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             return;
         }
 
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        if (sessionManager.isNewSessionIdValid(sessionId)) {
-            Conference conference = new Conference();
-            // if create appointment conference
-            if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-") && appt != null) {
-                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid);
+        CountDownLatch inviteCountDownLatch = new CountDownLatch(1);
+        try {
+            if (!lock.tryLock(2, TimeUnit.SECONDS)) {
+                log.info("create room lock timeout {}", sessionId);
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.JOIN_ROOM_TIMEOUT);
+            }
+            if (sessionManager.isNewSessionIdValid(sessionId)) {
+                Conference conference = new Conference();
+                // if create appointment conference
+                if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-") && appt != null) {
+                    appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid);
 
-                conference.setRuid(ruid);
-                roomSubject = appt.getConferenceSubject();
-                moderatorUuid = appt.getModeratorUuid();
-                moderatorPassword = appt.getModeratorPassword();
-                conference.setConferenceDesc(appt.getConferenceDesc());
-                final AppointConference finalAppt = appt;
-                new Thread(() -> this.inviteParticipant(countDownLatch, finalAppt)).start();
+                    conference.setRuid(ruid);
+                    roomSubject = appt.getConferenceSubject();
+                    moderatorUuid = appt.getModeratorUuid();
+                    moderatorPassword = appt.getModeratorPassword();
+                    conference.setConferenceDesc(appt.getConferenceDesc());
+                    final AppointConference finalAppt = appt;
+                    new Thread(() -> this.inviteParticipant(inviteCountDownLatch, finalAppt)).start();
+                } else {
+                    conference.setRuid(UUID.randomUUID().toString());
+                }
+
+                JsonObject respJson = new JsonObject();
+                respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
+                // save conference info
+                conference.setRoomId(sessionId);
+                conference.setConferenceSubject(roomSubject);
+                conference.setConferenceMode(conferenceMode.getMode());
+                conference.setUserId(rpcConnection.getUserId());
+                conference.setPassword(StringUtils.isEmpty(password) ? null : password);
+                conference.setStatus(1);
+                conference.setStartTime(new Date());
+                conference.setProject(rpcConnection.getProject());
+                conference.setModeratorPassword(StringUtils.isEmpty(moderatorPassword) ? StringUtil.getRandomPassWord(6) : moderatorPassword);
+                conference.setRoomIdType(roomIdType.name());
+                conference.setModeratorUuid(moderatorUuid);
+                conference.setShortUrl(roomManage.createShortUrl());
+                conference.setModeratorName(rpcConnection.getUsername());
+                roomManage.createMeetingRoom(conference);
+
+                // setPresetInfo.
+                String micStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MIC_STATUS_PARAM);
+                String videoStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_VIDEO_STATUS_PARAM);
+                String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
+                Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
+                Float roomDuration = getFloatOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
+                String useIdInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_USE_ID_PARAM);
+                String allowPartOperMic = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM);
+                String allowPartOperShare = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM);
+                String quietStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM);
+
+                SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
+                        roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
+                if (roomIdType == RoomIdTypeEnums.fixed) {
+                    FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
+                    preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
+                    preset.setAllowPart(fixedRoom.getAllowPart());
+                    preset.setRoomCapacity(fixedRoom.getRoomCapacity());
+                }
+                sessionManager.setPresetInfo(sessionId, preset);
+
+                // store this inactive session
+                Session session = sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
+                if (appt != null) {
+                    session.setEndTime(appt.getEndTime().getTime());
+                }
+                inviteCountDownLatch.countDown();
+                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
             } else {
-                conference.setRuid(UUID.randomUUID().toString());
+                log.warn("conference:{} already exist.", sessionId);
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
             }
-
-            JsonObject respJson = new JsonObject();
-            respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
-            // save conference info
-            conference.setRoomId(sessionId);
-            conference.setConferenceSubject(roomSubject);
-            conference.setConferenceMode(conferenceMode.getMode());
-            conference.setUserId(rpcConnection.getUserId());
-            conference.setPassword(StringUtils.isEmpty(password) ? null : password);
-            conference.setStatus(1);
-            conference.setStartTime(new Date());
-            conference.setProject(rpcConnection.getProject());
-            conference.setModeratorPassword(StringUtils.isEmpty(moderatorPassword) ? StringUtil.getRandomPassWord(6) : moderatorPassword);
-            conference.setRoomIdType(roomIdType.name());
-            conference.setModeratorUuid(moderatorUuid);
-            conference.setShortUrl(roomManage.createShortUrl());
-            conference.setModeratorName(rpcConnection.getUsername());
-            roomManage.createMeetingRoom(conference);
-
-            // setPresetInfo.
-            String micStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MIC_STATUS_PARAM);
-            String videoStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_VIDEO_STATUS_PARAM);
-            String sharePowerInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SHARE_POWER_PARAM);
-            Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
-            Float roomDuration = getFloatOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
-            String useIdInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_USE_ID_PARAM);
-            String allowPartOperMic = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM);
-            String allowPartOperShare = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM);
-            String quietStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM);
-
-            SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
-                    roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
-            if (roomIdType == RoomIdTypeEnums.fixed) {
-                FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
-                preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
-                preset.setAllowPart(fixedRoom.getAllowPart());
-                preset.setRoomCapacity(fixedRoom.getRoomCapacity());
-            }
-            sessionManager.setPresetInfo(sessionId, preset);
-
-            // store this inactive session
-            Session session = sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
-            if (appt != null) {
-                session.setEndTime(appt.getEndTime().getTime());
-            }
-            countDownLatch.countDown();
-            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
-        } else {
-            log.warn("conference:{} already exist.", sessionId);
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
+        } catch (Exception e) {
+            log.error("create Room error", e);
+        } finally {
+            lock.unlock();
         }
+
     }
 
     protected Optional<Conference> getProcessConference(String sessionId) {
