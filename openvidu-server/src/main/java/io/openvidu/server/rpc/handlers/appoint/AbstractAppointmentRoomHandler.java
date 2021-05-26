@@ -24,10 +24,7 @@ import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.service.AppointJobService;
-import io.openvidu.server.utils.CrowOnceInfoManager;
-import io.openvidu.server.utils.DateUtil;
-import io.openvidu.server.utils.LocalDateTimeUtils;
-import io.openvidu.server.utils.StringUtil;
+import io.openvidu.server.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -37,6 +34,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -76,12 +74,16 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         String jobDesc = vo.getSubject() + "_" + vo.getRuid();
         Date startTime = new Date(vo.getStartTime());
         Date now = new Date();
-
+        SafeSleep.sleepMilliSeconds(2000);
         List<ConferenceJob> list = new ArrayList<>();
         // 定时任务（会议开始时自动呼入）
-        if (startTime.after(now)) {
+        if (true) {
+            Date beginDate = startTime;
+            if ((startTime.getTime() - System.currentTimeMillis()) < 5000) {
+                beginDate = new Date(System.currentTimeMillis() + 5000);
+            }
             CrowOnceResponse crowOnceResponse = crowOnceHelper.addCrowOnce(CrowOnceInfoManager.createCrowOnceInfo(JobGroupEnum.XXL_JOB_EXECUTOR_CONFERENCE_NOTIFY.getId(),
-                    NotifyHandler.conferenceBeginJobHandler, startTime, jobDesc, respJson));
+                    NotifyHandler.conferenceBeginJobHandler, beginDate, jobDesc, respJson));
             if (Objects.nonNull(crowOnceResponse) && Objects.nonNull(crowOnceResponse.getCode()) && crowOnceResponse.getCode().intValue() == 200) {
                 Long jobId = Long.valueOf(crowOnceResponse.getContent().toString());
                 list.add(ConferenceJob.builder().ruid(vo.getRuid()).jobId(jobId).type(ConferenceJobTypeEnum.BEGIN.getType()).build());
