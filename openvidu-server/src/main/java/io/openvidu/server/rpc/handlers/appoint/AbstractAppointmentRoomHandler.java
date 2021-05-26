@@ -78,8 +78,8 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         // 定时任务（会议开始时自动呼入）
         if (true) {
             Date beginDate = startTime;
-            if ((startTime.getTime() - System.currentTimeMillis()) < 5000) {
-                beginDate = new Date(System.currentTimeMillis() + 5000);
+            if ((startTime.getTime() - System.currentTimeMillis()) < 10000) {
+                beginDate = new Date(System.currentTimeMillis() + 10000);
             }
             CrowOnceResponse crowOnceResponse = crowOnceHelper.addCrowOnce(CrowOnceInfoManager.createCrowOnceInfo(JobGroupEnum.XXL_JOB_EXECUTOR_CONFERENCE_NOTIFY.getId(),
                     NotifyHandler.conferenceBeginJobHandler, beginDate, jobDesc, respJson));

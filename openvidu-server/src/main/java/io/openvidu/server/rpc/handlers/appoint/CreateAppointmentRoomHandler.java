@@ -68,7 +68,7 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         if (params.getStartTime() != 0 && System.currentTimeMillis() > params.getStartTime()) {
             return RespResult.fail(ErrorCodeEnum.START_TIME_LATE);
         } else if (params.getStartTime() == 0) {
-            params.setStartTime(System.currentTimeMillis() + 5000);
+            params.setStartTime(System.currentTimeMillis() + 10000);
         }
 
         // 会议时长校验
