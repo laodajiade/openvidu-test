@@ -9,30 +9,13 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * AppointConferenceMapper继承基类
+ */
 @Mapper
 @Repository
-public interface AppointConferenceMapper {
-    long countByExample(AppointConferenceExample example);
+public interface AppointConferenceMapper extends MyBatisBaseDao<AppointConference, Long, AppointConferenceExample> {
 
-    int deleteByExample(AppointConferenceExample example);
-
-    int deleteByPrimaryKey(Long id);
-
-    int insert(AppointConference record);
-
-    int insertSelective(AppointConference record);
-
-    List<AppointConference> selectByExample(AppointConferenceExample example);
-
-    AppointConference selectByPrimaryKey(Long id);
-
-    int updateByExampleSelective(@Param("record") AppointConference record, @Param("example") AppointConferenceExample example);
-
-    int updateByExample(@Param("record") AppointConference record, @Param("example") AppointConferenceExample example);
-
-    int updateByPrimaryKeySelective(AppointConference record);
-
-    int updateByPrimaryKey(AppointConference record);
 
     List<AppointConference> getConflictAppointConferenceList(AppointConference condition);
 

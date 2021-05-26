@@ -575,6 +575,76 @@ public class AppointConferenceExample {
             return (Criteria) this;
         }
 
+        public Criteria andModeratorNameIsNull() {
+            addCriterion("moderator_name is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameIsNotNull() {
+            addCriterion("moderator_name is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameEqualTo(String value) {
+            addCriterion("moderator_name =", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameNotEqualTo(String value) {
+            addCriterion("moderator_name <>", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameGreaterThan(String value) {
+            addCriterion("moderator_name >", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameGreaterThanOrEqualTo(String value) {
+            addCriterion("moderator_name >=", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameLessThan(String value) {
+            addCriterion("moderator_name <", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameLessThanOrEqualTo(String value) {
+            addCriterion("moderator_name <=", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameLike(String value) {
+            addCriterion("moderator_name like", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameNotLike(String value) {
+            addCriterion("moderator_name not like", value, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameIn(List<String> values) {
+            addCriterion("moderator_name in", values, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameNotIn(List<String> values) {
+            addCriterion("moderator_name not in", values, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameBetween(String value1, String value2) {
+            addCriterion("moderator_name between", value1, value2, "moderatorName");
+            return (Criteria) this;
+        }
+
+        public Criteria andModeratorNameNotBetween(String value1, String value2) {
+            addCriterion("moderator_name not between", value1, value2, "moderatorName");
+            return (Criteria) this;
+        }
+
         public Criteria andStartTimeIsNull() {
             addCriterion("start_time is null");
             return (Criteria) this;
@@ -632,6 +702,66 @@ public class AppointConferenceExample {
 
         public Criteria andStartTimeNotBetween(Date value1, Date value2) {
             addCriterion("start_time not between", value1, value2, "startTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeIsNull() {
+            addCriterion("delay_start_time is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeIsNotNull() {
+            addCriterion("delay_start_time is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeEqualTo(Date value) {
+            addCriterion("delay_start_time =", value, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeNotEqualTo(Date value) {
+            addCriterion("delay_start_time <>", value, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeGreaterThan(Date value) {
+            addCriterion("delay_start_time >", value, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeGreaterThanOrEqualTo(Date value) {
+            addCriterion("delay_start_time >=", value, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeLessThan(Date value) {
+            addCriterion("delay_start_time <", value, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeLessThanOrEqualTo(Date value) {
+            addCriterion("delay_start_time <=", value, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeIn(List<Date> values) {
+            addCriterion("delay_start_time in", values, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeNotIn(List<Date> values) {
+            addCriterion("delay_start_time not in", values, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeBetween(Date value1, Date value2) {
+            addCriterion("delay_start_time between", value1, value2, "delayStartTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDelayStartTimeNotBetween(Date value1, Date value2) {
+            addCriterion("delay_start_time not between", value1, value2, "delayStartTime");
             return (Criteria) this;
         }
 

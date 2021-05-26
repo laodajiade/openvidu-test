@@ -5,6 +5,7 @@ import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 
 import java.util.Date;
+import java.util.Optional;
 
 public interface AppointConferenceManage {
 
@@ -22,5 +23,5 @@ public interface AppointConferenceManage {
 
     void updateById(AppointConference appt);
 
-    AppointConference getConflict(Date startTime, String roomIde);
+    Optional<AppointConference> getConflict(Date startTime, String roomIde);
 }

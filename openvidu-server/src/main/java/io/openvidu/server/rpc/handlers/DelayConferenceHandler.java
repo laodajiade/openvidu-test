@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -58,10 +59,14 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
         appointJobService.cancelCloseRoomSchedule(ruid);
 
         Date minStartDate = DateUtils.addMinutes(new Date(), delayMinute);
-        AppointConference conflictConference = appointConferenceManage.getConflict(minStartDate, roomId);
+        Optional<AppointConference> conflictConferenceOp = appointConferenceManage.getConflict(minStartDate, roomId);
         try {
-            if (conflictConference != null) {
-                if (conflictConference.getEndTime().getTime() - minStartDate.getTime() <= FIVE_MINUTE_MILLION_SECOND) {
+            if (conflictConferenceOp.isPresent()) {
+                AppointConference conflictConference = conflictConferenceOp.get();
+                Date delayDate = conflictConference.getDelayStartTime() == null ? conflictConference.getStartTime() : conflictConference.getDelayStartTime();
+                delayDate = DateUtils.addMinutes(delayDate, delayMinute);
+                if (conflictConference.getEndTime().getTime() - delayDate.getTime() < FIVE_MINUTE_MILLION_SECOND) {
+                    log.info("cancel appoint conference when duration too short {}", conflictConference.toString());
                     String method = ProtocolElements.APPOINTMENT_CONFERENCE_CANCEL_NOTIFY_METHOD;
                     List<AppointParticipant> appointParticipants = appointParticipantMapper.selectByRuids(singletonList(conflictConference.getRuid()));
                     cancelAppointmentRoomHandler.cancelApponitment(conflictConference.getRuid());
@@ -74,7 +79,10 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
                     notifyParams.addProperty("reason", reason);
                     notificationService.sendBatchNotificationUuidConcurrent(uuids, method, notifyParams);
                 } else {
-                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), DateUtils.addMinutes(new Date(), delayMinute - 2));
+                    conflictConference.setDelayStartTime(delayDate);
+                    appointConferenceManage.updateById(conflictConference);
+
+                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), delayDate);
                 }
             }
         } catch (Exception e) {

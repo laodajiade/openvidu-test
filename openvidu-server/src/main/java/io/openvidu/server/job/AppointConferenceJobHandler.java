@@ -91,7 +91,7 @@ public class AppointConferenceJobHandler {
                 log.info("appointJob {}", appointJob.getId());
                 if (!appointJobService.doExec(appointJob)) {
                     log.info("job id:{} can`t get lock", appointJob.getId());
-                    continue;
+                    // continue;
                 }
                 String scheduleName = appointJob.getScheduleName();
                 switch (scheduleName) {
@@ -104,7 +104,6 @@ public class AppointConferenceJobHandler {
                     case "closeRoomSchedule":
                         closeRoomSchedule(appointJob);
                         break;
-
                 }
                 appointJobService.finishExec(appointJob);
             } catch (Exception e) {
@@ -217,9 +216,6 @@ public class AppointConferenceJobHandler {
 
     /**
      * 预约会议开始自动呼入
-     *
-     * @param param
-     * @return
      */
     @XxlJob("conferenceBeginJobHandler")
     public ReturnT<String> conferenceBeginJobHandler(String param) {
@@ -232,7 +228,7 @@ public class AppointConferenceJobHandler {
             // 获取会议信息
             AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
             if (Objects.isNull(appointConference)) {
-                log.error("conferenceBeginJobHandler conference not exist, ruid:{}", ruid);
+                log.warn("conferenceBeginJobHandler conference not exist, ruid:{}", ruid);
                 return ReturnT.FAIL;
             }
 

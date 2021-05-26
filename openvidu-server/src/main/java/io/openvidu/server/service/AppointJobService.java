@@ -2,10 +2,9 @@ package io.openvidu.server.service;
 
 import io.openvidu.server.common.dao.AppointJobMapper;
 import io.openvidu.server.common.pojo.AppointJob;
-import io.openvidu.server.common.pojo.AppointJobExample;
 import io.openvidu.server.utils.LocalDateTimeUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@Slf4j
 public class AppointJobService {
 
     @Autowired
@@ -24,25 +24,43 @@ public class AppointJobService {
         return appointJobMapper.selectNextJobs();
     }
 
-    public void FiveMinuteBeforeTheBegin(String ruid, Date endTime) {
+    /**
+     *
+     * @param ruid
+     * @param startTime 会议的开始时间
+     */
+    public void FiveMinuteBeforeTheBegin(String ruid, Date startTime) {
         appointJobMapper.cancelByRuid(ruid, "FiveMinuteBeforeTheBegin");
+
+        //
+        LocalDateTime eventTime = LocalDateTimeUtils.translateFromDate(startTime).minusMinutes(5);
+        // 如果已经过了5分钟则不通知
+        if (eventTime.isBefore(LocalDateTime.now())) {
+            log.info("discard FiveMinuteBeforeTheBegin event ruid {}", ruid);
+            return;
+        }
 
         AppointJob job = new AppointJob();
         job.setScheduleName("FiveMinuteBeforeTheBegin");
         job.setRuid(ruid);
-        job.setStartTime(LocalDateTimeUtils.translateFromDate(DateUtils.addMinutes(endTime, -5)));
+        job.setStartTime(eventTime);
         job.setRemark("会议开始前5分钟");
         job.setParams("{}");
         addJob(job);
     }
 
-    public void OneMinuteBeforeTheBegin(String ruid, Date endTime) {
+    /**
+     *
+     * @param ruid
+     * @param startTime 会议的开始时间
+     */
+    public void OneMinuteBeforeTheBegin(String ruid, Date startTime) {
         appointJobMapper.cancelByRuid(ruid, "OneMinuteBeforeTheBegin");
 
         AppointJob job = new AppointJob();
         job.setScheduleName("OneMinuteBeforeTheBegin");
         job.setRuid(ruid);
-        job.setStartTime(LocalDateTimeUtils.translateFromDate(DateUtils.addMinutes(endTime, -2)));
+        job.setStartTime(LocalDateTimeUtils.translateFromDate(DateUtils.addMinutes(startTime, -2)));
         job.setRemark("会议开始前2分钟");
         job.setParams("{}");
         addJob(job);

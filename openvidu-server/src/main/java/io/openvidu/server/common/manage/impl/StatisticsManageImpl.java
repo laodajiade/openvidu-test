@@ -86,7 +86,7 @@ public class StatisticsManageImpl implements StatisticsManage {
         map.put("remainderHour", remainderDuration / 60);
         map.put("remainderMinute", remainderDuration % 60);
         int count = conferencePartHistoryMapper.countProcessPartHistory(project);
-        if (count >= 0) {
+        if (count > 0) {
             int totalUsedDuration = count;
             int remainderTotalDuration = remainderDuration - totalUsedDuration;
             log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}", project, totalUsedDuration, remainderTotalDuration);

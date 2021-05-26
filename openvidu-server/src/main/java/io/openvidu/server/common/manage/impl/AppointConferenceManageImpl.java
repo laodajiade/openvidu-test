@@ -36,12 +36,11 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
     }
 
     @Override
-    public AppointConference getConflict(Date startTime, String roomId) {
+    public Optional<AppointConference> getConflict(Date startTime, String roomId) {
         AppointConferenceExample example = new AppointConferenceExample();
         example.createCriteria().andRoomIdEqualTo(roomId).andStartTimeLessThan(startTime).andStatusEqualTo(0);
         example.setOrderByClause("start_time asc");
-        List<AppointConference> list = appointConferenceMapper.selectByExample(example);
-        return list.isEmpty() ? null : list.get(0);
+        return appointConferenceMapper.selectOneByExample(example);
     }
 
 

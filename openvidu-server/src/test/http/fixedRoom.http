@@ -40,6 +40,6 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "roomId": "{{uuid}}",
+  "roomId": "10360003",
   "delayMinute": "5"
 }

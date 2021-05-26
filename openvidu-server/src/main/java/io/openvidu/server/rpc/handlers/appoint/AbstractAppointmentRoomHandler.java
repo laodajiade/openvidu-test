@@ -12,8 +12,6 @@ import io.openvidu.server.common.dao.CallHistoryMapper;
 import io.openvidu.server.common.dao.FixedRoomManagerMapper;
 import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.dao.JpushMessageMapper;
-import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.ConferenceJobManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
@@ -24,7 +22,10 @@ import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.service.AppointJobService;
-import io.openvidu.server.utils.*;
+import io.openvidu.server.utils.CrowOnceInfoManager;
+import io.openvidu.server.utils.DateUtil;
+import io.openvidu.server.utils.LocalDateTimeUtils;
+import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -34,7 +35,6 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j

@@ -5,7 +5,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * @author
+ * @author 
  * 预约会议表
  */
 @Data
@@ -44,6 +44,7 @@ public class AppointConference implements Serializable {
      * 主持人uuid
      */
     private String moderatorUuid;
+
     /**
      * 主持人昵称
      */
@@ -53,6 +54,11 @@ public class AppointConference implements Serializable {
      * 开始时间
      */
     private Date startTime;
+
+    /**
+     * 被推迟的开始时间
+     */
+    private Date delayStartTime;
 
     /**
      * 结束时间
@@ -80,7 +86,7 @@ public class AppointConference implements Serializable {
     private String moderatorPassword;
 
     /**
-     * 0：设置自动呼叫；1：禁止自动呼叫（仅当预约会议时，该字段存在设置意义）
+     * 1：设置自动呼叫；0：禁止自动呼叫
      */
     private Integer autoInvite;
 
