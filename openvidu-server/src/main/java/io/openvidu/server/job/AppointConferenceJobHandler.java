@@ -26,7 +26,6 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import io.openvidu.server.service.AppointJobService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -89,6 +88,7 @@ public class AppointConferenceJobHandler {
 
         for (AppointJob appointJob : appointJobs) {
             try {
+                log.info("appointJob {}", appointJob.getId());
                 if (!appointJobService.doExec(appointJob)) {
                     log.info("job id:{} can`t get lock", appointJob.getId());
                     continue;
@@ -122,12 +122,12 @@ public class AppointConferenceJobHandler {
 
         Session session = sessionManager.getSession(conference.getRoomId());
         if (session != null) {
-            session.close(EndReason.sessionClosedByServer);
+            sessionManager.closeSession(session.getSessionId(), EndReason.sessionClosedByServer);
         }
     }
 
     private void oneMinuteBeforeTheBegin(AppointJob job) {
-        nextConferenceToBeginNotify(job.getRuid(), 1);
+        nextConferenceToBeginNotify(job.getRuid(), 2);
     }
 
     /**
@@ -160,7 +160,7 @@ public class AppointConferenceJobHandler {
 
         // 创建一个1分钟倒计时关闭会议
         // 这里使用62而不是60是因为多给端上2秒的反应时间
-        if (countdown == 1) {
+        if (countdown == 2) {
             appointJobService.closeRoomSchedule(session.getRuid(), DateUtils.addSeconds(new Date(), 62));
         }
     }

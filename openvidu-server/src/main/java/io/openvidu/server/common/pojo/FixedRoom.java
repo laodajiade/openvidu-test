@@ -30,7 +30,7 @@ public class FixedRoom implements Serializable {
     /**
      * 短号
      */
-    private Integer shortId;
+    private String shortId;
 
     /**
      * 对应的充值卡id
@@ -83,7 +83,7 @@ public class FixedRoom implements Serializable {
     private Integer allowPart;
 
     /**
-     * 状态 0 = 未激活  1= 正常 2 =  3 = 到期
+     * 状态 0 = 未激活  1= 正常 2 =  到期
      */
     private Integer status;
 
@@ -91,6 +91,11 @@ public class FixedRoom implements Serializable {
      * 允许录制  0/1
      */
     private Boolean allowRecord;
+
+    /**
+     * 是否支持录制，充值卡属性，支持的情况下才能设置允许录制
+     */
+    private Boolean supportRecord;
 
     /**
      * 删除状态

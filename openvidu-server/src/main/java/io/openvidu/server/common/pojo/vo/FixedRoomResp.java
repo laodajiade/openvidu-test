@@ -30,7 +30,7 @@ public class FixedRoomResp implements Serializable {
     /**
      * 短号
      */
-    private Integer shortId;
+    private String shortId;
 
     /**
      * 容量

@@ -77,7 +77,7 @@ public class DelayConferenceHandler extends ExRpcAbstractHandler<JsonObject> {
                     notifyParams.addProperty("reason", reason);
                     notificationService.sendBatchNotificationUuidConcurrent(uuids, method, notifyParams);
                 } else {
-                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), DateUtils.addMinutes(new Date(), delayMinute));
+                    appointJobService.OneMinuteBeforeTheBegin(conflictConference.getRuid(), DateUtils.addMinutes(new Date(), delayMinute-2));
                 }
             }
         } catch (Exception e) {

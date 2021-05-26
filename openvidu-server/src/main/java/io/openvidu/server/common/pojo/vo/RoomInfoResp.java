@@ -29,6 +29,8 @@ public class RoomInfoResp implements Serializable {
      */
     private Integer capacity;
 
+    private String shortId;
+
     /**
      * 启用时间
      */
