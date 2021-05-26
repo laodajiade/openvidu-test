@@ -26,7 +26,6 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import io.openvidu.server.service.AppointJobService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -123,7 +122,7 @@ public class AppointConferenceJobHandler {
 
         Session session = sessionManager.getSession(conference.getRoomId());
         if (session != null) {
-            session.close(EndReason.sessionClosedByServer);
+            sessionManager.closeSession(session.getSessionId(), EndReason.sessionClosedByServer);
         }
     }
 
