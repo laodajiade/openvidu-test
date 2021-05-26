@@ -25,6 +25,8 @@ public class AppointJobService {
     }
 
     public void FiveMinuteBeforeTheBegin(String ruid, Date endTime) {
+        appointJobMapper.cancelByRuid(ruid, "FiveMinuteBeforeTheBegin");
+
         AppointJob job = new AppointJob();
         job.setScheduleName("FiveMinuteBeforeTheBegin");
         job.setRuid(ruid);
@@ -35,6 +37,8 @@ public class AppointJobService {
     }
 
     public void OneMinuteBeforeTheBegin(String ruid, Date endTime) {
+        appointJobMapper.cancelByRuid(ruid, "OneMinuteBeforeTheBegin");
+
         AppointJob job = new AppointJob();
         job.setScheduleName("OneMinuteBeforeTheBegin");
         job.setRuid(ruid);
