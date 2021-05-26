@@ -17,6 +17,7 @@
 
 package io.openvidu.server.kurento.core;
 
+import org.kurento.client.IceComponentState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +129,7 @@ public class KurentoParticipantEndpointConfig {
 			this.CDR.log(kmsEvent);
 			this.infoHandler.sendInfo(msg);
 			log.info(msg);
-			if (event.getState().name() == "CONNECTED") {
+			if (event.getState() == IceComponentState.CONNECTED) {
 				endpoint.notifyEndpointPass(typeOfEndpoint);
 			}
 			// }
