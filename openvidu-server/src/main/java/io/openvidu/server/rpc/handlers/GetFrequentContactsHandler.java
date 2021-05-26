@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.OftenContactsMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.manage.HiddenPhoneManage;
 import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
 import io.openvidu.server.common.pojo.UserDevice;
 import io.openvidu.server.common.pojo.dto.HiddenSpecifyVisibleDTO;
@@ -34,8 +35,10 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
 
     @Resource
     private OftenContactsMapper oftenContactsMapper;
-    @Autowired
+    @Resource
     private HiddenSpecifyVisibleManage hiddenSpecifyVisibleManage;
+    @Resource
+    private HiddenPhoneManage hiddenPhoneManage;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -74,6 +77,8 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
                 oftenContactsVo.setAccountType(Integer.valueOf(oftenContactsVo.getAccountType()) >= 1 ? 1 : 0);
             }
         }
+
+        hiddenPhoneManage.hiddenContactsPhone(oftenContactsList);
         PageInfo<OftenContactsVo> pageInfo = new PageInfo<>(oftenContactsList);
         resp.put(ProtocolElements.TOTAL, pageInfo.getTotal());
         resp.put(ProtocolElements.PAGES, pageInfo.getPages());

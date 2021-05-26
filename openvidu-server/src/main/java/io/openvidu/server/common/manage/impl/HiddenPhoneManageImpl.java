@@ -6,6 +6,7 @@ import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.HiddenPhone;
 import io.openvidu.server.common.pojo.HiddenPhoneExample;
 import io.openvidu.server.common.pojo.UserGroupVo;
+import io.openvidu.server.common.pojo.vo.OftenContactsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -59,6 +60,25 @@ public class HiddenPhoneManageImpl implements HiddenPhoneManage {
         for (AllUserInfo userGroupVo : list) {
             if (needHiddleUuids.contains(userGroupVo.getUuid())) {
                 userGroupVo.setPhone("");
+            }
+        }
+    }
+
+    @Override
+    public void hiddenContactsPhone(List<OftenContactsVo> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+
+        List<String> collect = list.stream().map(OftenContactsVo::getUuid).collect(Collectors.toList());
+        Set<String> needHiddleUuids = getNeedHiddenUuids(collect);
+
+        if (needHiddleUuids.isEmpty()) {
+            return;
+        }
+        for (OftenContactsVo oftenContactsVo : list) {
+            if (needHiddleUuids.contains(oftenContactsVo.getUuid())) {
+                oftenContactsVo.setPhone("");
             }
         }
     }
