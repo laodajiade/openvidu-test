@@ -22,6 +22,7 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.codahale.metrics.Timer;
 import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
@@ -136,7 +137,13 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			// 处理被流控的逻辑
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.REQUEST_TOO_FREQUENT);
-		} finally {
+		} catch (OpenViduException e) {
+            log.error(e.toString(), e);
+            if (e.getCode() == OpenViduException.Code.ROOM_NOT_FOUND_ERROR_CODE.getValue()) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            }
+        } finally {
 			if (UseTime.elapse() > 500) {
 				log.info("requestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
 			}
