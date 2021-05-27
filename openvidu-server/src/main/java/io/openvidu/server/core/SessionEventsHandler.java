@@ -232,6 +232,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 		roomInfoJson.addProperty("automatically", session.isAutomatically());
         roomInfoJson.addProperty("roomIdType", conference.getRoomIdType());
+        roomInfoJson.addProperty("roomId", conference.getRoomId());
         roomInfoJson.addProperty("ruid", conference.getRuid());
         roomInfoJson.addProperty("moderatorAccount", conference.getModeratorUuid());
 		roomInfoJson.addProperty("moderatorName", conference.getModeratorName());
