@@ -40,11 +40,11 @@ Content-Type: application/json
 }
 
 ### 获取用户权限
-POST http://localhost:4443/dev/test?id={{uuid}}&method=queryOperationPermission
+POST http://172.25.11.100:4443/dev/test?id={{uuid}}&method=queryOperationPermission
 Accept: */*
 Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "uuid":"80100212781"
+  "uuid":"81100212810"
 }

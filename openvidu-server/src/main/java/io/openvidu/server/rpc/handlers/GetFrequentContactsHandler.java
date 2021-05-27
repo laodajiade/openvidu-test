@@ -9,6 +9,7 @@ import io.openvidu.server.common.dao.OftenContactsMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
 import io.openvidu.server.common.manage.HiddenSpecifyVisibleManage;
+import io.openvidu.server.common.manage.HiddenUserHelper;
 import io.openvidu.server.common.pojo.UserDevice;
 import io.openvidu.server.common.pojo.dto.HiddenSpecifyVisibleDTO;
 import io.openvidu.server.common.pojo.vo.OftenContactsVo;
@@ -24,6 +25,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * 查询常用联系人列表
@@ -39,6 +41,8 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
     private HiddenSpecifyVisibleManage hiddenSpecifyVisibleManage;
     @Resource
     private HiddenPhoneManage hiddenPhoneManage;
+    @Resource
+    private HiddenUserHelper hiddenUserHelper;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -59,9 +63,12 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
             resp.put(ProtocolElements.GET_GROUP_INFO_ACCOUNT_LIST, new ArrayList<>(0));
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), resp);
         }
-
+        Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
         PageHelper.startPage(pageNum, pageSize);
-        List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(rpcConnection.getUserId());
+
+
+        List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(rpcConnection.getUserId(),notInUser);
+
         if (!CollectionUtils.isEmpty(oftenContactsList)) {
             for (OftenContactsVo oftenContactsVo : oftenContactsList) {
                 if (oftenContactsVo.getAccountType().equals(1)) {
