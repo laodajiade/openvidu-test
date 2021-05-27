@@ -17,7 +17,7 @@
         sd_user su ON soc.contacts_user_id = su.id WHERE soc.user_id = #{userId}
         and contacts_user_id not in
         <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
-            #{item,jdbcType=BIGINT}
+            #{item}
         </foreach>
     </select>
 
