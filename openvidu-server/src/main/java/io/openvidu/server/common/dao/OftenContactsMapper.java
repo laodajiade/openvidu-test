@@ -16,11 +16,10 @@ public interface OftenContactsMapper {
     /**
      * 获取常用联系人列表
      *
-     * @param userId
-     * @param userIds
+     * @param map
      * @return
      */
-    List<OftenContactsVo> getOftenContactsList(@Param("userId") Long userId,@Param("list") Set<Long> list);
+    List<OftenContactsVo> getOftenContactsList(Map<String,Object> map);
 
     /**
      * 添加常用联系人

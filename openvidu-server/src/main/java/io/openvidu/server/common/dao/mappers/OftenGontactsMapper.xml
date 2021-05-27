@@ -11,7 +11,7 @@
     </resultMap>
 
     <!-- 获取常用联系人列表 -->
-    <select id="getOftenContactsList" parameterType="java.lang.Long"
+    <select id="getOftenContactsList" parameterType="java.util.Map"
             resultType="io.openvidu.server.common.pojo.vo.OftenContactsVo">
         SELECT su.phone,su.username,su.uuid,su.id,type as accountType
         FROM sd_often_contacts soc INNER JOIN

@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 查询常用联系人列表
@@ -66,8 +63,11 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
         Set<Long> notInUser = hiddenUserHelper.canNotVisible(rpcConnection.getUserId(), rpcConnection.getCorpId());
         PageHelper.startPage(pageNum, pageSize);
 
+        Map<String ,Object> map = new HashMap<>();
+        map.put("userId",rpcConnection.getUserId());
+        map.put("list",notInUser);
 
-        List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(rpcConnection.getUserId(),notInUser);
+        List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(map);
 
         if (!CollectionUtils.isEmpty(oftenContactsList)) {
             for (OftenContactsVo oftenContactsVo : oftenContactsList) {
