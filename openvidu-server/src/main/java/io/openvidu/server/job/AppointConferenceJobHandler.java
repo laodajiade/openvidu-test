@@ -81,10 +81,10 @@ public class AppointConferenceJobHandler {
 
     //@Scheduled(cron = "0/5 * * * * ?")
     @XxlJob("appointmentJobHandler")
-    public void appointmentJob(String param) {
+    public  ReturnT<String>  appointmentJob(String param) {
         List<AppointJob> appointJobs = appointJobService.selectNextJobs();
         if (appointJobs.isEmpty()) {
-            return;
+            return ReturnT.SUCCESS;
         }
 
         for (AppointJob appointJob : appointJobs) {
@@ -112,6 +112,7 @@ public class AppointConferenceJobHandler {
                 appointJobService.errorExec(appointJob);
             }
         }
+        return ReturnT.SUCCESS;
     }
 
     private void closeRoomSchedule(AppointJob appointJob) {
