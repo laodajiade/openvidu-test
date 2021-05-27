@@ -2,9 +2,11 @@ package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.OftenContacts;
 import io.openvidu.server.common.pojo.vo.OftenContactsVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Administrator
@@ -15,9 +17,10 @@ public interface OftenContactsMapper {
      * 获取常用联系人列表
      *
      * @param userId
+     * @param userIds
      * @return
      */
-    List<OftenContactsVo> getOftenContactsList(Long userId);
+    List<OftenContactsVo> getOftenContactsList(@Param("userId") Long userId,@Param("list") Set<Long> list);
 
     /**
      * 添加常用联系人
