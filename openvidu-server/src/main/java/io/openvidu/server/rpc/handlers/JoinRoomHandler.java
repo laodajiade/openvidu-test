@@ -280,7 +280,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断通话时长是否不足
-                if (!Objects.isNull(session)) {
+                if (!Objects.isNull(session) && !RoomIdTypeEnums.isFixed(session.getSessionId())) {
                     String project = session.getConference().getProject();
                     Corporation corporation = corporationMapper.selectByCorpProject(project);
                     if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {

@@ -10,6 +10,7 @@ import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.StatisticsManage;
 import io.openvidu.server.common.manage.UserManage;
@@ -142,6 +143,9 @@ public class CorpRemainderDurationSchedule {
                                 JsonObject params = new JsonObject();
                                 params.addProperty("reason", "callDurationUsedUp");
                                 for (Session session : sessions) {
+                                    if (RoomIdTypeEnums.isFixed(session.getSessionId())) {
+                                        continue;
+                                    }
                                     Set<Participant> participants = sessionManager.getMajorParticipants(session.getSessionId());
                                     participants.forEach(p -> {
                                         if (p.getProject().equals(session.getConference().getProject())) {
