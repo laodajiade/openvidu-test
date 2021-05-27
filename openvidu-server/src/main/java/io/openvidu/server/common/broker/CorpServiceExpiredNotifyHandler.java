@@ -5,6 +5,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.core.EndReason;
@@ -47,8 +48,8 @@ public class CorpServiceExpiredNotifyHandler {
 
     @Async
     public void notify(String message) {
-        log.info("CorpServiceExpiredNotifyHandler corpId:" + message);
-        String corpId = message;
+        log.info("corp in modified to notify corpId:" + message);
+        final String corpId = message;
         Corporation corporation = corporationMapper.selectByPrimaryKey(Long.parseLong(corpId));
         if (corporation == null) {
             log.error("corp service expired notify error corp not exist");
@@ -71,16 +72,20 @@ public class CorpServiceExpiredNotifyHandler {
                         ProtocolElements.CORP_INFO_MODIFIED_NOTIFY_METHOD, params)
                 );
 
-        closeRoom(corporation.getProject());
+        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
+            closeRoomByConcurrent(corporation.getProject());
+        }
     }
 
-    public void closeRoom(String project) {
+    public void closeRoomByConcurrent(String project) {
         Collection<Session> sessions = sessionManager.getSessions();
 
         for (Session session : sessions) {
             // close room and notify
             if (Objects.equals(project, session.getConference().getProject())) {
-                closeRoomAndNotify(session, EndReason.serviceExpired);
+                if (!RoomIdTypeEnums.isFixed(session.getSessionId())) {
+                    closeRoomAndNotify(session, EndReason.serviceExpired);
+                }
             }
         }
     }
