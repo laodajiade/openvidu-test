@@ -83,6 +83,11 @@ public class HiddenPhoneManageImpl implements HiddenPhoneManage {
         }
     }
 
+    @Override
+    public boolean isHiddenUserPhone(String uuid) {
+        return hiddenPhoneMapper.isHiddenUserPhone(uuid);
+    }
+
     private Set<String> getNeedHiddenUuids(List<String> uuids) {
         List<HiddenPhone> hiddenPhones = listByUuids(uuids);
         if (hiddenPhones.isEmpty()) {
