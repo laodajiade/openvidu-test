@@ -503,7 +503,7 @@ public class AppointConferenceJobHandler {
         conference.setModeratorUuid(ac.getModeratorUuid());
         conference.setProject(ac.getProject());
         conference.setModeratorPassword(ac.getModeratorPassword());
-        conference.setRoomIdType(RoomIdTypeEnums.random.name());
+        conference.setRoomIdType(RoomIdTypeEnums.calculationRoomType(ac.getRoomId()).name());
         conference.setShortUrl(roomManage.createShortUrl());
         conference.setModeratorName(ac.getModeratorName());
         return conference;
