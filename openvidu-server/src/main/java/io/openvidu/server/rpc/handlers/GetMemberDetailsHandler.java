@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.dao.OftenContactsMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.manage.HiddenPhoneManage;
 import io.openvidu.server.common.pojo.Department;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.UserDept;
@@ -32,6 +33,9 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
 
     @Resource
     private OftenContactsMapper oftenContactsMapper;
+
+    @Resource
+    private HiddenPhoneManage hiddenPhoneManage;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -84,11 +88,13 @@ public class GetMemberDetailsHandler extends RpcAbstractHandler {
             deptId = department.getParentId() == null ? 0L : department.getParentId();
         } while (deptId != 0L);
 
+        final boolean hiddenUserPhone = hiddenPhoneManage.isHiddenUserPhone(uuid);
+
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("uuid", user.getUuid());
         jsonObject.addProperty("userName", user.getUsername());
         jsonObject.addProperty("userIcon", user.getIcon());
-        jsonObject.addProperty("phone", phone);
+        jsonObject.addProperty("phone", hiddenUserPhone ? "" : phone);
         jsonObject.addProperty("email", user.getEmail());
         jsonObject.addProperty("accountType", Integer.valueOf(user.getType()) >= 1 ? 1 : 0);
         jsonObject.addProperty("department", deptPath);

@@ -89,6 +89,17 @@
     from sd_hidden_phone
     where id = #{id,jdbcType=BIGINT}
   </select>
+
+  <!-- 查看用户是否被隐藏手机号 -->
+  <select id="isHiddenUserPhone" parameterType="java.lang.String" resultType="java.lang.Boolean">
+    select case when count(id) >= 1
+           then 1
+           else 0
+           end isHiddenUserPhone
+    from sd_hidden_phone
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from sd_hidden_phone
     where id = #{id,jdbcType=BIGINT}

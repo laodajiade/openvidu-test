@@ -31,4 +31,11 @@ public interface HiddenPhoneMapper {
     int updateByPrimaryKeySelective(HiddenPhone record);
 
     int updateByPrimaryKey(HiddenPhone record);
+
+    /**
+     * 查看用户是否被隐藏手机号
+     * @param uuid
+     * @return
+     */
+    boolean isHiddenUserPhone(String uuid);
 }
