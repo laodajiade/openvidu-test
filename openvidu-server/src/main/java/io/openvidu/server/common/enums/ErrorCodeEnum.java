@@ -127,6 +127,7 @@ public enum ErrorCodeEnum {
     JOIN_ROOM_TIMEOUT(13080, "请稍后再试"),
     APPOINTMENT_STATUS_ERROR(13081, "预约会议状态错误"),
     SERVICE_NOT_ACTIVATION_OR_EXPIRED(13082, "并发服务未生效或已到期"),
+    NOT_RECORDING_PERMISSION(13083,"暂无权限"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

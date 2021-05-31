@@ -88,7 +88,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
                 for (String split : role.getPrivilege().split(",")) {
                     if (!"recording_conference_room_allowed".equals(split)){
                         notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                                null, ErrorCodeEnum.PERMISSION_LIMITED);
+                                null, ErrorCodeEnum.NOT_RECORDING_PERMISSION);
                         return;
                     }
                 }
