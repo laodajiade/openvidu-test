@@ -51,9 +51,20 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
         final boolean isFixedRoomAdmin = fixedRoomManagerMapper.selectIsFixedRoomAdmin(uuid);
 
         //创建加入录制权限
-        List<Integer> permission = getSoftTerminalUser(uuid);
+        List<Integer> permission = new ArrayList<>();
         //并发服务，固定会议室管理权限
         List<Integer> abilities = new ArrayList<>();
+
+        switch (user.getType()) {
+            case 1:
+                permission = getHardTerminalUser(user.getProject());
+                break;
+            case 0:
+                permission = getSoftTerminalUser(uuid);
+                break;
+            default:
+                break;
+        }
 
         if (isFixedRoomAdmin) {
             abilities.add(1);
@@ -94,5 +105,15 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
             }
         }
         return list;
+    }
+
+    /**
+     * 查询硬终端用户权限
+     *
+     * @return
+     */
+    public List<Integer> getHardTerminalUser(String project) {
+        boolean isRechargeConcurrent = corporationMapper.selectIsRechargeConcurrent(project);
+        return isRechargeConcurrent ? Lists.newArrayList(0, 1, 2) : Lists.newArrayList(0);
     }
 }
