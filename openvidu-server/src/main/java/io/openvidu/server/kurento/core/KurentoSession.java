@@ -33,6 +33,8 @@ import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.MediaEndpoint;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
+import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.utils.SafeSleep;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,6 +45,8 @@ import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.print.attribute.standard.Media;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -638,4 +642,9 @@ public class KurentoSession extends Session {
         }
     }
 
+	public void notifyPublishChannelPass(KurentoParticipant kurentoParticipant, PublisherEndpoint endpoint) {
+		kurentoSessionHandler.notifyPublishMedias(kurentoParticipant, kurentoParticipant.getPublisherStreamId(),
+				kurentoParticipant.getPublisher().createdAt(), getSessionId(), endpoint.getMediaOptions(),
+				getParticipants(), true, 0, null);
+	}
 }

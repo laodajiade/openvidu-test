@@ -42,6 +42,7 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
 import org.kurento.jsonrpc.message.Request;
@@ -69,6 +70,7 @@ public class Session implements SessionInterface {
 
 	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 	protected String sessionId;
+	protected String traceId;
 	protected String ruid;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
@@ -142,6 +144,8 @@ public class Session implements SessionInterface {
 		this.subtitleConfig = previousSession.getSubtitleConfig();
 		this.languages = previousSession.getLanguages();
 		this.corpMcuConfig = previousSession.getCorpMcuConfig();
+
+//		this.traceId = RandomStringUtils.randomAlphabetic(6);
 	}
 
 	public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
@@ -157,6 +161,8 @@ public class Session implements SessionInterface {
 		this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
 		this.delayConfCnt = 0;
 		this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;	// default 20min
+
+//		this.traceId = RandomStringUtils.randomAlphabetic(6);
 	}
 
 	public SubtitleConfigEnum getSubtitleConfig() {
@@ -192,6 +198,10 @@ public class Session implements SessionInterface {
 	public void setRuid(String ruid) {
 		this.ruid = ruid;
 	}
+
+	public String getTraceId() { return traceId; }
+
+	public void setTraceId(String traceId) { this.traceId = traceId; }
 
 	public boolean isAutomatically() {
         return automatically;

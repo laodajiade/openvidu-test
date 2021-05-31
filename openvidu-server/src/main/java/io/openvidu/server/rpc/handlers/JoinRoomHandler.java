@@ -14,6 +14,7 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -343,9 +344,17 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             role.name(), streamType.name(), location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility(), rpcConnection.getFunctionality());
                 }
 
+                String sessionTraceId;
+                if (!Objects.isNull(sessionManager.getSession(sessionId))) {
+                    sessionTraceId = sessionManager.getSession(sessionId).getTraceId();
+                } else {
+                    sessionTraceId = RandomStringUtils.randomAlphabetic(6);
+                }
+
                 Long userId = rpcConnection.getUserId();
                 String serialNumber = rpcConnection.getSerialNumber();
-                String participantName = sessionId + "_" + rpcConnection.getUserUuid() + "_" + streamType.name();
+                String participantName = "sid_" + sessionTraceId + "_" + sessionId +
+                        "_" + rpcConnection.getUserUuid() + "_" + streamType.name();
                 participant.setPreset(preset);
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
                 participant.setParticipantName(participantName);
@@ -404,6 +413,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         session.getJoinOrLeaveReentrantLock().unlock();
                     }
                 }
+                sessionManager.getSession(sessionId).setTraceId(sessionTraceId);
                 UseTime.point("join room p2");
             } while (false);
 

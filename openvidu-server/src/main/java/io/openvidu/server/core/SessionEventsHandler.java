@@ -413,9 +413,8 @@ public class SessionEventsHandler {
 		}*/
 	}
 
-	public void onPublishMedia(Participant participant, String streamId, Long createdAt, String sessionId,
-			MediaOptions mediaOptions, String sdpAnswer, Set<Participant> participants, Integer transactionId,
-			OpenViduException error) {
+	public void onPublishMedia(Participant participant, String streamId, Long createdAt, String sdpAnswer,
+							   Integer transactionId, OpenViduException error) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
@@ -427,6 +426,17 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_CREATEDAT_PARAM, createdAt);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
+	}
+
+	public void notifyPublishMedias(Participant participant, String streamId, Long createdAt, String sessionId,
+									MediaOptions mediaOptions, Set<Participant> participants, boolean isIntermit,
+									Integer transactionId, OpenViduException error) {
+		if (error != null) {
+			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
+			return;
+		}
+
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, participant.getParticipantPublicId());
@@ -453,22 +463,60 @@ public class SessionEventsHandler {
 		streamsArray.add(stream);
 		params.add(ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, streamsArray);
 
-        Session conferenceSession = sessionManager.getSession(sessionId);
-        if (Objects.equals(ConferenceModeEnum.MCU, conferenceSession.getConferenceMode())) {
-            params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
-        }
+		Session conferenceSession = sessionManager.getSession(sessionId);
+		if (Objects.equals(ConferenceModeEnum.MCU, conferenceSession.getConferenceMode())) {
+			params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
+		}
 
-        for (Participant p : participants) {
-            if (StreamType.MAJOR.equals(p.getStreamType())) {
-                rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-                        ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+		Set<Participant> publisherParticipants = new HashSet<>();
+		Set<Participant> subscribeParticipants = new HashSet<>();
+		for (Participant p : participants) {
+			if (p.getRole() != OpenViduRole.SUBSCRIBER) {
+				publisherParticipants.add(p);
+			} else {
+				subscribeParticipants.add(p);
+			}
+		}
 
-                // broadcast the changes of layout
-                if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-                    rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
-                }
-            }
+		int nNotifyParticipantNum = 0;
+		for (Participant p : publisherParticipants) {
+			if (StreamType.MAJOR.equals(p.getStreamType())) {
+				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+				nNotifyParticipantNum++;
+
+				// broadcast the changes of layout
+				if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+				}
+			}
+		}
+		log.info("publisher participants num:{} subscriber participants num:{} nNotifyParticipantNum:{}",
+				publisherParticipants.size(), subscribeParticipants.size(), nNotifyParticipantNum);
+
+		int nParticipantIndex = 0;
+		for (Participant p : subscribeParticipants) {
+			if (isIntermit && nParticipantIndex % 10 == 0) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(500);//延迟0.5秒
+					log.info("notifyPublishMedias {}", nParticipantIndex);
+				} catch (InterruptedException e) {
+					//
+				}
+			}
+
+			nParticipantIndex++;
+			if (StreamType.MAJOR.equals(p.getStreamType())) {
+				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+
+				// broadcast the changes of layout
+				if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+				}
+			}
 		}
 	}
 

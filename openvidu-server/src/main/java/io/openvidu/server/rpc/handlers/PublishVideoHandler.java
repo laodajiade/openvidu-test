@@ -77,7 +77,7 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
         // update recording
         if (session.isRecording.get() && participant.ableToUpdateRecord()) {
-            sessionManager.updateRecording(session.getSessionId());
+            sessionManager.updateRecording(session.getSessionId(), participant);
         }
     }
 }

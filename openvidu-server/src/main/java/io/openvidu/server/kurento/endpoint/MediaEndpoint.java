@@ -149,6 +149,8 @@ public abstract class MediaEndpoint {
 		}
 	}
 
+	public void notifyEndpointPass(String typeOfEndpoint) {}
+
 	public long createdAt() {
 		return this.createdAt;
 	}
