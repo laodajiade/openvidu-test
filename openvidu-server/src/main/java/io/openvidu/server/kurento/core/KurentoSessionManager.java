@@ -1444,6 +1444,7 @@ public class KurentoSessionManager extends SessionManager {
     @Override
     public void updateRecording(String sessionId, Participant curParticipant) {
         Session session;
+        log.info("updateRecording curParticipant " + curParticipant.getStreamType());
         if (Objects.nonNull(session = getSession(sessionId))) {
             log.info("Update recording and sessionId is {}", sessionId);
             KurentoSession kurentoSession = (KurentoSession) session;
@@ -1499,13 +1500,13 @@ public class KurentoSessionManager extends SessionManager {
                 if (Objects.nonNull(speakerPart)) {
                     haveMajorStream = true;
 
-                    if (Objects.nonNull(curParticipant) &&
-                            (curParticipant.getUuid() == speakerPart.getUuid() &&
-                             curParticipant.getStreamType() != speakerPart.getStreamType())) {
-                        log.warn("cur participant uuid:{} streamType:{} we need major streamType(Maybe major stream is not publish now)",
-                                curParticipant.getUuid(), curParticipant.getStreamType());
-                        return false;
-                    }
+//                    if (Objects.nonNull(curParticipant) &&
+//                            (curParticipant.getUuid().equals(speakerPart.getUuid()) &&
+//                             curParticipant.getStreamType() != speakerPart.getStreamType())) {
+//                        log.warn("cur participant uuid:{} streamType:{} we need major streamType(Maybe major stream is not publish now)",
+//                                curParticipant.getUuid(), curParticipant.getStreamType());
+//                        return false;
+//                    }
 
                     passThruList.add(constructPartRecordInfo(speakerPart, order));
                     order++;
@@ -1549,7 +1550,7 @@ public class KurentoSessionManager extends SessionManager {
                 Participant speakerPartMinorStream = demotionMinorStream(speakerPart, kurentoSession);
                 if (Objects.nonNull(curParticipant) &&
                         (curParticipant.getUuid() == speakerPartMinorStream.getUuid() &&
-                         curParticipant.getStreamType() != speakerPartMinorStream.getStreamType())) {
+                                curParticipant.getStreamType() != speakerPartMinorStream.getStreamType())) {
                     log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)",
                             curParticipant.getUuid(), curParticipant.getStreamType());
                     return false;
@@ -1583,7 +1584,12 @@ public class KurentoSessionManager extends SessionManager {
             return part;
         }
         Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
-        return minorPart == null ? part : minorPart;
+        if (minorPart != null) {
+            if ( minorPart.isStreaming())
+                return minorPart;
+            log.info("minorPart is not null but not streaming");
+        }
+        return part;
     }
 
     private JsonObject constructPartRecordInfo(Participant part, int order) {
@@ -1697,7 +1703,7 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    private void stopRecordAndNotify(Session session,String reason) {
+    private void stopRecordAndNotify(Session session, String reason) {
         if (session.sessionAllowedToStopRecording()) {
             // stop the recording
             stopRecording(session.getSessionId());

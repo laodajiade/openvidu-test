@@ -5,10 +5,14 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.dao.FixedRoomMapper;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
+import io.openvidu.server.common.enums.ConferenceStatus;
+import io.openvidu.server.common.enums.DeployTypeEnum;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.LocalDateTimeUtils;
@@ -17,7 +21,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -81,24 +84,25 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
-        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(roomId);
-        if (StringUtils.isEmpty(fixedRoom)){
-            Role role = roleMapper.selectUserOperationPermission(participant.getUuid());
-            if (!StringUtils.isEmpty(role)) {
-                for (String split : role.getPrivilege().split(",")) {
-                    if (!"recording_conference_room_allowed".equals(split)){
-                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                                null, ErrorCodeEnum.NOT_RECORDING_PERMISSION);
-                        return;
-                    }
-                }
-            }
-        }
-
         // 权限校验（web：管理员，terminal：主持人）
         if (!participant.getRole().isController()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
+            return;
+        }
+
+        Role role;
+        if (Objects.isNull(role = roleMapper.selectUserOperationPermission(participant.getUuid()))
+                || !role.getPrivilege().contains("recording_conference_room_allowed")) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.NOT_RECORDING_PERMISSION);
+            return;
+        }
+
+
+        if (session.getPresetInfo().getAllowRecord() == SessionPresetEnum.off) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);
             return;
         }
 

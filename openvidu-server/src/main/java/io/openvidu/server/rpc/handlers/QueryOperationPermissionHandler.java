@@ -75,6 +75,7 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
 
         jsonObject.put("permission", permission);
         jsonObject.put("abilities", abilities);
+        jsonObject.put("list", new int[]{0,1,2,3});
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
 
