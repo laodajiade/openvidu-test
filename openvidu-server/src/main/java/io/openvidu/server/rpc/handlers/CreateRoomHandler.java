@@ -77,6 +77,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         AppointConference appt = null;
         String moderatorUuid = rpcConnection.getUserUuid();
 
+
+
         if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random == roomIdType || StringUtils.isEmpty(sessionId))) {
             sessionId = randomRoomIdGenerator.offerRoomId();
         } else if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-")) {
@@ -264,8 +266,14 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
     private ErrorCodeEnum generalVerification(RpcConnection rpcConnection) {
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+
+        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
+            return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;
+        }
+
         //判断发起会议时是否超出企业人数上限
         Collection<Session> sessions = sessionManager.getSessions();
+
         if (Objects.nonNull(sessions)) {
             AtomicInteger limitCapacity = new AtomicInteger();
             sessions.forEach(e -> {
@@ -283,9 +291,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             return ErrorCodeEnum.REMAINDER_DURATION_USE_UP;
         }
 
-        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
-            return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;
-        }
 
         return ErrorCodeEnum.SUCCESS;
     }

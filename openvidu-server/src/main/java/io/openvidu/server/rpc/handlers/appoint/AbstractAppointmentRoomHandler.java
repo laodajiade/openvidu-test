@@ -297,6 +297,10 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
 
     protected ErrorCodeEnum generalVerification(RpcConnection rpcConnection, AppointmentRoomVO params) {
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
+            return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;
+        }
+
         //判断通话时长是否不足
         if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
             return ErrorCodeEnum.REMAINDER_DURATION_USE_UP;
@@ -310,10 +314,6 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         // 校验有效期
         if (LocalDateTimeUtils.toEpochMilli(corporation.getExpireDate()) < params.getEndTime()) {
             return ErrorCodeEnum.APPOINTMENT_TIME_AFTER_SERVICE_EXPIRED;
-        }
-
-        if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
-            return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;
         }
         return ErrorCodeEnum.SUCCESS;
     }
