@@ -57,24 +57,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
         Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
 
-        //查询固定会议室是否充值过录制存储空间和存储空间是否失效
-        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(roomId);
-        if (!StringUtils.isEmpty(fixedRoom)) {
-            final boolean isRechargeStorage = fixedRoomMapper.selectISRechargeCardRecord(roomId);
-            if (!isRechargeStorage){
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.NO_RECORD_SERVICE);
-                return;
-            }
-
-            if (LocalDateTimeUtils.toEpochMilli(corporation.getRecordingExpireDate()) < System.currentTimeMillis()) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.RECORD_SERVICE_INVALID);
-                return;
-            }
-
-        }
-
         // 校验会议
         ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(roomId);
@@ -97,6 +79,20 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             participant = sanityCheckOfSession(rpcConnection, "startConferenceRecord");
         } catch (OpenViduException e) {
             return;
+        }
+
+        FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(roomId);
+        if (StringUtils.isEmpty(fixedRoom)){
+            Role role = roleMapper.selectUserOperationPermission(participant.getUuid());
+            if (!StringUtils.isEmpty(role)) {
+                for (String split : role.getPrivilege().split(",")) {
+                    if (!"recording_conference_room_allowed".equals(split)){
+                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                                null, ErrorCodeEnum.PERMISSION_LIMITED);
+                        return;
+                    }
+                }
+            }
         }
 
         // 权限校验（web：管理员，terminal：主持人）

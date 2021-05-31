@@ -31,7 +31,6 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String uuid = getStringParam(request, "uuid");
-
         if (uuid == null) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.USER_NOT_EXIST);
@@ -46,26 +45,25 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
         }
 
         JSONObject jsonObject = new JSONObject();
-        List<Integer> list = new ArrayList<>();
-
+        //是否有充值过并发会议
+        final boolean isRechargeConcurrent = corporationMapper.selectIsRechargeConcurrent(user.getProject());
         //查询用户是否是固定会议室管理员
-        boolean isFixedRoomAdmin = fixedRoomManagerMapper.selectIsFixedRoomAdmin(uuid);
+        final boolean isFixedRoomAdmin = fixedRoomManagerMapper.selectIsFixedRoomAdmin(uuid);
 
-        switch (user.getType()) {
-            case 1:
-                list = getHardTerminalUser(user.getProject());
-                break;
-            case 0:
-                list = getSoftTerminalUser(uuid);
-                break;
-            default:
-                break;
-        }
+        //创建加入录制权限
+        List<Integer> permission = getSoftTerminalUser(uuid);
+        //并发服务，固定会议室管理权限
+        List<Integer> abilities = new ArrayList<>();
 
         if (isFixedRoomAdmin) {
-            list.add(3);
+            abilities.add(1);
         }
-        jsonObject.put("list", list);
+        if (isRechargeConcurrent) {
+            abilities.add(0);
+        }
+
+        jsonObject.put("permission", permission);
+        jsonObject.put("abilities", abilities);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), jsonObject);
     }
 
@@ -96,16 +94,5 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
             }
         }
         return list;
-    }
-
-
-    /**
-     * 查询硬终端用户权限
-     *
-     * @return
-     */
-    public List<Integer> getHardTerminalUser(String project) {
-        boolean isRechargeConcurrent = corporationMapper.selectIsRechargeConcurrent(project);
-        return isRechargeConcurrent ? Lists.newArrayList(0, 1, 2) : Lists.newArrayList(0);
     }
 }
