@@ -29,7 +29,8 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "roomId": "{{uuid}}"
+  "roomId": "{{uuid}}",
+  "ruid": "appt-5cf514c9b7b74db29ea6b10d59deaccc"
 }
 
 

@@ -27,11 +27,8 @@ public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
-        BindValidate.notEmpty(params, "roomId");
-        BindValidate.notEmpty(params, "ruid");
-
-        String roomId = getStringParam(request, "roomId");
-        String ruid = getStringParam(request, "ruid");
+        String roomId = BindValidate.notEmptyAndGet(params, "roomId");
+        String ruid = BindValidate.notEmptyAndGet(params, "ruid");
 
         AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
         if (appointConference == null) {
