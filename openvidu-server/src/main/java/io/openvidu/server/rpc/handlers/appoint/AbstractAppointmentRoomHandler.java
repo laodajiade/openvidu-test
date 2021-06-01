@@ -277,7 +277,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         if (fixedRoom == null || fixedRoom.getStatus() == 0) {
             return ErrorCodeEnum.CONFERENCE_NOT_EXIST;
         }
-        if (fixedRoom.getStatus() == 2 || fixedRoom.getExpireDate().isBefore(LocalDateTime.now())) {
+        if (fixedRoom.getStatus() == FixedRoomStatusEnum.EXPIRED.getStatus() || fixedRoom.getExpireDate().isBefore(LocalDateTime.now())) {
             return ErrorCodeEnum.FIXED_ROOM_EXPIRED;
         }
 

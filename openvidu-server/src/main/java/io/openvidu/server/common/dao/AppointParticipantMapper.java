@@ -4,7 +4,9 @@ import io.openvidu.server.common.pojo.AppointParticipant;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
+
 @Mapper
 @Repository
 public interface AppointParticipantMapper {
@@ -27,6 +29,10 @@ public interface AppointParticipantMapper {
     List<AppointParticipant> selectByCondition(AppointParticipant appointSearch);
 
     List<AppointParticipant> selectByRuids(List<String> confRuids);
+
+    default List<AppointParticipant> selectListByRuid(String ruid) {
+        return selectByRuids(Collections.singletonList(ruid));
+    }
 
     void endAppointStatusByRuids(List<String> expiredAppointRuids);
 }
