@@ -3,12 +3,17 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.manage.AppointConferenceManage;
+import io.openvidu.server.common.pojo.AppointConference;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -17,6 +22,9 @@ import java.util.HashSet;
 public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
 
 
+    @Autowired
+    private AppointConferenceManage appointConferenceManage;
+
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
         BindValidate.notEmpty(params, "roomId");
@@ -24,6 +32,16 @@ public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
 
         String roomId = getStringParam(request, "roomId");
         String ruid = getStringParam(request, "ruid");
+
+        AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
+        if (appointConference == null) {
+            return RespResult.fail(ErrorCodeEnum.APPOINTMENT_CONFERENCE_NOT_EXIST);
+        }
+
+        Conference conference = conferenceMapper.selectUsedConference(appointConference.getRoomId());
+        if (conference == null) {
+            return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+        }
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("method", ProtocolElements.URGED_PEOPLE_TO_END_METHOD);
