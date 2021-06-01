@@ -57,7 +57,7 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
 
         switch (user.getType()) {
             case 1:
-                permission = getHardTerminalUser(user.getProject());
+                permission = Lists.newArrayList(0, 1, 2);
                 break;
             case 0:
                 permission = getSoftTerminalUser(uuid);
@@ -113,8 +113,8 @@ public class QueryOperationPermissionHandler extends RpcAbstractHandler {
      *
      * @return
      */
-    public List<Integer> getHardTerminalUser(String project) {
+    /*public List<Integer> getHardTerminalUser(String project) {
         boolean isRechargeConcurrent = corporationMapper.selectIsRechargeConcurrent(project);
         return isRechargeConcurrent ? Lists.newArrayList(0, 1, 2) : Lists.newArrayList(0);
-    }
+    }*/
 }

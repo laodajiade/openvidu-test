@@ -21,6 +21,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -49,6 +50,9 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.START_CONF_RECORD_ROOMID_PARAM);
         boolean forceRec = getBooleanOptionalParam(request, "force");
+
+
+
 
         Session session;
         if (Objects.isNull(session = sessionManager.getSession(roomId))) {
@@ -92,13 +96,23 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         }
 
         Role role;
-        if (Objects.isNull(role = roleMapper.selectUserOperationPermission(participant.getUuid()))
-                || !role.getPrivilege().contains("recording_conference_room_allowed")) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.NOT_RECORDING_PERMISSION);
+        User user = userMapper.selectByUUID(participant.getUuid());
+
+        if (user == null) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.USER_NOT_EXIST);
             return;
         }
 
+
+        if (user.getType().equals(0)) {
+            if (Objects.isNull(role = roleMapper.selectUserOperationPermission(participant.getUuid()))
+                    || !role.getPrivilege().contains("recording_conference_room_allowed")) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.NOT_RECORDING_PERMISSION);
+                return;
+            }
+        }
 
         if (session.getPresetInfo().getAllowRecord() == SessionPresetEnum.off) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
