@@ -282,7 +282,7 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         }
 
         FixedRoomManager fixedRoomManager = fixedRoomManagerMapper.selectByUserId(rpcConnection.getUserId(), fixedRoom.getRoomId());
-        if (fixedRoomManager == null) {
+        if (fixedRoomManager == null && rpcConnection.getAccessType() != AccessTypeEnum.web) {
             return ErrorCodeEnum.PERMISSION_LIMITED;
         }
 
