@@ -128,7 +128,7 @@ Cache-Control: no-cache
 Content-Type: application/json
 
 {
-  "ruid": "appt-5091d7dc411748e98627c6a782b99e0a",
-  "roomId": "",
-  "roomIdType": "random"
+  "ruid": "appt-c0a7ca0a07544f51a0d161a7aed5629e",
+  "roomId": "10360002",
+  "roomIdType": "fixed"
 }
