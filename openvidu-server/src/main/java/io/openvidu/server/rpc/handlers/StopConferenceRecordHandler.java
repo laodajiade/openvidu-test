@@ -92,6 +92,7 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
         // 通知录制服务停止录制视频
         sessionManager.stopRecording(roomId);
 
+        recordingNum.decrementAndGet();
 
         returnAndNotify(rpcConnection, request);
     }

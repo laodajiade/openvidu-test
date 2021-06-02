@@ -37,6 +37,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -154,6 +155,8 @@ public abstract class RpcAbstractHandler {
     protected JpushManage jpushManage;
 
     protected BigDecimal bigDecimalMB = new BigDecimal(1024 * 1024);
+
+    protected static AtomicInteger recordingNum = new AtomicInteger(0);
 
     protected void addInviteCompensation(String account, JsonElement jsonElement, String expireTime) {
         inviteCompensationManage.activateInviteCompensation(account, jsonElement, Long.valueOf(expireTime));

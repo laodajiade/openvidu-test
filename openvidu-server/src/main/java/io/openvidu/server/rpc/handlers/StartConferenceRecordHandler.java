@@ -5,10 +5,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.dao.FixedRoomMapper;
-import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
-import io.openvidu.server.common.enums.ConferenceStatus;
-import io.openvidu.server.common.enums.DeployTypeEnum;
-import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -27,6 +24,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -45,14 +43,16 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
 
     private static final long upperLimit = 100 * 1024 * 1024;
 
-
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.START_CONF_RECORD_ROOMID_PARAM);
         boolean forceRec = getBooleanOptionalParam(request, "force");
 
-
-
+        if (ArtisanEnum.RECORDING_NUM.getValue().equals(recordingNum.get())) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.OTHER_RECORDING_LATER_RETRY);
+            return;
+        }
 
         Session session;
         if (Objects.isNull(session = sessionManager.getSession(roomId))) {
@@ -216,6 +216,9 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
                     // notify.addProperty("reason", "serverInternalError");
                     notify.addProperty("reason", CommonConstants.SERVER_INTERNAL_ERROR);
                     notificationService.sendBatchNotificationConcurrent(session.getMajorPartEachConnect(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
+                }
+                if (ConferenceRecordStatusEnum.PROCESS.getStatus().equals(recordStatus.getStatus())) {
+                    recordingNum.incrementAndGet();
                 }
             } catch (Exception e) {
                 log.info("asyncCheckRecordStatus error ", e);

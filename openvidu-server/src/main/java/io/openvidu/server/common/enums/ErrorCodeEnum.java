@@ -128,6 +128,8 @@ public enum ErrorCodeEnum {
     APPOINTMENT_STATUS_ERROR(13081, "预约会议状态错误"),
     SERVICE_NOT_ACTIVATION_OR_EXPIRED(13082, "并发服务未生效或已到期"),
     NOT_RECORDING_PERMISSION(13083,"暂无权限"),
+    OTHER_RECORDING_LATER_RETRY(13084,"已有其他会议正在录制,请稍后重试"),
+
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
