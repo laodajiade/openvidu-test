@@ -39,6 +39,7 @@ import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.utils.SipMockClient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -808,6 +809,8 @@ public class Session implements SessionInterface {
 			// send part role changed notification
 			notificationService.sendBatchNotificationConcurrent(notifyList,
 					ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
+
+			SipMockClient.subscriber2publisher(sub2PubPart);
 		}
 	}
 
@@ -968,6 +971,11 @@ public class Session implements SessionInterface {
 							ProtocolElements.SHARING_CONTROL_NOTIFY, evictShareNotifyParam);
 				}
 			});
+
+			// sip临时方案
+			sub2PubPartSet.forEach(SipMockClient::subscriber2publisher);
+			pub2SubPartSet.forEach(participant -> SipMockClient.publisher2subscriber(participant,notificationService));
+
 		}
 		return errorCodeEnum;
 	}

@@ -435,6 +435,18 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
+		// 处理硬终端的问题，由平台模拟并拦截推流通知，在2.0时重构，这是临时代码
+        if (participant.getTerminalType() == TerminalTypeEnum.S) {
+            log.info("come in sip notifyPublishMedias function");
+            if (participant.getHandStatus() == ParticipantHandStatus.speaker) {
+                log.info("notify PublishMedias because sip is speaker");
+            } else if (participant.getRole() != OpenViduRole.SUBSCRIBER) {
+                log.info("notify PublishMedias because sip is not subscriber");
+            } else {
+                log.info("interrupt sip notifyPublishMedias");
+                return;
+            }
+        }
 
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 
