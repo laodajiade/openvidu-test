@@ -292,6 +292,11 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
             return ErrorCodeEnum.ROOM_CAPACITY_LIMITED;
         }
 
+        // 校验有效期
+        if (LocalDateTimeUtils.toEpochMilli(fixedRoom.getExpireDate()) < params.getEndTime()) {
+            return ErrorCodeEnum.APPOINTMENT_TIME_AFTER_ROOM_EXPIRED;
+        }
+
         return ErrorCodeEnum.SUCCESS;
     }
 

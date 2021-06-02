@@ -129,6 +129,7 @@ public enum ErrorCodeEnum {
     SERVICE_NOT_ACTIVATION_OR_EXPIRED(13082, "并发服务未生效或已到期"),
     NOT_RECORDING_PERMISSION(13083,"暂无权限"),
     OTHER_RECORDING_LATER_RETRY(13084,"已有其他会议正在录制,请稍后重试"),
+    APPOINTMENT_TIME_AFTER_ROOM_EXPIRED(13085, "预约会议时间不可超出固定会议室到期时间"),
 
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),

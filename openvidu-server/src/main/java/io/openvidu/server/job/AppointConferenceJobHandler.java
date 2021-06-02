@@ -276,6 +276,8 @@ public class AppointConferenceJobHandler {
                     log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
                     inviteParticipant(appointConference, uuidSet);
                 }
+            } else {
+                FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
             }
 
 
