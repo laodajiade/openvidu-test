@@ -23,5 +23,8 @@ public interface AppointConferenceManage {
 
     void updateById(AppointConference appt);
 
-    Optional<AppointConference> getConflict(Date startTime, String roomIde);
+    Optional<AppointConference> getConflict(Date startTime, String roomId);
+
+    Optional<AppointConference> getNextAppt(Date startTime, String roomId);
+
 }
