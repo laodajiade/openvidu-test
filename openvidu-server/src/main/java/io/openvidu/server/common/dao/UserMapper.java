@@ -55,6 +55,7 @@ public interface UserMapper {
 
     /**
      * 根据部门id查询 部门下的所有SIP用户
+     *
      * @param deptId
      * @return
      */
@@ -62,6 +63,7 @@ public interface UserMapper {
 
     /**
      * 查询用户信息以及所在的部门
+     *
      * @param uuid
      * @return
      */
@@ -70,6 +72,7 @@ public interface UserMapper {
 
     /**
      * 查询硬终端信息
+     *
      * @param uuid
      * @return
      */
@@ -78,8 +81,18 @@ public interface UserMapper {
 
     /**
      * 查询sip用户的设备号
+     *
      * @param uuid
      * @return
      */
     String selectSipUserNumber(String uuid);
+
+
+    /**
+     * 修改SIP名称
+     *
+     * @param map
+     * @return
+     */
+    int updateSip(Map<String, Object> map);
 }

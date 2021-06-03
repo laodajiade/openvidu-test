@@ -452,4 +452,14 @@
     where su.uuid = #{uuid}
   </select>
 
+  <update id="updateSip" parameterType="java.util.Map">
+    update sd_sip
+    <set>
+      <if test="sipName != null">
+        sip_name = #{sipName,jdbcType=VARCHAR},
+      </if>
+      update_time = now()
+    </set>
+    where uuid = #{uuid}
+  </update>
 </mapper>

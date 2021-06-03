@@ -277,4 +277,10 @@
     set status = #{status,jdbcType=VARCHAR}
     where serial_number = #{serialNumber,jdbcType=VARCHAR}
   </update>
+
+  <update id="updateDeviceName" parameterType="java.util.Map" >
+    update sd_device
+    set device_name = #{deviceName,jdbcType=VARCHAR}
+    where serial_number = #{serialNumber,jdbcType=VARCHAR}
+  </update>
 </mapper>
