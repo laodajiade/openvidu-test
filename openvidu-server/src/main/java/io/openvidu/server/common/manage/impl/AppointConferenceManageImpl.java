@@ -51,6 +51,14 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         return appointConferenceMapper.selectOneByExample(example);
     }
 
+    @Override
+    public Optional<AppointConference> getNextAppt(Date startTime, String roomId) {
+        AppointConferenceExample example = new AppointConferenceExample();
+        example.createCriteria().andRoomIdEqualTo(roomId).andStartTimeGreaterThan(startTime).andStatusEqualTo(0);
+        example.setOrderByClause("start_time asc");
+        return appointConferenceMapper.selectOneByExample(example);
+    }
+
 
     public boolean isConflict(AppointmentRoomVO vo) {
         // 判断会议是否冲突
