@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -70,9 +73,8 @@ public class InviteCompensationManage {
                     scheduler.disable();
                 }
 
-                Optional<RpcConnection> connectionOptional = notificationService.getRpcConnections().stream()
-                        .filter(c -> c.getUserUuid().equals(account)).findFirst();
-                connectionOptional.ifPresent(rpcConnection -> {
+                notificationService.getRpcConnections().stream()
+                        .filter(c -> c.getUserUuid().equals(account)).forEach(rpcConnection -> {
                     log.info("Close Room CANCEL_INVITE_NOTIFY_METHOD account:{}", account);
                     notificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
                             ProtocolElements.CANCELINVITE_NOTIFY_METHOD, new JsonObject());
