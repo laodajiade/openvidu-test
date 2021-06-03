@@ -7,6 +7,7 @@ import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.dao.CorpMcuConfigMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
+import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.manage.UserManage;
@@ -114,7 +115,7 @@ public class RoomManageImpl implements RoomManage {
         update.setDuration(duration);
         conferencePartHistoryMapper.updatePartHistroy(update);
         Conference conference = conferenceMapper.selectByRuid(ruid);
-        if (Objects.nonNull(conference)) {
+        if (Objects.nonNull(conference) && !RoomIdTypeEnums.fixed.name().equals(conference.getRoomIdType())) {
             Corporation corporation = corporationMapper.selectByCorpProject(conference.getProject());
             if (Objects.nonNull(corporation)) {
                 int remainderDuration = corporation.getRemainderDuration() - duration;
