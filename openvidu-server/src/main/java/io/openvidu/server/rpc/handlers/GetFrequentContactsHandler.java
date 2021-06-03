@@ -66,6 +66,7 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
         Map<String ,Object> map = new HashMap<>();
         map.put("userId",rpcConnection.getUserId());
         map.put("list",notInUser);
+        map.put("visibleUser",specifyVisibleRule.getVisibleUser());
 
         List<OftenContactsVo> oftenContactsList = oftenContactsMapper.getOftenContactsList(map);
 
@@ -85,7 +86,7 @@ public class GetFrequentContactsHandler extends RpcAbstractHandler {
             }
         }
 
-        hiddenPhoneManage.hiddenContactsPhone(oftenContactsList);
+        hiddenPhoneManage.hiddenPhone(oftenContactsList);
         PageInfo<OftenContactsVo> pageInfo = new PageInfo<>(oftenContactsList);
         resp.put(ProtocolElements.TOTAL, pageInfo.getTotal());
         resp.put(ProtocolElements.PAGES, pageInfo.getPages());

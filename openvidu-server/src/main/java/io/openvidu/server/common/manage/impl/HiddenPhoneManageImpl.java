@@ -2,11 +2,9 @@ package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.server.common.dao.HiddenPhoneMapper;
 import io.openvidu.server.common.manage.HiddenPhoneManage;
-import io.openvidu.server.common.pojo.AllUserInfo;
 import io.openvidu.server.common.pojo.HiddenPhone;
 import io.openvidu.server.common.pojo.HiddenPhoneExample;
-import io.openvidu.server.common.pojo.UserGroupVo;
-import io.openvidu.server.common.pojo.vo.OftenContactsVo;
+import io.openvidu.server.utils.ReflexUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -27,58 +25,20 @@ public class HiddenPhoneManageImpl implements HiddenPhoneManage {
 
 
     @Override
-    public void hiddenPhone(List<UserGroupVo> list) {
+    public void hiddenPhone(List<?> list) {
         if (CollectionUtils.isEmpty(list)) {
             return;
         }
-
-        List<String> collect = list.stream().map(UserGroupVo::getUuid).collect(Collectors.toList());
+        List<String> collect = list.stream().map(o -> (String) ReflexUtils.getFieldValue(o, "uuid")).collect(Collectors.toList());
         Set<String> needHiddleUuids = getNeedHiddenUuids(collect);
 
         if (needHiddleUuids.isEmpty()) {
             return;
         }
-        for (UserGroupVo userGroupVo : list) {
-            if (needHiddleUuids.contains(userGroupVo.getUuid())) {
-                userGroupVo.setPhone("");
-            }
-        }
-    }
 
-    @Override
-    public void hiddenPhone2(List<AllUserInfo> list) {
-        if (CollectionUtils.isEmpty(list)) {
-            return;
-        }
-
-        List<String> collect = list.stream().map(AllUserInfo::getUuid).collect(Collectors.toList());
-        Set<String> needHiddleUuids = getNeedHiddenUuids(collect);
-
-        if (needHiddleUuids.isEmpty()) {
-            return;
-        }
-        for (AllUserInfo userGroupVo : list) {
-            if (needHiddleUuids.contains(userGroupVo.getUuid())) {
-                userGroupVo.setPhone("");
-            }
-        }
-    }
-
-    @Override
-    public void hiddenContactsPhone(List<OftenContactsVo> list) {
-        if (CollectionUtils.isEmpty(list)) {
-            return;
-        }
-
-        List<String> collect = list.stream().map(OftenContactsVo::getUuid).collect(Collectors.toList());
-        Set<String> needHiddleUuids = getNeedHiddenUuids(collect);
-
-        if (needHiddleUuids.isEmpty()) {
-            return;
-        }
-        for (OftenContactsVo oftenContactsVo : list) {
-            if (needHiddleUuids.contains(oftenContactsVo.getUuid())) {
-                oftenContactsVo.setPhone("");
+        for (Object o : list) {
+            if (needHiddleUuids.contains(ReflexUtils.getFieldValue(o, "uuid"))) {
+                ReflexUtils.setFieldValue(o, "phone", "");
             }
         }
     }

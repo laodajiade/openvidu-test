@@ -14,12 +14,18 @@
     <select id="getOftenContactsList" parameterType="java.util.Map"
             resultType="io.openvidu.server.common.pojo.vo.OftenContactsVo">
         SELECT su.phone,su.username,su.uuid,su.id,type as accountType
-        FROM sd_often_contacts soc INNER JOIN
-        sd_user su ON soc.contacts_user_id = su.id
+        FROM sd_often_contacts soc
+        INNER JOIN sd_user su ON soc.contacts_user_id = su.id
         WHERE soc.user_id = #{userId}
         <if test="list != null and list.size() > 0 ">
             and contacts_user_id not in
             <foreach collection="list" index="" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="visibleUser !=null and visibleUser.size() != 0">
+            AND su.id IN
+            <foreach collection="visibleUser" index="index" item="item" separator="," open="(" close=")">
                 #{item}
             </foreach>
         </if>

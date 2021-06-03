@@ -98,7 +98,7 @@ public class RecursiveQueryUserHandler extends RpcAbstractHandler {
 
         list.sort((u1, u2) -> (int) (u1.getUserId() - u2.getUserId()));
 
-        hiddenPhoneManage.hiddenPhone2(list);
+        hiddenPhoneManage.hiddenPhone(list);
 
         JsonArray jsonArray = new JsonArray();
         list.forEach(e -> {
