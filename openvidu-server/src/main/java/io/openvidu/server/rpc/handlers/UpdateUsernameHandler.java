@@ -46,7 +46,6 @@ public class UpdateUsernameHandler extends RpcAbstractHandler {
                     deviceMapper.updateDeviceName(map);
                     break;
                 case 2:
-                    map.clear();
                     map.put("sipName", username);
                     map.put("uuid", rpcConnection.getUserUuid());
                     userMapper.updateSip(map);

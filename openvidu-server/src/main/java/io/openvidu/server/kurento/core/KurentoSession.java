@@ -406,8 +406,8 @@ public class KurentoSession extends Session {
 			for (Participant participant : participants) {
 				if (OpenViduRole.MODERATOR == participant.getRole() && StreamType.MAJOR == participant.getStreamType()) {
 					moderator = participant;
-					Participant minorModerator = getPartByPrivateIdAndStreamType(moderator.getParticipantPrivateId(), StreamType.MINOR);
-					moderator = Optional.ofNullable(minorModerator).orElse(moderator);
+//					Participant minorModerator = getPartByPrivateIdAndStreamType(moderator.getParticipantPrivateId(), StreamType.MINOR);
+//					moderator = Optional.ofNullable(minorModerator).orElse(moderator);
 				}
 				if (StreamType.SHARING == participant.getStreamType()) {
 					sharing = participant;
