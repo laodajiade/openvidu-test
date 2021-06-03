@@ -130,7 +130,7 @@ public enum ErrorCodeEnum {
     NOT_RECORDING_PERMISSION(13083,"暂无权限"),
     OTHER_RECORDING_LATER_RETRY(13084,"已有其他会议正在录制,请稍后重试"),
     APPOINTMENT_TIME_AFTER_ROOM_EXPIRED(13085, "预约会议时间不可超出固定会议室到期时间"),
-
+    NOT_ROOM_MANAGER(13086, "不是房间管理员"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
