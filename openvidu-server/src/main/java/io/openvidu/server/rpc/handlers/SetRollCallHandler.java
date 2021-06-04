@@ -9,6 +9,7 @@ import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +93,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         if (conferenceSession.ableToUpdateRecord()) {
             sessionManager.updateRecording(conferenceSession.getSessionId());
         }
+        ((KurentoSession) conferenceSession).asyncUpdateSipComposite();
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

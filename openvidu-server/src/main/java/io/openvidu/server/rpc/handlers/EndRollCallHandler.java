@@ -9,6 +9,7 @@ import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
@@ -98,5 +99,6 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         if (conferenceSession.ableToUpdateRecord()) {
             sessionManager.updateRecording(conferenceSession.getSessionId());
         }
+        ((KurentoSession) conferenceSession).asyncUpdateSipComposite();
     }
 }
