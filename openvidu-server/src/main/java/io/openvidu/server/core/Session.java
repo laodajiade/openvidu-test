@@ -39,6 +39,7 @@ import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.utils.SafeSleep;
 import io.openvidu.server.utils.SipMockClient;
 import lombok.Getter;
 import lombok.Setter;
@@ -806,6 +807,7 @@ public class Session implements SessionInterface {
 		List<String> notifyList = getMajorPartEachIncludeThorConnect().stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
 		notificationService.sendBatchNotificationConcurrent(notifyList, ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
 		if (roleChanged) {
+			SafeSleep.sleepMilliSeconds(30);
 			// send part role changed notification
 			notificationService.sendBatchNotificationConcurrent(notifyList,
 					ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
