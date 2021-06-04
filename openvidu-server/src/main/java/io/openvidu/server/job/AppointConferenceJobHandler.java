@@ -441,7 +441,7 @@ public class AppointConferenceJobHandler {
                         && TerminalStatus.online.name().equals(cacheManage.getTerminalStatus(rpcConnection.getUserUuid())))
                 .forEach(rpcConnection -> {
                     log.info("conferenceBeginJobHandler inviteParticipant uuid={}", rpcConnection.getUserUuid());
-                    params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserId());
+                    params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserUuid());
                     notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
                     cacheManage.saveInviteInfo(conference.getRoomId(), rpcConnection.getUserUuid());
                 });
