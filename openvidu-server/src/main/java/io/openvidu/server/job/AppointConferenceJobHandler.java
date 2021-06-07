@@ -81,7 +81,7 @@ public class AppointConferenceJobHandler {
 
     //@Scheduled(cron = "0/5 * * * * ?")
     @XxlJob("appointmentJobHandler")
-    public  ReturnT<String>  appointmentJob(String param) {
+    public ReturnT<String> appointmentJob(String param) {
         List<AppointJob> appointJobs = appointJobService.selectNextJobs();
         if (appointJobs.isEmpty()) {
             return ReturnT.SUCCESS;
@@ -278,6 +278,10 @@ public class AppointConferenceJobHandler {
                 }
             } else {
                 FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
+                if (fixedRoom != null) {
+                    log.info("fixed appt begin but room always used, send toBegin notify {}", ruid);
+                    nextConferenceToBeginNotify(ruid, 2);
+                }
             }
 
 
@@ -286,7 +290,7 @@ public class AppointConferenceJobHandler {
             return ReturnT.SUCCESS;
         } catch (Exception e) {
             log.info("conferenceBeginJobHandler error ", e);
-            throw e;
+            return ReturnT.FAIL;
         }
 
     }
