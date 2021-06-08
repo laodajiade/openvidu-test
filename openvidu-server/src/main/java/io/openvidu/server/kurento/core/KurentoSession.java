@@ -392,6 +392,9 @@ public class KurentoSession extends Session {
 	}
 
 	public void asyncUpdateSipComposite() {
+		if (Objects.isNull(getSipComposite())){
+			return;
+		}
 		sipCompositeThreadPoolExes.execute(this::updateSipComposite);
 	}
 
@@ -442,7 +445,7 @@ public class KurentoSession extends Session {
 						kurentoSession.getKms().getKurentoClient()
 								.sendJsonRpcRequest(composeLayoutRequestForSip(kurentoSession.getPipeline().getId(),
 										sessionId, hubPortIds, LayoutModeEnum.getLayoutMode(mcuNum)));
-						TimeUnit.MILLISECONDS.sleep(300);
+						SafeSleep.sleepMilliSeconds(300);
 					} catch (Exception e) {
 						log.error("Send Sip Composite Layout Exception:\n", e);
 					}

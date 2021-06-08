@@ -35,6 +35,7 @@ import io.openvidu.server.exception.NoSuchKmsException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
@@ -426,6 +427,8 @@ public class SessionEventsHandler {
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_CREATEDAT_PARAM, createdAt);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
+
+		kurentoParticipant.notifyPublishChannelPass(kurentoParticipant.getPublisher());
 	}
 
 	public void notifyPublishMedias(Participant participant, String streamId, Long createdAt, String sessionId,

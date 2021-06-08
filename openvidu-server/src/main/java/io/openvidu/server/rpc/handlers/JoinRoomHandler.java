@@ -195,6 +195,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // remove previous participant if reconnect
+                Integer preOrder = 0;
                 if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     String roomId = Objects.isNull(!partInfo.isEmpty() ? partInfo.get("roomId") : null) ? null : partInfo.get("roomId").toString();
@@ -218,9 +219,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                                                 ProtocolElements.STOP_POLLING_NODIFY_METHOD, notifyParam);
                                     }
                                 }
-
-                                //save previous order if reconnect
-                                session.saveOriginalPartOrder(originalPart);
                             } else {
                                 log.warn("reconnect warn,because originalPart is null");
                             }
@@ -235,6 +233,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         }
                         if (Objects.nonNull(partInfo.get(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM))) {
                             speakerStatus = partInfo.get(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM).toString();
+                        }
+                        if (Objects.nonNull(partInfo.get("order"))) {
+                            preOrder = Integer.valueOf(partInfo.get("order").toString());
                         }
 
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
@@ -369,6 +370,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setVideoStatus(StringUtils.isEmpty(videoStatus) ? ParticipantVideoStatus.on : ParticipantVideoStatus.valueOf(videoStatus));
                 participant.setSpeakerStatus(StringUtils.isEmpty(speakerStatus) ? ParticipantSpeakerStatus.on : ParticipantSpeakerStatus.valueOf(speakerStatus));
                 participant.setVoiceMode(voiceMode);
+                participant.setOrder(preOrder);
                 if (StringUtils.isEmpty(serialNumber)) {
                     if (UserType.register.equals(participant.getUserType()) && TerminalTypeEnum.S != rpcConnection.getTerminalType()) {
                         User user = userMapper.selectByPrimaryKey(userId);

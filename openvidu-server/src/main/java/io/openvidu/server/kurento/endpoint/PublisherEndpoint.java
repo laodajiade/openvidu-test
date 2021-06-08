@@ -154,6 +154,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	public HubPort createSipCompositeHubPort(Composite composite) {
 		sipCompositeHubPort = new HubPort.Builder(composite).build();
+		sipCompositeHubPort.setMinOutputBitrate(2000000);
+		sipCompositeHubPort.setMaxOutputBitrate(2000000);
 		log.info("create sip composite {} hubport {}", composite.getName(), sipCompositeHubPort.getId());
 		return sipCompositeHubPort;
 	}

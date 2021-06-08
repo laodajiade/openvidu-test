@@ -3,6 +3,7 @@ package io.openvidu.server.core;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.TaskScheduler;
@@ -153,7 +154,7 @@ public class TimerManager {
                 if (first == 0) {
                     JsonObject currentNotifyParam = new JsonObject();
                     currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
-                    session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                    session.getMajorPartEachIncludeThorConnect().stream().filter(p -> p.getTerminalType() != TerminalTypeEnum.S).collect(Collectors.toSet()).forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
                     first++;
                 }

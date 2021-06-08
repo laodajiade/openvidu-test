@@ -39,6 +39,7 @@ import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.utils.SafeSleep;
 import io.openvidu.server.utils.SipMockClient;
 import lombok.Getter;
 import lombok.Setter;
@@ -126,7 +127,6 @@ public class Session implements SessionInterface {
 	private JsonObject subtitleExtraConfig = null;
 	@Getter
 	private final Lock joinOrLeaveReentrantLock = new ReentrantLock();
-	protected ConcurrentHashMap<String,Integer> reconnectPartOrderMap = new ConcurrentHashMap<>();
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -672,15 +672,29 @@ public class Session implements SessionInterface {
 
 		if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
 			int order;
+			boolean cutInLine = false;
 			if (participant.getRole() == OpenViduRole.ONLY_SHARE) {
 				order = roomNormalOrder.get() + onlyShareOrder.incrementAndGet();
+				log.info("11111 22222 order {}", order);
 			} else {
 				order = roomNormalOrder.incrementAndGet();
+				log.info("11111 33333 order {}", order);
 				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
 					order = 0;
+					cutInLine = true;
+				} else if (participant.getOrder() != 0) {//重连
+					order = participant.getOrder();
+					cutInLine = true;
+					log.info("11111 reconnect order {}", order);
+				}
+
+				if (cutInLine) {
 					Set<Participant> participants = getMajorPartExcludeModeratorConnect();
 					if (!CollectionUtils.isEmpty(participants)) {
 						for (Participant p : participants) {
+							if (p.getOrder() < order) {
+								continue;
+							}
 							p.setOrder(p.getOrder() + 1);
 							log.info("moderator reconnect or join again major participant order change, order = {}", p.getOrder());
 							// 推送流变订阅流
@@ -693,6 +707,7 @@ public class Session implements SessionInterface {
 						}
 					}
 				}
+
 				// 如果有屏幕入会，则位置向后顺移
 				if (onlyShareOrder.get() > 0) {
 					Set<Participant> participants = getMajorPartEachConnect();
@@ -704,19 +719,12 @@ public class Session implements SessionInterface {
 					}
 				}
 			}
-
+			log.info("11111 final order {}",order);
 			participant.setOrder(order);
-			log.info("ParticipantName:{} join session:{} and after set majorPart order:{}",
-					participant.getParticipantName(), sessionId, order);
-			reconnectPartOrderMap.remove(participant.getUuid());
 		}
 	}
 
-	public void saveOriginalPartOrder(Participant participant) {
-    	if (Objects.nonNull(participant)) {
-			reconnectPartOrderMap.put(participant.getUuid(),participant.getOrder());
-		}
-	}
+
 
 	public void deregisterMajorParticipant(Participant participant) {
     	if (ConferenceModeEnum.MCU.equals(this.conferenceMode) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
@@ -806,6 +814,7 @@ public class Session implements SessionInterface {
 		List<String> notifyList = getMajorPartEachIncludeThorConnect().stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
 		notificationService.sendBatchNotificationConcurrent(notifyList, ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, partOrderNotifyParam);
 		if (roleChanged) {
+			SafeSleep.sleepMilliSeconds(30);
 			// send part role changed notification
 			notificationService.sendBatchNotificationConcurrent(notifyList,
 					ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, subToPubChangedParam);
