@@ -675,17 +675,14 @@ public class Session implements SessionInterface {
 			boolean cutInLine = false;
 			if (participant.getRole() == OpenViduRole.ONLY_SHARE) {
 				order = roomNormalOrder.get() + onlyShareOrder.incrementAndGet();
-				log.info("11111 22222 order {}", order);
 			} else {
 				order = roomNormalOrder.incrementAndGet();
-				log.info("11111 33333 order {}", order);
 				if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
 					order = 0;
 					cutInLine = true;
 				} else if (participant.getOrder() != 0) {//重连
 					order = participant.getOrder();
 					cutInLine = true;
-					log.info("11111 reconnect order {}", order);
 				}
 
 				if (cutInLine) {
@@ -719,7 +716,6 @@ public class Session implements SessionInterface {
 					}
 				}
 			}
-			log.info("11111 final order {}",order);
 			participant.setOrder(order);
 		}
 	}
