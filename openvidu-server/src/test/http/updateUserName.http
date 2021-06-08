@@ -1,0 +1,9 @@
+### 获取用户权限
+POST http://localhost:4443/dev/test?id={{uuid}}&method=updateUsername
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "username":"修改SIP名称001"
+}
