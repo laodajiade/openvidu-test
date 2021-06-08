@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author geedow
@@ -47,7 +44,8 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     if (!partInfo.isEmpty()) {
                         sessionManager.evictParticipantByUUID(sessionId,
-                                rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                                rpcConnection.getUserUuid(), Arrays.asList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION,
+                                        EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
                     }
                 }
 

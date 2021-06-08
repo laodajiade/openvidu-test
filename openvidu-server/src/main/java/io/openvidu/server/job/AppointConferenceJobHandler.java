@@ -10,10 +10,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
-import io.openvidu.server.common.dao.AppointConferenceMapper;
-import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.dao.FixedRoomMapper;
-import io.openvidu.server.common.dao.UserMapper;
+import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.manage.AppointParticipantManage;
@@ -78,6 +75,9 @@ public class AppointConferenceJobHandler {
 
     @Autowired
     private AppointJobService appointJobService;
+
+    @Autowired
+    private CorporationMapper corporationMapper;
 
     //@Scheduled(cron = "0/5 * * * * ?")
     @XxlJob("appointmentJobHandler")
@@ -241,6 +241,17 @@ public class AppointConferenceJobHandler {
 
             // 是否自动呼叫、房间是否被使用中
             if (!isRoomInUse(appointConference.getRoomId())) {
+
+                // 检查通话时长剩余
+                Corporation corporation = corporationMapper.selectByCorpProject(appointConference.getProject());
+                if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
+                    log.info("通话时长不足 ruid {}", appointConference.getRuid());
+                    appointConference.setStatus(2);
+                    appointConference.setUpdateTime(new Date());
+                    appointConferenceManage.updateById(appointConference);
+                    return ReturnT.SUCCESS;
+                }
+
                 SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
                 sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
