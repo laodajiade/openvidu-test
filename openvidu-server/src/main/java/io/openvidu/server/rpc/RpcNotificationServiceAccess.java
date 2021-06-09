@@ -24,10 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import javax.ws.rs.NotSupportedException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -232,6 +229,12 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     }
 
     @Override
+    public void sendBatchNotificationConcurrent(Set<Participant> participants, String method, Object params) {
+        List<String> collect = participants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+        sendBatchNotificationConcurrent(collect, method, params);
+    }
+
+    @Override
     public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, String method, Object params) {
         List<String> successList = new ArrayList<>();
         List<String> failList = new ArrayList<>();
@@ -271,6 +274,14 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         }
         log.info("sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
                 "successList:{}  failList:{}", method, params, successList, failList);
+    }
+
+    @Override
+    public void sendBatchNotificationUuidConcurrent(Collection<String> uuids, String method, Object params) {
+        final Set<String> uuidSet = new HashSet<>(uuids);
+        List<String> privateIdList = rpcConnections.values().stream().filter(rpcConnection -> uuidSet.contains(rpcConnection.getUserUuid()))
+                .map(RpcConnection::getParticipantPrivateId).collect(Collectors.toList());
+        sendBatchNotificationConcurrent(privateIdList, method, params);
     }
 
     @Override

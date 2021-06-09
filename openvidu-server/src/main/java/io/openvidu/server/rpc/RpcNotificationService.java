@@ -60,8 +60,14 @@ public interface RpcNotificationService {
     /**
      * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
      */
+    void sendBatchNotificationConcurrent(Set<Participant> participants, final String method, final Object params);
+
+    /**
+     * sendBatchNotification 的优化版本，使用多线程并发通知，同步接口
+     */
     void sendBatchNotificationConcurrent(List<String> participantPrivateIds, final String method, final Object params);
 
+    public void sendBatchNotificationUuidConcurrent(Collection<String> uuids, final String method, final Object params);
     //private Transaction getAndRemoveTransaction(String participantPrivateId, Integer transactionId);
 
     void showRpcConnections();
