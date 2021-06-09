@@ -17,6 +17,7 @@
 
 package io.openvidu.server;
 
+
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
@@ -26,20 +27,27 @@ import io.openvidu.server.cdr.CallDetailRecord;
 import io.openvidu.server.config.EnvConfig;
 import io.openvidu.server.config.HttpHandshakeInterceptor;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.*;
+import io.openvidu.server.core.SessionEventsHandler;
+import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.TokenGenerator;
+import io.openvidu.server.core.TokenGeneratorDefault;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
 import io.openvidu.server.exception.NoSuchKmsException;
 import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
 import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
 import io.openvidu.server.kurento.core.KurentoSessionManager;
-import io.openvidu.server.kurento.kms.*;
+import io.openvidu.server.kurento.kms.ElasticKmsManager;
+import io.openvidu.server.kurento.kms.KmsManager;
+import io.openvidu.server.kurento.kms.LoadManager;
+import io.openvidu.server.kurento.kms.MaxWebRtcLoadManager;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.DummyRecordingDownloader;
 import io.openvidu.server.recording.RecordingDownloader;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.rpc.RpcNotificationServiceAccess;
 import io.openvidu.server.utils.CommandExecutor;
 import io.openvidu.server.utils.GeoLocationByIp;
 import io.openvidu.server.utils.GeoLocationByIpDummy;
@@ -55,6 +63,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
@@ -74,6 +83,7 @@ import java.util.List;
 @Import({ JsonRpcConfiguration.class })
 @SpringBootApplication
 @EnableEncryptableProperties
+@EnableEurekaClient
 public class OpenViduServer implements JsonRpcConfigurer {
 
 	private static final Logger log = LoggerFactory.getLogger(OpenViduServer.class);
@@ -108,7 +118,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@Bean
 	@ConditionalOnMissingBean
 	public RpcNotificationService notificationService() {
-		return new RpcNotificationService();
+		return new RpcNotificationServiceAccess();
 	}
 
 	@Bean

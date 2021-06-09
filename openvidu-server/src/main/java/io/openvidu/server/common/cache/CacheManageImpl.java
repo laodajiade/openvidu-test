@@ -41,8 +41,14 @@ public class CacheManageImpl implements CacheManage {
     @Resource(name = "roomRedisTemplate")
     private RedisTemplate<String, Object> roomRedisTemplate;
 
+    @Resource(name = "roomStringTemplate")
+    private StringRedisTemplate roomStringTemplate;
+
     @Resource
     private DeviceMapper deviceMapper;
+
+    @Value("${eureka.instance.instance-id}")
+    private String instanceId;
 
 
     @Override
@@ -273,7 +279,7 @@ public class CacheManageImpl implements CacheManage {
     }
 
     @Override
-    public void setCorpRemainDuration(String project,int remainderDuration) {
+    public void setCorpRemainDuration(String project, int remainderDuration) {
         String key = CacheKeyConstants.CORP_REMAINDER_DURATION_PREFIX_KEY + project;
         roomRedisTemplate.opsForValue().set(key, remainderDuration);
     }
@@ -283,13 +289,13 @@ public class CacheManageImpl implements CacheManage {
         String key = CacheKeyConstants.CORP_REMAINDER_DURATION_PREFIX_KEY + project;
         Object remainderDuration = roomRedisTemplate.opsForValue().get(key);
         if (Objects.nonNull(remainderDuration)) {
-            return (int)remainderDuration;
+            return (int) remainderDuration;
         }
         return 0;
     }
 
     @Override
-    public void setAdvanceCutDuration(String project,int advanceDuration) {
+    public void setAdvanceCutDuration(String project, int advanceDuration) {
         String key = CacheKeyConstants.CORP_ADVANCE_DURATION_PREFIX_KEY + project;
         roomRedisTemplate.opsForValue().set(key, advanceDuration);
     }
@@ -299,7 +305,7 @@ public class CacheManageImpl implements CacheManage {
         String key = CacheKeyConstants.CORP_ADVANCE_DURATION_PREFIX_KEY + project;
         Object advanceDuration = roomRedisTemplate.opsForValue().get(key);
         if (Objects.nonNull(advanceDuration)) {
-            return (int)advanceDuration;
+            return (int) advanceDuration;
         }
         return 0;
     }
@@ -381,14 +387,14 @@ public class CacheManageImpl implements CacheManage {
     @Override
     public void roomLease(String sessionId, String ruid) {
         String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
-        roomRedisTemplate.opsForValue().set(key, ruid);
-        roomRedisTemplate.expire(key, 1, TimeUnit.MINUTES);
+        roomStringTemplate.opsForValue().set(key, ruid + "#" + instanceId);
+        roomStringTemplate.expire(key, 1, TimeUnit.MINUTES);
     }
 
     @Override
     public boolean checkRoomLease(String sessionId, String ruid) {
         String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
-        String ruidValue = (String) roomRedisTemplate.opsForValue().get(key);
-        return ruidValue != null && Objects.equals(ruid, ruidValue);
+        String value = roomStringTemplate.opsForValue().get(key);
+        return value != null && org.apache.commons.lang3.StringUtils.contains(value, ruid);
     }
 }

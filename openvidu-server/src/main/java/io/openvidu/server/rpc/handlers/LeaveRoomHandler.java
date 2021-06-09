@@ -53,6 +53,11 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                 return;
             }
         } catch (OpenViduException e) {
+            if (e.getCode() == OpenViduException.Code.ROOM_NOT_FOUND_ERROR_CODE.getValue()) {
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                return;
+            }
             log.info("close previous participant info exception", e);
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);

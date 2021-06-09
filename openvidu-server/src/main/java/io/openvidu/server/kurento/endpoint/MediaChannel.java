@@ -2,10 +2,12 @@ package io.openvidu.server.kurento.endpoint;
 
 import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
+import io.openvidu.client.OpenViduException;
 import io.openvidu.server.common.enums.MediaChannelStateEnum;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.DeliveryKmsManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
+import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -25,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class MediaChannel {
-
+    private static final int PASS_LATCH_TIMEOUT = 15;
     @Getter
     private final String id;
 
@@ -65,6 +67,8 @@ public class MediaChannel {
 
     private final DeliveryKmsManager deliveryKmsManager;
 
+    private  CountDownLatch passLatch = new CountDownLatch(1);
+
 
     private MediaChannel(MediaPipeline sourcePipeline, PassThrough sourcePassThrough, MediaPipeline targetPipeline, String senderEndpointName,
                          DeliveryKmsManager deliveryKmsManager) {
@@ -103,7 +107,7 @@ public class MediaChannel {
                 log.info("mediaChannel id {} createChannel", id);
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.warn("createChannel timeout senderEndpointName = {}", senderEndpointName);
         }
     }
 
@@ -186,12 +190,14 @@ public class MediaChannel {
             public void onSuccess(Void result) {
                 log.info("Elements have been connected (source {} -> sink {})", subscriberPassThru.getId(), subscriber.getId());
                 state = MediaChannelStateEnum.READY;
+                passLatch.countDown();
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.error("Failed to connect media elements (source {} -> sink {})", subscriberPassThru.getId(), subscriber.getId(), cause);
                 state = MediaChannelStateEnum.FAILED;
+                passLatch.countDown();
             }
         });
 
@@ -217,6 +223,7 @@ public class MediaChannel {
                     + " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
             if (event.getState() == MediaFlowState.FLOWING) {
                 state = MediaChannelStateEnum.FLOWING;
+                passLatch.countDown();
             }
             log.info(msg);
         });
@@ -227,6 +234,7 @@ public class MediaChannel {
                     + " | mediaType: " + event.getMediaType() + " | timestamp: " + event.getTimestampMillis();
             if (event.getState() == MediaFlowState.FLOWING) {
                 state = MediaChannelStateEnum.FLOWING;
+                passLatch.countDown();
             }
             log.info(msg);
         });
@@ -270,6 +278,19 @@ public class MediaChannel {
             log.error("PARTICIPANT {}: Error calling release on elem #{} for {}", id, eid,
                     typeName, e);
         }
+    }
+
+    public MediaChannelStateEnum getStateSync() {
+        try {
+            if (!passLatch.await(PASS_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+                throw new OpenViduException(OpenViduException.Code.MEDIA_ENDPOINT_ERROR_CODE,
+                        "Timeout reached when creating media channel");
+            }
+        } catch (InterruptedException e) {
+            throw new OpenViduException(OpenViduException.Code.MEDIA_ENDPOINT_ERROR_CODE,
+                    "Interrupted when creating media channel: " + e.getMessage());
+        }
+        return state;
     }
 
     public JsonObject toJson() {
