@@ -61,7 +61,7 @@ public class UpdateUsernameHandler extends RpcAbstractHandler {
 
             userManage.updateUserInfo(update);
         } catch (Exception e) {
-            log.info("update name error id{},name{},error info", rpcConnection.getUserId(), username, e.getMessage());
+            log.info("update name error id {},name {},error info", rpcConnection.getUserId(), username, e);
         }
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

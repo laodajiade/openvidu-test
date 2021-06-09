@@ -245,10 +245,11 @@ public class AppointConferenceJobHandler {
                 // 检查通话时长剩余
                 Corporation corporation = corporationMapper.selectByCorpProject(appointConference.getProject());
                 if (Objects.nonNull(corporation) && corporation.getRemainderDuration() <= 0) {
-                    log.info("通话时长不足 ruid {}", appointConference.getRuid());
+                    log.info("预约开始，通话时长不足 ruid {}", appointConference.getRuid());
                     appointConference.setStatus(2);
                     appointConference.setUpdateTime(new Date());
                     appointConferenceManage.updateById(appointConference);
+                    crowOnceHelper.delCrowOnce(jobId);
                     return ReturnT.SUCCESS;
                 }
 
