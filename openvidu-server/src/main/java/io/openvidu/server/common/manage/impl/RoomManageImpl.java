@@ -72,11 +72,15 @@ public class RoomManageImpl implements RoomManage {
                 !StreamType.MAJOR.equals(participant.getStreamType())) {
             return;
         }
+
+        //获取最新的用户名称
+        User user = userManage.getUserByUserId(participant.getUserId());
+
         ConferencePartHistory history = new ConferencePartHistory();
         history.setRuid(conference.getRuid());
         history.setUserId(participant.getUserId());
         history.setUuid(participant.getUuid());
-        history.setUsername(participant.getUsername());
+        history.setUsername(user.getUsername());
         history.setUserType(participant.getUserType().getType());
         history.setTerminalType(participant.getTerminalType().getDesc());
         history.setStatus(ParticipantStatusEnum.PROCESS.getStatus());
