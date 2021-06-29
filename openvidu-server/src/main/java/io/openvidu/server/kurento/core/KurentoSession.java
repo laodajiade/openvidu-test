@@ -88,9 +88,8 @@ public class KurentoSession extends Session {
 		log.info("room lease thead start,roomId={},ruid={}", sessionId, ruid);
 		while (!closed) {
 			try {
-				TimeUnit.SECONDS.sleep(3);
-				kurentoSessionHandler.cacheManage.roomLease(sessionId,ruid);
-				TimeUnit.SECONDS.sleep(17);
+				kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
+				TimeUnit.SECONDS.sleep(20);
 			} catch (InterruptedException e) {
 				return;
 			}
@@ -109,6 +108,7 @@ public class KurentoSession extends Session {
 		this.kurentoEndpointConfig = kurentoEndpointConfig;
 		this.compositeService = new CompositeService(sessionNotActive);
 		log.info("New SESSION instance with id '{}'", sessionId);
+		kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
 		this.leaseThread.start();
 		sipCompositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
 				new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("sip-composite-thread-" + sessionId + "-%d").setDaemon(true).build()
