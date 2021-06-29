@@ -22,6 +22,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -53,6 +54,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Resource
     private CorporationMapper corporationMapper;
+
+    @Value("${eureka.instance.instance-id}")
+    private String instanceId;
 
 
     @Override
@@ -165,6 +169,7 @@ public class RoomManageImpl implements RoomManage {
             roomInfo.put("password", conference.getPassword());
             roomInfo.put("conferenceSubject", conference.getConferenceSubject());
             roomInfo.put("creatorId", conference.getUserId());
+            roomInfo.put("instanceId", instanceId);
 
             cacheManage.saveRoomInfo(conference.getRoomId(), roomInfo);
         }
