@@ -29,7 +29,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
 
-        if (!Objects.isNull(session = sessionManager.getSessionNotActive(sessionId)) && rpcConnection.getAccessType() == AccessTypeEnum.web) {
+        if (!Objects.isNull(session = sessionManager.getSessionNotActive(sessionId))) {
             closeRoomNotActive(rpcConnection, session);
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
             return;
