@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM 172.25.10.100:5555/jdk/jdk:base
 COPY openvidu-server/target/openvidu-server-2.11.0.jar /opt/sudi/openvidu/
 WORKDIR /opt/sudi/openvidu/
 EXPOSE 4444 9999 18719
