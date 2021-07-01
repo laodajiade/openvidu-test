@@ -198,7 +198,6 @@ public class SessionPreset {
             this.roomDuration = roomDuration;
         }
 
-        // TODO. Fixme. Maybe have good way to do it.
         if (!StringUtils.isEmpty(useIdTypeInRoom)) {
             SessionPresetUseIDEnum[] useIds = SessionPresetUseIDEnum.values();
             for (SessionPresetUseIDEnum useId : useIds) {

@@ -235,7 +235,6 @@ public class ProtocolElements {
     public static final String CREATE_ROOM_METHOD = "createRoom";
     public static final String CREATE_ROOM_ID_PARAM = "roomId";
     public static final String CREATE_ROOM_PASSWORD_PARAM = "password";
-    public static final String CREATE_ROOM_MODERATORPASSWORD_PARAM = "moderatorPassword";
     public static final String CREATE_ROOM_MIC_STATUS_PARAM = "micStatusInRoom";
     public static final String CREATE_ROOM_VIDEO_STATUS_PARAM = "videoStatusInRoom";
     public static final String CREATE_ROOM_SHARE_POWER_PARAM = "sharePowerInRoom";

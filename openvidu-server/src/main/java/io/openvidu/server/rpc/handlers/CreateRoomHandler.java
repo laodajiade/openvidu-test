@@ -15,7 +15,6 @@ import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.RandomRoomIdGenerator;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     @Autowired
     private FixedRoomManagerMapper fixedRoomManagerMapper;
 
-    private static final ReentrantLock lock = new ReentrantLock();
+    private static final ReentrantLock GLOBAL_LOCK = new ReentrantLock();
 
 
     @Transactional
@@ -69,14 +68,12 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         String password = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_PASSWORD_PARAM);
         String roomSubject = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_SUBJECT_PARAM);
         String ruid = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_RUID_PARAM);
-        String moderatorPassword = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MODERATORPASSWORD_PARAM);
         ConferenceModeEnum conferenceMode = ConferenceModeEnum.valueOf(getStringParam(request,
                 ProtocolElements.CREATE_ROOM_CONFERENCE_MODE_PARAM));
         RoomIdTypeEnums roomIdType = RoomIdTypeEnums.parse(getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ID_TYPE_PARAM, "personal"));
 
         AppointConference appt = null;
         String moderatorUuid = rpcConnection.getUserUuid();
-
 
 
         if (StringUtils.isEmpty(ruid) && (RoomIdTypeEnums.random == roomIdType || StringUtils.isEmpty(sessionId))) {
@@ -96,7 +93,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             sessionId = appt.getRoomId();
             roomIdType = RoomIdTypeEnums.calculationRoomType(sessionId);
             moderatorUuid = appt.getModeratorUuid();
-            moderatorPassword = appt.getModeratorPassword();
         } else if (!StringUtils.isEmpty(ruid)) {
             Conference conference = conferenceMapper.selectByRuid(ruid);
             if (conference == null) {
@@ -148,7 +144,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
         CountDownLatch inviteCountDownLatch = new CountDownLatch(1);
         try {
-            if (!lock.tryLock(2, TimeUnit.SECONDS)) {
+            if (!GLOBAL_LOCK.tryLock(2, TimeUnit.SECONDS)) {
                 log.info("create room lock timeout {}", sessionId);
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.JOIN_ROOM_TIMEOUT);
@@ -162,7 +158,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                     conference.setRuid(ruid);
                     roomSubject = appt.getConferenceSubject();
                     moderatorUuid = appt.getModeratorUuid();
-                    moderatorPassword = appt.getModeratorPassword();
                     conference.setConferenceDesc(appt.getConferenceDesc());
                     final AppointConference finalAppt = appt;
                     new Thread(() -> this.inviteParticipant(inviteCountDownLatch, finalAppt)).start();
@@ -181,7 +176,6 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 conference.setStatus(1);
                 conference.setStartTime(new Date());
                 conference.setProject(rpcConnection.getProject());
-                conference.setModeratorPassword(StringUtils.isEmpty(moderatorPassword) ? StringUtil.getRandomPassWord(6) : moderatorPassword);
                 conference.setRoomIdType(roomIdType.name());
                 conference.setModeratorUuid(moderatorUuid);
                 conference.setShortUrl(roomManage.createShortUrl());
@@ -201,16 +195,17 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
                 SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                         roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
+
                 if (roomIdType == RoomIdTypeEnums.fixed) {
                     FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
                     preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
                     preset.setAllowPart(fixedRoom.getAllowPart());
                     preset.setRoomCapacity(fixedRoom.getRoomCapacity());
                 }
-                sessionManager.setPresetInfo(sessionId, preset);
 
                 // store this inactive session
                 Session session = sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
+                session.setPresetInfo(preset);
                 if (appt != null) {
                     session.setEndTime(appt.getEndTime().getTime());
                 }
@@ -222,21 +217,16 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
             }
         } catch (Exception e) {
-            log.error("create Room error", e);
+            log.error("create Room error room_id = {}", sessionId, e);
         } finally {
-            lock.unlock();
+            GLOBAL_LOCK.unlock();
         }
 
     }
 
     protected Optional<Conference> getProcessConference(String sessionId) {
-        // verify room id ever exists
-        ConferenceSearch search = new ConferenceSearch();
-        search.setRoomId(sessionId);
-        // 会议状态：0 未开始(当前不存在该状态) 1 进行中 2 已结束
-        search.setStatus(ConferenceStatus.PROCESS.getStatus());
-        List<Conference> conferences = conferenceMapper.selectBySearchCondition(search);
-        return conferences.isEmpty() ? Optional.empty() : Optional.of(conferences.get(0));
+        Conference conference = conferenceMapper.selectUsedConference(sessionId);
+        return Optional.ofNullable(conference);
     }
 
     private ErrorCodeEnum checkService(RpcConnection rpcConnection, String roomId) {
@@ -303,7 +293,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
         try {
             if (countDownLatch.await(10, TimeUnit.SECONDS)) {
                 // wait 1 second
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(2);
 
                 Map userInfo = cacheManage.getUserInfoByUUID(appt.getModeratorUuid());
                 Object username = userInfo.get("username");

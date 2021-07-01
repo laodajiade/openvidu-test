@@ -105,7 +105,6 @@ public abstract class SessionManager {
 	public ConcurrentMap<String, ConcurrentHashMap<String, Token>> sessionidTokenTokenobj = new ConcurrentHashMap<>();
 
 	protected ConcurrentMap<String, ConcurrentHashMap<String, String>> sessionidConferenceInfo = new ConcurrentHashMap<>();
-	protected ConcurrentMap<String, SessionPreset> sessionidPreset = new ConcurrentHashMap<>();
 
 	public abstract void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId);
 
@@ -676,15 +675,15 @@ public abstract class SessionManager {
 		sessionidTokenTokenobj.remove(sessionId);
 	}
 
-	public void cleanCacheCollections(String sessionId) {
-		if (sessionidConferenceInfo.containsKey(sessionId)) {
-			sessionidConferenceInfo.remove(sessionId);
-		}
+    public void cleanCacheCollections(String sessionId) {
+        if (sessionidConferenceInfo.containsKey(sessionId)) {
+            sessionidConferenceInfo.remove(sessionId);
+        }
 
-		if (sessionidPreset.containsKey(sessionId)) {
-			sessionidPreset.remove(sessionId);
-		}
-	}
+//		if (sessionidPreset.containsKey(sessionId)) {
+//			sessionidPreset.remove(sessionId);
+//		}
+    }
 
 	public void updateConferenceInfo(String sessionId) {
 		// TODO. update sd_conference status info.
@@ -714,8 +713,6 @@ public abstract class SessionManager {
 	}
 
 	public boolean isNewSessionIdValid(String sessionId) {
-		// TODO
-//		if (sessionidConferenceInfo.containsKey(sessionId)) return false;
 		sessionidConferenceInfo.put(sessionId, new ConcurrentHashMap<>());
 		return true;
 	}
@@ -731,20 +728,12 @@ public abstract class SessionManager {
 		return true;
 	}
 
-	public boolean setPresetInfo(String sessionId, SessionPreset preset) {
-	    /*if (!Objects.isNull(sessionidPreset.get(sessionId))) {
-            log.info("session {} {} replace preset info {}", sessionId, preset, sessionidPreset.get(sessionId));
-        }*/
-	    sessionidPreset.put(sessionId, preset);
-        return true;
-    }
-
     public SessionPreset getPresetInfo(String sessionId) {
-	    if (Objects.isNull(sessionidPreset.get(sessionId))) {
-	        sessionidPreset.put(sessionId, new SessionPreset());
+        Session session = sessions.get(sessionId);
+        if (session == null) {
+            return null;
         }
-
-        return sessionidPreset.get(sessionId);
+        return session.getPresetInfo();
     }
 
 	public ConcurrentHashMap<String, String> getSessionInfo(String sessionId) {
