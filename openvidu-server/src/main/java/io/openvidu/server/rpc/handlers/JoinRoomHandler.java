@@ -78,7 +78,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         rpcConnection.setReconnected(isReconnected);
 
         String speakerStatus = "on";
-
+        Session session = null;
         try {
             do {
                 //保存游客nickName
@@ -132,9 +132,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     ruid = cfc.getRuid();
                 }
 
-                // v.1.3.2 如果会议室有人，则不删除房间，无法通过预约邀请新加入房间
-                // 未来的版本会对预约会议做功能上优化，这段代码可能可以删除
-                Session session = sessionManager.getSession(sessionId);
+                session = sessionManager.getSession(sessionId);
                 if (!Objects.equals(joinType, ParticipantJoinType.invited.name()) && (!Objects.isNull(session))
                         && session.getRuid().startsWith("appt-")) {
                     AppointConference appointConference = appointConferenceManage.getByRuid(session.getRuid());
@@ -263,6 +261,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断发起会议时是否超出企业人数上限
+                // todo 这里需要考虑分布式能力，从数据库中获取参会者
                 if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(session)) {
                     String project = session.getConference().getProject();
                     Collection<Session> sessions = sessionManager.getSessions();

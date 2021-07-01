@@ -130,16 +130,17 @@ public class KurentoSession extends Session {
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
 
-			participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
-				parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
-				return parts;
-			});
+//			participants.computeIfPresent(participant.getParticipantPrivateId(), (privateId, parts) -> {
+//				parts.putIfAbsent(participant.getStreamType().name(), kurentoParticipant);
+//				return parts;
+//			});
 
-			participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
-				ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
-				connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
-				return connectionParticipants;
-			});
+//			participants.computeIfAbsent(participant.getParticipantPrivateId(), privateId -> {
+//				ConcurrentMap<String, Participant> connectionParticipants = new ConcurrentHashMap<>();
+//				connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
+//				return connectionParticipants;
+//			});
+			participantList.put(participant.getUuid(), participant);
 
 			filterStates.forEach((filterId, state) -> {
 				log.info("Adding filter {}", filterId);

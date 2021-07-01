@@ -249,6 +249,11 @@ public abstract class RpcAbstractHandler {
         return request.getParams().get(key).getAsInt();
     }
 
+    public static Integer getIntOptionalParam(Request<JsonObject> request, String key, Integer defaultValue) {
+        Integer result = getIntOptionalParam(request, key);
+        return result == null ? defaultValue : result;
+    }
+
     protected static Float getFloatOptionalParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
             return null;

@@ -37,6 +37,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.living.Living;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -97,8 +98,11 @@ public abstract class SessionManager {
 
 	protected ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
 	protected ConcurrentMap<String, Session> sessionsNotActive = new ConcurrentHashMap<>();
+	@Deprecated // todo 2.0废弃
 	protected ConcurrentMap<String, ConcurrentHashMap<String, Participant>> sessionidParticipantpublicidParticipant = new ConcurrentHashMap<>();
+	@Deprecated // todo 2.0废弃
 	protected ConcurrentMap<String, ConcurrentHashMap<String, FinalUser>> sessionidFinalUsers = new ConcurrentHashMap<>();
+	@Deprecated // todo 2.0废弃
 	protected ConcurrentMap<String, ConcurrentLinkedQueue<CDREventRecording>> sessionidAccumulatedRecordings = new ConcurrentHashMap<>();
 
 	protected ConcurrentMap<String, Boolean> insecureUsers = new ConcurrentHashMap<>();
@@ -381,12 +385,17 @@ public abstract class SessionManager {
 		return sessionNotActive;
 	}
 
+	@Deprecated //todo 2.0 废弃
 	public Session storeSessionNotActiveWhileRoomCreated(String sessionId) {
 		Session sessionNotActive = new Session(sessionId,
 				new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
 		dealSessionNotActiveStored(sessionId, sessionNotActive);
 		return sessionNotActive;
 	}
+
+    public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
+        return null;
+    }
 
 	private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
 		this.sessionsNotActive.put(sessionId, sessionNotActive);
@@ -499,12 +508,10 @@ public abstract class SessionManager {
 		this.insecureUsers.put(participantPrivateId, true);
 	}
 
-//	public Participant newParticipant(String sessionId, String participantPrivatetId, Token token,
 	public Participant newParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata, String role,
 									  String streamType, GeoLocation location, String platform, String finalUserId, String ability,String functionality) {
 		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 			String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
-//			Participant p = new Participant(finalUserId, participantPrivatetId, participantPublicId, sessionId, token,
 			Participant p = new Participant(userId, finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
 					StreamType.valueOf(streamType), clientMetadata, location, platform, null, ability, functionality);
 			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,

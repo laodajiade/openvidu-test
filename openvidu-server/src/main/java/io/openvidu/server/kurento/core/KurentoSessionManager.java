@@ -35,6 +35,7 @@ import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
+import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
@@ -104,46 +105,6 @@ public class KurentoSessionManager extends SessionManager {
         try {
 
             KurentoSession kSession = (KurentoSession) sessions.get(sessionId);
-            if (kSession == null) {
-                // First user connecting to the session
-                Session sessionNotActive = sessionsNotActive.remove(sessionId);
-
-                if (sessionNotActive == null && this.isInsecureParticipant(participant.getParticipantPrivateId())) {
-                    // Insecure user directly call joinRoom RPC method, without REST API use
-                    sessionNotActive = new Session(sessionId,
-                            new SessionProperties.Builder().mediaMode(MediaMode.ROUTED)
-                                    .recordingMode(RecordingMode.ALWAYS)
-                                    .defaultRecordingLayout(RecordingLayout.BEST_FIT).build(),
-                            openviduConfig, recordingManager, livingManager);
-                }
-
-                Kms lessLoadedKms;
-                try {
-                    lessLoadedKms = this.kmsManager.getLessLoadedKms();
-                    if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.parseDouble("0.0")) != 0) {
-                        throw new NoSuchElementException();
-                    }
-                } catch (NoSuchElementException e) {
-                    // Restore session not active
-                    this.cleanCollections(sessionId);
-                    this.storeSessionNotActive(sessionNotActive);
-					/*throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
-							"There is no available media server where to initialize session '" + sessionId + "'");*/
-                    rpcNotificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(),
-                            transactionId, null, ErrorCodeEnum.COUNT_OF_CONFERENCE_LIMIT);
-                    return;
-                }
-                log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
-                kSession = createSession(sessionNotActive, lessLoadedKms);
-                kSession.setConference(conference);
-                kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
-                kSession.setPresetInfo(getPresetInfo(sessionId));
-                kSession.setRuid(conference.getRuid());
-
-                if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
-                    kSession.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
-                }
-            }
             if (kSession.isClosed()) {
                 log.warn("'{}' is trying to join session '{}' but it is closing", participant.getParticipantPublicId(),
                         sessionId);
@@ -757,28 +718,43 @@ public class KurentoSessionManager extends SessionManager {
      *
      * @throws OpenViduException in case of error while creating the session
      */
-    public KurentoSession createSession(Session sessionNotActive, Kms kms) throws OpenViduException {
-        KurentoSession session = (KurentoSession) sessions.get(sessionNotActive.getSessionId());
+    public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
+        KurentoSession session = (KurentoSession) sessions.get(sessionId);
         if (session != null) {
             throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
                     "Session '" + session.getSessionId() + "' already exists");
         }
-        session = new KurentoSession(sessionNotActive, kms, kurentoSessionEventsHandler, kurentoEndpointConfig,
+
+        Session sessionNotActive = new Session(sessionId,
+                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
+
+        Kms lessLoadedKms;
+        try {
+            lessLoadedKms = this.kmsManager.getLessLoadedKms();
+            if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.parseDouble("0.0")) != 0) {
+                throw new NoSuchElementException();
+            }
+        } catch (NoSuchElementException e) {
+            throw new BizException(ErrorCodeEnum.COUNT_OF_CONFERENCE_LIMIT);
+        }
+
+
+        session = new KurentoSession(sessionNotActive, lessLoadedKms, kurentoSessionEventsHandler, kurentoEndpointConfig,
                 kmsManager.destroyWhenUnused());
         session.setEndTime(sessionNotActive.getEndTime());
+        lessLoadedKms.addKurentoSession(session);
 
+        session.setConference(conference);
+        session.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
+        session.setPresetInfo(getPresetInfo(sessionId));
+        session.setRuid(conference.getRuid());
         sessions.put(session.getSessionId(), session);
-		/*KurentoSession oldSession = (KurentoSession) sessions.putIfAbsent(session.getSessionId(), session);
-		if (oldSession != null) {
-			log.warn("Session '{}' has just been created by another thread", session.getSessionId());
-			return oldSession;
-		}*/
 
-        // Also associate the KurentoSession with the Kms
-        kms.addKurentoSession(session);
+        if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+            session.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
+        }
 
-        log.warn("No session '{}' exists yet. Created one on KMS '{}'", session.getSessionId(), kms.getUri());
-
+        log.warn("No session '{}' exists yet. Created one on KMS '{}'", session.getSessionId(), lessLoadedKms.getUri());
         sessionEventsHandler.onSessionCreated(session);
         return session;
     }

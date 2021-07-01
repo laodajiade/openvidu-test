@@ -1,10 +1,12 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantSpeakerStatus;
+import io.openvidu.server.common.enums.UserType;
+import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -17,11 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,55 +39,83 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                     ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
-        String targetId = getStringOptionalParam(request,ProtocolElements.GET_PARTICIPANTS_TARGETID_PARAM);
+        String searchType = getStringParam(request, "searchType");
+        int reducedMode = getIntOptionalParam(request, "reducedMode", 0);
+        Set<String> fields = new HashSet<>();
+
         JsonArray jsonArray = new JsonArray();
-        // key:connectionId, value:userDeviceDeptInfo
 
-        Set<Participant> needReturnParts = session.getMajorPartAllOrSpecificConnect(targetId);
-        JsonArray majorShareMixLinkedArr = session.getMajorShareMixLinkedArr();
+        Collection<Participant> needReturnParts = getSearchInstance(searchType).getParts(session, request);
+
+
         if (!CollectionUtils.isEmpty(needReturnParts)) {
-            Map<String, UserDeviceDeptInfo> connectIdUserInfoMap = userManage.getUserInfoInRoom(needReturnParts);
-            // key:connectionId, value:participant
-            Map<String, Participant> connectIdPartMap = needReturnParts.stream()
-                    .collect(Collectors.toMap(Participant::getParticipantPublicId, Function.identity()));
+            Map<String, UserDeviceDeptInfo> connectIdUserInfoMap = getUserInfoInRoom(needReturnParts);
 
-            if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-                // add participant info one by one according to mcu mix order
-                for (JsonElement jsonElement : majorShareMixLinkedArr) {
-                    Participant participant;
-                    JsonObject connectIdStreamTypeObj = jsonElement.getAsJsonObject();
-                    if (StreamType.MAJOR.name().equals(connectIdStreamTypeObj.get("streamType").getAsString())
-                            && Objects.nonNull(participant = connectIdPartMap.remove(connectIdStreamTypeObj.get("connectionId").getAsString()))) {
-                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
-                        if (Objects.nonNull(userObj)) {
-                            jsonArray.add(userObj);
-                        }
+            needReturnParts.forEach(participant -> {
+                JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
+                if (Objects.nonNull(userObj)) {
+                    if (reducedMode == 1) {
+                        reducedModeResult(userObj, fields);
                     }
+
+                    jsonArray.add(userObj);
                 }
-                // add left participant in return info
-                if (!connectIdPartMap.isEmpty()) {
-                    Collection<Participant> remainParts = connectIdPartMap.values();
-                    for (Participant participant : remainParts) {
-                        JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
-                        if (Objects.nonNull(userObj)) {
-                            jsonArray.add(userObj);
-                        }
-                    }
-                }
-            } else {
-                needReturnParts.stream().sorted(Comparator.comparing(Participant::getOrder).reversed()).forEach(participant -> {
-                    JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
-                    if (Objects.nonNull(userObj)) {
-                        jsonArray.add(userObj);
-                    }
-                });
-            }
+            });
         }
 
         JsonObject respJson = new JsonObject();
         respJson.add("participantList", jsonArray);
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
+
+    /**
+     * 精简返回值
+     *
+     * @param userObj json obj
+     * @param fields  client want to return
+     */
+    private void reducedModeResult(JsonObject userObj, Set<String> fields) {
+        HashSet<String> keys = new HashSet<>(userObj.keySet());
+        for (String key : keys) {
+            if (!fields.contains(key)) {
+                userObj.remove(key);
+            }
+        }
+    }
+
+
+    public Map<String, UserDeviceDeptInfo> getUserInfoInRoom(Collection<Participant> participants) {
+        Map<String, UserDeviceDeptInfo> connectIdPartMap = null;
+        List<UserDeviceDeptInfo> userDeviceDeptInfos = userMapper.queryUserInfoByUserIds(participants.stream()
+                .map(Participant::getUserId).collect(Collectors.toList()));
+        if (!CollectionUtils.isEmpty(userDeviceDeptInfos)) {
+            Map<Long, UserDeviceDeptInfo> userIdUserInfoMap = userDeviceDeptInfos.stream()
+                    .collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, Function.identity()));
+            connectIdPartMap = participants.stream().filter(participant -> userIdUserInfoMap.containsKey(participant.getUserId()))
+                    .collect(Collectors.toMap(Participant::getParticipantPublicId,
+                            participant -> userIdUserInfoMap.get(participant.getUserId())));
+        }
+        return connectIdPartMap;
+    }
+
+
+    private Search getSearchInstance(String searchType) {
+        switch (searchType) {
+            case "exact":
+                return new ExactSearch();
+            case "list":
+                return new ListSearch();
+            case "publisher":
+                return new PublisherSearch();
+            case "raisingHands":
+                return new RaisingHandsSearch();
+            case "all":
+                return new AllSearch();
+            default:
+                throw new UnsupportedOperationException("unsupported method search " + searchType);
+        }
+    }
+
 
     private static JsonObject getPartInfo(Participant participant, Map<String, UserDeviceDeptInfo> connectIdUserInfoMap, RpcConnection rpcConnection) {
         JsonObject userObj = new JsonObject();
@@ -100,25 +126,21 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("terminalType", kurentoParticipant.getTerminalType().name());
         userObj.addProperty("shareStatus", kurentoParticipant.getShareStatus().name());
         userObj.addProperty("handStatus", kurentoParticipant.getHandStatus().name());
-        try {
-            userObj.addProperty("audioActive",
-                    kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isAudioActive());
-            userObj.addProperty("videoActive",
-                    kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
-        } catch (Exception e) {
-            //todo 偶现问题，怀疑是isStreaming不正确，观察两个月错误日志2021年4月30日，如果没有报错可以删除
-            log.error("getPartInfo error,kurentoParticipant uuid {}, isStreaming {},isPublisherStreaming {}"
-                    ,kurentoParticipant.getUuid(),kurentoParticipant.isStreaming(),kurentoParticipant.isPublisherStreaming());
-            throw e;
-        }
+
+        // todo 2.0 这个放到流中间
+        userObj.addProperty("audioActive",
+                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isAudioActive());
+        userObj.addProperty("videoActive",
+                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
+
 
         userObj.addProperty("micStatus", kurentoParticipant.getMicStatus().name());
         userObj.addProperty("videoStatus", kurentoParticipant.getVideoStatus().name());
         userObj.addProperty("speakerStatus", kurentoParticipant.getSpeakerStatus().name());
         userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(kurentoParticipant.getSpeakerStatus()));
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
-        userObj.addProperty("order",participant.getOrder());
-        userObj.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
+        userObj.addProperty("order", participant.getOrder());
+        userObj.addProperty("pushStreamStatus", participant.getPushStreamStatus().name());
         userObj.addProperty("ability", rpcConnection.getAbility());
         userObj.addProperty("functionality", rpcConnection.getFunctionality());
         if (UserType.register.equals(kurentoParticipant.getUserType())) {
@@ -132,7 +154,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 userObj.addProperty("deviceVersion", userDeviceDeptInfo.getDeviceVersion());
                 userObj.addProperty("versionCode", StringUtils.isEmpty(rpcConnection.getDeviceVersion()) ? userDeviceDeptInfo.getDeviceVersion() : rpcConnection.getDeviceVersion());
                 if (!StringUtils.isEmpty(userDeviceDeptInfo.getSerialNumber())) {
-                    userObj.addProperty("serialNumber",userDeviceDeptInfo.getSerialNumber());
+                    userObj.addProperty("serialNumber", userDeviceDeptInfo.getSerialNumber());
                     userObj.addProperty("deviceModel", userDeviceDeptInfo.getDeviceModel());
                     userObj.addProperty("deviceName", userDeviceDeptInfo.getDeviceName());
                     userObj.addProperty("deviceOrgName", userDeviceDeptInfo.getDeptName());
@@ -151,6 +173,48 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         }
 
         return userObj;
+    }
+
+
+    interface Search {
+        Collection<Participant> getParts(Session session, Request<JsonObject> request);
+    }
+
+    class ExactSearch implements Search {
+
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
+            return null;
+        }
+    }
+
+    class ListSearch implements Search {
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
+            return null;
+        }
+    }
+
+    class PublisherSearch implements Search {
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
+            Set<Participant> participants = session.getParticipants();
+            return null;
+        }
+    }
+
+    class RaisingHandsSearch implements Search {
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
+            return null;
+        }
+    }
+
+    class AllSearch implements Search {
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
+            return session.getParticipants();
+        }
     }
 
 }

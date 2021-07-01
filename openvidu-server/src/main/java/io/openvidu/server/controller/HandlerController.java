@@ -23,6 +23,7 @@ import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.RequestDTO;
+import io.openvidu.server.domain.RequestEx;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcExHandler;
 import io.openvidu.server.rpc.RpcHandlerFactory;
@@ -58,10 +59,11 @@ public class HandlerController {
     RespResult<?> handler(@RequestBody RequestDTO requestDTO) {
 
         try {
-            Request<JsonObject> request = new Request<>();
+            RequestEx<JsonObject> request = new RequestEx<>();
             request.setId(requestDTO.getId());
             request.setMethod(requestDTO.getMethod());
             request.setParams(new Gson().fromJson(requestDTO.getParams(), JsonObject.class));
+            request.setTrackId(requestDTO.getTrackId());
 
             RpcConnection rpcConnection = rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
 

@@ -70,7 +70,15 @@ public class Session implements SessionInterface {
 	protected RecordingManager recordingManager;
 	protected LivingManager livingManager;
 
-	protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
+    //todo 不在使用，废弃了  participantList 代替 participants
+    @Deprecated
+    protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
+
+    /**
+     * key = uuid
+     */
+    protected final ConcurrentMap<String, Participant> participantList = new ConcurrentHashMap<>();
+
 	protected String sessionId;
 	protected String traceId;
 	protected String ruid;
@@ -430,16 +438,10 @@ public class Session implements SessionInterface {
 		return (getConfEndTime() - new Date().getTime()) / 1000;
 	}
 
-	/*public Set<Participant> getParticipants() {
-		checkClosed();
-		return new HashSet<Participant>(this.participants.values());
-	}*/
-
-	public Set<Participant> getParticipants() {
-		checkClosed();
-		return this.participants.values().stream().flatMap(v ->
-				v.values().stream()).collect(Collectors.toSet());
-	}
+    public Set<Participant> getParticipants() {
+        checkClosed();
+        return new HashSet<>(this.participantList.values());
+    }
 
 	public Set<Participant> getMajorPartEachConnect() {
 		checkClosed();
@@ -1002,10 +1004,6 @@ public class Session implements SessionInterface {
     public int getMajorPartSize() {
     	return majorParts.get();
 	}
-
-//	public int getMajorPartOrder() {
-//    	return roomParticipants.incrementAndGet();
-//	}
 
 	public boolean isClosed() {
 		return closed;

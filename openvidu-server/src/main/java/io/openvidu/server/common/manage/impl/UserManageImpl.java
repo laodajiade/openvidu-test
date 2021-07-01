@@ -99,20 +99,7 @@ public class UserManageImpl implements UserManage {
         cacheManage.updateTokenInfo(uuid, "username", update.getUsername());
     }
 
-    @Override
-    public Map<String, UserDeviceDeptInfo> getUserInfoInRoom(Set<Participant> participants) {
-        Map<String, UserDeviceDeptInfo> connectIdPartMap = null;
-        List<UserDeviceDeptInfo> userDeviceDeptInfos = userMapper.queryUserInfoByUserIds(participants.stream()
-                .map(Participant::getUserId).collect(Collectors.toList()));
-        if (!CollectionUtils.isEmpty(userDeviceDeptInfos)) {
-            Map<Long, UserDeviceDeptInfo> userIdUserInfoMap = userDeviceDeptInfos.stream()
-                    .collect(Collectors.toMap(UserDeviceDeptInfo::getUserId, Function.identity()));
-            connectIdPartMap = participants.stream().filter(participant -> userIdUserInfoMap.containsKey(participant.getUserId()))
-                    .collect(Collectors.toMap(Participant::getParticipantPublicId,
-                            participant -> userIdUserInfoMap.get(participant.getUserId())));
-        }
-        return connectIdPartMap;
-    }
+
 
     @Override
     public void saveUserLoginHistroy(UserLoginHistory userLoginHistory) {

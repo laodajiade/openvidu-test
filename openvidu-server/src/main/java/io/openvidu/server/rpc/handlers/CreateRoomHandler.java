@@ -203,8 +203,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                     preset.setRoomCapacity(fixedRoom.getRoomCapacity());
                 }
 
-                // store this inactive session
-                Session session = sessionManager.storeSessionNotActiveWhileRoomCreated(sessionId);
+                Session session =  sessionManager.createSession(sessionId, conference);
                 session.setPresetInfo(preset);
                 if (appt != null) {
                     session.setEndTime(appt.getEndTime().getTime());
