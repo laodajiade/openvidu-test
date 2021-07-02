@@ -21,7 +21,8 @@ import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.*;
+import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
@@ -33,7 +34,6 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
 import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
@@ -118,28 +118,21 @@ public class KurentoSessionManager extends SessionManager {
             UseTime.point("setMajorPartsOrder start");
             kSession.setMajorPartsOrder(participant, rpcNotificationService);
             UseTime.point("setMajorPartsOrder end");
-            // 第一个入会者是主持人，所有权限都打开
-            if (StreamType.MAJOR.equals(participant.getStreamType())) {
-                SessionPreset preset = getPresetInfo(sessionId);
-                if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-                    participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
+            // 如果是主持人，所有权限都打开
+            SessionPreset preset = getPresetInfo(sessionId);
+            if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+                participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
+            } else {
+                participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
+                if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
+                    participant.setMicStatus(ParticipantMicStatus.off);
                 } else {
-                    participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
-                    if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
+                    if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
                         participant.setMicStatus(ParticipantMicStatus.off);
-                    } else {
-                        if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
-                            participant.setMicStatus(ParticipantMicStatus.off);
-                        }
-                    }
-
-                    if (OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
-                        participant.setMicStatus(ParticipantMicStatus.off);
-                        participant.setVideoStatus(ParticipantVideoStatus.off);
                     }
                 }
-                participant.setRoomSubject(preset.getRoomSubject());
             }
+            participant.setRoomSubject(preset.getRoomSubject());
 
             // change the part role according to the mcu limit
             if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode()) && kSession.needToChangePartRoleAccordingToLimit(participant)) {
@@ -157,22 +150,24 @@ public class KurentoSessionManager extends SessionManager {
             UseTime.point("join 1");
             kSession.join(participant);
             UseTime.point("join 2");
+            // todo 需要转移到分享接口
             // record share status.
             if (StreamType.SHARING.equals(participant.getStreamType())) {
                 participant.setShareStatus(ParticipantShareStatus.on);
                 Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
                 majorPart.changeShareStatus(ParticipantShareStatus.on);
             }
+            // todo 需要转移到分享接口
             UseTime.point("db 1");
             // save part info
             roomManage.storePartHistory(participant, conference);
             UseTime.point("db 2");
             // save max concurrent statistics
-            cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
+            cacheManage.updateMaxConcurrentOfDay(kSession.getParticipants().size(), conference.getProject());
             UseTime.point("db 3");
             //save max concurrent in conference
             Conference concurrentCon = new Conference();
-            concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
+            concurrentCon.setConcurrentNumber(kSession.getParticipants().size());
             concurrentCon.setId(conference.getId());
             roomManage.storeConcurrentNumber(concurrentCon);
             UseTime.point("db 4");

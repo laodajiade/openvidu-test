@@ -312,7 +312,11 @@ public class ProtocolElements {
 
 
     public static final String NOTIFY_PART_ROLE_CHANGED_METHOD = "notifyPartRoleChanged";
-    public static final String NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM = "connectionId";
+    public static final String PART_ORDER_OR_ROLE_CHANGE_NOTIFY_METHOD = "partOrderOrRoleChangeNotify";
+
+
+    // 2.0 废弃 public static final String NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM = "connectionId";
+    public static final String NOTIFY_PART_ROLE_CHANGED_UUID_PARAM = "uuid";
     public static final String NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM = "originalRole";
     public static final String NOTIFY_PART_ROLE_CHANGED_PRESENT_ROLE_PARAM = "presentRole";
     public static final String NOTIFY_PART_ROLE_CHANGED_HAND_STATUS_PARAM = "handStatus";

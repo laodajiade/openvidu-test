@@ -35,7 +35,7 @@ public class Participant {
 	protected String finalUserId; // ID to match this connection with a final user (HttpSession id)
 	protected String participantPrivatetId; // ID to identify the user on server (org.kurento.jsonrpc.Session.id)
 	protected String participantPublicId; // ID to identify the user on clients
-	private String sessionId; // ID of the session to which the participant belongs
+	final private String sessionId; // ID of the session to which the participant belongs
 	protected Long createdAt; // Timestamp when this connection was established
 	protected String clientMetadata = ""; // Metadata provided on client side
 	protected String serverMetadata = ""; // Metadata provided on server side

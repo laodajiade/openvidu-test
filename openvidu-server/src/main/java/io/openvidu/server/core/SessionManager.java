@@ -510,28 +510,29 @@ public abstract class SessionManager {
 
 	public Participant newParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata, String role,
 									  String streamType, GeoLocation location, String platform, String finalUserId, String ability,String functionality) {
-		if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+		Session session = getSession(sessionId);
+		if (session != null) {
 			String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
 			Participant p = new Participant(userId, finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
 					StreamType.valueOf(streamType), clientMetadata, location, platform, null, ability, functionality);
-			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
-					p) != null) {
-				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
-				p.setParticipantPublicId(participantPublicId);
-			}
+//			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
+//					p) != null) {
+//				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
+//				p.setParticipantPublicId(participantPublicId);
+//			}
 
-			FinalUser finalUser = this.sessionidFinalUsers.get(sessionId).get(finalUserId);
-			if (finalUser == null) {
-				//First connection for new final user
-				log.info("Participant {} of session {} belongs to a new final user", p.getParticipantPublicId(),
-						sessionId);
-				this.sessionidFinalUsers.get(sessionId).put(finalUserId, new FinalUser(finalUserId, sessionId, p));
-			} else {
-				// New connection for previously existing final user
-				log.info("Participant {} of session {} belongs to a previously existing user",
-						p.getParticipantPublicId(), sessionId);
-				finalUser.addConnection(p);
-			}
+			//FinalUser finalUser = this.sessionidFinalUsers.get(sessionId).get(finalUserId);
+//			if (finalUser == null) {
+//				//First connection for new final user
+//				log.info("Participant {} of session {} belongs to a new final user", p.getParticipantPublicId(),
+//						sessionId);
+//				this.sessionidFinalUsers.get(sessionId).put(finalUserId, new FinalUser(finalUserId, sessionId, p));
+//			} else {
+//				// New connection for previously existing final user
+//				log.info("Participant {} of session {} belongs to a previously existing user",
+//						p.getParticipantPublicId(), sessionId);
+//				finalUser.addConnection(p);
+//			}
 
 			return p;
 		} else {

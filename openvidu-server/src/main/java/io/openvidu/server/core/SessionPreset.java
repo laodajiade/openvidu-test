@@ -4,7 +4,6 @@ import io.openvidu.server.common.enums.IMModeEnum;
 import io.openvidu.server.common.pojo.ScrollingBannersConfig;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.util.StringUtils;
 
 import java.util.Objects;
@@ -33,11 +32,11 @@ public class SessionPreset {
 
     @Getter
     @Setter
-    private SessionPresetEnum allowRecord  = SessionPresetEnum.on;//允许录制
+    private SessionPresetEnum allowRecord = SessionPresetEnum.on;//允许录制
 
     @Getter
     @Setter
-    private Integer allowPart  = 0;//0=不限制
+    private Integer allowPart = 0;//0=不限制
 
     private SessionPresetEnum quietStatusInRoom;
 
@@ -49,45 +48,94 @@ public class SessionPreset {
 
     private ScrollingBannersConfig scrollingBannersConfig;
 
+    @Setter
+    @Getter
+    private int sfuPublisherThreshold = 9;
+
+    @Setter
+    @Getter
+    private int mcuThreshold = 30;
+
+    @Setter
+    @Getter
+    private int unMcuThreshold = 0;
+
+
     @Getter
     @Setter
     private Integer imMode = IMModeEnum.NOT_LIMIT.getMode();
 
-    public void setMicStatusInRoom(SessionPresetEnum micStatusInRoom) { this.micStatusInRoom = micStatusInRoom; }
+    public void setMicStatusInRoom(SessionPresetEnum micStatusInRoom) {
+        this.micStatusInRoom = micStatusInRoom;
+    }
 
-    public SessionPresetEnum getMicStatusInRoom() { return this.micStatusInRoom; }
+    public SessionPresetEnum getMicStatusInRoom() {
+        return this.micStatusInRoom;
+    }
 
-    public void setVideoStatusInRoom(SessionPresetEnum micStatusInRoom) { this.videoStatusInRoom = micStatusInRoom; }
+    public void setVideoStatusInRoom(SessionPresetEnum micStatusInRoom) {
+        this.videoStatusInRoom = micStatusInRoom;
+    }
 
-    public SessionPresetEnum getVideoStatusInRoom() { return this.micStatusInRoom; }
+    public SessionPresetEnum getVideoStatusInRoom() {
+        return this.micStatusInRoom;
+    }
 
-    public void setSharePowerInRoom(SessionPresetEnum sharePowerInRoom) { this.sharePowerInRoom = sharePowerInRoom; }
+    public void setSharePowerInRoom(SessionPresetEnum sharePowerInRoom) {
+        this.sharePowerInRoom = sharePowerInRoom;
+    }
 
-    public SessionPresetEnum getSharePowerInRoom() { return this.sharePowerInRoom; }
+    public SessionPresetEnum getSharePowerInRoom() {
+        return this.sharePowerInRoom;
+    }
 
-    public void setRoomSubject(String roomSubject) { this.roomSubject = roomSubject; }
+    public void setRoomSubject(String roomSubject) {
+        this.roomSubject = roomSubject;
+    }
 
-    public String getRoomSubject() { return this.roomSubject; }
+    public String getRoomSubject() {
+        return this.roomSubject;
+    }
 
-    public int getRoomCapacity() { return this.roomCapacity; }
+    public int getRoomCapacity() {
+        return this.roomCapacity;
+    }
 
-    public void setRoomCapacity(int roomCapacity) { this.roomCapacity = roomCapacity; }
+    public void setRoomCapacity(int roomCapacity) {
+        this.roomCapacity = roomCapacity;
+    }
 
-    public float getRoomDuration() { return this.roomDuration; }
+    public float getRoomDuration() {
+        return this.roomDuration;
+    }
 
-    public void setRoomDuration(float roomDuration) { this.roomDuration = roomDuration; }
+    public void setRoomDuration(float roomDuration) {
+        this.roomDuration = roomDuration;
+    }
 
-    public SessionPresetUseIDEnum getUseIdTypeInRoom() { return this.useIdTypeInRoom; }
+    public SessionPresetUseIDEnum getUseIdTypeInRoom() {
+        return this.useIdTypeInRoom;
+    }
 
-    public void setUseIdTypeInRoom(SessionPresetUseIDEnum useIdType) { this.useIdTypeInRoom = useIdType; }
+    public void setUseIdTypeInRoom(SessionPresetUseIDEnum useIdType) {
+        this.useIdTypeInRoom = useIdType;
+    }
 
-    public void setAllowPartOperMic(SessionPresetEnum allowPartOperMic) { this.allowPartOperMic = allowPartOperMic; }
+    public void setAllowPartOperMic(SessionPresetEnum allowPartOperMic) {
+        this.allowPartOperMic = allowPartOperMic;
+    }
 
-    public SessionPresetEnum getAllowPartOperMic() { return this.allowPartOperMic; }
+    public SessionPresetEnum getAllowPartOperMic() {
+        return this.allowPartOperMic;
+    }
 
-    public void setAllowPartOperShare(SessionPresetEnum allowPartOperShare) { this.allowPartOperShare = allowPartOperShare; }
+    public void setAllowPartOperShare(SessionPresetEnum allowPartOperShare) {
+        this.allowPartOperShare = allowPartOperShare;
+    }
 
-    public SessionPresetEnum getAllowPartOperShare() { return this.allowPartOperShare; }
+    public SessionPresetEnum getAllowPartOperShare() {
+        return this.allowPartOperShare;
+    }
 
     public SessionPresetEnum getAllowPartOperSpeaker() {
         return allowPartOperSpeaker;

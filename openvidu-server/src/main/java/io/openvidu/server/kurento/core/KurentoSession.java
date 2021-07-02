@@ -140,7 +140,7 @@ public class KurentoSession extends Session {
 //				connectionParticipants.put(participant.getStreamType().name(), kurentoParticipant);
 //				return connectionParticipants;
 //			});
-			participantList.put(participant.getUuid(), participant);
+			participantList.put(participant.getUuid(), kurentoParticipant);
 
 			filterStates.forEach((filterId, state) -> {
 				log.info("Adding filter {}", filterId);

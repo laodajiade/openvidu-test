@@ -244,6 +244,7 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         for (String participantPrivateId : participantPrivateIds) {
             NOTIFY_THREAD_POOL.submit(() -> {
                 try {
+                    //todo 2.0 优化批量获取，减少网络次数
                     RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
                     if (rpcSession == null) {
                         log.error("No rpc session found for private id {}, unable to send notification {}: {}",
