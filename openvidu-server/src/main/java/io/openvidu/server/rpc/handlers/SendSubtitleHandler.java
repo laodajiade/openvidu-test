@@ -27,7 +27,7 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
         Session session = sessionManager.getSession(rpcConnection.getSessionId());
 
         // check sender permission
-        Participant senderPart = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
+        Participant senderPart = session.getParticipantByUUID(rpcConnection.getUserUuid()).orElseGet(null);
         if (!senderPart.getSubtitleConfig().ableToSendSubtitle()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);

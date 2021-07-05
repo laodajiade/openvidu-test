@@ -530,15 +530,15 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toList());
 	}
 
-    public Participant getParticipantByPrivateId(String participantPrivateId) {
-        checkClosed();
-
-		if (Objects.isNull(participants.get(participantPrivateId))) {
-			return null;
-		}
-
-        return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
-    }
+	public Participant getParticipantByPrivateId(String participantPrivateId) {
+		checkClosed();
+//		if (Objects.isNull(participants.get(participantPrivateId))) {
+//			return null;
+//		}
+//
+//        return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
+		return participantList.values().stream().filter(p -> p.getUuid().equals(participantPrivateId)).findFirst().orElseGet(null);
+	}
 
 	@Override
 	public ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId) {

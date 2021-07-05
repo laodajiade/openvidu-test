@@ -37,7 +37,6 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
-import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.living.Living;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -53,7 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -93,6 +91,12 @@ public abstract class SessionManager {
 
 	@Resource
 	ConferenceMapper conferenceMapper;
+
+	@Resource
+	protected InviteCompensationManage inviteCompensationManage;
+
+	@Resource
+	protected TimerManager timerManager;
 
 	public FormatChecker formatChecker = new FormatChecker();
 
@@ -609,6 +613,55 @@ public abstract class SessionManager {
 				log.warn("Error closing session '{}'", sessionId, e);
 			}
 		}
+	}
+
+	public void closeRoom(RpcConnection rpcConnection, Session session) {
+		UseTime.point("closeRoom p1");
+		String sessionId = session.getSessionId();
+		// set session status: closing
+		session.setClosing(true);
+		session.getParticipants();
+
+//		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
+//			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
+//			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
+//			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
+//			if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
+//				cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
+//			}
+//		});
+
+		Set<Participant> participants = session.getParticipants();
+		notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
+
+		new Thread(() -> {
+			for (Participant p : participants) {
+				RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
+				if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
+					cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
+				}
+			}
+		}).start();
+
+		UseTime.point("closeRoom p2");
+		//cancel invite
+		inviteCompensationManage.disableAllInviteCompensation(sessionId);
+		updateConferenceInfo(sessionId);
+		//close room stopPolling
+		if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+			SessionPreset sessionPreset = session.getPresetInfo();
+			sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+			timerManager.stopPollingCompensation(sessionId);
+			//send notify
+			JsonObject params = new JsonObject();
+			params.addProperty("roomId", sessionId);
+			notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
+		}
+		UseTime.Point point = UseTime.getPoint("sessionManager.closeSession.Point");
+		this.closeSession(sessionId, EndReason.closeSessionByModerator);
+		point.updateTime();
+		UseTime.point("closeRoom p5");
+		rpcConnection.setReconnected(false);
 	}
 
 	/**

@@ -166,6 +166,8 @@ public abstract class RpcAbstractHandler {
         inviteCompensationManage.disableInviteCompensation(account);
     }
 
+    //todo 2.0 Deprecated
+    @Deprecated
     protected void cancelAllInviteCompensation(String roomId) {
         inviteCompensationManage.disableAllInviteCompensation(roomId);
     }

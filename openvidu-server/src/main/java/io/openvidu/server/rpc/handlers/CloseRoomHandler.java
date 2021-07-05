@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author geedow
@@ -25,53 +27,51 @@ import java.util.Objects;
 public class CloseRoomHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Session session;
-        ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         String sessionId = getStringParam(request, ProtocolElements.CLOSE_ROOM_ID_PARAM);
 
-        if (!Objects.isNull(session = sessionManager.getSessionNotActive(sessionId))) {
-            closeRoomNotActive(rpcConnection, session);
-            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-            return;
-        }
-
+//        if (!Objects.isNull(session = sessionManager.getSessionNotActive(sessionId))) {
+//            closeRoomNotActive(rpcConnection, session);
+//            this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+//            return;
+//        }
+        Session session;
         if (Objects.isNull(session = sessionManager.getSession(sessionId)) || session.isClosed()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
-
-        Participant participant = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
-        if (Objects.nonNull(participant)) {
-            if (!participant.getRole().isController()) {
-                errCode = ErrorCodeEnum.PERMISSION_LIMITED;
-            }
-        } else {
-            // once participant reconnected, close the room directly without joining room
-            // find the participant related to the previous connection and verify the operation permission
-            Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-            if (!partInfo.isEmpty() && Objects.nonNull(participant = session.getParticipantByUUID(rpcConnection.getUserUuid()).orElseGet(null))
-                    && !participant.getRole().isController()) {
-                errCode = ErrorCodeEnum.PERMISSION_LIMITED;
-            }
-
-        }
-        if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
+        if (!session.getConference().getModeratorUuid().equals(rpcConnection.getUserUuid())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, errCode);
+                    null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
         }
 
-        closeRoom(rpcConnection, session);
+//        Optional<Participant> participantOptional = session.getParticipantByUUID(rpcConnection.getUserUuid());
+//
+//        if (!participantOptional.isPresent()) {
+//            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+//            return;
+//        }
+//        Participant participant = participantOptional.get();
+//        if (participant.getRole() != OpenViduRole.MODERATOR) {
+//            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//                    null, ErrorCodeEnum.PERMISSION_LIMITED);
+//            return;
+//        }
+
+        sessionManager.closeRoom(rpcConnection, session);
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 
-    public void closeRoomNotActive(RpcConnection rpcConnection, Session session) {
-        sessionManager.closeSessionAndEmptyCollections(session, EndReason.closeSessionByModerator);
-    }
-
+    //todo 2.0 Deprecated, use #sessionManager.closeRoom(rpcConnection, session);
+    @Deprecated
     public void closeRoom(RpcConnection rpcConnection, Session session) {
+        if (true) {
+            sessionManager.closeRoom(rpcConnection, session);
+            return;
+        }
         UseTime.point("closeRoom p1");
         String sessionId = session.getSessionId();
         // set session status: closing
