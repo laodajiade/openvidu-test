@@ -176,11 +176,12 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     }
 
 
+    /* ************************** class ************************** */
     interface Search {
         Collection<Participant> getParts(Session session, Request<JsonObject> request);
     }
 
-    class ExactSearch implements Search {
+    private class ExactSearch implements Search {
 
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
@@ -188,29 +189,28 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         }
     }
 
-    class ListSearch implements Search {
+    private class ListSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
             return null;
         }
     }
 
-    class PublisherSearch implements Search {
+    private class PublisherSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            Set<Participant> participants = session.getParticipants();
+            return session.getParticipants().stream().filter(p -> p.getRole().needToPublish()).collect(Collectors.toCollection(TreeSet::new));
+        }
+    }
+
+    private class RaisingHandsSearch implements Search {
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
             return null;
         }
     }
 
-    class RaisingHandsSearch implements Search {
-        @Override
-        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return null;
-        }
-    }
-
-    class AllSearch implements Search {
+    private class AllSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
             return session.getParticipants();

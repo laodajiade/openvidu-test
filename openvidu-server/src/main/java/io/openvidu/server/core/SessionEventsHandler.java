@@ -366,6 +366,7 @@ public class SessionEventsHandler {
                     if (exist.getStreamType() == StreamType.MAJOR) {
                         JsonObject order = new JsonObject();
                         order.addProperty("account", exist.getUuid());
+                        order.addProperty("uuid", exist.getUuid());
                         order.addProperty("order", exist.getOrder());
                         orderedParts.add(order);
                     }
