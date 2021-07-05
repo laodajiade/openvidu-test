@@ -202,7 +202,6 @@ public class KurentoSession extends Session {
 
 	@Override
 	public void leaveRoom(Participant p, EndReason reason) {
-		deregisterMajorParticipant(p);
 		synchronized (joinOrLeaveLock) {
 			try {
 				leave(p, reason);
@@ -217,11 +216,7 @@ public class KurentoSession extends Session {
 
 	private void leave(Participant p, EndReason reason) {
 		checkClosed();
-		KurentoParticipant participant = (KurentoParticipant)p;
-		if (participant == null) {
-			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE, "Participant with private id "
-					+ p.getParticipantPrivateId() + "public id " + p.getParticipantPublicId() + " not found in session '" + sessionId + "'");
-		}
+		KurentoParticipant participant = (KurentoParticipant) p;
 		participant.releaseAllFilters();
 
 		log.info("PARTICIPANT {}: Leaving session {}", participant.getParticipantPublicId(), this.sessionId);
@@ -279,24 +274,12 @@ public class KurentoSession extends Session {
 	}
 
 	private void removeParticipant(Participant participant, EndReason reason) {
-
 		checkClosed();
-
-		ConcurrentMap majorOrSharePartsMap = participants.get(participant.getParticipantPrivateId());
-		if (Objects.nonNull(majorOrSharePartsMap)) {
-			majorOrSharePartsMap.remove(participant.getStreamType().name());
-			if (majorOrSharePartsMap.size() == 0) {
-				participants.remove(participant.getParticipantPrivateId());
-			}
-		}
-		/*Participant p1 = participants.get(participant.getParticipantPrivateId()).remove(participant.getStreamType().name());
-		if (participants.get(participant.getParticipantPrivateId()).size() == 0) {
-			participants.remove(participant.getParticipantPrivateId());
-		}*/
+		participantList.remove(participant.getUuid());
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
-        for (Participant other : getParticipants()) {
+		for (Participant other : getParticipants()) {
 			((KurentoParticipant) other).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
 	}
@@ -599,15 +582,6 @@ public class KurentoSession extends Session {
 
 	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
 		kurentoSessionHandler.notifyClient(participarntPrivateId, method, param);
-	}
-
-
-	public Set<Participant> getMajorPartEachExcludeThorConnect() {
-		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant)
-						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
-				.collect(Collectors.toSet());
 	}
 
 	public List<DeliveryKmsManager> getDeliveryKmsManagers() {

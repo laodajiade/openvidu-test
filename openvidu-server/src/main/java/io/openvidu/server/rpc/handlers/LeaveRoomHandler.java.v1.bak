@@ -27,35 +27,37 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.LEAVEROOM_ROOM_ID_PARAM);
         String sourceId = getStringParam(request, ProtocolElements.LEAVEROOM_SOURCE_ID_PARAM);
-        if (StringUtils.isEmpty(sessionId) || (StringUtils.isEmpty(sourceId) && UserType.register.equals(rpcConnection.getUserType()))) {
+        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.LEAVEROOM_STREAM_TYPE_PARAM));
+        if (StringUtils.isEmpty(sessionId) || (StringUtils.isEmpty(sourceId) && UserType.register.equals(rpcConnection.getUserType()))
+                || StringUtils.isEmpty(streamType)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
         UseTime.point("p1");
-        Session session = sessionManager.getSession(sessionId);
-        if (Objects.isNull(session)) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
-            return;
-        }
         Participant participant;
         try {
-            Optional<Participant> participantOptional = session.getParticipantByUUID(rpcConnection.getUserUuid());
-            if (!participantOptional.isPresent()) {
-                log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
-                Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-                if (!partInfo.isEmpty()) {
-                    sessionManager.evictParticipantByUUID(sessionId, rpcConnection.getUserUuid(),
-                            Arrays.asList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION,
-                                    EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
+            participant = sessionManager.getParticipant(sessionId, rpcConnection.getParticipantPrivateId(), streamType);
+            if (Objects.isNull(participant)) {
+                if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
+                    log.info("when participants are disconnected and reconnected, they can leave the meeting without joining.");
+                    Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
+                    if (!partInfo.isEmpty()) {
+                        sessionManager.evictParticipantByUUID(sessionId,
+                                rpcConnection.getUserUuid(), Arrays.asList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION,
+                                        EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
+                    }
                 }
 
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
                 return;
             }
-            participant = participantOptional.get();
         } catch (OpenViduException e) {
+            if (e.getCode() == OpenViduException.Code.ROOM_NOT_FOUND_ERROR_CODE.getValue()) {
+                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+                return;
+            }
             log.info("close previous participant info exception", e);
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
@@ -63,7 +65,13 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         }
         UseTime.point("p2");
 
-        if (session.isClosing()) {
+        if (Objects.isNull(sessionManager.getSession(sessionId))) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+            return;
+        }
+
+        if (sessionManager.getSession(sessionId).isClosing()) {
             log.info("call closeRoom method after again participant:{} call leaveRoom method roomId:{}", participant.getUuid() + participant.getParticipantPrivateId(), sessionId);
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
             return;
@@ -92,6 +100,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             }
         }
 
+        Session session = sessionManager.getSession(sessionId);
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)
                 && participant.getStreamType().isStreamTypeMixInclude()) {
             sessionManager.setLayoutAndNotifyWhenLeaveRoom(sessionId, participant,
@@ -125,8 +134,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     timerManager.leaveRoomStartPollingAgainCompensation(sessionId, preset.getPollingIntervalTime(), index == 0 ? index : index - 1);
                 }
             }
-        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType())
-                && OpenViduRole.MODERATOR.equals(participant.getRole())) {
+        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && OpenViduRole.MODERATOR.equals(participant.getRole())) {
             //close room stopPolling
             preset.setPollingStatusInRoom(SessionPresetEnum.off);
             timerManager.stopPollingCompensation(sessionId);
@@ -147,5 +155,12 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             session.putPartOnWallAutomatically(sessionManager);
         }
         rpcConnection.setReconnected(false);
+
+        // 针对1.3.5以下的客户端，可能只退出一个主流而不退其他子流，需要平台强行踢出
+        if (participant.getStreamType() == StreamType.MAJOR && rpcConnection.getAccessType() != AccessTypeEnum.web) {
+            sessionManager.evictParticipantByUUID(sessionId,
+                    rpcConnection.getUserUuid(), Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+        }
+        UseTime.point("p6");
     }
 }

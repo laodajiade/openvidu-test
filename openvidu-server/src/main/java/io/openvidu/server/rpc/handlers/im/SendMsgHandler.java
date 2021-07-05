@@ -54,7 +54,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         if (session == null || !session.getRuid().equals(params.getRuid())) {
             return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
         }
-        Participant participant = session.getParticipantByUUID(rpcConnection.getUserUuid());
+        Participant participant = session.getParticipantByUUID(rpcConnection.getUserUuid()).orElseGet(null);
         if (participant == null) {
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
@@ -134,7 +134,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         Notification notification = new Notification(ProtocolElements.NOTIFY_SEND_MSG_METHOD, sendMsgNotify);
 
         if (params.getOperate() == 0) {
-            notification.setParticipantIds(session.getParticipantByUUID(params.getReciverAccount().get(0)).getParticipantPrivateId());
+            notification.setParticipantIds(session.getParticipantByUUID(params.getReciverAccount().get(0)).get().getParticipantPrivateId());
             sendMsgNotify.setRecivers(Collections.singletonList(new ImUser(imMsg.getRevicerUuid(),
                     imMsg.getRevicerUsername(), imMsg.getRevicerTerminalType())));
         } else {
@@ -157,13 +157,13 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         imMsg.setContent(params.getContent());
         imMsg.setExt(params.getExt());
 
-        Participant sendParticipant = session.getParticipantByUUID(rpcConnection.getUserUuid());
+        Participant sendParticipant = session.getParticipantByUUID(rpcConnection.getUserUuid()).orElseGet(null);
         imMsg.setSenderTerminalType(sendParticipant.getTerminalType().name());
         if (params.getOperate() == 0) {
             BindValidate.notEmpty(params::getReciverAccount);
             String reciverUuid = params.getReciverAccount().get(0);
 
-            Participant targetParticipant = session.getParticipantByUUID(reciverUuid);
+            Participant targetParticipant = session.getParticipantByUUID(reciverUuid).orElseGet(null);
             if (targetParticipant == null) {
                 throw new BizException(ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
             }

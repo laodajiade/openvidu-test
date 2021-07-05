@@ -42,7 +42,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         Participant sourcePart;
         Session session = sessionManager.getSession(sessionId);
         if (!StringUtils.isEmpty(source)) {
-            sourcePart = session.getParticipantByUUID(source);
+            sourcePart = session.getParticipantByUUID(source).get();
         } else {
             sourcePart = session.getParticipantByUserId(Long.valueOf(sourceId));
         }

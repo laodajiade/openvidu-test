@@ -43,7 +43,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         Participant sourcePart;
         Session session = sessionManager.getSession(sessionId);
         if (!StringUtils.isEmpty(source)) {
-            sourcePart = session.getParticipantByUUID(source);
+            sourcePart = session.getParticipantByUUID(source).get();
         } else {
             sourcePart = session.getParticipantByUserId(Long.valueOf(sourceId));
         }
@@ -68,7 +68,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                 });
             } else {
                 accountTargets.forEach(account -> {
-                    KurentoParticipant part = (KurentoParticipant) sessionManager.getSession(sessionId).getParticipantByUUID(account);
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getSession(sessionId).getParticipantByUUID(account).get();
                     if (Objects.nonNull(part)) {
                         part.changeMicStatus(micStatus);
                         accountArr.add(account);

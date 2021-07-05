@@ -270,6 +270,8 @@ public abstract class SessionManager {
 	 * @throws OpenViduException in case the session doesn't exist or the
 	 *                           participant doesn't belong to it
 	 */
+	//TODO 2.0废弃
+	@Deprecated
 	public Participant getParticipant(String sessionId, String participantPrivateId, StreamType streamType) throws OpenViduException {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
@@ -292,7 +294,19 @@ public abstract class SessionManager {
 	 *                           participant doesn't belong to it
 	 */
 	public Participant getParticipant(String sessionId, String participantPrivateId) throws OpenViduException {
-		return this.getParticipant(sessionId, participantPrivateId, StreamType.MAJOR);
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		return session.getParticipants().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).findAny().orElseGet(null);
+	}
+
+	public Optional<Participant> getParticipantByUUID(String sessionId, String uuid) throws OpenViduException {
+		Session session = sessions.get(sessionId);
+		if (session == null) {
+			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+		}
+		return session.getParticipantByUUID(uuid);
 	}
 
 	/**

@@ -201,8 +201,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(roomId)) {
                         log.info("remove previous participant if reconnect " + partInfo.toString());
                         if (!CollectionUtils.isEmpty(session.getParticipants())) {
-                            Participant originalPart = session.getParticipantByUUID(rpcConnection.getUserUuid());
-                            if (originalPart != null) {
+                            Optional<Participant> originalPartOptional = session.getParticipantByUUID(rpcConnection.getUserUuid());
+                            if (originalPartOptional.isPresent()) {
+                                Participant originalPart = originalPartOptional.get();
                                 //记录断线时的语音模式状态
                                 voiceMode = originalPart.getVoiceMode();
                                 //participant reconnect stop polling

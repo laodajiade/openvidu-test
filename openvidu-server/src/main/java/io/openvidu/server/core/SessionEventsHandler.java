@@ -35,7 +35,6 @@ import io.openvidu.server.exception.NoSuchKmsException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
-import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
@@ -381,19 +380,15 @@ public class SessionEventsHandler {
 	}
 
 	public void onParticipantLeft(Participant participant, String sessionId, Set<Participant> remainingParticipants,
-			Integer transactionId, OpenViduException error, EndReason reason) {
+								  Integer transactionId, OpenViduException error, EndReason reason) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
 
-		if (ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-			// RECORDER participant
-			return;
-		}
-
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_NAME_PARAM, participant.getParticipantPublicId());
+		params.addProperty(ProtocolElements.PARTICIPANTLEFT_UUID_PARAM, participant.getUuid());
 		params.addProperty(ProtocolElements.PARTICIPANTLEFT_REASON_PARAM, reason != null ? reason.name() : "");
 
 		List<String> notifyPartList = new ArrayList<>();
@@ -410,10 +405,6 @@ public class SessionEventsHandler {
 			// leaving the session
 			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, params);
 		}
-
-		/*if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-			CDR.recordParticipantLeft(participant, sessionId, reason);
-		}*/
 	}
 
 	public void onPublishMedia(Participant participant, String streamId, Long createdAt, String sdpAnswer,

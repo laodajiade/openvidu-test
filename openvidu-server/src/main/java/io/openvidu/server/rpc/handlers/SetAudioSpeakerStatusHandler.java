@@ -75,7 +75,7 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
         }
 
         JsonObject notifyObj = request.getParams().deepCopy();
-        notifyObj.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_USERNAME_PARAM,session.getParticipantByUUID(sourceId).getUsername());
+        notifyObj.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_USERNAME_PARAM,session.getParticipantByUUID(sourceId).get().getUsername());
         Set<Participant> participants = session.getParticipants();
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {

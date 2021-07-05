@@ -50,7 +50,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
             // once participant reconnected, close the room directly without joining room
             // find the participant related to the previous connection and verify the operation permission
             Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
-            if (!partInfo.isEmpty() && Objects.nonNull(participant = session.getParticipantByUUID(rpcConnection.getUserUuid()))
+            if (!partInfo.isEmpty() && Objects.nonNull(participant = session.getParticipantByUUID(rpcConnection.getUserUuid()).orElseGet(null))
                     && !participant.getRole().isController()) {
                 errCode = ErrorCodeEnum.PERMISSION_LIMITED;
             }

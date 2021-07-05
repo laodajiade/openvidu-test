@@ -12,6 +12,7 @@ import io.openvidu.server.utils.BindValidate;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service(ProtocolElements.GET_MEETING_QUALITY_METHOD)
@@ -29,11 +30,12 @@ public class GetMeetingQualityHandler extends ExRpcAbstractHandler<JsonObject> {
             return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
         }
 
-        Participant participant = session.getParticipantByUUID(uuid);
-        if (participant == null) {
+        Optional<Participant> participantOp = session.getParticipantByUUID(uuid);
+
+        if (!participantOp.isPresent()) {
             return RespResult.fail(ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
         }
-
+        Participant participant = participantOp.get();
         notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UPLOAD_MEETING_QUALITY_NOTIFY_METHOD, new JsonObject());
 
         // 最多等待端上2秒

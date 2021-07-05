@@ -34,7 +34,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String targetConnectionId = null;
         Session conferenceSession = sessionManager.getSession(sessionId);
         Set<Participant> participants = conferenceSession.getParticipants();
-        Participant moderatorPart = conferenceSession.getParticipantByUUID(sourceId);
+        Participant moderatorPart = conferenceSession.getParticipantByUUID(sourceId).orElseGet(null);
         Participant part = null;
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {

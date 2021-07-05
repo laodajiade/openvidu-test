@@ -215,26 +215,28 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             // Update control data structures
-            if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-                Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
-                        .remove(participant.getParticipantPublicId());
-                boolean stillParticipant = false;
-                if (Objects.nonNull(p)) {
-                    for (Session s : sessions.values()) {
-                        if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-                            stillParticipant = true;
-                            break;
-                        }
-                    }
-                    if (!stillParticipant) {
-                        insecureUsers.remove(p.getParticipantPrivateId());
-                    }
-                }
-            }
+//            if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+//                Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
+//                        .remove(participant.getParticipantPublicId());
+//                boolean stillParticipant = false;
+//                if (Objects.nonNull(p)) {
+//                    for (Session s : sessions.values()) {
+//                        if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+//                            stillParticipant = true;
+//                            break;
+//                        }
+//                    }
+//                    if (!stillParticipant) {
+//                        insecureUsers.remove(p.getParticipantPrivateId());
+//                    }
+//                }
+//            }
 
+            // todo 2.0 share
             if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
                 changeSharingStatusInConference(session, participant);
             }
+            // todo 2.0 share
 
             // Close Session if no more participants
             Set<Participant> remainingParticipants = null;
@@ -252,13 +254,13 @@ public class KurentoSessionManager extends SessionManager {
             }
             UseTime.point("ip4");
             // adjust order notify after onLeft
-            session.dealParticipantOrder(participant, rpcNotificationService);
+            session.dealPartOrderInSessionAfterLeaving(participant, rpcNotificationService);
             UseTime.point("ip5");
             if (!EndReason.sessionClosedByServer.equals(reason)) {
                 // If session is closed by a call to "DELETE /api/sessions" do NOT stop the
                 // recording. Will be stopped after in method
                 // "SessionManager.closeSessionAndEmptyCollections"
-                if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+                if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
                     log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
                     session.setClosing(true);
                 }
@@ -323,22 +325,22 @@ public class KurentoSessionManager extends SessionManager {
         UseTime.point("ip4");
 
         // Update control data structures
-        if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-            Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
-                    .remove(participant.getParticipantPublicId());
-            boolean stillParticipant = false;
-            if (Objects.nonNull(p)) {
-                for (Session s : sessions.values()) {
-                    if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-                        stillParticipant = true;
-                        break;
-                    }
-                }
-                if (!stillParticipant) {
-                    insecureUsers.remove(p.getParticipantPrivateId());
-                }
-            }
-        }
+//        if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+//            Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
+//                    .remove(participant.getParticipantPublicId());
+//            boolean stillParticipant = false;
+//            if (Objects.nonNull(p)) {
+//                for (Session s : sessions.values()) {
+//                    if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+//                        stillParticipant = true;
+//                        break;
+//                    }
+//                }
+//                if (!stillParticipant) {
+//                    insecureUsers.remove(p.getParticipantPrivateId());
+//                }
+//            }
+//        }
 
         if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             changeSharingStatusInConference(session, participant);

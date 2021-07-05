@@ -37,7 +37,6 @@ public class ProtocolElements {
     public static final String LEAVEROOM_METHOD = "leaveRoom";
     public static final String LEAVEROOM_ROOM_ID_PARAM = "roomId";
     public static final String LEAVEROOM_SOURCE_ID_PARAM = "sourceId";
-    public static final String LEAVEROOM_STREAM_TYPE_PARAM = "streamType";
 
     public static final String JOINROOM_METHOD = "joinRoom";
     public static final String JOINROOM_TYPE_PARAM = "joinType";
@@ -568,6 +567,7 @@ public class ProtocolElements {
 
     public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
     public static final String PARTICIPANTLEFT_NAME_PARAM = "connectionId";
+    public static final String PARTICIPANTLEFT_UUID_PARAM = "uuid";
     public static final String PARTICIPANTLEFT_REASON_PARAM = "reason";
 
     public static final String PARTICIPANTEVICTED_METHOD = "participantEvicted";

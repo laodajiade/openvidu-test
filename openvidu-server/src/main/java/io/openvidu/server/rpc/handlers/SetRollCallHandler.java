@@ -32,7 +32,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
         String type = getStringOptionalParam(request, "type");
 
         Session conferenceSession = sessionManager.getSession(sessionId);
-        Participant targetPart = conferenceSession.getParticipantByUUID(targetId);
+        Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElseGet(null);
 
         if (targetPart == null) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
