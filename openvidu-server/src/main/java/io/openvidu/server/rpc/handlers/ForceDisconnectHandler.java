@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.core.Participant;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author geedow
@@ -32,19 +34,23 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
             return;
         }
 
-        if (sessionManager.isModeratorInSession(rpcConnection.getSessionId(), participant)) {
-            String connectionId = getStringParam(request, ProtocolElements.FORCEDISCONNECT_CONNECTIONID_PARAM);
+        if (participant.getRole() == OpenViduRole.MODERATOR) {
+            //String connectionId = getStringParam(request, ProtocolElements.FORCEDISCONNECT_CONNECTIONID_PARAM);
+            String uuid = getStringParam(request, ProtocolElements.FORCEDISCONNECT_UUID_PARAM);
             Session session = sessionManager.getSession(rpcConnection.getSessionId());
-            Participant evictPart = session.getParticipantByPublicId(connectionId);
-            if (Objects.isNull(evictPart)) {
+            Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
+
+            if (!participantOptional.isPresent()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
                 return;
             }
 
-            RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
+            Participant evictPart = participantOptional.get();
+
             sessionManager.evictParticipantByUUID(evictPart.getSessionId(), evictPart.getUuid(), Collections.emptyList());
 
+            RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
             if (!Objects.isNull(evictRpcConnection.getSerialNumber())) {
                 cacheManage.updateTerminalStatus(evictRpcConnection, TerminalStatus.online);
             }

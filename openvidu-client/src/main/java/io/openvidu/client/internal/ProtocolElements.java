@@ -133,6 +133,7 @@ public class ProtocolElements {
 
     public static final String FORCEDISCONNECT_METHOD = "forceDisconnect";
     public static final String FORCEDISCONNECT_CONNECTIONID_PARAM = "connectionId";
+    public static final String FORCEDISCONNECT_UUID_PARAM = "uuid";
 
     public static final String FORCEUNPUBLISH_METHOD = "forceUnpublish";
     public static final String FORCEUNPUBLISH_STREAMID_PARAM = "streamId";

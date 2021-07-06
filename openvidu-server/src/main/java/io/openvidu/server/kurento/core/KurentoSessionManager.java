@@ -55,6 +55,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -858,14 +859,96 @@ public class KurentoSessionManager extends SessionManager {
     public void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
-            Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(uuid);
-            if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
-                // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.sessionClosedByServer);
-            }
+            Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
+            participantOptional.ifPresent(participant -> {
+                evictParticipant(participant, evictStrategies, EndReason.sessionClosedByServer);
+            });
         }
     }
 
+    //copy from evictParticipantWithSamePrivateId
+    private void evictParticipant(@NotNull Participant evictParticipant, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
+        // check if include moderator
+        Session session;
+        //Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
+        Set<Participant> participants = (session = getSession(evictParticipant.getSessionId())).getParticipants();
+        if (OpenViduRole.MODERATOR.equals(evictParticipant.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+            //stop polling
+            SessionPreset sessionPreset = session.getPresetInfo();
+            sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+            timerManager.stopPollingCompensation(evictParticipant.getSessionId());
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, evictParticipant.getSessionId());
+
+            rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
+        }
+        if (OpenViduRole.MODERATOR.equals(evictParticipant.getRole())
+                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {    // close the room
+            dealSessionClose(evictParticipant.getSessionId(), EndReason.sessionClosedByServer);
+        } else {
+            // check if MAJOR is speaker
+            if (ParticipantHandStatus.speaker.equals(evictParticipant.getHandStatus())) {
+                JsonObject params = new JsonObject();
+                params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, evictParticipant.getSessionId());
+                params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, evictParticipant.getUuid());
+                rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.END_ROLL_CALL_METHOD, params);
+            }
+            // check if exists SHARING
+            Participant sharePart;
+            if (session.getSharingPart().isPresent() && session.getSharingPart().get().getUuid().equals(evictParticipant.getUuid())) {
+                //todo 2.0 不再需要发停止通知
+//                JsonObject params = new JsonObject();
+//                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+//                        sharePart.getParticipantPublicId());
+//
+//                // send stop SHARING
+//                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+//                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
+                // change session share status
+                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+                    KurentoSession kurentoSession = (KurentoSession) session;
+                    kurentoSession.compositeService.setExistSharing(false);
+                    kurentoSession.compositeService.setShareStreamId(null);
+                }
+            }
+
+            // change the layout if mode is MCU
+            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+                    //todo 2.0 需要重做
+//                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
+//                boolean layoutChanged = false;
+//                for (Participant part : samePrivateIdParts.values()) {
+//                    if (part.getStreamType().isStreamTypeMixInclude()) {
+//                        layoutChanged |= session.leaveRoomSetLayout(part,
+//                                !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
+//                                        ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
+//                    }
+//                }
+//
+//                if (layoutChanged) {
+//                    // notify kms change the layout of MCU
+//                    session.invokeKmsConferenceLayout();
+//
+//                    // notify client the change of layout
+//                    JsonObject params = session.getLayoutNotifyInfo();
+//                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+//                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+//                }
+            }
+
+            // evict participants
+//            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
+//                    null, reason));
+            evictParticipant(evictParticipant, null, null, reason);
+            // deal auto on wall
+            session.putPartOnWallAutomatically(this);
+        }
+
+        // clear the rpc connection if necessary
+        if (evictStrategies.contains(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)) {
+            rpcNotificationService.closeRpcSession(evictParticipant.getParticipantPrivateId());
+        }
+    }
     @Override
     public void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId) {
         Session session;
@@ -895,6 +978,8 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
+    //todo 2.0 Deprecated use evictParticipant()
+    @Deprecated
     private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
         // check if include moderator
         Session session;

@@ -138,6 +138,20 @@ public class Session implements SessionInterface {
 	@Getter
 	private final Lock joinOrLeaveReentrantLock = new ReentrantLock();
 
+	/**
+	 * 分享者
+	 */
+	@Getter
+	@Setter
+	private Optional<Participant> sharingPart = Optional.empty();
+
+	/**
+	 * 发言中
+	 */
+	@Getter
+	@Setter
+	private Optional<Participant> speakerPart = Optional.empty();
+
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
 		this.startTime = previousSession.getStartTime();
@@ -586,6 +600,8 @@ public class Session implements SessionInterface {
 		return null;
 	}
 
+	//todo 2.0 Deprecated
+	@Deprecated
 	@Override
 	public Map<String, Participant> getSameAccountParticipants(String userUuid) {
 		checkClosed();
@@ -608,12 +624,13 @@ public class Session implements SessionInterface {
 		return Optional.ofNullable(participantList.get(uuid));
 	}
 
-	public Participant getSpeakerPart() {
-		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
-						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
-	}
+	//todo 2.0 delete
+//	public Participant getSpeakerPart() {
+//		checkClosed();
+//		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+//				.filter(participant -> Objects.nonNull(participant) && Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
+//						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+//	}
 
 	public Participant getModeratorPart() {
 		checkClosed();
@@ -633,11 +650,11 @@ public class Session implements SessionInterface {
 		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
 				.filter(participant -> Objects.nonNull(participant) && participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
-
-	public Participant getSharingPart() {
-		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.SHARING.name())).filter(Objects::nonNull).findAny().orElse(null);
-	}
+		//todo 2.0 delete
+//	public Participant getSharingPart() {
+//		checkClosed();
+//		return this.participants.values().stream().map(v -> v.get(StreamType.SHARING.name())).filter(Objects::nonNull).findAny().orElse(null);
+//	}
 
     public Participant getParticipantByStreamId(String streamId) {
         checkClosed();
@@ -1252,7 +1269,7 @@ public class Session implements SessionInterface {
 		}
 
 		if (kurentoParticipant.getRole().equals(OpenViduRole.MODERATOR)) {
-			if (Objects.isNull(getSharingPart()) && Objects.isNull(getSpeakerPart())) {
+			if (Objects.isNull(getSharingPart()) && !getSpeakerPart().isPresent()) {
 				majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.MAJOR, kurentoParticipant.getParticipantPublicId());
 			} else {
 				JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());

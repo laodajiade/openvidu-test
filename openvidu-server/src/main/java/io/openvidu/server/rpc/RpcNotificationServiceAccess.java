@@ -238,12 +238,15 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, String method, Object params) {
         List<String> successList = new ArrayList<>();
         List<String> failList = new ArrayList<>();
+        Set<String> waitSendings = new HashSet<>(participantPrivateIds);
         int size = participantPrivateIds.size();
 
         CountDownLatch countDownLatch = new CountDownLatch(size);
         for (String participantPrivateId : participantPrivateIds) {
+
             NOTIFY_THREAD_POOL.submit(() -> {
                 try {
+                    waitSendings.remove(participantPrivateId);
                     //todo 2.0 优化批量获取，减少网络次数
                     RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
                     if (rpcSession == null) {
@@ -267,14 +270,14 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
             });
         }
         try {
-            if (!countDownLatch.await((size * 2) + 10, TimeUnit.MILLISECONDS)) {
+            if (!countDownLatch.await((size * 2) + 50, TimeUnit.MILLISECONDS)) {
                 log.warn("sendBatchNotificationConcurrent timeout method={},partSize = {}", method, size);
             }
         } catch (InterruptedException e) {
             log.warn("sendBatchNotificationConcurrent error method={},partSize = {}", method, size);
         }
         log.info("sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
-                "successList:{}  failList:{}", method, params, successList, failList);
+                "successList:{}, failList:{}, waitSendings:{}", method, params, successList, failList, waitSendings);
     }
 
     @Override

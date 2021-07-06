@@ -351,15 +351,6 @@ public abstract class SessionManager {
 		return this.getParticipant(participantPrivateId, StreamType.MAJOR);
 	}
 
-	public Participant getSpeakerPart(String sessionId) {
-		Session session = sessions.get(sessionId);
-		if (Objects.nonNull(session)) {
-			return session.getSpeakerPart();
-		}
-
-		return null;
-	}
-
 	public Participant getModeratorPart(String sessionId) {
 		Session session = sessions.get(sessionId);
 		if (Objects.nonNull(session)) {

@@ -286,6 +286,9 @@ public class SessionEventsHandler {
 		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 			// Metadata associated to new participant
 			RpcConnection rpcConnection = rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId());
+			if (rpcConnection == null) {
+				log.info(participant.getParticipantPrivateId());
+			}
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
@@ -713,7 +716,7 @@ public class SessionEventsHandler {
 	}
 
 	public void onForceDisconnect(Participant moderator, Participant evictedParticipant, Set<Participant> participants,
-			Integer transactionId, OpenViduException error, EndReason reason) {
+								  Integer transactionId, OpenViduException error, EndReason reason) {
 
 		boolean isRpcCall = transactionId != null;
 		if (isRpcCall) {
@@ -731,26 +734,27 @@ public class SessionEventsHandler {
 					evictedParticipant.getParticipantPublicId());
 			params.addProperty(ProtocolElements.PARTICIPANTEVICTED_REASON_PARAM, reason != null ? reason.name() : "");
 
-			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
-				log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
-				// Do not send a message when evicting RECORDER participant
-				try {
-					rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
-							ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
-				} catch (Exception e) {
-					log.error("Exception:\n", e);
-				}
-			}
-			for (Participant p : participants) {
-				if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
-					log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
-					if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())
-							&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-								ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
-					}
-				}
-			}
+//			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
+//				log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
+//				// Do not send a message when evicting RECORDER participant
+//				try {
+//					rpcNotificationService.sendNotification(evictedParticipant.getParticipantPrivateId(),
+//							ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+//				} catch (Exception e) {
+//					log.error("Exception:\n", e);
+//				}
+//			}
+//			for (Participant p : participants) {
+//				if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
+//					log.info("p ParticipantPublicId {}", p.getParticipantPublicId());
+//					if (!p.getParticipantPrivateId().equals(evictedParticipant.getParticipantPrivateId())
+//							&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+//						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+//								ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+//					}
+//				}
+//			}
+			rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
 		}
 	}
 
