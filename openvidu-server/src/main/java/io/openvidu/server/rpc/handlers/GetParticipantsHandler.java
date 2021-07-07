@@ -199,7 +199,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     private class PublisherSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return session.getParticipants().stream().filter(p -> p.getRole().needToPublish()).collect(Collectors.toCollection(TreeSet::new));
+            return session.getParticipants().stream().filter(p -> p.getRole().needToPublish()).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 
