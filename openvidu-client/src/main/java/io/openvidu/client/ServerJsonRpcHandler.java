@@ -138,8 +138,9 @@ public class ServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
   }
 
   private Notification participantPublished(Transaction transaction, Request<JsonObject> request) {
-    String id = JsonRoomUtils.getRequestParam(request,
-        ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, String.class);
+//    String id = JsonRoomUtils.getRequestParam(request,
+//        ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, String.class);
+    String id = "";
     JsonArray jsonStreams = JsonRoomUtils.getRequestParam(request,
         ProtocolElements.PARTICIPANTPUBLISHED_STREAMS_PARAM, JsonArray.class);
     Iterator<JsonElement> streamIt = jsonStreams.iterator();

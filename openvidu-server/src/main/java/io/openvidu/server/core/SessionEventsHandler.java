@@ -35,6 +35,7 @@ import io.openvidu.server.exception.NoSuchKmsException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
@@ -412,7 +413,7 @@ public class SessionEventsHandler {
 	}
 
 	public void onPublishMedia(Participant participant, String streamId, Long createdAt, String sdpAnswer,
-							   Integer transactionId, OpenViduException error) {
+							   Integer transactionId, OpenViduException error, PublisherEndpoint publisherEndpoint) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
@@ -422,44 +423,29 @@ public class SessionEventsHandler {
 		JsonObject result = new JsonObject();
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM, sdpAnswer);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
+		result.addProperty(ProtocolElements.PUBLISHVIDEO_PUBLISHID_PARAM, streamId);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_CREATEDAT_PARAM, createdAt);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 
-		kurentoParticipant.notifyPublishChannelPass(kurentoParticipant.getPublisher());
+		kurentoParticipant.notifyPublishChannelPass(publisherEndpoint);
 	}
 
-	public void notifyPublishMedias(Participant participant, String streamId, Long createdAt, String sessionId,
-									MediaOptions mediaOptions, Set<Participant> participants, boolean isIntermit,
-									Integer transactionId, OpenViduException error) {
-		if (error != null) {
-			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
-			return;
-		}
-		// 处理硬终端的问题，由平台模拟并拦截推流通知，在2.0时重构，这是临时代码
-        if (participant.getTerminalType() == TerminalTypeEnum.S) {
-            log.info("come in sip notifyPublishMedias function");
-            if (participant.getHandStatus() == ParticipantHandStatus.speaker) {
-                log.info("notify PublishMedias because sip is speaker");
-            } else if (participant.getRole() != OpenViduRole.SUBSCRIBER) {
-                log.info("notify PublishMedias because sip is not subscriber");
-            } else {
-                log.info("interrupt sip notifyPublishMedias");
-                return;
-            }
-        }
+	public void notifyPublishMedias(Participant participant, PublisherEndpoint publisherEndpoint, String sessionId, Set<Participant> participants) {
 
+		MediaOptions mediaOptions = publisherEndpoint.getMediaOptions();
 		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 
 		JsonObject params = new JsonObject();
-		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_USER_PARAM, participant.getParticipantPublicId());
+		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_UUID_PARAM, participant.getUuid());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_METADATA_PARAM, participant.getFullMetadata());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM, participant.getAppShowName());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM, participant.getAppShowDesc());
+		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, publisherEndpoint.getStreamType().name());
 		JsonObject stream = new JsonObject();
 
-		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, streamId);
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, publisherEndpoint.getStreamId());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, participant.getStreamType().name());
-		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, createdAt);
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, publisherEndpoint.createdAt());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM, kurentoParticipant.isMixIncluded());
@@ -509,7 +495,7 @@ public class SessionEventsHandler {
 
 		int nParticipantIndex = 0;
 		for (Participant p : subscribeParticipants) {
-			if (isIntermit && nParticipantIndex % 10 == 0) {
+			if (nParticipantIndex % 10 == 0) {
 				try {
 					TimeUnit.MILLISECONDS.sleep(500);//延迟0.5秒
 					log.info("notifyPublishMedias {}", nParticipantIndex);

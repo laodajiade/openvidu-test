@@ -24,7 +24,6 @@ public class RemoteRpcConnection implements IRpcConnection {
 
     @Override
     public RpcConnection remove(String privateId) {
-        System.out.println("1111111111111111111111111111111111 remove "+ privateId);
         return rtcUserClient.remove(privateId);
     }
 

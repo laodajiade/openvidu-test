@@ -16,6 +16,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author geedow
@@ -27,47 +28,52 @@ public class PublishVideoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
-        Participant participant;
-        if (Objects.isNull(participant = sanityCheckOfSession(rpcConnection, StreamType.valueOf(streamType)))) {
+
+
+        Session session = sessionManager.getSession(rpcConnection.getSessionId());
+        if (session == null) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.UNRECOGNIZED_API);
             return;
         }
+        Optional<Participant> participantOptional = session.getParticipantByUUID(rpcConnection.getUserUuid());
+        if (!participantOptional.isPresent()) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.UNRECOGNIZED_API);
+            return;
+        }
+
+        Participant participant = participantOptional.get();
+
         // start polling,under the wall can publishVideo
-        Session session = sessionManager.getSession(participant.getSessionId());
-        if (Objects.nonNull(session)) {
-            SessionPreset preset = session.getPresetInfo();
-            if (preset.getPollingStatusInRoom().equals(SessionPresetEnum.off)) {
-                // check part role
-                if (OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole()) && participant.getTerminalType() != TerminalTypeEnum.S) {
-                    notificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(), request.getId(),
-                            null, ErrorCodeEnum.INVALID_METHOD_CALL);
-                    return;
-                }
-            }
-
-            if (sessionManager.isPublisherInSession(rpcConnection.getSessionId(), participant,preset.getPollingStatusInRoom())) {
-                MediaOptions options = sessionManager.generateMediaOptions(request);
-                sessionManager.publishVideo(participant, options, request.getId());
-
-                sessionManager.createDeliverChannel(participant);
-
-            } else {
-                log.error("Error: participant {} is not a publisher and role={} and streamType={}", participant.getParticipantPublicId()
-                        , participant.getRole(), participant.getStreamType());
-                throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,
-                        "Unable to publish video. The user does not have a valid token");
+        SessionPreset preset = session.getPresetInfo();
+        if (preset.getPollingStatusInRoom().equals(SessionPresetEnum.off)) {
+            // check part role
+            if (OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole()) && participant.getTerminalType() != TerminalTypeEnum.S) {
+                notificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.INVALID_METHOD_CALL);
+                return;
             }
         }
 
+        if (sessionManager.isPublisherInSession(rpcConnection.getSessionId(), participant, preset.getPollingStatusInRoom())) {
+            MediaOptions options = sessionManager.generateMediaOptions(request);
+            sessionManager.publishVideo(participant, options, request.getId(), StreamType.valueOf(streamType));
+
+            sessionManager.createDeliverChannel(participant);
+        } else {
+            log.error("Error: participant {} is not a publisher and role={} and streamType={}", participant.getParticipantPublicId()
+                    , participant.getRole(), participant.getStreamType());
+            throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,
+                    "Unable to publish video. The user does not have a valid token");
+        }
 
 
         // deal participant that role changed
         String key;
-        if (Objects.nonNull(session)
-                && StreamType.MAJOR.name().equals(streamType)
+        if (StreamType.MAJOR.name().equals(streamType)
                 && cacheManage.existsConferenceRelativeInfo(key = CacheKeyConstants.getSubscriberSetRollCallKey(session.getSessionId(),
-                    session.getStartTime(), participant.getUuid()))) {
+                session.getStartTime(), participant.getUuid()))) {
             sessionManager.setRollCallInSession(sessionManager.getSession(rpcConnection.getSessionId()), participant);
 
             cacheManage.delConferenceRelativeKey(key);

@@ -29,6 +29,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.*;
 import io.openvidu.server.kurento.kms.EndpointLoadManager;
 import io.openvidu.server.living.service.LivingManager;
@@ -61,13 +62,18 @@ public class KurentoParticipant extends Participant {
 	private final KurentoSession session;
 	private KurentoParticipantEndpointConfig endpointConfig;
 
+	//todo 2.0 Deprecated,使用publishers代替
+	@Deprecated
 	private PublisherEndpoint publisher;
-	private CountDownLatch publisherLatch = new CountDownLatch(1);
+
+	private final Map<StreamType, PublisherEndpoint> publishers = new ConcurrentHashMap<>();
+	//private CountDownLatch publisherLatch = new CountDownLatch(1);
 
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
 	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
 
-	private String publisherStreamId;
+
+	private final Object createPublisherLock = new Object();
 
 	private final String strMSTagDebugMCUParticipant = "debugMCUParticipant";
 	private final String strMSTagDebugEndpointName = "debugEndpointName";
@@ -109,6 +115,12 @@ public class KurentoParticipant extends Participant {
 		this.livingManager = livingManager;
 		this.session = kurentoSession;
 
+
+
+		// ↓↓↓↓↓↓↓↓ 杨宇 注释于2021年3月2日17:56:49，
+		// 原因：我认为在每次receiveVideoFrom时会调用getNewOrExistingSubscriber并创建一个subscriber，
+		// 没有必要在初始化时对每个publisher进行创建并保存，这样造成了内存的浪费
+		/*
 		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(participant.getRole())) {
 			// Initialize a PublisherEndpoint
 			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
@@ -116,11 +128,6 @@ public class KurentoParticipant extends Participant {
 
 			this.publisher.setCompositeService(this.session.compositeService);
 		}
-
-		// ↓↓↓↓↓↓↓↓ 杨宇 注释于2021年3月2日17:56:49，
-		// 原因：我认为在每次receiveVideoFrom时会调用getNewOrExistingSubscriber并创建一个subscriber，
-		// 没有必要在初始化时对每个publisher进行创建并保存，这样造成了内存的浪费
-		/*
 		for (Participant other : session.getParticipants()) {
 			if (!other.getParticipantPublicId().equals(this.getParticipantPublicId())
 					&& !OpenViduRole.NON_PUBLISH_ROLES.contains(other.getRole())) {
@@ -145,40 +152,36 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
-	public void createPublishingEndpoint(MediaOptions mediaOptions, Participant participant) {
-		if (Objects.isNull(this.publisher)) {
-			// Initialize a PublisherEndpoint
-			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
-					this.session.getPipeline(), this.openviduConfig);
+	public void createPublishingEndpoint(MediaOptions mediaOptions, Participant participant, StreamType streamType) {
 
-			this.publisher.setCompositeService(this.session.compositeService);
-		} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
-			this.publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
-					this.session.getPipeline(), this.openviduConfig);
+		PublisherEndpoint publisher;
+		synchronized (createPublisherLock) {
+			publisher = publishers.get(streamType);
+			if (Objects.isNull(publisher)) {
+				// Initialize a PublisherEndpoint
+				publisher = new PublisherEndpoint(webParticipant, this, participant.getUuid(),
+						this.session.getPipeline(), streamType, this.openviduConfig);
 
-			this.publisher.setCompositeService(this.session.compositeService);
+				publisher.setCompositeService(this.session.compositeService);
+			} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
+				publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
+						this.session.getPipeline(), streamType, this.openviduConfig);
+				publisher.setCompositeService(this.session.compositeService);
+			}
+			publishers.put(streamType, publisher);
 		}
-		this.publisher.createEndpoint(publisherLatch);
-		if (getPublisher().getEndpoint() == null) {
+
+		publisher.createEndpoint(publisher.getPublisherLatch());
+		if (getPublisher(streamType).getEndpoint() == null) {
 			this.setStreaming(false);
 			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
 		}
-		this.publisher.setMediaOptions(mediaOptions);
-
-		String publisherStreamId;
-		if (StringUtils.isEmpty(this.publisherStreamId)) {
-			publisherStreamId = this.getParticipantPublicId() + "_"
-					+ (mediaOptions.hasVideo() ? mediaOptions.getTypeOfVideo() : "MICRO") + "_"
-					+ RandomStringUtils.random(5, true, false).toUpperCase();
-			this.publisherStreamId = publisherStreamId;
-		} else {
-			publisherStreamId = this.publisherStreamId;
-		}
+		publisher.setMediaOptions(mediaOptions);
 
 		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
 		    if (Objects.equals(StreamType.SHARING, getStreamType())) {
-                this.session.compositeService.setShareStreamId(publisherStreamId);
-            }
+				this.session.compositeService.setShareStreamId(publisher.getStreamId());
+			}
 
             if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
                 String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
@@ -188,7 +191,7 @@ public class KurentoParticipant extends Participant {
 
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
 		} else if (TerminalTypeEnum.S == getTerminalType()) {
-			log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisherStreamId);
+			log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
 			Composite sipComposite = this.session.createSipComposite();
 			this.publisher.createSipCompositeHubPort(sipComposite);
 		}
@@ -198,15 +201,13 @@ public class KurentoParticipant extends Participant {
 		}
 
 		String debugRandomID = RandomStringUtils.randomAlphabetic(6);
-		this.publisher.setEndpointName(publisherStreamId);
-		this.publisher.getEndpoint().setName(publisherStreamId);
-		this.publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub_cid_" + debugRandomID);
-		this.publisher.getPassThru().addTag(strMSTagDebugPassThroughName, getParticipantName() + "_pt_cid_" + debugRandomID);
-		this.publisher.setStreamId(publisherStreamId);
-		endpointConfig.addEndpointListeners(this.publisher, "publisher");
+		publisher.getEndpoint().setName(publisher.getEndpointName());
+		publisher.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_pub_cid_" + debugRandomID);
+		publisher.getPassThru().addTag(strMSTagDebugPassThroughName, getParticipantName() + "_pt_cid_" + debugRandomID);
+		endpointConfig.addEndpointListeners(publisher, "publisher_" + streamType);
 
 		// Remove streamId from publisher's map
-		this.session.publishedStreamIds.putIfAbsent(this.getPublisherStreamId(), this.getParticipantPrivateId());
+		this.session.publishedStreamIds.putIfAbsent(publisher.getStreamId(), this.getParticipantPrivateId());
 	}
 
 	public synchronized Filter getFilterElement(String id) {
@@ -229,9 +230,14 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
-	public PublisherEndpoint getPublisher() {
+	public PublisherEndpoint getPublisher(StreamType streamType) {
+		PublisherEndpoint publisherEndpoint = this.publishers.get(streamType);
+		if (publisherEndpoint == null) {
+			log.error(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
+			throw new BizException(ErrorCodeEnum.SERVER_INTERNAL_ERROR);
+		}
 		try {
-			if (!publisherLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+			if (!publisherEndpoint.getPublisherLatch().await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
 				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
 						"Timeout reached while waiting for publisher endpoint to be ready");
 			}
@@ -239,7 +245,28 @@ public class KurentoParticipant extends Participant {
 			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
 					"Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
 		}
-		return this.publisher;
+		return this.publishers.get(streamType);
+	}
+
+
+	//todo 2.0 Deprecated
+	@Deprecated
+	public PublisherEndpoint getPublisher() {
+//		try {
+//			if (!publisherLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+//				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+//						"Timeout reached while waiting for publisher endpoint to be ready");
+//			}
+//		} catch (InterruptedException e) {
+//			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+//					"Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
+//		}
+//		return this.publisher;
+		return getPublisher(StreamType.MAJOR);
+	}
+
+	public Map<StreamType, PublisherEndpoint> getPublishers() {
+		return this.publishers;
 	}
 
 	public boolean isPublisherStreaming() {
@@ -267,12 +294,12 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public String publishToRoom(SdpType sdpType, String sdpString, boolean doLoopback,
-			MediaElement loopbackAlternativeSrc, MediaType loopbackConnectionType) {
+			MediaElement loopbackAlternativeSrc, MediaType loopbackConnectionType,StreamType streamType) {
 		log.info("PARTICIPANT {}: Request to publish video in room {} (sdp type {})", this.getParticipantPublicId(),
 				this.session.getSessionId(), sdpType);
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpString);
 
-		String sdpResponse = this.getPublisher().publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
+		String sdpResponse = this.getPublisher(streamType).publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
 				loopbackConnectionType);
 		this.streaming = true;
 
@@ -295,8 +322,8 @@ public class KurentoParticipant extends Participant {
 			this.livingManager.startOneIndividualStreamLiving(session, null, null, this);
 		}
 
-		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
-				publisher.getMediaOptions(), publisher.createdAt());
+		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), this.getPublisher(streamType).getStreamId(),
+				this.getPublisher(streamType).getMediaOptions(), this.getPublisher(streamType).createdAt());
 
 		return sdpResponse;
 	}
@@ -778,7 +805,7 @@ public class KurentoParticipant extends Participant {
 
 	@Override
 	public String getPublisherStreamId() {
-		return this.publisher.getStreamId();
+		return publisher.getStreamId();
 	}
 
 	public void resetPublisherEndpoint() {

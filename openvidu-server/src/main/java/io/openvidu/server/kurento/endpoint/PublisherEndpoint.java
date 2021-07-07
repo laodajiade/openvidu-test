@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.MediaOptions;
@@ -31,6 +32,7 @@ import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.utils.JsonUtils;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
@@ -86,13 +88,31 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private boolean isChannelPassed = false;
 
 	@Getter
+	private CountDownLatch publisherLatch = new CountDownLatch(1);
+
+	@Getter
+	private final StreamType streamType;
+	@Getter
 	private final ConcurrentMap<String, MediaChannel> mediaChannels = new ConcurrentHashMap<>();
 
 	private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
 
-	public PublisherEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
+	//todo 2.0 需要删除
+	@Deprecated
+	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline,
 							 OpenviduConfig openviduConfig) {
-		super(web, owner, endpointName, pipeline, openviduConfig, log);
+		super(web, owner, uuid, pipeline, openviduConfig, log);
+		this.streamType = StreamType.MAJOR;
+		this.endpointName = uuid + '_' + streamType + '_' + RandomStringUtils.randomAlphabetic(6);
+	}
+
+	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline, StreamType streamType,
+							 OpenviduConfig openviduConfig) {
+		super(web, owner, uuid, pipeline, openviduConfig, log);
+		String streamId = uuid + '_' + streamType + '_' + createdAt + "_" + RandomStringUtils.randomAlphabetic(6);
+		this.endpointName = streamId;
+		setStreamId(streamId);
+		this.streamType = streamType;
 	}
 
 	@Override

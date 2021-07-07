@@ -21,8 +21,7 @@ import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.java.client.SessionProperties;
+import io.openvidu.java.client.*;
 import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
@@ -34,8 +33,8 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.*;
-import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
@@ -55,7 +54,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,6 +104,46 @@ public class KurentoSessionManager extends SessionManager {
         try {
 
             KurentoSession kSession = (KurentoSession) sessions.get(sessionId);
+            if (kSession == null) {
+                // First user connecting to the session
+                Session sessionNotActive = sessionsNotActive.remove(sessionId);
+
+                if (sessionNotActive == null && this.isInsecureParticipant(participant.getParticipantPrivateId())) {
+                    // Insecure user directly call joinRoom RPC method, without REST API use
+                    sessionNotActive = new Session(sessionId,
+                            new SessionProperties.Builder().mediaMode(MediaMode.ROUTED)
+                                    .recordingMode(RecordingMode.ALWAYS)
+                                    .defaultRecordingLayout(RecordingLayout.BEST_FIT).build(),
+                            openviduConfig, recordingManager, livingManager);
+                }
+
+                Kms lessLoadedKms;
+                try {
+                    lessLoadedKms = this.kmsManager.getLessLoadedKms();
+                    if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.parseDouble("0.0")) != 0) {
+                        throw new NoSuchElementException();
+                    }
+                } catch (NoSuchElementException e) {
+                    // Restore session not active
+                    this.cleanCollections(sessionId);
+                    this.storeSessionNotActive(sessionNotActive);
+					/*throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
+							"There is no available media server where to initialize session '" + sessionId + "'");*/
+                    rpcNotificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(),
+                            transactionId, null, ErrorCodeEnum.COUNT_OF_CONFERENCE_LIMIT);
+                    return;
+                }
+                log.info("KMS less loaded is {} with a load of {}", lessLoadedKms.getUri(), lessLoadedKms.getLoad());
+                kSession = createSession(sessionNotActive, lessLoadedKms);
+                kSession.setConference(conference);
+                kSession.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
+                kSession.setPresetInfo(getPresetInfo(sessionId));
+                kSession.setRuid(conference.getRuid());
+
+                if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
+                    kSession.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
+                }
+            }
             if (kSession.isClosed()) {
                 log.warn("'{}' is trying to join session '{}' but it is closing", participant.getParticipantPublicId(),
                         sessionId);
@@ -119,21 +157,28 @@ public class KurentoSessionManager extends SessionManager {
             UseTime.point("setMajorPartsOrder start");
             kSession.setMajorPartsOrder(participant, rpcNotificationService);
             UseTime.point("setMajorPartsOrder end");
-            // 如果是主持人，所有权限都打开
-            SessionPreset preset = getPresetInfo(sessionId);
-            if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-                participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
-            } else {
-                participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
-                if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
-                    participant.setMicStatus(ParticipantMicStatus.off);
+            // 第一个入会者是主持人，所有权限都打开
+            if (StreamType.MAJOR.equals(participant.getStreamType())) {
+                SessionPreset preset = getPresetInfo(sessionId);
+                if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+                    participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
                 } else {
-                    if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+                    participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
+                    if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                         participant.setMicStatus(ParticipantMicStatus.off);
+                    } else {
+                        if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+                            participant.setMicStatus(ParticipantMicStatus.off);
+                        }
+                    }
+
+                    if (OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+                        participant.setMicStatus(ParticipantMicStatus.off);
+                        participant.setVideoStatus(ParticipantVideoStatus.off);
                     }
                 }
+                participant.setRoomSubject(preset.getRoomSubject());
             }
-            participant.setRoomSubject(preset.getRoomSubject());
 
             // change the part role according to the mcu limit
             if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode()) && kSession.needToChangePartRoleAccordingToLimit(participant)) {
@@ -151,24 +196,22 @@ public class KurentoSessionManager extends SessionManager {
             UseTime.point("join 1");
             kSession.join(participant);
             UseTime.point("join 2");
-            // todo 需要转移到分享接口
             // record share status.
             if (StreamType.SHARING.equals(participant.getStreamType())) {
                 participant.setShareStatus(ParticipantShareStatus.on);
                 Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
                 majorPart.changeShareStatus(ParticipantShareStatus.on);
             }
-            // todo 需要转移到分享接口
             UseTime.point("db 1");
             // save part info
             roomManage.storePartHistory(participant, conference);
             UseTime.point("db 2");
             // save max concurrent statistics
-            cacheManage.updateMaxConcurrentOfDay(kSession.getParticipants().size(), conference.getProject());
+            cacheManage.updateMaxConcurrentOfDay(kSession.getMajorPartEachConnect().size(), conference.getProject());
             UseTime.point("db 3");
             //save max concurrent in conference
             Conference concurrentCon = new Conference();
-            concurrentCon.setConcurrentNumber(kSession.getParticipants().size());
+            concurrentCon.setConcurrentNumber(kSession.getMajorPartEachConnect().size());
             concurrentCon.setId(conference.getId());
             roomManage.storeConcurrentNumber(concurrentCon);
             UseTime.point("db 4");
@@ -216,28 +259,26 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             // Update control data structures
-//            if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-//                Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
-//                        .remove(participant.getParticipantPublicId());
-//                boolean stillParticipant = false;
-//                if (Objects.nonNull(p)) {
-//                    for (Session s : sessions.values()) {
-//                        if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-//                            stillParticipant = true;
-//                            break;
-//                        }
-//                    }
-//                    if (!stillParticipant) {
-//                        insecureUsers.remove(p.getParticipantPrivateId());
-//                    }
-//                }
-//            }
+            if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+                Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
+                        .remove(participant.getParticipantPublicId());
+                boolean stillParticipant = false;
+                if (Objects.nonNull(p)) {
+                    for (Session s : sessions.values()) {
+                        if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+                            stillParticipant = true;
+                            break;
+                        }
+                    }
+                    if (!stillParticipant) {
+                        insecureUsers.remove(p.getParticipantPrivateId());
+                    }
+                }
+            }
 
-            // todo 2.0 share
             if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
                 changeSharingStatusInConference(session, participant);
             }
-            // todo 2.0 share
 
             // Close Session if no more participants
             Set<Participant> remainingParticipants = null;
@@ -255,13 +296,13 @@ public class KurentoSessionManager extends SessionManager {
             }
             UseTime.point("ip4");
             // adjust order notify after onLeft
-            session.dealPartOrderInSessionAfterLeaving(participant, rpcNotificationService);
+            session.dealParticipantOrder(participant, rpcNotificationService);
             UseTime.point("ip5");
             if (!EndReason.sessionClosedByServer.equals(reason)) {
                 // If session is closed by a call to "DELETE /api/sessions" do NOT stop the
                 // recording. Will be stopped after in method
                 // "SessionManager.closeSessionAndEmptyCollections"
-                if (remainingParticipants.isEmpty() && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
+                if ((remainingParticipants.isEmpty() || session.getMajorPartEachExcludeThorConnect().size() == 0) && (!session.getRuid().startsWith("appt-") || session.getEndTime() < System.currentTimeMillis())) {
                     log.info("last part left closing session,remainingParticipants.size = {}", remainingParticipants.size());
                     session.setClosing(true);
                 }
@@ -326,22 +367,22 @@ public class KurentoSessionManager extends SessionManager {
         UseTime.point("ip4");
 
         // Update control data structures
-//        if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-//            Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
-//                    .remove(participant.getParticipantPublicId());
-//            boolean stillParticipant = false;
-//            if (Objects.nonNull(p)) {
-//                for (Session s : sessions.values()) {
-//                    if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-//                        stillParticipant = true;
-//                        break;
-//                    }
-//                }
-//                if (!stillParticipant) {
-//                    insecureUsers.remove(p.getParticipantPrivateId());
-//                }
-//            }
-//        }
+        if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
+            Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
+                    .remove(participant.getParticipantPublicId());
+            boolean stillParticipant = false;
+            if (Objects.nonNull(p)) {
+                for (Session s : sessions.values()) {
+                    if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
+                        stillParticipant = true;
+                        break;
+                    }
+                }
+                if (!stillParticipant) {
+                    insecureUsers.remove(p.getParticipantPrivateId());
+                }
+            }
+        }
 
         if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
             changeSharingStatusInConference(session, participant);
@@ -438,8 +479,11 @@ public class KurentoSessionManager extends SessionManager {
      * @throws OpenViduException on error
      */
     @Override
-    public void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId, StreamType streamType)
+    public void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId)
             throws OpenViduException {
+
+        Set<Participant> participants = null;
+        String sdpAnswer = null;
 
         KurentoMediaOptions kurentoOptions = (KurentoMediaOptions) mediaOptions;
         KurentoParticipant kParticipant = (KurentoParticipant) participant;
@@ -454,17 +498,17 @@ public class KurentoSessionManager extends SessionManager {
         SdpType sdpType = kurentoOptions.isOffer ? SdpType.OFFER : SdpType.ANSWER;
         KurentoSession kSession = kParticipant.getSession();
 
-        kParticipant.createPublishingEndpoint(mediaOptions, participant, streamType);
+        kParticipant.createPublishingEndpoint(mediaOptions, participant);
 
         /*
          * for (MediaElement elem : kurentoOptions.mediaElements) {
          * kurentoParticipant.getPublisher().apply(elem); }
          */
 
-        String sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
-                kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType, streamType);
+        sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
+                kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType);
         // http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
-        kParticipant.getPublisher(streamType).internalAddIceCandidateCache();
+        kParticipant.getPublisher().internalAddIceCandidateCache();
         if (sdpAnswer == null) {
             OpenViduException e = new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
                     "Error generating SDP response for publishing user " + participant.getParticipantPublicId());
@@ -472,25 +516,23 @@ public class KurentoSessionManager extends SessionManager {
 //            sessionEventsHandler.onPublishMedia(participant, null, kParticipant.getPublisher().createdAt(),
 //                    kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
             sessionEventsHandler.onPublishMedia(participant, participant.getPublisherStreamId(),
-                    kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
-                    transactionId, null, kParticipant.getPublisher(streamType));
+                    kParticipant.getPublisher().createdAt(), sdpAnswer,
+                    transactionId, null);
         }
 
-        // todo 2.0 注释掉 kSession.newPublisher(participant) 看起来暂时不需要
-        // kSession.newPublisher(participant);
-
-        if (Objects.equals(StreamType.SHARING,streamType)
+        kSession.newPublisher(participant);
+        if (Objects.equals(StreamType.SHARING, participant.getStreamType())
                 && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
             kSession.compositeService.setExistSharing(true);
         }
 
         if (sdpAnswer != null) {
-            sessionEventsHandler.onPublishMedia(participant, kParticipant.getPublisher(streamType).getEndpointName(),
-                    kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
-                    transactionId, null, kParticipant.getPublisher(streamType));
+            sessionEventsHandler.onPublishMedia(participant, participant.getPublisherStreamId(),
+                    kParticipant.getPublisher().createdAt(), sdpAnswer,
+                    transactionId, null);
         }
 
-        kParticipant.getPublisher(streamType).gatherCandidates();
+        kParticipant.getPublisher().gatherCandidates();
     }
 
     @Override
@@ -715,43 +757,28 @@ public class KurentoSessionManager extends SessionManager {
      *
      * @throws OpenViduException in case of error while creating the session
      */
-    public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
-        KurentoSession session = (KurentoSession) sessions.get(sessionId);
+    public KurentoSession createSession(Session sessionNotActive, Kms kms) throws OpenViduException {
+        KurentoSession session = (KurentoSession) sessions.get(sessionNotActive.getSessionId());
         if (session != null) {
             throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
                     "Session '" + session.getSessionId() + "' already exists");
         }
-
-        Session sessionNotActive = new Session(sessionId,
-                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
-
-        Kms lessLoadedKms;
-        try {
-            lessLoadedKms = this.kmsManager.getLessLoadedKms();
-            if (1 == openviduConfig.getKmsLoadLimitSwitch() && Double.compare(lessLoadedKms.getLoad(), Double.parseDouble("0.0")) != 0) {
-                throw new NoSuchElementException();
-            }
-        } catch (NoSuchElementException e) {
-            throw new BizException(ErrorCodeEnum.COUNT_OF_CONFERENCE_LIMIT);
-        }
-
-
-        session = new KurentoSession(sessionNotActive, lessLoadedKms, kurentoSessionEventsHandler, kurentoEndpointConfig,
+        session = new KurentoSession(sessionNotActive, kms, kurentoSessionEventsHandler, kurentoEndpointConfig,
                 kmsManager.destroyWhenUnused());
         session.setEndTime(sessionNotActive.getEndTime());
-        lessLoadedKms.addKurentoSession(session);
 
-        session.setConference(conference);
-        session.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
-        session.setPresetInfo(getPresetInfo(sessionId));
-        session.setRuid(conference.getRuid());
         sessions.put(session.getSessionId(), session);
+		/*KurentoSession oldSession = (KurentoSession) sessions.putIfAbsent(session.getSessionId(), session);
+		if (oldSession != null) {
+			log.warn("Session '{}' has just been created by another thread", session.getSessionId());
+			return oldSession;
+		}*/
 
-        if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-            session.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
-        }
+        // Also associate the KurentoSession with the Kms
+        kms.addKurentoSession(session);
 
-        log.warn("No session '{}' exists yet. Created one on KMS '{}'", session.getSessionId(), lessLoadedKms.getUri());
+        log.warn("No session '{}' exists yet. Created one on KMS '{}'", session.getSessionId(), kms.getUri());
+
         sessionEventsHandler.onSessionCreated(session);
         return session;
     }
@@ -858,96 +885,14 @@ public class KurentoSessionManager extends SessionManager {
     public void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
-            Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
-            participantOptional.ifPresent(participant -> {
-                evictParticipant(participant, evictStrategies, EndReason.sessionClosedByServer);
-            });
+            Map<String, Participant> samePrivateIdParts = session.getSameAccountParticipants(uuid);
+            if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
+                // evict same privateId parts
+                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.sessionClosedByServer);
+            }
         }
     }
 
-    //copy from evictParticipantWithSamePrivateId
-    private void evictParticipant(@NotNull Participant evictParticipant, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
-        // check if include moderator
-        Session session;
-        //Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
-        Set<Participant> participants = (session = getSession(evictParticipant.getSessionId())).getParticipants();
-        if (OpenViduRole.MODERATOR.equals(evictParticipant.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
-            //stop polling
-            SessionPreset sessionPreset = session.getPresetInfo();
-            sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-            timerManager.stopPollingCompensation(evictParticipant.getSessionId());
-            JsonObject params = new JsonObject();
-            params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, evictParticipant.getSessionId());
-
-            rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
-        }
-        if (OpenViduRole.MODERATOR.equals(evictParticipant.getRole())
-                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {    // close the room
-            dealSessionClose(evictParticipant.getSessionId(), EndReason.sessionClosedByServer);
-        } else {
-            // check if MAJOR is speaker
-            if (ParticipantHandStatus.speaker.equals(evictParticipant.getHandStatus())) {
-                JsonObject params = new JsonObject();
-                params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, evictParticipant.getSessionId());
-                params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, evictParticipant.getUuid());
-                rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.END_ROLL_CALL_METHOD, params);
-            }
-            // check if exists SHARING
-            Participant sharePart;
-            if (session.getSharingPart().isPresent() && session.getSharingPart().get().getUuid().equals(evictParticipant.getUuid())) {
-                //todo 2.0 不再需要发停止通知
-//                JsonObject params = new JsonObject();
-//                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-//                        sharePart.getParticipantPublicId());
-//
-//                // send stop SHARING
-//                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-//                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
-                // change session share status
-                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                    KurentoSession kurentoSession = (KurentoSession) session;
-                    kurentoSession.compositeService.setExistSharing(false);
-                    kurentoSession.compositeService.setShareStreamId(null);
-                }
-            }
-
-            // change the layout if mode is MCU
-            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                    //todo 2.0 需要重做
-//                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
-//                boolean layoutChanged = false;
-//                for (Participant part : samePrivateIdParts.values()) {
-//                    if (part.getStreamType().isStreamTypeMixInclude()) {
-//                        layoutChanged |= session.leaveRoomSetLayout(part,
-//                                !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
-//                                        ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
-//                    }
-//                }
-//
-//                if (layoutChanged) {
-//                    // notify kms change the layout of MCU
-//                    session.invokeKmsConferenceLayout();
-//
-//                    // notify client the change of layout
-//                    JsonObject params = session.getLayoutNotifyInfo();
-//                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-//                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
-//                }
-            }
-
-            // evict participants
-//            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
-//                    null, reason));
-            evictParticipant(evictParticipant, null, null, reason);
-            // deal auto on wall
-            session.putPartOnWallAutomatically(this);
-        }
-
-        // clear the rpc connection if necessary
-        if (evictStrategies.contains(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)) {
-            rpcNotificationService.closeRpcSession(evictParticipant.getParticipantPrivateId());
-        }
-    }
     @Override
     public void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId) {
         Session session;
@@ -977,8 +922,6 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    //todo 2.0 Deprecated use evictParticipant()
-    @Deprecated
     private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
         // check if include moderator
         Session session;

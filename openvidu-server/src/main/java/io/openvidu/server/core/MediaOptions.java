@@ -23,14 +23,14 @@ import io.openvidu.server.kurento.endpoint.KurentoFilter;
 
 public class MediaOptions {
 
-	protected Boolean hasAudio;
-	protected Boolean hasVideo;
-	protected Boolean audioActive;
-	protected Boolean videoActive;
-	protected String typeOfVideo;
-	protected Integer frameRate;
-	protected String videoDimensions;
-	protected KurentoFilter filter;
+	public Boolean hasAudio;
+	public Boolean hasVideo;
+	public Boolean audioActive;
+	public Boolean videoActive;
+	public String typeOfVideo;
+	public Integer frameRate;
+	public String videoDimensions;
+	public KurentoFilter filter;
 
 	public MediaOptions(Boolean hasAudio, Boolean hasVideo, Boolean audioActive, Boolean videoActive,
 			String typeOfVideo, Integer frameRate, String videoDimensions, KurentoFilter filter) {

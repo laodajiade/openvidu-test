@@ -126,7 +126,7 @@ public abstract class SessionManager {
 
 	public abstract RpcConnection accessOut(RpcConnection rpcConnection);
 
-	public abstract void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId);
+	public abstract void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId, StreamType streamType);
 
 	public abstract void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
 			EndReason reason);
@@ -474,23 +474,14 @@ public abstract class SessionManager {
 		}
 	}*/
 
-	public boolean isPublisherInSession(String sessionId, Participant participant,SessionPresetEnum sessionPresetEnum) {
-		if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
-			if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-
-				if (OpenViduRole.PUBLISHER.equals(participant.getRole()) || OpenViduRole.MODERATOR.equals(participant.getRole())
-						|| (OpenViduRole.ONLY_SHARE.equals(participant.getRole()) && participant.getStreamType().equals(StreamType.SHARING)
-						|| participant.getTerminalType() == TerminalTypeEnum.S)
-				) {
-					return true;
-				}
-				return sessionPresetEnum.equals(SessionPresetEnum.on) && OpenViduRole.SUBSCRIBER.equals(participant.getRole());
-			} else {
-				return false;
-			}
-		} else {
+	public boolean isPublisherInSession(String sessionId, Participant participant, SessionPresetEnum sessionPresetEnum) {
+		if (OpenViduRole.PUBLISHER.equals(participant.getRole()) || OpenViduRole.MODERATOR.equals(participant.getRole())
+				|| (OpenViduRole.ONLY_SHARE.equals(participant.getRole()) && participant.getStreamType().equals(StreamType.SHARING)
+				|| participant.getTerminalType() == TerminalTypeEnum.S)
+		) {
 			return true;
 		}
+		return sessionPresetEnum.equals(SessionPresetEnum.on) && OpenViduRole.SUBSCRIBER.equals(participant.getRole());
 	}
 
 	public boolean isModeratorInSession(String sessionId, Participant participant) {
