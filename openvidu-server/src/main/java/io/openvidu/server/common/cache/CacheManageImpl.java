@@ -18,7 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -389,6 +391,11 @@ public class CacheManageImpl implements CacheManage {
         String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
         roomStringTemplate.opsForValue().set(key, ruid + "#" + instanceId);
         roomStringTemplate.expire(key, 1, TimeUnit.MINUTES);
+
+        // 记录最后在哪个服务器上开会
+        key = "last:session:location:" + sessionId;
+        roomStringTemplate.opsForValue().set(key, instanceId);
+        roomStringTemplate.expire(key, 3, TimeUnit.DAYS);
     }
 
     @Override

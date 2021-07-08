@@ -83,9 +83,9 @@ public class KurentoSession extends Session {
 	private final Object joinOrLeaveLock = new Object();
 	private boolean destroyKurentoClient;
 
-	// 服务崩溃或者kill -9等方式非正常关机会导致
+	// 服务崩溃或者kill -9等方式非正常关机会导致会议永远存在。
 	private final Thread leaseThread = new Thread(() -> {
-		log.info("room lease thead start,roomId={},ruid={}", sessionId, ruid);
+		log.info("room lease thead start,roomId={}, ruid={}", sessionId, ruid);
 		while (!closed) {
 			try {
 				kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);

@@ -62,7 +62,7 @@ public class HandlerController {
             RequestEx<JsonObject> request = new RequestEx<>();
             request.setId(requestDTO.getId());
             request.setMethod(requestDTO.getMethod());
-            request.setParams(new Gson().fromJson(requestDTO.getParams(), JsonObject.class));
+            request.setParams(new Gson().fromJson(requestDTO.getParams().toJSONString(), JsonObject.class));
             request.setTrackId(requestDTO.getTrackId());
 
             RpcConnection rpcConnection = rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
@@ -94,7 +94,7 @@ public class HandlerController {
             Request<JsonObject> request = new Request<>();
             request.setId(requestDTO.getId());
             request.setMethod(requestDTO.getMethod());
-            request.setParams(new Gson().fromJson(requestDTO.getParams(), JsonObject.class));
+            request.setParams(new Gson().fromJson(requestDTO.getParams().toJSONString(), JsonObject.class));
 
             //rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
             RpcConnection rpcConnection = rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());

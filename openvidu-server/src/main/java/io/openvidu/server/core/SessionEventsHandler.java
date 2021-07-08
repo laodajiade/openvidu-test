@@ -361,6 +361,10 @@ public class SessionEventsHandler {
             synchronized (notifyUpdateOrderLock) {
                 notifyUpdateOrderLock.remove(session.getSessionId());
             }
+			if (session.isClosing() || session.isClosed()) {
+				log.info("session {} is closing or is closed,stop notifyUpdateOrder", session.getSessionId());
+				return;
+			}
 			log.info("notifyUpdateOrder doing");
             Set<Participant> existParticipants =  session.getParticipants();
             if (!CollectionUtils.isEmpty(existParticipants)) {

@@ -1,5 +1,6 @@
 package io.openvidu.server.domain;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,7 +14,7 @@ public class RequestDTO extends BasicDTO {
 
     private String method;
 
-    private String params;
+    private JSONObject params;
 
     private String uuid;
 
@@ -48,14 +49,6 @@ public class RequestDTO extends BasicDTO {
 
     public void setMethod(String method) {
         this.method = method;
-    }
-
-    public String getParams() {
-        return params;
-    }
-
-    public void setParams(String params) {
-        this.params = params;
     }
 
     public String getUuid() {
