@@ -1,11 +1,12 @@
 package io.openvidu.server.rpc.handlers;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.UserType;
+import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -117,7 +118,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     }
 
 
-    private  JsonObject getPartInfo(Participant participant, Map<String, UserDeviceDeptInfo> connectIdUserInfoMap, RpcConnection rpcConnection) {
+    private JsonObject getPartInfo(Participant participant, Map<String, UserDeviceDeptInfo> connectIdUserInfoMap, RpcConnection rpcConnection) {
         JsonObject userObj = new JsonObject();
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         userObj.addProperty("connectionId", kurentoParticipant.getParticipantPublicId());
@@ -126,18 +127,9 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("terminalType", kurentoParticipant.getTerminalType().name());
         userObj.addProperty("shareStatus", kurentoParticipant.getShareStatus().name());
         userObj.addProperty("handStatus", kurentoParticipant.getHandStatus().name());
-
-        // todo 2.0 这个放到流中间
-//        userObj.addProperty("audioActive",
-//                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isAudioActive());
-//        userObj.addProperty("videoActive",
-//                kurentoParticipant.isStreaming() && kurentoParticipant.getPublisherMediaOptions().isVideoActive());
-
-
         userObj.addProperty("micStatus", kurentoParticipant.getMicStatus().name());
         userObj.addProperty("videoStatus", kurentoParticipant.getVideoStatus().name());
         userObj.addProperty("speakerStatus", kurentoParticipant.getSpeakerStatus().name());
-        userObj.addProperty("speakerActive", ParticipantSpeakerStatus.on.equals(kurentoParticipant.getSpeakerStatus()));
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
         userObj.addProperty("order", participant.getOrder());
         userObj.addProperty("pushStreamStatus", participant.getPushStreamStatus().name());
@@ -171,91 +163,51 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             userObj.addProperty("appShowName", participant.getUsername());
             userObj.addProperty("appShowDesc", "游客");
         }
-        userObj.add("streams",this.getStreams(kurentoParticipant));
+        userObj.add("streams", this.getStreams(kurentoParticipant));
 
         return userObj;
     }
 
 
     public JsonArray getStreams(KurentoParticipant kParticipant) {
-//        JsonObject participantJson = new JsonObject();
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
-//                kParticipant.getParticipantPublicId());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_MICSTATUS_PARAM,
-//                kParticipant.getMicStatus().name());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM,
-//                kParticipant.getVideoStatus().name());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
-//                kParticipant.getCreatedAt());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHARESTATUS_PARAM,
-//                kParticipant.getShareStatus().name());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM,
-//                kParticipant.getSpeakerStatus().name());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERHANDSTATUS_PARAM,
-//                kParticipant.getHandStatus().name());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWNAME_PARAM,
-//                kParticipant.getAppShowName());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,
-//                kParticipant.getAppShowDesc());
-//        participantJson.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
-//                kParticipant.getStreamType().name());
-//        RpcConnection rpc = notificationService.getRpcConnection(kParticipant.getParticipantPrivateId());
-//        if (Objects.isNull(rpc)) {
-//            participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
-//                    UserOnlineStatusEnum.offline.name());
-//        } else {
-//            String status = UserOnlineStatusEnum.online.name();
-//            participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
-//            participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
-//            participantJson.addProperty(ProtocolElements.JOINROOM_FUNCTIONALITY_PARAM, rpc.getFunctionality());
-//            if (!Objects.isNull(rpc.getTerminalConfig())) {
-//                participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, new Gson().fromJson(rpc.getTerminalConfig(), JsonObject.class));
-//            }
-//            participantJson.addProperty("deviceVersion", rpc.getDeviceVersion());
-//        }
-//        participantJson.addProperty("isVoiceMode", kParticipant.getVoiceMode().equals(VoiceMode.on));
-//        participantJson.addProperty("order", kParticipant.getOrder());
-//        participantJson.addProperty("pushStreamStatus", kParticipant.getPushStreamStatus().name());
-//
-//			// Metadata associated to each existing participant
-//        participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
-//                kParticipant.getFullMetadata());
-//
         JsonArray streamsArray = new JsonArray();
         for (PublisherEndpoint publisher : kParticipant.getPublishers().values()) {
-            JsonObject stream = new JsonObject();
-            stream.addProperty(ProtocolElements.JOINROOM_PEERPUBLISHID_PARAM,
-                    publisher.getStreamId());
-            stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
-                    publisher.createdAt());
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,
-                    publisher.getMediaOptions().hasAudio);
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
-                    publisher.getMediaOptions().hasVideo);
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
-                    kParticipant.isMixIncluded());
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM, ParticipantVideoStatus.on.equals(kParticipant.getVideoStatus()));
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM, ParticipantMicStatus.on.equals(kParticipant.getMicStatus()));
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM,
-                    publisher.getMediaOptions().typeOfVideo);
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMFRAMERATE_PARAM,
-                    publisher.getMediaOptions().frameRate);
-            stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM,
-                    publisher.getMediaOptions().videoDimensions);
+            try {
+                JsonObject stream = new JsonObject();
+                stream.addProperty(ProtocolElements.JOINROOM_PEERPUBLISHID_PARAM,
+                        publisher.getStreamId());
+                stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
+                        publisher.createdAt());
+                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,
+                        publisher.getMediaOptions().hasAudio);
+                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
+                        publisher.getMediaOptions().hasVideo);
+                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
+                        kParticipant.isMixIncluded());
+                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM,
+                        publisher.getMediaOptions().typeOfVideo);
+                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMFRAMERATE_PARAM,
+                        publisher.getMediaOptions().frameRate);
+                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM,
+                        publisher.getMediaOptions().videoDimensions);
 
-            stream.addProperty("StreamType",
-                    publisher.getStreamType().name());
-            JsonElement filter = publisher.getMediaOptions().getFilter() != null
-                    ? publisher.getMediaOptions().getFilter().toJson()
-                    : new JsonObject();
-            stream.add(ProtocolElements.JOINROOM_PEERSTREAMFILTER_PARAM, filter);
+                stream.addProperty("StreamType",
+                        publisher.getStreamType().name());
+                JsonElement filter = publisher.getMediaOptions().getFilter() != null
+                        ? publisher.getMediaOptions().getFilter().toJson()
+                        : new JsonObject();
+                stream.add(ProtocolElements.JOINROOM_PEERSTREAMFILTER_PARAM, filter);
 
-            streamsArray.add(stream);
+                streamsArray.add(stream);
+            } catch (Exception e) {
+                log.error("get participant stream {} error", publisher.getStreamId(), e);
+            }
+
         }
         return streamsArray;
     }
 
-    /* ************************** class ************************** */
+    /* ************************** inner class ************************** */
     interface Search {
         Collection<Participant> getParts(Session session, Request<JsonObject> request);
     }
@@ -264,14 +216,14 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return null;
+            return Collections.emptySet();
         }
     }
 
     private class ListSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return null;
+            return Collections.emptySet();
         }
     }
 
@@ -285,7 +237,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     private class RaisingHandsSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return null;
+            return Collections.emptySet();
         }
     }
 
@@ -295,5 +247,5 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             return session.getParticipants();
         }
     }
-
+    /* ************************** inner class ************************** */
 }
