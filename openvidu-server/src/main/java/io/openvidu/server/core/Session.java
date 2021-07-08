@@ -554,6 +554,18 @@ public class Session implements SessionInterface {
 		return participantList.values().stream().filter(p -> p.getUuid().equals(participantPrivateId)).findFirst().orElseGet(null);
 	}
 
+	public Optional<Participant> getParticipantByPrivateId(String participantPrivateId, String uuid) {
+		checkClosed();
+		Participant participant = participantList.get(uuid);
+		if (participant == null) {
+			return Optional.empty();
+		}
+		if (participant.getParticipantPrivateId().equals(participantPrivateId)) {
+			return Optional.of(participant);
+		}
+		return Optional.empty();
+	}
+
 	@Override
 	public ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId) {
 		return participants.get(participantPrivateId);

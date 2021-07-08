@@ -20,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author even
@@ -39,19 +40,20 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
             return;
         }
         // verify operate permission
-        Participant operatePart = session.getPartByPrivateIdAndStreamType(rpcConnection.getParticipantPrivateId(), StreamType.MAJOR);
-        if (!operatePart.getRole().isController()) {
+        Optional<Participant> participantOptional = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId(), rpcConnection.getUserUuid());
+        if (!participantOptional.isPresent() || !participantOptional.get().getRole().isController()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
         }
+
         ConferenceSearch search = new ConferenceSearch();
         search.setRoomId(roomId);
         search.setStatus(ConferenceStatus.PROCESS.getStatus());
         List<Conference> list = conferenceMapper.selectBySearchCondition(search);
 
         JSONObject respJson = new JSONObject();
-        respJson.put("userName", operatePart.getUsername());
+        respJson.put("userName", participantOptional.get().getUsername());
         respJson.put("subject", session.getConference().getConferenceSubject());
         respJson.put("startTime", session.getStartTime());
         respJson.put("roomId", roomId);
