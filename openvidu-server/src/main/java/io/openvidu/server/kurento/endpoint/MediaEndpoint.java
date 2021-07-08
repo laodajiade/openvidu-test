@@ -239,14 +239,17 @@ public abstract class MediaEndpoint {
 
 	public void setEndpointName(String endpointName) {
 		this.endpointName = endpointName;
+		this.streamId = endpointName;
 	}
 
 	public String getStreamId() {
 		return streamId;
+
 	}
 
 	public void setStreamId(String streamId) {
 		this.streamId = streamId;
+		this.endpointName = streamId;
 	}
 
 	/**

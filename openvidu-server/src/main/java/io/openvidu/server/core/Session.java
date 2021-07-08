@@ -601,7 +601,8 @@ public class Session implements SessionInterface {
 
 		return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
     }
-
+	//todo 2.0 Deprecated
+	@Deprecated
 	public Participant getParticipantByPublicId(String participantPublicId) {
 		checkClosed();
 		for (Participant p : getParticipants()) {

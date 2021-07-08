@@ -33,10 +33,6 @@ import static io.openvidu.client.internal.ProtocolElements.PUBLISHVIDEO_DOLOOPBA
 import static io.openvidu.client.internal.ProtocolElements.PUBLISHVIDEO_METHOD;
 import static io.openvidu.client.internal.ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM;
 import static io.openvidu.client.internal.ProtocolElements.PUBLISHVIDEO_SDPOFFER_PARAM;
-import static io.openvidu.client.internal.ProtocolElements.RECEIVEVIDEO_METHOD;
-import static io.openvidu.client.internal.ProtocolElements.RECEIVEVIDEO_SDPANSWER_PARAM;
-import static io.openvidu.client.internal.ProtocolElements.RECEIVEVIDEO_SDPOFFER_PARAM;
-import static io.openvidu.client.internal.ProtocolElements.RECEIVEVIDEO_SENDER_PARAM;
 import static io.openvidu.client.internal.ProtocolElements.SENDMESSAGE_MESSAGE_PARAM;
 import static io.openvidu.client.internal.ProtocolElements.SENDMESSAGE_ROOM_METHOD;
 import static io.openvidu.client.internal.ProtocolElements.UNPUBLISHVIDEO_METHOD;
@@ -166,15 +162,6 @@ public class OpenViduClient {
 
   public void unpublishVideo() throws IOException {
     client.sendRequest(UNPUBLISHVIDEO_METHOD, new JsonObject());
-  }
-
-  // sender should look like 'username_streamId'
-  public String receiveVideoFrom(String sender, String sdpOffer) throws IOException {
-    JsonObject params = new JsonObject();
-    params.addProperty(RECEIVEVIDEO_SENDER_PARAM, sender);
-    params.addProperty(RECEIVEVIDEO_SDPOFFER_PARAM, sdpOffer);
-    JsonElement result = client.sendRequest(RECEIVEVIDEO_METHOD, params);
-    return JsonRoomUtils.getResponseProperty(result, RECEIVEVIDEO_SDPANSWER_PARAM, String.class);
   }
 
   // sender should look like 'username_streamId'

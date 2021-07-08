@@ -109,11 +109,7 @@ public class ProtocolElements {
 
     public static final String UNPUBLISHVIDEO_METHOD = "unpublishVideo";
 
-    public static final String RECEIVEVIDEO_METHOD = "receiveVideoFrom";
-    public static final String RECEIVEVIDEO_STREAM_MODE_PARAM = "streamMode";
-    public static final String RECEIVEVIDEO_SDPOFFER_PARAM = "sdpOffer";
-    public static final String RECEIVEVIDEO_SENDER_PARAM = "sender";
-    public static final String RECEIVEVIDEO_SDPANSWER_PARAM = "sdpAnswer";
+    public static final String SUBSCRIBE_VIDEO_METHOD = "subscribeVideo";
 
     public static final String UNSUBSCRIBEFROMVIDEO_METHOD = "unsubscribeFromVideo";
     public static final String UNSUBSCRIBEFROMVIDEO_SENDER_PARAM = "sender";
@@ -581,9 +577,10 @@ public class ProtocolElements {
 
     public static final String PARTICIPANTPUBLISHED_METHOD = "participantPublished";
     public static final String PARTICIPANTPUBLISHED_UUID_PARAM = "uuid";
+    public static final String PARTICIPANTPUBLISHED_NAME_PARAM = "connectionId";
     public static final String PARTICIPANTPUBLISHED_METADATA_PARAM = "metadata";
     public static final String PARTICIPANTPUBLISHED_STREAMS_PARAM = "streams";
-    public static final String PARTICIPANTPUBLISHED_STREAMID_PARAM = "id";
+    public static final String PARTICIPANTPUBLISHED_STREAMID_PARAM = "publishId";
     public static final String PARTICIPANTPUBLISHED_STREAMTYPE_PARAM = "streamType";
     public static final String PARTICIPANTPUBLISHED_CREATEDAT_PARAM = "createdAt";
     public static final String PARTICIPANTPUBLISHED_HASAUDIO_PARAM = "hasAudio";

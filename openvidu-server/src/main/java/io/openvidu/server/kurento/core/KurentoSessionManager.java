@@ -473,7 +473,7 @@ public class KurentoSessionManager extends SessionManager {
 //                    kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
             sessionEventsHandler.onPublishMedia(participant, participant.getPublisherStreamId(),
                     kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
-                    transactionId, null, kParticipant.getPublisher(streamType));
+                    transactionId, null, kParticipant.getPublisher(streamType), streamType);
         }
 
         // todo 2.0 注释掉 kSession.newPublisher(participant) 看起来暂时不需要
@@ -487,7 +487,7 @@ public class KurentoSessionManager extends SessionManager {
         if (sdpAnswer != null) {
             sessionEventsHandler.onPublishMedia(participant, kParticipant.getPublisher(streamType).getEndpointName(),
                     kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
-                    transactionId, null, kParticipant.getPublisher(streamType));
+                    transactionId, null, kParticipant.getPublisher(streamType), streamType);
         }
 
         kParticipant.getPublisher(streamType).gatherCandidates();
@@ -534,69 +534,121 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
+//    @Override
+//    public void subscribe(Participant participant, String senderName, StreamModeEnum streamMode, String sdpOffer, Integer transactionId) {
+//        String sdpAnswer = null;
+//        KurentoSession session = null;
+//        try {
+//            log.debug("Request [SUBSCRIBE] remoteParticipant={} sdpOffer={} ({})", senderName, sdpOffer,
+//                    participant.getParticipantPublicId());
+//
+//            KurentoParticipant kParticipant = (KurentoParticipant) participant;
+//            session = ((KurentoParticipant) participant).getSession();
+//
+//            Participant senderParticipant;
+//            if (!StreamModeEnum.MIX_MAJOR_AND_SHARING.equals(streamMode)) {
+//                senderParticipant = session.getParticipantByPublicId(senderName);
+//            } else {
+//                if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+//                    senderParticipant = participant;
+//                } else {
+//                    senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
+//                }
+//            }
+//
+//            if (senderParticipant == null) {
+//                log.warn(
+//                        "PARTICIPANT {}: Requesting to recv media from user {} "
+//                                + "in session {} but user could not be found",
+//                        participant.getParticipantPublicId(), senderName, session.getSessionId());
+//                sessionEventsHandler.sendSuccessResp(participant.getParticipantPrivateId(), transactionId);
+//                return;
+//            }
+//            if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
+//                log.warn(
+//                        "PARTICIPANT {}: Requesting to recv media from user {} "
+//                                + "in session {} but user is not streaming media",
+//                        participant.getParticipantPublicId(), senderName, session.getSessionId());
+//                throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
+//                        "User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
+//            }
+//
+//            sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
+//            if (sdpAnswer == null) {
+//                throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
+//                        "Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()
+//                                + "' to '" + senderName + "'");
+//            }
+//        } catch (OpenViduException e) {
+//            log.error("PARTICIPANT {}: Error subscribing to {}", participant.getParticipantPublicId(), senderName, e);
+//            sessionEventsHandler.onSubscribe(participant, session, null, transactionId, e);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//            log.error("Exception:", e);
+//        }
+//
+//        if (Objects.equals(participant.getVoiceMode(), VoiceMode.on)) {
+//            switchVoiceModeWithPublicId(participant, participant.getVoiceMode(), senderName);
+//        }
+//
+//        if (sdpAnswer != null) {
+//            sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, transactionId, null);
+//        }
+//    }
+//
+
     @Override
-    public void subscribe(Participant participant, String senderName, StreamModeEnum streamMode, String sdpOffer, Integer transactionId) {
+    public void subscribe(Participant participant, Participant senderParticipant, StreamType streamType, StreamModeEnum streamMode,
+                          String sdpOffer, String publishStreamId, Integer transactionId) {
         String sdpAnswer = null;
         KurentoSession session = null;
+        Map<String, Object> resultObj = new HashMap<>();
         try {
-            log.debug("Request [SUBSCRIBE] remoteParticipant={} sdpOffer={} ({})", senderName, sdpOffer,
-                    participant.getParticipantPublicId());
-
             KurentoParticipant kParticipant = (KurentoParticipant) participant;
             session = ((KurentoParticipant) participant).getSession();
 
-            Participant senderParticipant;
-            if (!StreamModeEnum.MIX_MAJOR_AND_SHARING
-                    .equals(streamMode)) {
-                senderParticipant = session.getParticipantByPublicId(senderName);
+            if (!StreamModeEnum.MIX_MAJOR_AND_SHARING.equals(streamMode)) {
+                senderParticipant = senderParticipant;
             } else {
-                if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
-                    senderParticipant = participant;
-                } else {
-                    senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
-                }
+//                if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+//                    senderParticipant = participant;
+//                } else {
+//                    senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
+//                }
+                //todo mcu
             }
 
-            if (senderParticipant == null) {
-                log.warn(
-                        "PARTICIPANT {}: Requesting to recv media from user {} "
-                                + "in session {} but user could not be found",
-                        participant.getParticipantPublicId(), senderName, session.getSessionId());
-                sessionEventsHandler.sendSuccessResp(participant.getParticipantPrivateId(), transactionId);
-                return;
-            }
             if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to recv media from user {} "
                                 + "in session {} but user is not streaming media",
-                        participant.getParticipantPublicId(), senderName, session.getSessionId());
+                        participant.getParticipantPublicId(), senderParticipant.getUuid(), session.getSessionId());
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
-                        "User '" + senderName + " not streaming media in session '" + session.getSessionId() + "'");
+                        "User '" + senderParticipant.getUuid() + " not streaming media in session '" + session.getSessionId() + "'");
             }
 
-            sdpAnswer = kParticipant.receiveMediaFrom(senderParticipant, streamMode, sdpOffer, senderName);
+            sdpAnswer = kParticipant.receiveMediaFrom((KurentoParticipant) senderParticipant, streamMode, sdpOffer,
+                    streamType, publishStreamId, resultObj);
             if (sdpAnswer == null) {
                 throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
                         "Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()
-                                + "' to '" + senderName + "'");
+                                + "' to '" + publishStreamId + "'");
             }
         } catch (OpenViduException e) {
-            log.error("PARTICIPANT {}: Error subscribing to {}", participant.getParticipantPublicId(), senderName, e);
-            sessionEventsHandler.onSubscribe(participant, session, null, transactionId, e);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("PARTICIPANT {}: Error subscribing to {}", participant.getParticipantPublicId(), publishStreamId, e);
+            sessionEventsHandler.onSubscribe(participant, session, null, resultObj, transactionId, e);
+        } catch (Exception e) {
             log.error("Exception:", e);
         }
 
         if (Objects.equals(participant.getVoiceMode(), VoiceMode.on)) {
-            switchVoiceModeWithPublicId(participant, participant.getVoiceMode(), senderName);
+            switchVoiceModeWithPublicId(participant, participant.getVoiceMode(), publishStreamId);
         }
 
         if (sdpAnswer != null) {
-            sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, transactionId, null);
+            sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, resultObj, transactionId, null);
         }
     }
-
     private Participant getInviteDelayPart(String sessionId, Long userId) throws InterruptedException {
         Participant senderParticipant;
         for (int i = 0; i < 3; i++) {

@@ -417,18 +417,18 @@ public class SessionEventsHandler {
 	}
 
 	public void onPublishMedia(Participant participant, String streamId, Long createdAt, String sdpAnswer,
-							   Integer transactionId, OpenViduException error, PublisherEndpoint publisherEndpoint) {
+							   Integer transactionId, OpenViduException error, PublisherEndpoint publisherEndpoint, StreamType streamType) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
 
-        KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
+		KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 		JsonObject result = new JsonObject();
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_SDPANSWER_PARAM, sdpAnswer);
-		result.addProperty(ProtocolElements.PUBLISHVIDEO_STREAMID_PARAM, streamId);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_PUBLISHID_PARAM, streamId);
 		result.addProperty(ProtocolElements.PUBLISHVIDEO_CREATEDAT_PARAM, createdAt);
+		result.addProperty("streamType", streamType.name());
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 
 		kurentoParticipant.notifyPublishChannelPass(publisherEndpoint);
@@ -441,12 +441,13 @@ public class SessionEventsHandler {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_UUID_PARAM, participant.getUuid());
+		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_METADATA_PARAM, participant.getFullMetadata());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM, participant.getAppShowName());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM, participant.getAppShowDesc());
 		params.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, publisherEndpoint.getStreamType().name());
-		JsonObject stream = new JsonObject();
 
+		JsonObject stream = new JsonObject();
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, publisherEndpoint.getStreamId());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, participant.getStreamType().name());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, publisherEndpoint.createdAt());
@@ -591,28 +592,16 @@ public class SessionEventsHandler {
 		}
 	}
 
-	public void onSubscribe(Participant participant, Session session, String sdpAnswer, Integer transactionId,
+	public void onSubscribe(Participant participant, Session session, String sdpAnswer, Map<String, Object> resultObj, Integer transactionId,
 			OpenViduException error) {
 		if (error != null) {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
 		JsonObject result = new JsonObject();
-		result.addProperty(ProtocolElements.RECEIVEVIDEO_SDPANSWER_PARAM, sdpAnswer);
+		result.addProperty("sdpAnswer", sdpAnswer);
+		result.addProperty("subscribeId", resultObj.get("subscribeId").toString());
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
-
-		if (ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-			lock.lock();
-			try {
-				Recording recording = this.recordingsStarted.remove(session.getSessionId());
-				if (recording != null) {
-					// RECORDER participant is now receiving video from the first publisher
-					this.sendRecordingStartedNotification(session, recording);
-				}
-			} finally {
-				lock.unlock();
-			}
-		}
 	}
 
 	public void onUnsubscribe(Participant participant, Integer transactionId, OpenViduException error) {

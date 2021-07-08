@@ -51,7 +51,6 @@ public class AuthorizationManageImpl implements AuthorizationManage {
         METHOD_AUTHORIZATION_MAP.put(CONFIRM_APPLY_FOR_LOGIN_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(JOINROOM_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(PUBLISHVIDEO_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
-        METHOD_AUTHORIZATION_MAP.put(RECEIVEVIDEO_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(LEAVEROOM_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(RAISE_HAND_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());
         METHOD_AUTHORIZATION_MAP.put(PUT_DOWN_HAND_METHOD, AuthorizationEnum.PARTICIPANT_ONLY.getAuthorization());

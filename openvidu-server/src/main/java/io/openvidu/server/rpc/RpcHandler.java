@@ -28,7 +28,6 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
-import io.openvidu.server.common.manage.AuthorizationManage;
 import io.openvidu.server.config.FlowRulesConfig;
 import io.openvidu.server.core.*;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
@@ -59,9 +58,6 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	@Autowired
 	CacheManage cacheManage;
-
-    @Autowired
-    AuthorizationManage authorizationManage;
 
     @Autowired
     FlowRulesConfig flowRulesConfig;

@@ -131,8 +131,8 @@ public abstract class SessionManager {
 	public abstract void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
 			EndReason reason);
 
-	public abstract void subscribe(Participant participant, String senderName, StreamModeEnum streamMode,
-								   String sdpOffer, Integer transactionId);
+	public abstract void subscribe(Participant participant, Participant sender, StreamType streamType, StreamModeEnum streamMode,
+								   String sdpOffer, String publishStreamId, Integer transactionId);
 
 	public abstract void unsubscribe(Participant participant, String senderName, Integer transactionId);
 
