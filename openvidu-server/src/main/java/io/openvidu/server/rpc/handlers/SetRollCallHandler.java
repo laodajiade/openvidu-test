@@ -58,12 +58,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             ErrorCodeEnum errorCodeEnum;
 
             // check if the size of major part is over 12
-            if (conferenceSession.getMajorPartSize() > openviduConfig.getMcuMajorPartLimit()) {
+            if (conferenceSession.getPartSize() > openviduConfig.getMcuMajorPartLimit()) {
                 errorCodeEnum = conferenceSession.evictPartInCompositeWhenSubToPublish(targetPart, sessionManager);
             } else {
                 // invalid rpc call when size of major part is not up to 12
                 log.error("Invalid rpc call when size of major part is:{} in session:{} is not up to {}",
-                        conferenceSession.getMajorPartSize(), sessionId, openviduConfig.getMcuMajorPartLimit());
+                        conferenceSession.getPartSize(), sessionId, openviduConfig.getMcuMajorPartLimit());
                 errorCodeEnum = ErrorCodeEnum.SERVER_INTERNAL_ERROR;
             }
 

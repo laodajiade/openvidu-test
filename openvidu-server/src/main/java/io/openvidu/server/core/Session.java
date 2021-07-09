@@ -120,15 +120,8 @@ public class Session implements SessionInterface {
 
 	protected JsonArray majorShareMixLinkedArr = new JsonArray(50);
 
-	//todo 2.0 废弃
-	@Deprecated
-	private static AtomicInteger majorParts = new AtomicInteger(0);
-
 	// 正常与会者的排序
-	protected AtomicInteger roomNormalOrder = new AtomicInteger(-1);
-
-	// 屏幕入会的排序
-	protected AtomicInteger onlyShareOrder = new AtomicInteger(0);
+	protected AtomicInteger roomOrder = new AtomicInteger(-1);
 
 	private final Object partOrderAdjustLock = new Object();
 
@@ -689,7 +682,7 @@ public class Session implements SessionInterface {
 
 	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
     	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-    		int size = majorParts.incrementAndGet();
+    		int size = participantList.size();
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
 					participant.getParticipantName(), sessionId, size);
 
@@ -702,7 +695,7 @@ public class Session implements SessionInterface {
 		int order;
 		boolean cutInLine = false;
 
-		order = roomNormalOrder.incrementAndGet();
+		order = roomOrder.incrementAndGet();
 		if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
 			order = 0;
 			cutInLine = true;
@@ -736,9 +729,6 @@ public class Session implements SessionInterface {
 
 
 
-	public void deregisterMajorParticipant(Participant participant) {
-		majorParts.decrementAndGet();
-    }
 
 //	public void dealParticipantOrder(Participant leavePart, RpcNotificationService notificationService) {
 //		if (StreamType.MAJOR.equals(leavePart.getStreamType()) && !OpenViduRole.THOR.equals(leavePart.getRole())) {
@@ -756,6 +746,7 @@ public class Session implements SessionInterface {
 		Participant sub2PubPart;
 		boolean sendPartRoleChanged;
 		synchronized (partOrderAdjustLock) {
+			roomOrder.decrementAndGet();
 			KurentoParticipant kp = (KurentoParticipant) leavePart;
 			KurentoSession session = kp.getSession();
 			int leavePartOrder = leavePart.getOrder();
@@ -1001,17 +992,6 @@ public class Session implements SessionInterface {
 		openviduConfig.getCacheManage().batchUpdatePartInfo(participant.getUuid(), updateMap);
 	}
 
-    public void registerMajorParticipant(Participant participant) {
-        if (StreamType.MAJOR.equals(participant.getStreamType())) {
-            log.info("ParticipantName:{} is going to publish in session:{} and increment majorPart size:{}",
-                    participant.getParticipantName(), sessionId, majorParts.incrementAndGet());
-        }
-    }
-
-    public int getMajorPartSize() {
-    	return majorParts.get();
-	}
-
 	public boolean isClosed() {
 		return closed;
 	}
@@ -1240,7 +1220,7 @@ public class Session implements SessionInterface {
 			log.info("session:{} is closing, no need to putPartOnWallAutomatically.", sessionId);
 			return;
 		}
-		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && majorParts.get() >= openviduConfig.getMcuMajorPartLimit()) {
+		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && participantList.size() >= openviduConfig.getMcuMajorPartLimit()) {
 			List<String> publishedParts = new ArrayList<>(16);
 			for (JsonElement jsonElement : majorShareMixLinkedArr) {
 				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
