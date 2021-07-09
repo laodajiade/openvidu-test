@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-public class ReceiveVideoFromHandler extends RpcAbstractHandler {
+public class SubscribeVideoHandler extends RpcAbstractHandler {
 
 
     private static final String PUBLISH_ID_PARAM = "publishId";
