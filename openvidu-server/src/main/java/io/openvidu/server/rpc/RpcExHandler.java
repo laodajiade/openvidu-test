@@ -103,7 +103,13 @@ public class RpcExHandler {
 		}
 
 		//transaction.startAsync();
-		rpcAbstractHandler.handRpcRequest(rpcConnection, request);
+		try {
+			rpcAbstractHandler.handRpcRequest(rpcConnection, request);
+		} catch (IllegalArgumentException e) {
+			log.warn(e.toString());
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+		}
 	}
 
 

@@ -176,8 +176,7 @@ public abstract class RpcAbstractHandler {
 
     public static String getStringParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
-            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+            throw new IllegalArgumentException("Request element '" + key + "' is missing in method '" + request.getMethod());
         }
         return request.getParams().get(key).getAsString();
     }
@@ -200,8 +199,7 @@ public abstract class RpcAbstractHandler {
 
     public static boolean getBooleanParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
-            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+            throw new IllegalArgumentException("Request element '" + key + "' is missing in method '" + request.getMethod());
         }
         return request.getParams().get(key).getAsBoolean();
     }
@@ -223,8 +221,7 @@ public abstract class RpcAbstractHandler {
 
     protected static long getLongParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
-            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+            throw new IllegalArgumentException("Request element '" + key + "' is missing in method '" + request.getMethod());
         }
         return request.getParams().get(key).getAsLong();
     }
@@ -295,16 +292,14 @@ public abstract class RpcAbstractHandler {
 
     public static int getIntParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
-            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+            throw new IllegalArgumentException("Request element '" + key + "' is missing in method '" + request.getMethod());
         }
         return request.getParams().get(key).getAsInt();
     }
 
     public static JsonElement getParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null) {
-            throw new RuntimeException("Request element '" + key + "' is missing in method '" + request.getMethod()
-                    + "'. CHECK THAT 'openvidu-server' AND 'openvidu-browser' SHARE THE SAME VERSION NUMBER");
+            throw new IllegalArgumentException("Request element '" + key + "' is missing in method '" + request.getMethod());
         }
         return request.getParams().get(key);
     }
