@@ -3,16 +3,15 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Participant;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.kurento.client.IceCandidate;
 import org.kurento.jsonrpc.message.Request;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * @author geedow
@@ -30,11 +29,15 @@ public class OnIceCandidateHandler extends RpcAbstractHandler {
         String candidate = getStringParam(request, ProtocolElements.ONICECANDIDATE_CANDIDATE_PARAM);
         String sdpMid = getStringParam(request, ProtocolElements.ONICECANDIDATE_SDPMIDPARAM);
         int sdpMLineIndex = getIntParam(request, ProtocolElements.ONICECANDIDATE_SDPMLINEINDEX_PARAM);
-        try {
-            participant = sanityCheckOfSession(rpcConnection, endpointName, "onIceCandidate");
-        } catch (OpenViduException e) {
+
+        Optional<Participant> participantOptional = sessionManager.getParticipantByUUID(rpcConnection.getSessionId(), rpcConnection.getUserUuid());
+
+        if (!participantOptional.isPresent()) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
             return;
         }
-        sessionManager.onIceCandidate(participant, endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
+
+        sessionManager.onIceCandidate(participantOptional.get(), endpointName, candidate, sdpMLineIndex, sdpMid, request.getId());
     }
 }

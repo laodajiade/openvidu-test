@@ -308,7 +308,7 @@ public abstract class SessionManager {
 	public Optional<Participant> getParticipantByUUID(String sessionId, String uuid) throws OpenViduException {
 		Session session = sessions.get(sessionId);
 		if (session == null) {
-			throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+			return Optional.empty();
 		}
 		return session.getParticipantByUUID(uuid);
 	}

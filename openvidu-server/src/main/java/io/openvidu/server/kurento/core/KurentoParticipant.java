@@ -680,19 +680,35 @@ public class KurentoParticipant extends Participant {
 		return subscriberEndpoint;
 	}
 
-	public void addIceCandidate(String endpointName, IceCandidate iceCandidate) {
-		if (this.getParticipantPublicId().equals(endpointName)) {
-			if (Objects.isNull(this.publisher)) {
-				// Initialize a PublisherEndpoint
-				this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
-						this.session.getPipeline(), this.openviduConfig);
+//	todo 2.0 delete
+//	public void addIceCandidate(String endpointName, IceCandidate iceCandidate) {
+//		if (this.getParticipantPublicId().equals(endpointName)) {
+//			if (Objects.isNull(this.publisher)) {
+//				// Initialize a PublisherEndpoint
+//				this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+//						this.session.getPipeline(), this.openviduConfig);
+//
+//				this.publisher.setCompositeService(this.session.compositeService);
+//			}
+//			this.publisher.addIceCandidate(iceCandidate);
+//		} else {
+//			this.getNewOrExistingSubscriber(endpointName).addIceCandidate(iceCandidate);
+//		}
+//	}
 
-				this.publisher.setCompositeService(this.session.compositeService);
+	public ErrorCodeEnum addIceCandidate(String endpointName, IceCandidate iceCandidate) {
+		if (!endpointName.contains("_receive_")) {
+			Optional<PublisherEndpoint> find = this.publishers.values().stream().filter(ep -> ep.getStreamId().equals(endpointName)).findFirst();
+			if (!find.isPresent()) {
+				log.warn("can`t find endpointName");
+				return ErrorCodeEnum.ENP_POINT_NAME_NOT_EXIST;
+			} else {
+				find.get().addIceCandidate(iceCandidate);
 			}
-			this.publisher.addIceCandidate(iceCandidate);
 		} else {
 			this.getNewOrExistingSubscriber(endpointName).addIceCandidate(iceCandidate);
 		}
+		return ErrorCodeEnum.SUCCESS;
 	}
 
 	public void sendIceCandidate(String senderPublicId, String endpointName, IceCandidate candidate) {

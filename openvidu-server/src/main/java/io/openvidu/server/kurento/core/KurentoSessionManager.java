@@ -752,12 +752,12 @@ public class KurentoSessionManager extends SessionManager {
             KurentoParticipant kParticipant = (KurentoParticipant) participant;
             log.debug("Request [ICE_CANDIDATE] endpoint={} candidate={} " + "sdpMLineIdx={} sdpMid={} ({})",
                     endpointName, candidate, sdpMLineIndex, sdpMid, participant.getParticipantPublicId());
-            kParticipant.addIceCandidate(endpointName, new IceCandidate(candidate, sdpMid, sdpMLineIndex));
-            sessionEventsHandler.onRecvIceCandidate(participant, transactionId, null);
+            ErrorCodeEnum errorCodeEnum = kParticipant.addIceCandidate(endpointName, new IceCandidate(candidate, sdpMid, sdpMLineIndex));
+            sessionEventsHandler.onRecvIceCandidate(participant, transactionId, errorCodeEnum);
         } catch (OpenViduException e) {
             log.error("PARTICIPANT {}: Error receiving ICE " + "candidate (epName={}, candidate={})",
                     participant.getParticipantPublicId(), endpointName, candidate, e);
-            sessionEventsHandler.onRecvIceCandidate(participant, transactionId, e);
+            sessionEventsHandler.onRecvIceCandidate(participant, transactionId, ErrorCodeEnum.ENP_POINT_NAME_NOT_EXIST);
         }
     }
 

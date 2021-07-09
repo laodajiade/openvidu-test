@@ -686,9 +686,9 @@ public class SessionEventsHandler {
 		}
 	}
 
-	public void onRecvIceCandidate(Participant participant, Integer transactionId, OpenViduException error) {
-		if (error != null) {
-			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
+	public void onRecvIceCandidate(Participant participant, Integer transactionId, ErrorCodeEnum error) {
+		if (error != null && error != ErrorCodeEnum.SUCCESS) {
+			rpcNotificationService.sendErrorResponseWithDesc(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());

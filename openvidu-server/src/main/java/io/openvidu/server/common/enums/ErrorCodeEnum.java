@@ -133,7 +133,7 @@ public enum ErrorCodeEnum {
     APPOINTMENT_TIME_AFTER_ROOM_EXPIRED(13085, "预约会议时间不可超出固定会议室到期时间"),
     NOT_ROOM_MANAGER(13086, "不是房间管理员"),
     PRE_CONFERENCE_NOT_FINISHED(13087, "上个会议仍未结束，请等待"),
-
+    ENP_POINT_NAME_NOT_EXIST(13088, "上个会议仍未结束，请等待"),
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");
 
