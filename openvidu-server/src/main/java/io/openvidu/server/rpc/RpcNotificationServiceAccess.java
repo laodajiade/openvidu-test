@@ -240,37 +240,29 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         List<String> failList = new ArrayList<>();
         Set<String> waitSendings = new HashSet<>(participantPrivateIds);
         int size = participantPrivateIds.size();
-        String sendThreadName = Thread.currentThread().getName();
-        CountDownLatch countDownLatch = new CountDownLatch(size);
-        for (String participantPrivateId : participantPrivateIds) {
+        final String sendThreadName = Thread.currentThread().getName();
 
+        List<RpcConnection> list = rpcConnections.gets(participantPrivateIds);
+        CountDownLatch countDownLatch = new CountDownLatch(list.size());
+        for (RpcConnection rpcConnection : list) {
             NOTIFY_THREAD_POOL.submit(() -> {
+                String participantPrivateId = rpcConnection.getParticipantPrivateId();
                 try {
                     waitSendings.remove(participantPrivateId);
-                    //todo 2.0 优化批量获取，减少网络次数
-                    RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
-                    if (rpcSession == null) {
-                        log.error("No rpc session found for private id {}, unable to send notification {}: {}",
-                                participantPrivateId, method, params);
-                        failList.add(participantPrivateId);
-                        return;
-                    }
-
-                    try {
-                        this.sendNotification0(participantPrivateId, method, params);
-                        successList.add(participantPrivateId);
-                    } catch (Exception e) {
-                        failList.add(participantPrivateId);
-                        log.error("Exception sending notification '{}': {} to participant with private id {}", method, params,
-                                participantPrivateId, e);
-                    }
+                    this.sendNotification0(participantPrivateId, method, params);
+                    successList.add(participantPrivateId);
+                } catch (Exception e) {
+                    failList.add(participantPrivateId);
+                    log.error("{} Exception sending notification '{}': {} to participant with private id {}", sendThreadName, method, params,
+                            participantPrivateId, e);
                 } finally {
                     countDownLatch.countDown();
                 }
             });
         }
+
         try {
-            if (!countDownLatch.await((size * 2) + 50, TimeUnit.MILLISECONDS)) {
+            if (!countDownLatch.await((size * 2) + 100, TimeUnit.MILLISECONDS)) {
                 log.warn("{} sendBatchNotificationConcurrent timeout method={},partSize = {}", sendThreadName, method, size);
             }
         } catch (InterruptedException e) {

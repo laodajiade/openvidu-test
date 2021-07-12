@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 public class RemoteRpcConnection implements IRpcConnection {
@@ -20,6 +21,11 @@ public class RemoteRpcConnection implements IRpcConnection {
     @Override
     public RpcConnection get(String privateId) {
         return rtcUserClient.getRpcConnection(privateId);
+    }
+
+    @Override
+    public List<RpcConnection> gets(Collection<String> privateIds) {
+        return rtcUserClient.getRpcConnections(privateIds);
     }
 
     @Override
