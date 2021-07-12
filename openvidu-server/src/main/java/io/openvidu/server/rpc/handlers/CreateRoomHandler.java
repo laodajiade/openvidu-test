@@ -18,6 +18,7 @@ import io.openvidu.server.utils.RandomRoomIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -60,6 +61,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
 
     private static final ReentrantLock GLOBAL_LOCK = new ReentrantLock();
 
+
+    @Value("${eureka.instance.instance-id}")
+    private String instanceId;
 
     @Transactional
     @Override
@@ -180,6 +184,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 conference.setModeratorUuid(moderatorUuid);
                 conference.setShortUrl(roomManage.createShortUrl());
                 conference.setModeratorName(rpcConnection.getUsername());
+                conference.setOpenviduId(instanceId);
                 roomManage.createMeetingRoom(conference);
 
                 // setPresetInfo.

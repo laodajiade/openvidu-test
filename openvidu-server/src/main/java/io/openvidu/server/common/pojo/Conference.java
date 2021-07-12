@@ -51,4 +51,6 @@ public class Conference {
     private Integer del;
 
     private String moderatorName;
+
+    private String openviduId;
 }

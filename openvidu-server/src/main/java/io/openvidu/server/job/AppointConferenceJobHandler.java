@@ -25,6 +25,7 @@ import io.openvidu.server.service.AppointJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -78,6 +79,9 @@ public class AppointConferenceJobHandler {
 
     @Autowired
     private CorporationMapper corporationMapper;
+
+    @Value("${eureka.instance.instance-id}")
+    private String instanceId;
 
     //@Scheduled(cron = "0/5 * * * * ?")
     @XxlJob("appointmentJobHandler")
@@ -524,6 +528,7 @@ public class AppointConferenceJobHandler {
         conference.setRoomIdType(RoomIdTypeEnums.calculationRoomType(ac.getRoomId()).name());
         conference.setShortUrl(roomManage.createShortUrl());
         conference.setModeratorName(ac.getModeratorName());
+        conference.setOpenviduId(instanceId);
         return conference;
     }
 
