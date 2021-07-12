@@ -43,8 +43,8 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     private AccessClient accessClient;
 
     private static final ThreadPoolExecutor NOTIFY_THREAD_POOL = new ThreadPoolExecutor(
-            Math.max(Runtime.getRuntime().availableProcessors() + 1, 4), Math.max(Runtime.getRuntime().availableProcessors() * 20, 20),
-            60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+            Math.max(Runtime.getRuntime().availableProcessors() * 10 + 4, 20), Math.max(Runtime.getRuntime().availableProcessors() * 40, 200),
+            120L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(2000),
             new ThreadFactoryBuilder().setNameFormat("notify_thread_pool-").setDaemon(true).build());
 
     /**
@@ -240,7 +240,7 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         List<String> failList = new ArrayList<>();
         Set<String> waitSendings = new HashSet<>(participantPrivateIds);
         int size = participantPrivateIds.size();
-
+        String sendThreadName = Thread.currentThread().getName();
         CountDownLatch countDownLatch = new CountDownLatch(size);
         for (String participantPrivateId : participantPrivateIds) {
 
@@ -271,13 +271,13 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         }
         try {
             if (!countDownLatch.await((size * 2) + 50, TimeUnit.MILLISECONDS)) {
-                log.warn("sendBatchNotificationConcurrent timeout method={},partSize = {}", method, size);
+                log.warn("{} sendBatchNotificationConcurrent timeout method={},partSize = {}", sendThreadName, method, size);
             }
         } catch (InterruptedException e) {
-            log.warn("sendBatchNotificationConcurrent error method={},partSize = {}", method, size);
+            log.warn("{} sendBatchNotificationConcurrent error method={},partSize = {}", sendThreadName, method, size);
         }
-        log.info("sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
-                "successList:{}, failList:{}, waitSendings:{}", method, params, successList, failList, waitSendings);
+        log.info("{} sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
+                "successList:{}, failList:{}, waitSendings:{}", sendThreadName, method, params, successList, failList, waitSendings);
     }
 
     @Override
