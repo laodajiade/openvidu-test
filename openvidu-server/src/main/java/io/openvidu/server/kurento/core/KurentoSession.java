@@ -97,6 +97,7 @@ public class KurentoSession extends Session {
 		log.info("room lease thead stop,roomId={},ruid={}", sessionId, ruid);
 	});
 
+	@Deprecated
 	public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
 
 	public KurentoSession(Session sessionNotActive, Kms kms, KurentoSessionEventsHandler kurentoSessionHandler,

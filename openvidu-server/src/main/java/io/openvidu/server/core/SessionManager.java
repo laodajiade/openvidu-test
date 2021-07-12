@@ -128,7 +128,7 @@ public abstract class SessionManager {
 
 	public abstract void publishVideo(Participant participant, MediaOptions mediaOptions, Integer transactionId, StreamType streamType);
 
-	public abstract void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
+	public abstract void unpublishVideo(Participant participant, String publishId, Integer transactionId,
 			EndReason reason);
 
 	public abstract void subscribe(Participant participant, Participant sender, StreamType streamType, StreamModeEnum streamMode,

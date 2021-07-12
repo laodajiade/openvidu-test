@@ -42,7 +42,6 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         }
         String searchType = getStringParam(request, "searchType");
         int reducedMode = getIntOptionalParam(request, "reducedMode", 0);
-        Set<String> fields = new HashSet<>();
 
         JsonArray jsonArray = new JsonArray();
 
@@ -56,6 +55,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 JsonObject userObj = getPartInfo(participant, connectIdUserInfoMap, rpcConnection);
                 if (Objects.nonNull(userObj)) {
                     if (reducedMode == 1) {
+                        Set<String> fields = new HashSet<>(getStringListParam(request, "fields"));
                         reducedModeResult(userObj, fields);
                     }
 

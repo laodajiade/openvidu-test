@@ -593,10 +593,12 @@ public class ProtocolElements {
     public static final String PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM = "appShowName";
     public static final String PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM = "appShowDesc";
 
-
-    public static final String PARTICIPANTUNPUBLISHED_METHOD = "participantUnpublished";
-    public static final String PARTICIPANTUNPUBLISHED_NAME_PARAM = "connectionId";
-    public static final String PARTICIPANTUNPUBLISHED_REASON_PARAM = "reason";
+    public static final String PARTICIPANT_UNPUBLISHED_METHOD = "participantUnpublished";
+    public static final String PARTICIPANT_UNPUBLISHED_NAME_PARAM = "connectionId";
+    public static final String PARTICIPANT_UNPUBLISHED_REASON_PARAM = "reason";
+    public static final String PARTICIPANT_UNPUBLISHED_UUID_PARAM = "uuid";
+    public static final String PARTICIPANT_UNPUBLISHED_STREAM_TYPE_PARAM = "streamType";
+    public static final String PARTICIPANT_UNPUBLISHED_ID_PARAM = "publishId";
 
     public static final String PARTICIPANTSENDMESSAGE_METHOD = "sendMessage";
     public static final String PARTICIPANTSENDMESSAGE_DATA_PARAM = "data";

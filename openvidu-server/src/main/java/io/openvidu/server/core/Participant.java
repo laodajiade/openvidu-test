@@ -43,7 +43,7 @@ public class Participant {
 	private StreamType streamType;
 	protected GeoLocation location; // Location of the participant
 	protected String platform; // Platform used by the participant to connect to the session
-
+	//todo 2.0 与会者的流状态需要修改
 	protected boolean streaming = false;
 	protected volatile boolean closed;
 
@@ -375,6 +375,8 @@ public class Participant {
 		this.voiceMode = voiceMode;
 	}
 
+	//todo 2.0 Deprecated
+	@Deprecated
 	public String getPublisherStreamId() {
 		return null;
 	}

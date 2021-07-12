@@ -35,25 +35,7 @@ public class SipMockClient {
     }
 
     public static void publisher2subscriber(Participant participant, RpcNotificationService rpcNotificationService){
-        if (participant.getTerminalType() == TerminalTypeEnum.S) {
-            log.info("sip {} role publisher to subscriber", participant.getUuid());
-            new Thread(() -> {
-                SafeSleep.sleepMilliSeconds(200);
-                if (participant.getRole() != OpenViduRole.SUBSCRIBER) {
-                    log.warn("publisher2subscriber sip is not subscriber");
-                }
-                KurentoParticipant kParticipant = (KurentoParticipant) participant;
 
-                JsonObject params = new JsonObject();
-                params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
-                params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, EndReason.forceUnpublishByUser.name());
-
-                KurentoSession session = kParticipant.getSession();
-                Set<Participant> majorPartEachConnect = session.getMajorPartEachConnect();
-                log.info("sip {} role publisher to subscriber notify", participant.getUuid());
-                rpcNotificationService.sendBatchNotification(majorPartEachConnect, ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
-            }).start();
-        }
     }
 
 }

@@ -80,7 +80,7 @@ public class ServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
       case ProtocolElements.PARTICIPANTPUBLISHED_METHOD:
         notif = participantPublished(transaction, request);
         break;
-      case ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD:
+      case ProtocolElements.PARTICIPANT_UNPUBLISHED_METHOD:
         notif = participantUnpublished(transaction, request);
         break;
       case ProtocolElements.ROOMCLOSED_METHOD:
@@ -131,7 +131,7 @@ public class ServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
   private Notification participantUnpublished(Transaction transaction,
       Request<JsonObject> request) {
     String name = JsonRoomUtils.getRequestParam(request,
-        ProtocolElements.PARTICIPANTUNPUBLISHED_NAME_PARAM, String.class);
+        ProtocolElements.PARTICIPANT_UNPUBLISHED_NAME_PARAM, String.class);
     ParticipantUnpublishedInfo eventInfo = new ParticipantUnpublishedInfo(name);
     log.debug("Recvd participant unpublished event {}", eventInfo);
     return eventInfo;

@@ -263,7 +263,7 @@ public abstract class RpcAbstractHandler {
 
     protected static List<String> getStringListParam(Request<JsonObject> request, String key) {
         if (request.getParams() == null || request.getParams().get(key) == null || !request.getParams().get(key).isJsonArray()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<String> values = new ArrayList<>();

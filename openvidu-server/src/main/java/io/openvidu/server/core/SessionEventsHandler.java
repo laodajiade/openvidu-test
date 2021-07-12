@@ -547,50 +547,23 @@ public class SessionEventsHandler {
         return mixFlowsArr;
     }
 
-	public void onUnpublishMedia(Participant participant, Set<Participant> participants, Participant moderator,
-			Integer transactionId, OpenViduException error, EndReason reason) {
-		boolean isRpcFromModerator = transactionId != null && moderator != null;
-		boolean isRpcFromOwner = transactionId != null && moderator == null;
-
-		if (isRpcFromModerator) {
-			if (error != null) {
-				rpcNotificationService.sendErrorResponse(moderator.getParticipantPrivateId(), transactionId, null,
-						error);
-				return;
-			}
-			rpcNotificationService.sendResponse(moderator.getParticipantPrivateId(), transactionId, new JsonObject());
+	public void onUnpublishMedia(Participant participant, Set<Participant> participants, PublisherEndpoint publisherEndpoint,
+								 Integer transactionId, OpenViduException error, EndReason reason) {
+		if (error != null) {
+			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
+			return;
 		}
-
 		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
 			JsonObject params = new JsonObject();
-			params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
-			params.addProperty(ProtocolElements.PARTICIPANTUNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
+			params.addProperty(ProtocolElements.PARTICIPANT_UNPUBLISHED_NAME_PARAM, participant.getParticipantPublicId());
+			params.addProperty(ProtocolElements.PARTICIPANT_UNPUBLISHED_UUID_PARAM, participant.getUuid());
+			params.addProperty(ProtocolElements.PARTICIPANT_UNPUBLISHED_REASON_PARAM, reason != null ? reason.name() : "");
+			params.addProperty(ProtocolElements.PARTICIPANT_UNPUBLISHED_STREAM_TYPE_PARAM, publisherEndpoint.getStreamType().name());
+			params.addProperty(ProtocolElements.PARTICIPANT_UNPUBLISHED_ID_PARAM, publisherEndpoint.getStreamId());
 
-			for (Participant p : participants) {
-				if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
-				log.info("unPublish ParticipantPublicId {} p PublicId {}", participant.getParticipantPublicId(), p.getParticipantPublicId());
-				if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
-					// Send response to the affected participant
-					if (!isRpcFromOwner) {
-						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-								ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
-					} else {
-						if (error != null) {
-							rpcNotificationService.sendErrorResponse(p.getParticipantPrivateId(), transactionId, null,
-									error);
-							return;
-						}
-						rpcNotificationService.sendResponse(p.getParticipantPrivateId(), transactionId, new JsonObject());
-					}
-				} else {
-					if (error == null) {
-						// Send response to every other user in the session different than the affected
-						// participant
-						rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-								ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD, params);
-					}
-				}
-			}
+			rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
+			rpcNotificationService.sendBatchNotificationConcurrent(participants,
+					ProtocolElements.PARTICIPANT_UNPUBLISHED_METHOD, params);
 		}
 	}
 

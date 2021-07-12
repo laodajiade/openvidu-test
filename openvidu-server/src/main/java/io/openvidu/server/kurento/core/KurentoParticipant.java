@@ -248,9 +248,27 @@ public class KurentoParticipant extends Participant {
 			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
 					"Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
 		}
-		return this.publishers.get(streamType);
+		return publisherEndpoint;
 	}
 
+	public PublisherEndpoint getPublisher(String publishId) {
+		Optional<PublisherEndpoint> any = this.getPublishers().values().stream().filter(ep -> ep.getStreamId().equals(publishId)).findAny();
+		if (!any.isPresent()) {
+			log.error("getPublisher by streamId publisherEndpoint is null {} {}", this.getUuid(), publishId);
+			throw new BizException(ErrorCodeEnum.SERVER_INTERNAL_ERROR);
+		}
+
+		try {
+			if (!any.get().getPublisherLatch().await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+						"Timeout reached while waiting for publisher endpoint to be ready");
+			}
+		} catch (InterruptedException e) {
+			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+					"Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
+		}
+		return any.get();
+	}
 
 	//todo 2.0 Deprecated
 	@Deprecated
@@ -338,13 +356,11 @@ public class KurentoParticipant extends Participant {
 				&& !(getStreamType().equals(StreamType.SHARING) && session.isModeratorHasMulticastplay());
 	}
 
-	public void unpublishMedia(EndReason reason, long kmsDisconnectionTime) {
+	public void unpublishMedia(PublisherEndpoint publisherEndpoint, EndReason reason, long kmsDisconnectionTime) {
 		log.info("PARTICIPANT {}: unpublishing media stream from room {}", this.getParticipantPublicId(),
 				this.session.getSessionId());
-		releasePublisherEndpoint(reason, kmsDisconnectionTime);
+		releasePublisherEndpoint(publisherEndpoint, reason, kmsDisconnectionTime);
 
-		this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
-				this.getPipeline(), this.openviduConfig);
 		log.info("PARTICIPANT {}: released publisher endpoint and left it initialized (ready for future streaming)",
 				this.getParticipantPublicId());
 	}
@@ -636,7 +652,7 @@ public class KurentoParticipant extends Participant {
 			}
 		}
 		this.subscribers.clear();
-		releasePublisherEndpoint(reason, kmsDisconnectionTime);
+		releaseAllPublisherEndpoint(reason, kmsDisconnectionTime);
 		if (Objects.equals(StreamType.SHARING, getStreamType()) &&
 				!Objects.isNull(session.compositeService.getShareStreamId())) {
 			session.compositeService.setShareStreamId(null);
@@ -726,18 +742,16 @@ public class KurentoParticipant extends Participant {
 		session.sendMediaError(this.getParticipantPrivateId(), desc);
 	}
 
-	private void releasePublisherEndpoint(EndReason reason, long kmsDisconnectionTime) {
-		if (publisher != null && publisher.getEndpoint() != null) {
+	private void releaseAllPublisherEndpoint(EndReason reason, long kmsDisconnectionTime) {
+		this.publishers.values().forEach(ep -> releasePublisherEndpoint(ep, reason, kmsDisconnectionTime));
+	}
+	private void releasePublisherEndpoint(PublisherEndpoint publisherEndpoint, EndReason reason, long kmsDisconnectionTime) {
+		if (publisherEndpoint != null && publisherEndpoint.getEndpoint() != null) {
 			// 释放分发资源
-			if (!publisher.getMediaChannels().isEmpty()) {
+			if (!publisherEndpoint.getMediaChannels().isEmpty()) {
 				log.info("release mediaChannels reason {}", reason);
-				publisher.getMediaChannels().values().forEach(MediaChannel::release);
-				publisher.getMediaChannels().clear();
-			}
-
-			// Remove streamId from publisher's map
-			if (!StringUtils.isEmpty(this.getPublisherStreamId())) {
-				this.session.publishedStreamIds.remove(this.getPublisherStreamId());
+				publisherEndpoint.getMediaChannels().values().forEach(MediaChannel::release);
+				publisherEndpoint.getMediaChannels().clear();
 			}
 
 			if (this.openviduConfig.isLivingModuleEnabled()
@@ -746,34 +760,32 @@ public class KurentoParticipant extends Participant {
 						kmsDisconnectionTime);
 			}
 
-			publisher.unregisterErrorListeners();
-			if (publisher.kmsWebrtcStatsThread != null) {
-				publisher.kmsWebrtcStatsThread.cancel(true);
+			publisherEndpoint.unregisterErrorListeners();
+			if (publisherEndpoint.kmsWebrtcStatsThread != null) {
+				publisherEndpoint.kmsWebrtcStatsThread.cancel(true);
 			}
 
-			for (MediaElement el : publisher.getMediaElements()) {
+			for (MediaElement el : publisherEndpoint.getMediaElements()) {
 				releaseElement(getParticipantPublicId(), el);
 				log.info("Release publisher self mediaElement and object id:{}", el.getId());
 			}
-			if (Objects.nonNull(publisher)) {
-				publisher.closeAudioComposite();
-				releaseElement(getParticipantPublicId(), publisher.getEndpoint());
-//				endpointConfig.getCdr().stopPublisher(this.getParticipantPublicId(), publisher.getStreamId(), reason);
-			}
-			if (Objects.nonNull(publisher.getSipCompositeHubPort())) {
-				releaseElement(getParticipantPublicId(), publisher.getSipCompositeHubPort());
+
+			releaseElement(getParticipantPublicId(), publisherEndpoint.getEndpoint());
+			//todo 2.0 MCU
+			publisherEndpoint.closeAudioComposite();
+			if (Objects.nonNull(publisherEndpoint.getSipCompositeHubPort())) {
+				releaseElement(getParticipantPublicId(), publisherEndpoint.getSipCompositeHubPort());
 				session.asyncUpdateSipComposite();
 			}
+			//todo 2.0 MCU
 			this.session.deregisterPublisher();
-
-			publisher = null;
-			setStreaming(false);
+			//todo part streaming status need update
+			//setStreaming(false);
+			//todo part streaming status need update
+			this.publishers.remove(publisherEndpoint.getStreamType());
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
 		}
-
-
-
 	}
 
 	private void releaseSubscriberEndpoint(String subscribeId, SubscriberEndpoint subscriber, EndReason reason) {

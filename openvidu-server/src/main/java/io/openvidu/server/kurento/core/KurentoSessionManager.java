@@ -505,31 +505,31 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     @Override
-    public void unpublishVideo(Participant participant, Participant moderator, Integer transactionId,
+    public void unpublishVideo(Participant participant, String publishId, Integer transactionId,
                                EndReason reason) {
         try {
             KurentoParticipant kParticipant = (KurentoParticipant) participant;
             KurentoSession session = kParticipant.getSession();
 
+            PublisherEndpoint publisherEndpoint = kParticipant.getPublisher(publishId);
+
+
             log.debug("Request [UNPUBLISH_MEDIA] ({})", participant.getParticipantPublicId());
-            if (!participant.isStreaming()) {
-                log.warn(
-                        "PARTICIPANT {}: Requesting to unpublish video of user {} "
-                                + "in session {} but user is not streaming media",
-                        moderator != null ? moderator.getParticipantPublicId() : participant.getParticipantPublicId(),
-                        participant.getParticipantPublicId(), session.getSessionId());
-				/*throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
-						"Participant '" + participant.getParticipantPublicId() + "' is not streaming media");*/
+            if (publisherEndpoint == null || publisherEndpoint.getEndpoint() == null) {
+                log.warn("PARTICIPANT {}: Requesting to unpublish video of {} in session {} but user is not streaming media",
+                        participant.getUuid(), publishId, session.getSessionId());
+                return;
             }
-            kParticipant.unpublishMedia(reason, 0);
+
+            kParticipant.unpublishMedia(publisherEndpoint, reason, 0);
             session.cancelPublisher(participant, reason);
 
             Set<Participant> participants = session.getParticipants();
-            sessionEventsHandler.onUnpublishMedia(participant, participants, moderator, transactionId, null, reason);
+            sessionEventsHandler.onUnpublishMedia(participant, participants, publisherEndpoint, transactionId, null, reason);
 
         } catch (OpenViduException e) {
             log.warn("PARTICIPANT {}: Error unpublishing media", participant.getParticipantPublicId(), e);
-            sessionEventsHandler.onUnpublishMedia(participant, new HashSet<>(Arrays.asList(participant)), moderator,
+            sessionEventsHandler.onUnpublishMedia(participant, new HashSet<>(Arrays.asList(participant)), null,
                     transactionId, e, null);
         }
     }
@@ -1170,38 +1170,35 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     @Override
-    public boolean unpublishStream(Session session, String streamId, Participant moderator, Integer transactionId,
+    public boolean unpublishStream(Session session, String streamId, Participant unPubPart, Integer transactionId,
                                    EndReason reason) {
         log.info("Stream:{} unPublish in session:{}", streamId, session.getSessionId());
         KurentoSession kSession = (KurentoSession) session;
-//		String participantPrivateId = kSession.getParticipantPrivateIdFromStreamId(streamId);
-        Participant unPubPart = kSession.getParticipantByStreamId(streamId);
-        if (Objects.isNull(unPubPart)) {
-            return false;
-        }
-        String moderatorPublicId = null, speakerId = null;
-        Set<Participant> participants = session.getParticipants();
-        for (Participant participant : participants) {
-            if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
-                    Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                moderatorPublicId = participant.getParticipantPublicId();
-            }
-            if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-                speakerId = participant.getParticipantPublicId();
-                break;
-            }
-        }
 
-        this.unpublishVideo(unPubPart, moderator, transactionId, reason);
+        this.unpublishVideo(unPubPart, streamId, transactionId, reason);
+
         if (Objects.equals(kSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            String moderatorPublicId = null, speakerId = null;
+            Set<Participant> participants = session.getParticipants();
+            for (Participant participant : participants) {
+                if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole())) {
+                    moderatorPublicId = participant.getParticipantPublicId();
+                }
+                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+                    speakerId = participant.getParticipantPublicId();
+                    break;
+                }
+            }
             // change conference layout and notify kms
             session.leaveRoomSetLayout(unPubPart, Objects.equals(speakerId, unPubPart.getParticipantPublicId())
                     ? moderatorPublicId : speakerId);
             session.invokeKmsConferenceLayout();
         }
-        if (Objects.equals(StreamType.SHARING, unPubPart.getStreamType())) {
-            changeSharingStatusInConference(kSession, unPubPart);
-        }
+        //todo 2.0 分享需要修改
+//        if (Objects.equals(StreamType.SHARING, unPubPart.getStreamType())) {
+//            changeSharingStatusInConference(kSession, unPubPart);
+//        }
+        //todo 2.0 分享需要修改
 
         return true;
     }

@@ -26,7 +26,7 @@ public class ParticipantUnpublishedInfo extends Notification {
   private String name;
 
   public ParticipantUnpublishedInfo(String name) {
-    super(ProtocolElements.PARTICIPANTUNPUBLISHED_METHOD);
+    super(ProtocolElements.PARTICIPANT_UNPUBLISHED_METHOD);
     this.name = name;
   }
 
