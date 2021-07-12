@@ -216,7 +216,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
 
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return Collections.emptySet();
+            List<String> targetIds = getStringListParam(request, "targetIds");
+            return session.getParticipants().stream().filter(item -> targetIds.contains(item.getUuid())).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 
