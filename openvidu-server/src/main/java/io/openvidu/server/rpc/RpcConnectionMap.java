@@ -1,8 +1,10 @@
 package io.openvidu.server.rpc;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public class RpcConnectionMap implements IRpcConnection {
 
@@ -17,6 +19,11 @@ public class RpcConnectionMap implements IRpcConnection {
     @Override
     public RpcConnection get(String privateId) {
         return rpcConnections.get(privateId);
+    }
+
+    @Override
+    public List<RpcConnection> gets(Collection<String> privateId) {
+        return privateId.stream().map(this::get).collect(Collectors.toList());
     }
 
     @Override
