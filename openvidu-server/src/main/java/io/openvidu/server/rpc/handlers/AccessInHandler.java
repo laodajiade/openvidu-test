@@ -138,10 +138,12 @@ public class AccessInHandler extends RpcAbstractHandler {
             }
 
             // deal web thor login
-            if (AccessTypeEnum.web.equals(accessType)
-                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection, uuid))) {
-                break;
-            }
+            //todo 2.0 删除
+//            if (AccessTypeEnum.web.equals(accessType)
+//                    && !ErrorCodeEnum.SUCCESS.equals(errCode = dealWebLogin(request, previousRpc, rpcConnection, uuid))) {
+//                break;
+//            }
+            //todo 2.0 删除
         } while (false);
 
         if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {

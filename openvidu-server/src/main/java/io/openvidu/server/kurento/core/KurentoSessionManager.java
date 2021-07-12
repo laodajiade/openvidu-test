@@ -669,11 +669,9 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     @Override
-    public void unsubscribe(Participant participant, String senderName, Integer transactionId) {
-        log.debug("Request [UNSUBSCRIBE] remoteParticipant={} ({})", senderName, participant.getParticipantPublicId());
-
+    public void unsubscribe(Participant participant, String subscribeId, Integer transactionId) {
         KurentoParticipant kParticipant = (KurentoParticipant) participant;
-        kParticipant.cancelReceivingMedia(senderName, EndReason.unsubscribe);
+        kParticipant.cancelReceivingMedia(subscribeId, EndReason.unsubscribe);
 
         sessionEventsHandler.onUnsubscribe(participant, transactionId, null);
     }

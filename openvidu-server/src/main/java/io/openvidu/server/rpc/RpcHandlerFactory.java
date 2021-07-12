@@ -81,7 +81,7 @@ public class RpcHandlerFactory {
     private SubscribeVideoHandler subscribeVideoHandler;
 
     @Resource
-    private UnsubscribeFromVideoHandler unsubscribeFromVideoHandler;
+    private UnsubscribeVideoHandler unsubscribeVideoHandler;
 
     @Resource
     private OnIceCandidateHandler onIceCandidateHandler;
@@ -363,7 +363,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.LEAVEROOM_METHOD,                              leaveRoomHandler);
         handlersMap.put(ProtocolElements.PUBLISHVIDEO_METHOD,                           publishVideoHandler);
         handlersMap.put(ProtocolElements.SUBSCRIBE_VIDEO_METHOD,                        subscribeVideoHandler);
-        handlersMap.put(ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD,                   unsubscribeFromVideoHandler);
+        handlersMap.put(ProtocolElements.UNSUBSCRIBE_VIDEO_METHOD, unsubscribeVideoHandler);
         handlersMap.put(ProtocolElements.ONICECANDIDATE_METHOD,                         onIceCandidateHandler);
         handlersMap.put(ProtocolElements.SENDMESSAGE_ROOM_METHOD,                       sendMessageHandler);
         handlersMap.put(ProtocolElements.UNPUBLISHVIDEO_METHOD,                         unpublishVideoHandler);

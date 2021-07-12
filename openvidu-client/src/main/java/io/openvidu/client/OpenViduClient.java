@@ -36,8 +36,6 @@ import static io.openvidu.client.internal.ProtocolElements.PUBLISHVIDEO_SDPOFFER
 import static io.openvidu.client.internal.ProtocolElements.SENDMESSAGE_MESSAGE_PARAM;
 import static io.openvidu.client.internal.ProtocolElements.SENDMESSAGE_ROOM_METHOD;
 import static io.openvidu.client.internal.ProtocolElements.UNPUBLISHVIDEO_METHOD;
-import static io.openvidu.client.internal.ProtocolElements.UNSUBSCRIBEFROMVIDEO_METHOD;
-import static io.openvidu.client.internal.ProtocolElements.UNSUBSCRIBEFROMVIDEO_SENDER_PARAM;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -162,13 +160,6 @@ public class OpenViduClient {
 
   public void unpublishVideo() throws IOException {
     client.sendRequest(UNPUBLISHVIDEO_METHOD, new JsonObject());
-  }
-
-  // sender should look like 'username_streamId'
-  public void unsubscribeFromVideo(String sender) throws IOException {
-    JsonObject params = new JsonObject();
-    params.addProperty(UNSUBSCRIBEFROMVIDEO_SENDER_PARAM, sender);
-    client.sendRequest(UNSUBSCRIBEFROMVIDEO_METHOD, params);
   }
 
   public void onIceCandidate(String endpointName, String candidate, String sdpMid,

@@ -280,6 +280,7 @@ public class KurentoSession extends Session {
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
 		for (Participant other : getParticipants()) {
+			//todo 2.0 需要修改
 			((KurentoParticipant) other).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
 	}

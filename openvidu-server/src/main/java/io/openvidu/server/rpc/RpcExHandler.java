@@ -109,6 +109,10 @@ public class RpcExHandler {
 			log.warn(e.toString());
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+		} catch (Exception e) {
+			log.error(e.toString(), e);
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
 		}
 	}
 

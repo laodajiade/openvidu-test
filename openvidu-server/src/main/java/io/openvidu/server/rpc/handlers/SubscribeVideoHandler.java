@@ -57,8 +57,8 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
         String publishId = getStringParam(request, PUBLISH_ID_PARAM);
         String uuid = getStringParam(request, SENDER_UUID_PARAM);
         StreamType streamType = StreamType.valueOf(getStringParam(request, STREAM_TYPE_PARAM));
-        publishId = publishId.substring(0, Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-                publishId.lastIndexOf("_") : publishId.indexOf("_"));
+//        publishId = publishId.substring(0, Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
+//                publishId.lastIndexOf("_") : publishId.indexOf("_"));
         String sdpOffer = getStringParam(request, SDP_OFFER_PARAM);
 
         Optional<Participant> senderPartOp = session.getParticipantByUUID(uuid);
