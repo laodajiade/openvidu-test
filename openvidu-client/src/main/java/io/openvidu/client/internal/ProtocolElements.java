@@ -889,6 +889,9 @@ public class ProtocolElements {
 
     public static final String QUERY_OPERATION_PERMISSION = "queryOperationPermission";
 
+    public static final String APPLY_SHARE_METHOD = "applyShare";
+    public static final String APPLY_SHARE_NOTIFY_METHOD = "applyShareNotify";
+
 
     public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
             GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,
