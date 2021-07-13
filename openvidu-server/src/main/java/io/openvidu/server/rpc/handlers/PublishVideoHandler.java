@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -27,7 +26,7 @@ import java.util.Optional;
 public class PublishVideoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        String streamType = getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM);
+        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.PUBLISHVIDEO_STREAM_TYPE_PARAM));
 
 
         Session session = sessionManager.getSession(rpcConnection.getSessionId());
@@ -45,6 +44,14 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
         Participant participant = participantOptional.get();
 
+        if (streamType == StreamType.SHARING) {
+            if (!session.getSharingPart().isPresent() || !session.getSharingPart().get().getUuid().equals(participant.getUuid())) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.MUST_SHARING_ROLE);
+                return;
+            }
+        }
+
         // start polling,under the wall can publishVideo
         SessionPreset preset = session.getPresetInfo();
         if (preset.getPollingStatusInRoom().equals(SessionPresetEnum.off)) {
@@ -58,7 +65,7 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
         if (sessionManager.isPublisherInSession(rpcConnection.getSessionId(), participant, preset.getPollingStatusInRoom())) {
             MediaOptions options = sessionManager.generateMediaOptions(request);
-            sessionManager.publishVideo(participant, options, request.getId(), StreamType.valueOf(streamType));
+            sessionManager.publishVideo(participant, options, request.getId(), streamType);
 
             sessionManager.createDeliverChannel(participant);
         } else {
@@ -71,7 +78,7 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
         // deal participant that role changed
         String key;
-        if (StreamType.MAJOR.name().equals(streamType)
+        if (StreamType.MAJOR.equals(streamType)
                 && cacheManage.existsConferenceRelativeInfo(key = CacheKeyConstants.getSubscriberSetRollCallKey(session.getSessionId(),
                 session.getStartTime(), participant.getUuid()))) {
             sessionManager.setRollCallInSession(sessionManager.getSession(rpcConnection.getSessionId()), participant);

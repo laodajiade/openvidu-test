@@ -72,7 +72,7 @@ public enum OpenViduRole {
 		}
 	},
 
-	ONLY_SHARE{
+	ONLY_SHARE {
 		@Override
 		public boolean needToPublish() {
 			return false;
