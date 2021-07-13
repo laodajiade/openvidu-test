@@ -240,6 +240,8 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("sfuPublisherThreshold", session.getPresetInfo().getSfuPublisherThreshold());
 		roomInfoJson.addProperty("mcuThreshold", session.getPresetInfo().getMcuThreshold());
 		roomInfoJson.addProperty("unMcuThreshold", session.getPresetInfo().getUnMcuThreshold());
+		roomInfoJson.addProperty("sharingUuid", session.getSharingPart().isPresent() ? session.getSharingPart().get().getUuid() : "");
+		roomInfoJson.addProperty("speakerUuid", session.getSpeakerPart().isPresent() ? session.getSpeakerPart().get().getUuid() : "");
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
 		}
