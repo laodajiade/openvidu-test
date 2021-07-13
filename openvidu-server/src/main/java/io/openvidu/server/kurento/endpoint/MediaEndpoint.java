@@ -445,7 +445,7 @@ public abstract class MediaEndpoint {
 	 * @see WebRtcEndpoint#addOnIceCandidateListener(org.kurento.client.EventListener)
 	 * @throws OpenViduException if thrown, unable to register the listener
 	 */
-	protected void registerOnIceCandidateEventListener(String senderPublicId) throws OpenViduException {
+	protected void registerOnIceCandidateEventListener(String senderUuid) throws OpenViduException {
 		if (!this.isWeb()) {
 			return;
 		}
@@ -456,7 +456,7 @@ public abstract class MediaEndpoint {
 		webEndpoint.addOnIceCandidateListener(new EventListener<OnIceCandidateEvent>() {
 			@Override
 			public void onEvent(OnIceCandidateEvent event) {
-				owner.sendIceCandidate(senderPublicId, endpointName, event.getCandidate());
+				owner.sendIceCandidate(senderUuid, endpointName, event.getCandidate());
 			}
 		});
 	}

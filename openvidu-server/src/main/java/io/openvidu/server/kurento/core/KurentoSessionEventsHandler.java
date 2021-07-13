@@ -34,11 +34,11 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 	public KurentoSessionEventsHandler() {
 	}
 
-	public void onIceCandidate(String roomName, String participantPrivateId, String senderPublicId, String endpointName,
+	public void onIceCandidate(String roomName, String participantPrivateId, String senderUuid, String endpointName,
 			IceCandidate candidate) {
 		JsonObject params = new JsonObject();
 
-		params.addProperty(ProtocolElements.ICECANDIDATE_SENDERCONNECTIONID_PARAM, senderPublicId);
+		params.addProperty(ProtocolElements.ICECANDIDATE_SENDER_UUID_PARAM, senderUuid);
 		params.addProperty(ProtocolElements.ICECANDIDATE_EPNAME_PARAM, endpointName);
 		params.addProperty(ProtocolElements.ICECANDIDATE_SDPMLINEINDEX_PARAM, candidate.getSdpMLineIndex());
 		params.addProperty(ProtocolElements.ICECANDIDATE_SDPMID_PARAM, candidate.getSdpMid());

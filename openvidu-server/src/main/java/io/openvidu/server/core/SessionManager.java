@@ -138,7 +138,7 @@ public abstract class SessionManager {
 
 	public abstract void switchVoiceMode(Participant participant, VoiceMode operation);
 
-	public abstract void pauseAndResumeStream(Participant pausePart,Participant targetPart, OperationMode operation, String mediaType);
+	public abstract void pauseAndResumeStream(Participant pausePart,String subscribeId, OperationMode operation, String mediaType);
 
 	public abstract void sendMessage(Participant participant, String message, Integer transactionId);
 

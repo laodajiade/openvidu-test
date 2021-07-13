@@ -264,9 +264,9 @@ public class KurentoSession extends Session {
 		}
 	}
 
-	public void sendIceCandidate(String participantPrivateId, String senderPublicId, String endpointName,
+	public void sendIceCandidate(String participantPrivateId, String senderUuid, String endpointName,
 			IceCandidate candidate) {
-		this.kurentoSessionHandler.onIceCandidate(sessionId, participantPrivateId, senderPublicId, endpointName,
+		this.kurentoSessionHandler.onIceCandidate(sessionId, participantPrivateId, senderUuid, endpointName,
 				candidate);
 	}
 

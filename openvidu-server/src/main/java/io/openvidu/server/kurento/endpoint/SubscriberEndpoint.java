@@ -52,7 +52,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
 		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getParticipantPublicId());
+				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getUuid());
 
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
@@ -64,31 +64,6 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 		setConnectedToPublisher(true);
 		setPublisher(publisher);
-		this.createdAt = System.currentTimeMillis();
-		return sdpAnswer;
-	}
-
-	/**
-	 * #{subscribeVideo()}
-	 * @param sdpOffer
-	 * @param publisher
-	 * @param streamMode
-	 * @return
-	 */
-	public synchronized String subscribeVideoDelivery(String sdpOffer, PassThrough publisher, StreamModeEnum streamMode) {
-//		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-//				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getParticipantPublicId());
-
-		String sdpAnswer = processOffer(sdpOffer);
-		gatherCandidates();
-		if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
-			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
-		} else {
-			publisher.connect(this.getEndpoint());
-		}
-
-		setConnectedToPublisher(true);
-		//setPublisher(publisher);
 		this.createdAt = System.currentTimeMillis();
 		return sdpAnswer;
 	}
@@ -150,8 +125,8 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		return json;
 	}
 
-	public synchronized void controlMediaTypeLink(PublisherEndpoint publisher, MediaType mediaType, VoiceMode operation) {
-		switch (operation) {
+	public synchronized void controlMediaTypeLink(MediaType mediaType, VoiceMode voiceMode) {
+		switch (voiceMode) {
 			case on:
 				publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
 				break;

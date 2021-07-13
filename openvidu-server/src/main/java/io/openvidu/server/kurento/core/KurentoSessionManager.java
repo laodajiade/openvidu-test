@@ -39,6 +39,7 @@ import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
+import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -683,11 +684,17 @@ public class KurentoSessionManager extends SessionManager {
         kParticipant.switchVoiceModeInSession(operation, kParticipant.getSubscribers().keySet());
     }
 
+//    @Override
+//    public void pauseAndResumeStream(Participant pausePart, Participant targetPart, OperationMode operation, String mediaType) {
+//        KurentoParticipant kParticipant = (KurentoParticipant) pausePart;
+//        Set<String> publicIds = kParticipant.getSubscribers().keySet();
+//        kParticipant.pauseAndResumeStreamInSession(targetPart, operation, mediaType, publicIds);
+//    }
+
     @Override
-    public void pauseAndResumeStream(Participant pausePart, Participant targetPart, OperationMode operation, String mediaType) {
+    public void pauseAndResumeStream(Participant pausePart, String subscribeId, OperationMode operation, String mediaType) {
         KurentoParticipant kParticipant = (KurentoParticipant) pausePart;
-        Set<String> publicIds = kParticipant.getSubscribers().keySet();
-        kParticipant.pauseAndResumeStreamInSession(targetPart, operation, mediaType, publicIds);
+        kParticipant.pauseAndResumeStreamInSession(operation, mediaType, subscribeId);
     }
 
     private void switchVoiceModeWithPublicId(Participant participant, VoiceMode operation, String senderName) {

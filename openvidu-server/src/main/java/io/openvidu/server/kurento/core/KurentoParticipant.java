@@ -613,8 +613,8 @@ public class KurentoParticipant extends Participant {
 		return ErrorCodeEnum.SUCCESS;
 	}
 
-	public void sendIceCandidate(String senderPublicId, String endpointName, IceCandidate candidate) {
-		session.sendIceCandidate(this.getParticipantPrivateId(), senderPublicId, endpointName, candidate);
+	public void sendIceCandidate(String senderUuid, String endpointName, IceCandidate candidate) {
+		session.sendIceCandidate(this.getParticipantPrivateId(), senderUuid, endpointName, candidate);
 	}
 
 	public void sendMediaError(ErrorEvent event) {
@@ -797,33 +797,51 @@ public class KurentoParticipant extends Participant {
 					KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
 					SubscriberEndpoint subscriberEndpoint = subscribers.get(subToPartPublicId);
 					if (Objects.nonNull(subscriberEndpoint)) {
-						subscriberEndpoint.controlMediaTypeLink(kurentoParticipant.getPublisher(), MediaType.VIDEO, operation);
+						subscriberEndpoint.controlMediaTypeLink(MediaType.VIDEO, operation);
 					}
 				}
 			});
 		}
 	}
+// todo 2.0 @Deprecated
+//	/**
+//	 * pause or resume stream
+//	 * @param targetPart Participant
+//	 * @param operation on,off
+//	 * @param mediaType video,audio
+//	 * @param publicIds participants' publicId that this participant receive video or audio from
+//	 */
+//	void pauseAndResumeStreamInSession(Participant targetPart, OperationMode operation, String mediaType, Set<String> publicIds) {
+//		if (publicIds.contains(targetPart.getParticipantPublicId())) {
+//			log.info("PARTICIPANT {}: Is now {} receiving {} from {} in room {}",
+//					this.getParticipantPublicId(), Objects.equals(operation, OperationMode.on) ?
+//							"resume" : "pause", mediaType, this.getParticipantPublicId(), this.session.getSessionId());
+//			KurentoParticipant kurentoParticipant = (KurentoParticipant) targetPart;
+//			SubscriberEndpoint subscriberEndpoint = subscribers.get(targetPart.getParticipantPublicId());
+//			if (Objects.nonNull(subscriberEndpoint)) {
+//				subscriberEndpoint.controlMediaTypeLink(kurentoParticipant.getPublisher(), MediaType.valueOf(mediaType.toUpperCase()), Objects.equals(operation, OperationMode.on) ? VoiceMode.off : VoiceMode.on);
+//			}
+//		} else {
+//			log.info("PARTICIPANT {}: Is not subscriber {} from {} in room {}",
+//					this.getParticipantPublicId(), mediaType, this.getParticipantPublicId(), this.session.getSessionId());
+//		}
+//	}
 
 	/**
 	 * pause or resume stream
-	 * @param targetPart Participant
 	 * @param operation on,off
 	 * @param mediaType video,audio
-	 * @param publicIds participants' publicId that this participant receive video or audio from
 	 */
-	void pauseAndResumeStreamInSession(Participant targetPart, OperationMode operation, String mediaType, Set<String> publicIds) {
-		if (publicIds.contains(targetPart.getParticipantPublicId())) {
+	void pauseAndResumeStreamInSession(OperationMode operation, String mediaType, String subscribeId) {
+		SubscriberEndpoint subscriberEndpoint = this.subscribers.get(subscribeId);
+		if (Objects.nonNull(subscriberEndpoint)) {
 			log.info("PARTICIPANT {}: Is now {} receiving {} from {} in room {}",
 					this.getParticipantPublicId(), Objects.equals(operation, OperationMode.on) ?
-							"resume" : "pause", mediaType,this.getParticipantPublicId(), this.session.getSessionId());
-			KurentoParticipant kurentoParticipant = (KurentoParticipant) targetPart;
-			SubscriberEndpoint subscriberEndpoint = subscribers.get(targetPart.getParticipantPublicId());
-			if (Objects.nonNull(subscriberEndpoint)) {
-				subscriberEndpoint.controlMediaTypeLink(kurentoParticipant.getPublisher(), MediaType.valueOf(mediaType.toUpperCase()), Objects.equals(operation,OperationMode.on) ? VoiceMode.off : VoiceMode.on);
-			}
+							"resume" : "pause", mediaType, this.getParticipantPublicId(), this.session.getSessionId());
+			subscriberEndpoint.controlMediaTypeLink(MediaType.valueOf(mediaType.toUpperCase()), Objects.equals(operation, OperationMode.on) ? VoiceMode.off : VoiceMode.on);
 		} else {
 			log.info("PARTICIPANT {}: Is not subscriber {} from {} in room {}",
-					this.getParticipantPublicId(), mediaType,this.getParticipantPublicId(), this.session.getSessionId());
+					this.getParticipantPublicId(), mediaType, this.getParticipantPublicId(), this.session.getSessionId());
 		}
 	}
 

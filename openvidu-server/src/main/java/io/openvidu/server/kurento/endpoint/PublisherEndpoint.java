@@ -344,7 +344,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	 */
 	public synchronized String publish(SdpType sdpType, String sdpString, boolean doLoopback,
 			MediaElement loopbackAlternativeSrc, MediaType loopbackConnectionType) {
-		registerOnIceCandidateEventListener(this.getOwner().getParticipantPublicId());
+		registerOnIceCandidateEventListener(this.getOwner().getUuid());
 		if (doLoopback) {
 			if (loopbackAlternativeSrc == null) {
 				connect(this.getEndpoint(), loopbackConnectionType);
