@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoleManage;
 import io.openvidu.server.common.pojo.Conference;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,6 +31,9 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
 
     @Autowired
     private RoleManage roleManage;
+
+    @Resource
+    private ConferencePartHistoryMapper partHistoryMapper;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -44,7 +49,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(conference -> {
                 JsonObject jsonObject;
-                if (Objects.nonNull(jsonObject = constructConfInfo(conference))) {
+                if (Objects.nonNull(jsonObject = constructConfInfoBydatabsa(conference))) {
                     jsonArray.add(jsonObject);
                 }
             });
@@ -52,6 +57,26 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
 
         respObj.add("roomList", jsonArray);
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
+    }
+
+    private JsonObject constructConfInfoBydatabsa(Conference conference) {
+        JsonObject jsonObject = null;
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("roomId", conference.getRoomId());
+        jsonObject.addProperty("ruid", conference.getRuid());
+        jsonObject.addProperty("password", conference.getPassword());
+        jsonObject.addProperty("subject", conference.getConferenceSubject());
+        jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
+        jsonObject.addProperty("startTime", conference.getStartTime().getTime());
+        User user = userMapper.selectByPrimaryKey(conference.getUserId());
+        if (Objects.nonNull(user)) {
+            jsonObject.addProperty("moderatorAccount", user.getUuid());
+            jsonObject.addProperty("moderatorUserId", user.getId());
+            jsonObject.addProperty("moderatorToken", Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid())) && Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid()).get("token")) ? cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString() : null);
+        }
+        int joinNum = partHistoryMapper.selectParticipantsCount(conference.getRuid());
+        jsonObject.addProperty("joinNum", joinNum);
+        return jsonObject;
     }
 
     private JsonObject constructConfInfo(Conference conference) {
@@ -75,8 +100,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
                 if (Objects.nonNull(user)) {
                     jsonObject.addProperty("moderatorAccount", user.getUuid());
                     jsonObject.addProperty("moderatorUserId", user.getId());
-                    jsonObject.addProperty("moderatorToken", Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid())) && Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid()).get("token")) ?
-                            cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString() : null);
+                    jsonObject.addProperty("moderatorToken", Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid())) && Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid()).get("token")) ? cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString() : null);
                 }
             }
             jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->

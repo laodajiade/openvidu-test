@@ -7,6 +7,7 @@ import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.domain.vo.PartHisResp;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -31,6 +32,9 @@ public interface ConferencePartHistoryMapper {
     void updateNotEndPartHistroy(List<ConferencePartHistory> list);
 
     List<ConferencePartHistory> selectConfPartHistoryByRuids(List<String> ruids);
+
+    @Select("select count(*) FROM sd_conf_part_history  WHERE ruid = #{ruid} AND end_time is null ")
+    int selectParticipantsCount(String ruid);
 
     List<User> selectUserByRuid(String ruid);
 
