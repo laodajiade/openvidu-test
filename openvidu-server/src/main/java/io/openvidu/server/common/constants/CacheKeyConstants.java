@@ -54,6 +54,8 @@ public class CacheKeyConstants {
 
     public static final String CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY = "conference:lease:";
 
+    public static final  String  REDISSON_LOCK_PREFIX_KEY = "redisson:lock:";
+
     public static String getConferencesKey(String sessionId) {
         return String.format(CONFERENCES_KEY, sessionId);
     }

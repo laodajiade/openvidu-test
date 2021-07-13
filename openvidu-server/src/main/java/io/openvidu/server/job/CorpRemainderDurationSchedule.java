@@ -2,6 +2,7 @@ package io.openvidu.server.job;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.broker.CorpServiceExpiredNotifyHandler;
 import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.cache.CacheManage;
@@ -73,6 +74,7 @@ public class CorpRemainderDurationSchedule {
     private int durationLessThanTenHour;
 
     @Scheduled(cron = "0 0/1 * * * ?")
+    @DistributedLock(key = "fixEndPart")
     public void fixEndPartHistory(){
         List<NotEndPartHistory> notEndPartHistoryList = conferencePartHistoryMapper.selectNotEndPartHistory();
         if (!CollectionUtils.isEmpty(notEndPartHistoryList)) {
@@ -105,6 +107,7 @@ public class CorpRemainderDurationSchedule {
     }
 
     @Scheduled(cron = "0 0/1 * * * ?")
+    @DistributedLock(key = "corpRemainderDuration")
     public void countCorpRemainderDuration(){
         List<Corporation> corporations = corporationMapper.selectAllCorp();
         if (!CollectionUtils.isEmpty(corporations)) {

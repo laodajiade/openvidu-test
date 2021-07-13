@@ -1,5 +1,9 @@
 package io.openvidu.server.config;
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.redisson.config.TransportMode;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,5 +42,13 @@ public class RoomRedis extends RedisCommonConfig {
     public RedisTemplate<String, Object> roomRedisTemplate(@Qualifier("roomRedisConnectionFactory") RedisConnectionFactory roomRedisConnectionFactory) {
         return getRedisTemplate(roomRedisConnectionFactory);
     }
+
+    @Bean
+    public RedissonClient getRedissonClient() {
+        Config config = new Config();
+        config.useSingleServer().setAddress(String.format("redis://%s:%s", this.hostName, this.port)).setPassword(this.password).setDatabase(this.database);
+        return Redisson.create(config);
+    }
+
 
 }

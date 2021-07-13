@@ -1,5 +1,6 @@
 package io.openvidu.server.job;
 
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.manage.StatisticsManage;
@@ -45,6 +46,7 @@ public class StatisticsJobHandler {
      * 01:00 执行(24h)
      */
     @Scheduled(cron = "0 0 1 * * ?")
+    @DistributedLock(key = "dayOfMeeting")
     public void dailyStatisticsJob() {
         long jobStart = System.currentTimeMillis();
         // calc query time
