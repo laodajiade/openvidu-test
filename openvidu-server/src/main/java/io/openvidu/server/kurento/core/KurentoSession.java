@@ -210,7 +210,7 @@ public class KurentoSession extends Session {
 						p.getParticipantPublicId(), kurentoEndpointConfig.leaveDelay);
 				Thread.sleep(kurentoEndpointConfig.leaveDelay);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				// ignore
 			}
 		}
 	}
@@ -280,9 +280,17 @@ public class KurentoSession extends Session {
 
 		log.debug("SESSION {}: Cancel receiving media from participant '{}' for other participant", this.sessionId,
 				participant.getParticipantPublicId());
-		for (Participant other : getParticipants()) {
-			//todo 2.0 需要修改
-			((KurentoParticipant) other).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
+
+		KurentoParticipant kParticipant = (KurentoParticipant) participant;
+		for (PublisherEndpoint publisherEndpoint : kParticipant.getPublishers().values()) {
+			for (Participant other : getParticipants()) {
+				try {
+					KurentoParticipant kOther = (KurentoParticipant) other;
+					kOther.cancelReceivingMedia(kOther.translateSubscribeId(kOther.getUuid(), publisherEndpoint.getStreamId()), reason);
+				} catch (Exception e) {
+					log.error("cancelReceivingMedia error publisher {},receive {}", publisherEndpoint.getStreamId(), other.getUuid());
+				}
+			}
 		}
 	}
 

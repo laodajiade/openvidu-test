@@ -228,9 +228,9 @@ public class KurentoParticipant extends Participant {
 	public synchronized void releaseAllFilters() {
 		// Check this, mutable array?
 		filters.forEach((s, filter) -> removeFilterElement(s));
-		if (this.publisher != null && this.publisher.getFilter() != null) {
-			this.publisher.revert(this.publisher.getFilter());
-		}
+//		if (this.publisher != null && this.publisher.getFilter() != null) {
+//			this.publisher.revert(this.publisher.getFilter());
+//		}
 	}
 
 	public PublisherEndpoint getPublisher(StreamType streamType) {
@@ -385,7 +385,7 @@ public class KurentoParticipant extends Participant {
 				publishStreamId, this.session.getSessionId());
 		log.trace("PARTICIPANT {}: SdpOffer for {} is {}", this.getParticipantPublicId(), publishStreamId, sdpOffer);
 
-		String subscriberStreamId = this.getUuid() + "_receive_" + publishStreamId;
+		String subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
 
 		if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) &&
 				publishStreamId.equals(this.getParticipantPublicId())) {
@@ -494,127 +494,8 @@ public class KurentoParticipant extends Participant {
 		return null;
 	}
 
-	public String receiveMediaFromDelivery(Participant sender, StreamModeEnum streamMode, String sdpOffer, String externalSenderName, DeliveryKmsManager deliveryKms) {
-		log.info("{} into receiveMediaFromDelivery", this.getUuid());
-
-		String senderName = sender.getParticipantPublicId();
-		if (!StringUtils.isEmpty(externalSenderName)) {
-			senderName = externalSenderName;
-		}
-
-		log.info("PARTICIPANT {}: Request to receive delivery media from {} in room {}", this.getParticipantPublicId(),
-				senderName, this.session.getSessionId());
-		log.trace("PARTICIPANT {}: SdpOffer for {} is {}", this.getParticipantPublicId(), senderName, sdpOffer);
-
-		if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) &&
-				senderName.equals(this.getParticipantPublicId())) {
-			log.warn("PARTICIPANT {}: trying to configure loopback by subscribing", this.getParticipantPublicId());
-			throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE, "Can loopback only when publishing media");
-		}
-
-		KurentoParticipant kSender = (KurentoParticipant) sender;
-
-		if (kSender.getPublisher() == null) {
-			log.warn("PARTICIPANT {}: Trying to connect to a user without " + "a publishing endpoint",
-					this.getParticipantPublicId());
-			return null;
-		}
-// 这里开始不同
-		MediaChannel mediaChannel = kSender.getPublisher().getMediaChannels().get(deliveryKms.getId());
-		if (mediaChannel == null) {
-			log.warn("mediaChannel not exist");
-			synchronized (this) {
-				mediaChannel = deliveryKms.dispatcher(kSender);
-//				mediaChannel = new MediaChannel(session.getPipeline(), kSender.getPublisher().getPassThru(), deliveryKms.getPipeline(),
-//						true, kSender, kSender.getPublisherStreamId(), openviduConfig);
-				kSender.getPublisher().getMediaChannels().put(deliveryKms.getId(), mediaChannel);
-				//mediaChannel.createChannel();
-			}
-		}
-		log.info("mediaChannel state = {}", mediaChannel.getState().name());
-		//mediaChannel = new ArrayList<>(kSender.getMediaChannels().values()).get(0);
-
-		log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getParticipantPublicId(),
-				senderName);
-		log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
-				this.getUuid(), kSender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
-		// 这里开始不同
-		SubscriberEndpoint subscriber = getNewAndCompareSubscriber(senderName, mediaChannel.getTargetPipeline(), null);
-
-
-		try {
-			CountDownLatch subscriberLatch = new CountDownLatch(1);
-			SdpEndpoint oldMediaEndpoint = subscriber.createEndpoint(subscriberLatch);
-			try {
-				if (!subscriberLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
-					throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
-							"Timeout reached when creating subscriber endpoint");
-				}
-			} catch (InterruptedException e) {
-				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
-						"Interrupted when creating subscriber endpoint: " + e.getMessage());
-			}
-			if (oldMediaEndpoint != null) {
-				log.warn(
-						"PARTICIPANT {}: Two threads are trying to create at "
-								+ "the same time a subscriber endpoint for user {}",
-						this.getParticipantPublicId(), senderName);
-				return null;
-			}
-			if (subscriber.getEndpoint() == null) {
-				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create subscriber endpoint");
-			}
-
-			String subscriberEndpointName = this.getParticipantPublicId() + "_" + kSender.getPublisherStreamId();
-
-			subscriber.setEndpointName(subscriberEndpointName);
-			subscriber.getEndpoint().setName(subscriberEndpointName);
-			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + kSender.getUuid() +
-					"_" + kSender.getStreamType() + "_cid_" + RandomStringUtils.randomAlphabetic(6));
-			subscriber.setStreamId(kSender.getPublisherStreamId());
-
-			endpointConfig.addEndpointListeners(subscriber, "subscriber");
-
-		} catch (OpenViduException e) {
-			this.subscribers.remove(senderName);
-			throw e;
-		}
-
-		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderName);
-		try {
-			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, mediaChannel.getPublisher() , streamMode);
-			subscriber.internalAddIceCandidateCache();
-			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
-			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
-					senderName, this.session.getSessionId());
-
-			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(this.getParticipantPublicId())) {
-				endpointConfig.getCdr().recordNewSubscriber(this, this.session.getSessionId(),
-						sender.getPublisherStreamId(), sender.getParticipantPublicId(), subscriber.createdAt());
-			}
-
-			if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU) &&
-					Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
-				if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
-					subscriber.subscribeAudio(this.getPublisher());
-				} else {
-					subscriber.subscribeAudio(null);
-				}
-			}
-
-			return sdpAnswer;
-		} catch (KurentoServerException e) {
-			// TODO Check object status when KurentoClient sets this info in the object
-			if (e.getCode() == 40101) {
-				log.warn("Publisher endpoint was already released when trying "
-						+ "to connect a subscriber endpoint to it", e);
-			} else {
-				log.error("Exception connecting subscriber endpoint " + "to publisher endpoint", e);
-			}
-			this.subscribers.remove(senderName);
-			releaseSubscriberEndpoint(senderName, subscriber, null);
-		}
-		return null;
+	public String translateSubscribeId(String receiveUuid, String publishStreamId) {
+		return receiveUuid + "_receive_" + publishStreamId;
 	}
 
 	public void cancelReceivingMedia(String subscribeId, EndReason reason) {
