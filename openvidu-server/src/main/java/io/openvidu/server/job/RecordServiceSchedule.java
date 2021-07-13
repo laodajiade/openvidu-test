@@ -2,6 +2,7 @@ package io.openvidu.server.job;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.dao.ConferenceRecordInfoMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
@@ -52,6 +53,7 @@ public class RecordServiceSchedule {
      * 到期一天，停止所有的录制服务
      */
     @Scheduled(cron = "0 0/1 * * * ?")
+    @DistributedLock(key = "stopRecord")
     public void stopRecord() {
         List<Corporation> corporations = corporationMapper.listByCorpRecordExpireDay(DateFormatUtils.format(DateUtils.addDays(new Date(), -1), "yyyy-MM-dd"));
         for (Corporation corporation : corporations) {
@@ -98,6 +100,7 @@ public class RecordServiceSchedule {
      * 到期15天，释放空间
      */
     @Scheduled(cron = "0 0/1 * * * ?")
+    @DistributedLock(key = "freeUpRecordSpace")
     public void freeUpRecordSpace() {
         String day = DateFormatUtils.format(DateUtils.addDays(new Date(), -freeUpByExpiredDay - 1), "yyyy-MM-dd");
         List<Corporation> corporations = corporationMapper.listByCorpRecordExpireDay(day);

@@ -224,9 +224,18 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     private class ListSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return Collections.emptySet();
+            int order = getIntParam(request, "order");
+            int reverse = getIntParam(request, "reverse");
+            int limit = getIntParam(request, "limit");
+            if (reverse == 1) {
+                return session.getParticipants().stream().filter(p -> p.getOrder() > order).limit(limit).sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toCollection(LinkedHashSet::new));
+            } else {
+                return session.getParticipants().stream().filter(p -> p.getOrder() > order).limit(limit).sorted(Comparator.comparing(Participant::getOrder).reversed()).collect(Collectors.toCollection(LinkedHashSet::new));
+            }
         }
     }
+
+
 
     private class PublisherSearch implements Search {
         @Override

@@ -1,5 +1,6 @@
 package io.openvidu.server.utils;
 
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.dao.RandomIdPoolMapper;
 import io.openvidu.server.common.pojo.RandomIdPool;
 import io.openvidu.server.common.pojo.RandomIdPoolExample;
@@ -46,6 +47,7 @@ public class RandomRoomIdGenerator {
 
 
     @Scheduled(cron = "0 10 0/1 * * ?")
+    @DistributedLock(key = "generatorSchedule")
     public void generatorSchedule() {
         if (checkRemaining() > 5000) {
             return;
