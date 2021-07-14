@@ -17,6 +17,13 @@ public class RespResult<T> {
         return respResult;
     }
 
+    public static <T> RespResult<T> fail(ErrorCodeEnum code,T result) {
+        RespResult<T> respResult = new RespResult<>();
+        respResult.setCode(code);
+        respResult.setResult(result);
+        return respResult;
+    }
+
     public static <T> RespResult<T> ok() {
         RespResult<T> respResult = new RespResult<>();
         respResult.setCode(ErrorCodeEnum.SUCCESS);

@@ -35,7 +35,7 @@ public abstract class ExRpcAbstractHandler<P> extends RpcAbstractHandler {
             log.info("ex response:{}", gson.toJson(respResult));
             if (!respResult.isOk()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, respResult.getCode());
+                        respResult.getResult(), respResult.getCode());
                 return;
             }
 

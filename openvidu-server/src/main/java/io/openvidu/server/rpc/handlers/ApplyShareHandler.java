@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.core.Notification;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
@@ -45,25 +44,26 @@ public class ApplyShareHandler extends ExRpcAbstractHandler<JsonObject> {
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
 
-        synchronized (share_lock) {
-            Optional<Participant> sharingPart = session.getSharingPart();
-            if (sharingPart.isPresent()) {
-                if (!sharingPart.get().getUuid().equals(targetId)) {
-                    // 已有分享者
-                    return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
-                } else {
-                    // 分享者是自己，直接成功
-                    return RespResult.ok();
-                }
-            }
-            session.setSharingPart(participantOptional.get());
+        synchronized (session.getSharingOrSpeakerLock()) {
             JsonObject result = new JsonObject();
             result.addProperty("roomId", session.getSessionId());
-            result.addProperty("shareId", participantOptional.get().getUuid());
 
-            Notification notification = new Notification(ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
-            notification.withParticipantIds(session.getSessionId(), sessionManager);
-            return RespResult.ok(result, notification);
+            result.addProperty("originator", originatorOp.get().getUuid());
+            Optional<Participant> sharingPart = session.getSharingPart();
+            if (sharingPart.isPresent()) {
+                result.addProperty("shareId", sharingPart.get().getUuid());
+                if (!sharingPart.get().getUuid().equals(targetId)) {
+                    // 已有分享者
+                    return RespResult.fail(ErrorCodeEnum.SHARING_ALREADY_EXIST, result);
+                } else {
+                    // 分享者是自己，直接成功
+                    return RespResult.ok(result);
+                }
+            }
+            sharingPart = participantOptional;
+            result.addProperty("shareId", sharingPart.get().getUuid());
+            sessionManager.setSharing(session, sharingPart.get(), originatorOp.get().getUuid());
+            return RespResult.ok(result);
         }
     }
 

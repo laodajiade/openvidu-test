@@ -131,6 +131,8 @@ public class Session implements SessionInterface {
 	@Getter
 	private final Lock joinOrLeaveReentrantLock = new ReentrantLock();
 
+	@Getter
+	private final Object sharingOrSpeakerLock = new Object();
 	/**
 	 * 分享者
 	 */
@@ -1582,4 +1584,12 @@ public class Session implements SessionInterface {
 		return Optional.ofNullable(speakerPart);
 	}
 
+    public void endSharing(Participant originator) {
+        Participant sharingPart = this.sharingPart;
+        this.sharingPart = null;
+        JsonObject result = new JsonObject();
+        result.addProperty("roomId", sessionId);
+        result.addProperty("shareId", sharingPart.getUuid());
+        result.addProperty("originator", originator.getUuid());
+    }
 }

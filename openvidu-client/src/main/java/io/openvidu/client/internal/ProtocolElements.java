@@ -891,6 +891,8 @@ public class ProtocolElements {
 
     public static final String APPLY_SHARE_METHOD = "applyShare";
     public static final String APPLY_SHARE_NOTIFY_METHOD = "applyShareNotify";
+    public static final String END_SHARE_METHOD = "endShare";
+    public static final String END_SHARE_NOTIFY_METHOD = "endShareNotify";
 
 
     public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
