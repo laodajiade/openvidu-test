@@ -134,16 +134,14 @@ public class Session implements SessionInterface {
 	/**
 	 * 分享者
 	 */
-	@Getter
 	@Setter
-	private Optional<Participant> sharingPart = Optional.empty();
+	private Participant sharingPart = null;
 
 	/**
 	 * 发言中
 	 */
-	@Getter
 	@Setter
-	private Optional<Participant> speakerPart = Optional.empty();
+	private Participant speakerPart = null;
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -1576,6 +1574,12 @@ public class Session implements SessionInterface {
 	}
 
 
+	public Optional<Participant> getSharingPart() {
+		return Optional.ofNullable(sharingPart);
+	}
 
+	public Optional<Participant> getSpeakerPart() {
+		return Optional.ofNullable(speakerPart);
+	}
 
 }

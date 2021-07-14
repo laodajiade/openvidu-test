@@ -56,7 +56,7 @@ public class ApplyShareHandler extends ExRpcAbstractHandler<JsonObject> {
                     return RespResult.ok();
                 }
             }
-            session.setSharingPart(participantOptional);
+            session.setSharingPart(participantOptional.get());
             JsonObject result = new JsonObject();
             result.addProperty("roomId", session.getSessionId());
             result.addProperty("shareId", participantOptional.get().getUuid());
