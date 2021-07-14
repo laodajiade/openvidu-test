@@ -1592,4 +1592,11 @@ public class Session implements SessionInterface {
         result.addProperty("shareId", sharingPart.getUuid());
         result.addProperty("originator", originator.getUuid());
     }
+
+	/**
+	 * 检查舒服是分享者
+	 */
+	public boolean isShare(String uuid) {
+		return this.sharingPart != null && this.sharingPart.getUuid().equals(uuid);
+	}
 }

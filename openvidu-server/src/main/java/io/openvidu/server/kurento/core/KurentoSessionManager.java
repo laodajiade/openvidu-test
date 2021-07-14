@@ -39,7 +39,6 @@ import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SdpType;
-import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -234,11 +233,13 @@ public class KurentoSessionManager extends SessionManager {
 //                }
 //            }
 
-            // todo 2.0 share
-            if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
-                changeSharingStatusInConference(session, participant);
+
+            if (session.isShare(participant.getUuid())) {
+                endSharing(session, participant, participant.getUuid());
+                //todo 2.0 share mcu
+                // changeSharingStatusInConference(session, participant);
+                //todo 2.0 share mcu
             }
-            // todo 2.0 share
 
             // Close Session if no more participants
             Set<Participant> remainingParticipants = null;
@@ -480,7 +481,7 @@ public class KurentoSessionManager extends SessionManager {
         // todo 2.0 注释掉 kSession.newPublisher(participant) 看起来暂时不需要
         // kSession.newPublisher(participant);
 
-        if (Objects.equals(StreamType.SHARING,streamType)
+        if (Objects.equals(StreamType.SHARING, streamType)
                 && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
             kSession.compositeService.setExistSharing(true);
         }
@@ -650,6 +651,7 @@ public class KurentoSessionManager extends SessionManager {
             sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, resultObj, transactionId, null);
         }
     }
+
     private Participant getInviteDelayPart(String sessionId, Long userId) throws InterruptedException {
         Participant senderParticipant;
         for (int i = 0; i < 3; i++) {
@@ -970,7 +972,7 @@ public class KurentoSessionManager extends SessionManager {
 
             // change the layout if mode is MCU
             if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                    //todo 2.0 需要重做
+                //todo 2.0 需要重做
 //                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
 //                boolean layoutChanged = false;
 //                for (Participant part : samePrivateIdParts.values()) {
@@ -1005,6 +1007,7 @@ public class KurentoSessionManager extends SessionManager {
             rpcNotificationService.closeRpcSession(evictParticipant.getParticipantPrivateId());
         }
     }
+
     @Override
     public void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId) {
         Session session;
@@ -1696,7 +1699,7 @@ public class KurentoSessionManager extends SessionManager {
         }
         Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
         if (minorPart != null) {
-            if ( minorPart.isStreaming())
+            if (minorPart.isStreaming())
                 return minorPart;
             log.info("minorPart is not null but not streaming");
         }
