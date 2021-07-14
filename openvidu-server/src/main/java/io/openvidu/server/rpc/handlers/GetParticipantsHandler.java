@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.common.enums.UserType;
 import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
@@ -236,7 +237,6 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     }
 
 
-
     private class PublisherSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
@@ -247,7 +247,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     private class RaisingHandsSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            return Collections.emptySet();
+            return session.getParticipants().stream().filter(p -> p.getHandStatus().equals(ParticipantHandStatus.up)).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 

@@ -640,8 +640,7 @@ public class Session implements SessionInterface {
 
 	public Participant getModeratorPart() {
 		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
+		return this.participantList.values().stream().filter(participant -> Objects.nonNull(participant) && Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
 						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
