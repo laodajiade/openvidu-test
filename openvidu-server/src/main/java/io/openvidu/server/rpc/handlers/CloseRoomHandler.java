@@ -64,45 +64,4 @@ public class CloseRoomHandler extends RpcAbstractHandler {
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
-
-    //todo 2.0 Deprecated, use #sessionManager.closeRoom(rpcConnection, session);
-    @Deprecated
-    public void closeRoom(RpcConnection rpcConnection, Session session) {
-        if (true) {
-            sessionManager.closeRoom(rpcConnection, session);
-            return;
-        }
-        UseTime.point("closeRoom p1");
-        String sessionId = session.getSessionId();
-        // set session status: closing
-        session.setClosing(true);
-        sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
-            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
-            notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
-            RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
-            if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
-                cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
-            }
-        });
-        UseTime.point("closeRoom p2");
-        //cancel invite
-        cancelAllInviteCompensation(sessionId);
-        // TODO: compatible to the delay of leaving room
-        this.sessionManager.updateConferenceInfo(sessionId);
-        //close room stopPolling
-        if (session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
-            SessionPreset sessionPreset = session.getPresetInfo();
-            sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-            timerManager.stopPollingCompensation(sessionId);
-            //send notify
-            JsonObject params = new JsonObject();
-            params.addProperty("roomId", sessionId);
-            notificationService.sendBatchNotification(session.getMajorPartEachIncludeThorConnect(), ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
-        }
-        UseTime.Point point = UseTime.getPoint("sessionManager.closeSession.Point");
-        this.sessionManager.closeSession(sessionId, EndReason.closeSessionByModerator);
-        point.updateTime();
-        UseTime.point("closeRoom p5");
-        rpcConnection.setReconnected(false);
-    }
 }

@@ -88,7 +88,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         Session session = sessionManager.getSession(appointConference.getRoomId());
         if (session != null && session.getConference().getRuid().equals(ruid)) {
             log.info("close session with cancel appointment conference ,roomId = {} and ruid = {}", appointConference.getRoomId(), appointConference.getRuid());
-            closeRoomHandler.closeRoom(rpcConnection, session);
+            sessionManager.closeRoom(rpcConnection, session);
         }
 
         return RespResult.ok(new JsonObject());
@@ -122,7 +122,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             Session session = sessionManager.getSession(conference.getRoomId());
             if (session != null && session.getConference().getRuid().equals(ruid)) {
                 log.info("close session with cancel general conference ,roomId = {} and ruid = {}", conference.getRoomId(), conference.getRuid());
-                closeRoomHandler.closeRoom(rpcConnection, session);
+                sessionManager.closeRoom(rpcConnection, session);
                 return RespResult.ok(new JsonObject());
             }
         }
