@@ -1,30 +1,26 @@
 package io.openvidu.server.rpc;
 
-import cn.jpush.api.push.model.notification.IosAlert;
 import com.google.gson.*;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.*;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.*;
-import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.CallHistory;
+import io.openvidu.server.common.pojo.DeviceDept;
+import io.openvidu.server.common.pojo.SoftUser;
+import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import io.openvidu.server.config.EnvConfig;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.InviteCompensationManage;
-import io.openvidu.server.core.JpushManage;
-import io.openvidu.server.core.JpushMsgEnum;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
-import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.core.TimerManager;
+import io.openvidu.server.core.*;
+import io.openvidu.server.exception.BizException;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.utils.HttpUtil;
-import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +32,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -383,10 +377,29 @@ public abstract class RpcAbstractHandler {
        return OpenViduRole.MODERATOR_ROLES.contains(role);
     }
 
-    protected Participant sanityCheckOfSession(RpcConnection rpcConnection, StreamType streamType) throws OpenViduException {
-        return sessionManager.getParticipant(rpcConnection.getSessionId(), rpcConnection.getParticipantPrivateId(), streamType);
+    /**
+     * 这个接口返回的与会者对象必不未空，如果会议或者与会者对象不存在，会抛出BizException异常，上层会catch，返回错误码
+         * 有部分接口被我封装了Optional<Participant>返回值，要求强制判断非空。有时候是可以确保某个与会者不为空时可以使用sanityCheckOfSession
+     */
+    protected Participant sanityCheckOfSession(RpcConnection rpcConnection) {
+        return sanityCheckOfSession(rpcConnection.getSessionId(), rpcConnection.getUserUuid());
     }
 
+    protected Participant sanityCheckOfSession(String sessionId, String uuid) {
+        Session session = sessionManager.getSession(sessionId);
+        if (session == null) {
+            log.info("Session '" + sessionId + "' not found");
+            throw new BizException(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+        }
+        Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
+        if (!participantOptional.isPresent()) {
+            log.info("Participant '" + uuid + "' not found");
+            throw new BizException(ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+        }
+        return participantOptional.get();
+    }
+
+    @Deprecated
     protected Participant sanityCheckOfSession(RpcConnection rpcConnection, String methodName) throws OpenViduException {
         String participantPrivateId = rpcConnection.getParticipantPrivateId();
         String sessionId = rpcConnection.getSessionId();

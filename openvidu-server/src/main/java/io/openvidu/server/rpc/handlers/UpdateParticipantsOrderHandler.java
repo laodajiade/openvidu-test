@@ -22,7 +22,7 @@ public class UpdateParticipantsOrderHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        if (!sessionManager.getParticipant(rpcConnection.getSessionId(), rpcConnection.getParticipantPrivateId(), StreamType.MAJOR).getRole().isController()) {
+        if (!sanityCheckOfSession(rpcConnection).getRole().isController()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
         }
@@ -35,8 +35,8 @@ public class UpdateParticipantsOrderHandler extends RpcAbstractHandler {
                 JsonObject orderPart = jsonElement.getAsJsonObject();
                 partOrderMap.putIfAbsent(orderPart.get("account").getAsString(), orderPart.get("order").getAsInt());
             }
-            Participant thorPart = sessionManager.getSession(rpcConnection.getSessionId()).getThorPart();
-            errorCodeEnum = sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, orderedParts, thorPart);
+            Participant moderatorPart = sessionManager.getSession(rpcConnection.getSessionId()).getModeratorPart();
+            errorCodeEnum = sessionManager.getSession(rpcConnection.getSessionId()).dealPartOrderAfterRoleChanged(partOrderMap, sessionManager, moderatorPart);
         }
         if (!ErrorCodeEnum.SUCCESS.equals(errorCodeEnum)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

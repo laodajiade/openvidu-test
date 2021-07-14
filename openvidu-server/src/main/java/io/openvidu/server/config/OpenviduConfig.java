@@ -167,6 +167,8 @@ public class OpenviduConfig {
 	@Value("${mcu.composite.limit.size}")
 	private int mcuMajorPartLimit;
 
+	// todo 2.0 Deprecated use  getPresetInfo().getSfuPublisherThreshold()
+	@Deprecated
 	@Getter
 	@Value("${sfu.session.publisher.limit.size}")
 	private int sfuPublisherSizeLimit;
