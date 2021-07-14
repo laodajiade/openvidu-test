@@ -30,6 +30,7 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.config.FlowRulesConfig;
 import io.openvidu.server.core.*;
+import io.openvidu.server.exception.BizException;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -134,12 +135,15 @@ public class RpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.REQUEST_TOO_FREQUENT);
 		} catch (OpenViduException e) {
-            log.error(e.toString(), e);
-            if (e.getCode() == OpenViduException.Code.ROOM_NOT_FOUND_ERROR_CODE.getValue()) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
-            }
-        } finally {
+			log.error(e.toString(), e);
+			if (e.getCode() == OpenViduException.Code.ROOM_NOT_FOUND_ERROR_CODE.getValue()) {
+				notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+						null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+			}
+		} catch (BizException e) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, e.getRespEnum());
+		} finally {
 			if (UseTime.elapse() > 500) {
 				log.info("requestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
 			}

@@ -25,6 +25,7 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.message.Request;
@@ -109,6 +110,9 @@ public class RpcExHandler {
 			log.warn(e.toString());
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
 					null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
+		} catch (BizException e) {
+			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+					null, e.getRespEnum());
 		} catch (Exception e) {
 			log.error(e.toString(), e);
 			notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
