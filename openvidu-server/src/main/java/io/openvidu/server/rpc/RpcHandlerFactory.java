@@ -337,6 +337,8 @@ public class RpcHandlerFactory {
     private QueryOperationPermissionHandler queryOperationPermissionHandler;
     @Resource
     private Map<String,ExRpcAbstractHandler> exHandlersMap;
+    @Resource
+    private  SetRollCallNotifyHandler setRollCallNotifyHandler;
 
 
     @PostConstruct
@@ -465,6 +467,7 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_FREQUENT_CONTACTS,                         getFrequentContactsHandler);
         handlersMap.put(ProtocolElements.SET_FREQUENT_CONTACTS,                         setFrequentContactsHandler);
         handlersMap.put(ProtocolElements.QUERY_OPERATION_PERMISSION,                    queryOperationPermissionHandler);
+        handlersMap.put(ProtocolElements.SET_ROLL_CALL_NOTIFY_METHOD,                    setRollCallNotifyHandler);
 
     }
 
