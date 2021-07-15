@@ -888,7 +888,7 @@ public abstract class SessionManager {
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, existSpeakerPart.getUuid());
 
             boolean sendChangeRole;
-            if (sendChangeRole = (existSpeakerPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1)) {
+            if (sendChangeRole = (existSpeakerPart.getOrder() > conferenceSession.getPresetInfo().getSfuPublisherThreshold() - 1)) {
                 existSpeakerPart.changePartRole(OpenViduRole.SUBSCRIBER);
                 //下墙处理音频及共享
                 setMicStatusAndDealExistsSharing(existSpeakerPart, moderatorPart, conferenceSession.getSessionId());
@@ -915,7 +915,7 @@ public abstract class SessionManager {
         params.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, targetPart.getUuid());
 
         boolean sendChangeRole;
-        if (sendChangeRole = (targetPart.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1)) {
+        if (sendChangeRole = (targetPart.getOrder() > conferenceSession.getPresetInfo().getSfuPublisherThreshold() - 1)) {
             targetPart.changePartRole(OpenViduRole.PUBLISHER);
         }
         JsonArray changeRoleNotifiParam = sendChangeRole ? conferenceSession.getPartRoleChangedNotifyParamArr(targetPart,
@@ -1088,13 +1088,43 @@ public abstract class SessionManager {
 
     public void endSpeaker(Session session, Participant sharingPart, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
-            session.setSharingPart(null);
+            session.setSpeakerPart(null);
 
             JsonObject result = new JsonObject();
             result.addProperty("roomId", session.getSessionId());
             result.addProperty("targetId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, result);
+        }
+    }
+
+    public void replaceSpeaker(Session session, Participant endPart, Participant startPart, String originatorUuid) {
+        Set<Participant> participants = session.getParticipants();
+        session.setSpeakerPart(startPart);
+        participants.forEach(participant -> {
+            if (StreamType.MAJOR.equals(participant.getStreamType())) {
+                if (endPart.getUuid().equals(participant.getUuid())) {
+                    participant.changeHandStatus(ParticipantHandStatus.down);
+                }
+                if (startPart.getUuid().equals(participant.getUuid())) {
+                    participant.changeHandStatus(ParticipantHandStatus.speaker);
+                }
+            }
+        });
+        if (endPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
+            endPart.setRole(OpenViduRole.SUBSCRIBER);
+        }
+        if (startPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
+            startPart.setRole(OpenViduRole.PUBLISHER);
+        }
+        synchronized (session.getSharingOrSpeakerLock()) {
+            session.setSpeakerPart(startPart);
+            JsonObject result = new JsonObject();
+            result.addProperty("roomId", session.getSessionId());
+            result.addProperty("endTargetId", endPart.getUuid());
+            result.addProperty("startTargetId", startPart.getUuid());
+            result.addProperty("originator", originatorUuid);
+            notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.REPLACE_ROLL_CALL_NOTIFY_METHOD, result);
         }
     }
 
