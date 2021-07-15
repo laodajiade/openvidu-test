@@ -299,6 +299,7 @@ public class ProtocolElements {
     public static final String END_ROLL_CALL_TARGET_ID_PARAM = "targetId";
 
     public static final String REPLACE_ROLL_CALL_METHOD = "replaceRollCall";
+    public static final String REPLACE_ROLL_CALL_NOTIFY_METHOD = "replaceRollCallNotify";
     public static final String REPLACE_ROLL_CALL_ROOM_ID_PARAM = "roomId";
     public static final String REPLACE_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
     public static final String REPLACE_ROLL_CALL_END_TARGET_ID_PARAM = "endTargetId";
