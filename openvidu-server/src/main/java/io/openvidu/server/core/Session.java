@@ -709,8 +709,8 @@ public class Session implements SessionInterface {
 					}
 					p.setOrder(p.getOrder() + 1);
 					log.info("moderator reconnect or join again major participant order change, order = {}", p.getOrder());
-					// 推送流变订阅流 //todo openviduConfig.getSfuPublisherSizeLimit() 使用会议能力代替
-					if (p.getOrder() == openviduConfig.getSfuPublisherSizeLimit() && p.getRole() == OpenViduRole.PUBLISHER
+					// 推送流变订阅流
+					if (p.getOrder() == getPresetInfo().getSfuPublisherThreshold() && p.getRole() == OpenViduRole.PUBLISHER
 							&& !ParticipantHandStatus.speaker.equals(p.getHandStatus())) {
 						log.info("moderator reconnect or join again participant:{} current order:{} and role set {}", p.getUuid(), p.getOrder(), OpenViduRole.SUBSCRIBER);
 						p.setRole(OpenViduRole.SUBSCRIBER);
@@ -857,6 +857,7 @@ public class Session implements SessionInterface {
 		result.addProperty("source", source.getUuid());
 		result.addProperty("target", target.getUuid());
 		result.addProperty("operator", operatorPart.getUuid());
+		result.addProperty("roomId", operatorPart.getSessionId());
 		sessionManager.notificationService.sendBatchNotificationConcurrent(getParticipants(), ProtocolElements.REPLACE_PARTICIPANTS_ORDER_NOTIFY_METHOD, result);
 
 		pub2SubPartSet.forEach(pub2SubPart -> {
@@ -879,44 +880,45 @@ public class Session implements SessionInterface {
 			for (Map.Entry<String, Integer> map : partOrderMap.entrySet()) {
 				String uuid = map.getKey();
 				Integer newOrder = map.getValue();
-				Optional<Participant> oldPartOp = getParticipantByUUID(uuid);
+				Optional<Participant> partOp = getParticipantByUUID(uuid);
+				if (!partOp.isPresent()) {
+					log.info("updateParticipantsOrder participant:{} is null", uuid);
+					continue;
+				}
 
-				if (!oldPartOp.isPresent()) {
-					log.info("web updateParticipantsOrder participant:{} is null", uuid);
-					executeFlag = true;
-					break;
+				Participant part = partOp.get();
+				if (newOrder == part.getOrder()) {
+					log.info(" updateParticipantsOrder participant:{},oldOrder:{},newOrder:{}", uuid, part.getOrder(), newOrder);
+					continue;
 				}
-				Participant oldPart = oldPartOp.get();
-				if (newOrder == oldPart.getOrder()) {
-					log.info("web updateParticipantsOrder participant:{},oldOrder:{},newOrder:{}", uuid, oldPart.getOrder(), newOrder);
-					executeFlag = true;
-					break;
-				}
-			}
-			if (executeFlag) {
-				return ErrorCodeEnum.PERFORMANCE_EXCEED;
-			}
-			Set<Participant> participants = getParticipants();
-			participants.forEach(participant -> {
-				try {
-					if (participant == null) {
-						log.error("dealPartOrderAfterRoleChanged exist null participant");
+
+				part.setOrder(newOrder);
+				getParticipants().forEach(otherPart -> {
+					if (otherPart.getUuid().equals(part.getUuid())) {
 						return;
 					}
-					int oldOrder = participant.getOrder();
-					Integer newOrder = partOrderMap.get(participant.getUuid());
-					log.info("web drag participant:{},oldOrder:{},newOrder:{}", participant.getUuid(), oldOrder, newOrder);
-					if (Objects.nonNull(newOrder) && !Objects.equals(oldOrder, newOrder)) {
-						participant.setOrder(newOrder);
-						if (Math.max(oldOrder, newOrder) > lineOrder && lineOrder >= Math.min(oldOrder, newOrder)
-								&& !OpenViduRole.MODERATOR.equals(participant.getRole())) {  // exclude the moderator
-							// part role has to change
-							if (newOrder <= lineOrder) {
-								sub2PubPartSet.add(participant);
-							} else {
-								pub2SubPartSet.add(participant);
-							}
-						}
+					if (otherPart.getOrder() >= newOrder) {
+						otherPart.setOrder(otherPart.getOrder() + 1);
+					}
+				});
+			}
+
+			// 将断断续续的order变连续的
+			List<Participant> participants = getParticipants().stream().sorted(Comparator.comparing(Participant::getOrder))
+					.collect(Collectors.toList());
+			for (int i = 0; i < participants.size(); i++) {
+				participants.get(i).setOrder(i);
+			}
+
+			int sfuLimit = getPresetInfo().getSfuPublisherThreshold();
+			participants.forEach(participant -> {
+				try {
+					int order = participant.getOrder();
+					if (order < sfuLimit && participant.getRole() == OpenViduRole.SUBSCRIBER) {
+						sub2PubPartSet.add(participant);
+					} else if (order >= sfuLimit && participant.getRole() != OpenViduRole.SUBSCRIBER
+							&& participant.getHandStatus() != ParticipantHandStatus.speaker) {
+						pub2SubPartSet.add(participant);
 					}
 				} catch (Exception e) {
 					log.error("dealPartOrderAfterRoleChanged error partOrderMap = {}", partOrderMap.toString(), e);
