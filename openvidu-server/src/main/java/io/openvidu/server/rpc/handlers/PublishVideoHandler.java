@@ -81,7 +81,7 @@ public class PublishVideoHandler extends RpcAbstractHandler {
         if (StreamType.MAJOR.equals(streamType)
                 && cacheManage.existsConferenceRelativeInfo(key = CacheKeyConstants.getSubscriberSetRollCallKey(session.getSessionId(),
                 session.getStartTime(), participant.getUuid()))) {
-            sessionManager.setRollCallInSession(sessionManager.getSession(rpcConnection.getSessionId()), participant);
+            sessionManager.setRollCallInSession(sessionManager.getSession(rpcConnection.getSessionId()), participant, participantOptional.get());
 
             cacheManage.delConferenceRelativeKey(key);
         }

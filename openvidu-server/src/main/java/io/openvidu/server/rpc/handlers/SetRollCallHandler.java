@@ -17,6 +17,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author geedow
@@ -25,6 +26,9 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class SetRollCallHandler extends RpcAbstractHandler {
+
+    public static final Object roll_call_lock = new Object();
+
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM);
@@ -33,16 +37,17 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 
         Session conferenceSession = sessionManager.getSession(sessionId);
         Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElseGet(null);
+        Optional<Participant> originatorOp = conferenceSession.getParticipantByUUID(rpcConnection.getUserUuid());
 
         if (targetPart == null) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    new JsonObject(),ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+                    new JsonObject(), ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
             return;
         }
         Participant moderatorPart = conferenceSession.getModeratorPart();
         if (moderatorPart == null) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    new JsonObject(),ErrorCodeEnum.MODERATOR_NOT_FOUND);
+                    new JsonObject(), ErrorCodeEnum.MODERATOR_NOT_FOUND);
             return;
         }
 
@@ -82,8 +87,8 @@ public class SetRollCallHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.PARTICIPANT_DOWN_HAND_NOW);
             return;
         }
-
-        ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart);
+        ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart,originatorOp.get());
+        //发言
         if (ErrorCodeEnum.SET_ROLL_CALL_SAME_PART.equals(errorCode)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SET_ROLL_CALL_SAME_PART);

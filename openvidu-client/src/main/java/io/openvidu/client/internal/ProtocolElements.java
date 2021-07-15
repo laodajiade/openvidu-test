@@ -286,13 +286,16 @@ public class ProtocolElements {
 
 
     public static final String SET_ROLL_CALL_METHOD = "setRollCall";
+    public static final String SET_ROLL_CALL_NOTIFY_METHOD = "setRollCallNotify";
     public static final String SET_ROLL_CALL_ROOM_ID_PARAM = "roomId";
     public static final String SET_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
     public static final String SET_ROLL_CALL_TARGET_ID_PARAM = "targetId";
 
     public static final String END_ROLL_CALL_METHOD = "endRollCall";
+    public static final String END_ROLL_CALL_NOTIFY_METHOD = "endRollCallNotify";
     public static final String END_ROLL_CALL_ROOM_ID_PARAM = "roomId";
     public static final String END_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
+    public static final String END_ROLL_CALL_ORIGINATOR_ID_PARAM = "originator";
     public static final String END_ROLL_CALL_TARGET_ID_PARAM = "targetId";
 
     public static final String REPLACE_ROLL_CALL_METHOD = "replaceRollCall";
@@ -897,6 +900,7 @@ public class ProtocolElements {
     public static final String APPLY_SHARE_NOTIFY_METHOD = "applyShareNotify";
     public static final String END_SHARE_METHOD = "endShare";
     public static final String END_SHARE_NOTIFY_METHOD = "endShareNotify";
+
 
 
     public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,

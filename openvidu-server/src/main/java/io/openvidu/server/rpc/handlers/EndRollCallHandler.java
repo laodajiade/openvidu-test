@@ -27,14 +27,15 @@ public class EndRollCallHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM);
-        String sourceId = getStringParam(request, ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM);
+        String originator = getStringParam(request, ProtocolElements.END_ROLL_CALL_ORIGINATOR_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
 
         String sourceConnectionId = null;
         String targetConnectionId = null;
         Session conferenceSession = sessionManager.getSession(sessionId);
         Set<Participant> participants = conferenceSession.getParticipants();
-        Participant moderatorPart = conferenceSession.getParticipantByUUID(sourceId).orElseGet(null);
+        Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElseGet(null);
+        Participant moderatorPart = conferenceSession.getParticipantByUUID(originator).orElseGet(null);
         Participant part = null;
         for (Participant participant : participants) {
             if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
@@ -44,7 +45,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
                     part = participant;
                 }
 
-                if (sourceId.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+                if (originator.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
                     sourceConnectionId = participant.getParticipantPublicId();
                 }
             }
@@ -75,13 +76,13 @@ public class EndRollCallHandler extends RpcAbstractHandler {
             conferenceSession.invokeKmsConferenceLayout();
         }
 
-        JsonObject params = new JsonObject();
+/*        JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
         params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
-        params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, targetId);
+        params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, targetId);*/
 
         // broadcast the changes of layout
-        participants.forEach(participant -> {
+/*        participants.forEach(participant -> {
             if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 return;
             }
@@ -91,8 +92,8 @@ public class EndRollCallHandler extends RpcAbstractHandler {
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
                         conferenceSession.getLayoutNotifyInfo());
             }
-        });
-
+        });*/
+        sessionManager.endSpeaker(conferenceSession, targetPart, originator);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
         // update recording
