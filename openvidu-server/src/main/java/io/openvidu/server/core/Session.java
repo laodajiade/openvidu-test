@@ -938,6 +938,9 @@ public class Session implements SessionInterface {
         }
 
         // TODO 2.0 吴冰 关闭发言
+		if(isSpeake(participant.getUuid())){
+
+		}
     }
 
 	private void updatePartCacheInfo(Participant participant) {
@@ -1544,5 +1547,11 @@ public class Session implements SessionInterface {
 	 */
 	public boolean isShare(String uuid) {
 		return this.sharingPart != null && this.sharingPart.getUuid().equals(uuid);
+	}
+	/**
+	 * 检查是否是发言者
+	**/
+	public  boolean isSpeake(String uuid){
+		return this.speakerPart != null && this.speakerPart.getUuid().equals(uuid);
 	}
 }
