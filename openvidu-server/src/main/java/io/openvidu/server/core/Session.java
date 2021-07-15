@@ -17,6 +17,7 @@
 
 package io.openvidu.server.core;
 
+import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,7 +37,6 @@ import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.SipMockClient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -820,13 +820,59 @@ public class Session implements SessionInterface {
 		return partArr;
 	}
 
+	public ErrorCodeEnum dealReplaceOrder(Participant source, Participant target, SessionManager sessionManager, Participant operatorPart) {
+		Set<Participant> pub2SubPartSet = new HashSet<>();
+		JsonArray partRoleChangedArrParam = new JsonArray();
+
+		int sourceOrder = source.getOrder();
+		int targetOrder = target.getOrder();
+
+		int sfuPublisherThreshold = getPresetInfo().getSfuPublisherThreshold();
+
+		if (sourceOrder < sfuPublisherThreshold && targetOrder >= sfuPublisherThreshold) {
+			if (source.getHandStatus() != ParticipantHandStatus.speaker) {
+				source.setRole(OpenViduRole.SUBSCRIBER);
+				pub2SubPartSet.add(source);
+				partRoleChangedArrParam.add(getPartRoleChangedNotifyParam(source, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER));
+			}
+			target.setRole(OpenViduRole.PUBLISHER);
+			partRoleChangedArrParam.add(getPartRoleChangedNotifyParam(target, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
+		} else if (targetOrder < sfuPublisherThreshold && sourceOrder >= sfuPublisherThreshold) {
+			if (target.getHandStatus() != ParticipantHandStatus.speaker) {
+				target.setRole(OpenViduRole.SUBSCRIBER);
+				pub2SubPartSet.add(target);
+				partRoleChangedArrParam.add(getPartRoleChangedNotifyParam(target, OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER));
+			}
+			source.setRole(OpenViduRole.PUBLISHER);
+			partRoleChangedArrParam.add(getPartRoleChangedNotifyParam(source, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER));
+		}
+		source.setOrder(targetOrder);
+		target.setOrder(sourceOrder);
+
+		JsonObject result = new JsonObject();
+		result.add("updateParticipantsOrder", getPartSfuOrderInfo(Sets.newHashSet(target, source)));
+		result.add("roleChange", partRoleChangedArrParam);
+		result.addProperty("partSize", getParticipants().size());
+		result.addProperty("timestamp", System.currentTimeMillis());
+		result.addProperty("source", source.getUuid());
+		result.addProperty("target", target.getUuid());
+		result.addProperty("operator", operatorPart.getUuid());
+		sessionManager.notificationService.sendBatchNotificationConcurrent(getParticipants(), ProtocolElements.REPLACE_PARTICIPANTS_ORDER_NOTIFY_METHOD, result);
+
+		pub2SubPartSet.forEach(pub2SubPart -> {
+			doPubToSub(pub2SubPart, operatorPart, sessionManager);
+		});
+
+		return ErrorCodeEnum.SUCCESS;
+	}
+
 	public ErrorCodeEnum dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager,Participant operatorPart) {
 		ErrorCodeEnum errorCodeEnum = ErrorCodeEnum.SUCCESS;
 		int lineOrder = getPresetInfo().getSfuPublisherThreshold() - 1;
 		RpcNotificationService notificationService = sessionManager.notificationService;
 
-		Set<Participant> sub2PubPartSet = new HashSet<>(128);
-		Set<Participant> pub2SubPartSet = new HashSet<>(128);
+		Set<Participant> sub2PubPartSet = new HashSet<>();
+		Set<Participant> pub2SubPartSet = new HashSet<>();
 		boolean executeFlag = false;
 
 		synchronized (partOrderAdjustLock) {
@@ -933,9 +979,9 @@ public class Session implements SessionInterface {
         }
 
         // 关闭分享
-        if (isShare(participant.getUuid())) {
-            sessionManager.endSharing(this, participant, operatorPart.getUuid());
-        }
+		if (isShare(participant.getUuid())) {
+			sessionManager.endSharing(this, participant, operatorPart.getUuid());
+		}
 
         // TODO 2.0 吴冰 关闭发言
 		if(isSpeake(participant.getUuid())){

@@ -149,7 +149,16 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
             return AccessCode.FAIL;
         }
 
-        AccessNotification dto = new AccessNotification(participantPrivateId, rpcConnection.getAccessInfo().getOrigin());
+        return sendNotification0(rpcConnection, method, params);
+    }
+
+
+    private AccessCode sendNotification0(final RpcConnection rpcConnection, final String method, final Object params) {
+        if (rpcConnection == null) {
+            return AccessCode.FAIL;
+        }
+
+        AccessNotification dto = new AccessNotification(rpcConnection.getParticipantPrivateId(), rpcConnection.getAccessInfo().getOrigin());
         dto.setMethod(method);
         dto.setParams(JSONObject.parseObject(new Gson().toJson(params)));
         return accessClient.sendNotification(dto);
@@ -205,23 +214,19 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     @Override
     public void sendBatchNotification(List<String> participantPrivateIds, String method, Object params) {
         List<String> successList = new ArrayList<>();
-        List<String> failList = new ArrayList<>();
-
-        for (String participantPrivateId : participantPrivateIds) {
-            RpcConnection rpcSession = rpcConnections.get(participantPrivateId);
-            if (rpcSession == null) {
-                log.error("No rpc session found for private id {}, unable to send notification {}: {}",
-                        participantPrivateId, method, params);
-                failList.add(participantPrivateId);
+        Set<String> failList = new HashSet<>(participantPrivateIds);
+        List<RpcConnection> list = rpcConnections.gets(participantPrivateIds);
+        for (RpcConnection rpcConnection : list) {
+            if (rpcConnection == null) {
                 continue;
             }
             try {
-                sendNotification0(participantPrivateId, method, params);
-                successList.add(participantPrivateId);
+                sendNotification0(rpcConnection, method, params);
+                successList.add(rpcConnection.getParticipantPrivateId());
+                failList.remove(rpcConnection.getParticipantPrivateId());
             } catch (Exception e) {
-                failList.add(participantPrivateId);
                 log.error("Exception sending notification '{}': {} to participant with private id {}", method, params,
-                        participantPrivateId, e);
+                        rpcConnection.getParticipantPrivateId(), e);
             }
         }
         log.info("batch WebSocket notification- Notification method:{} and params: {}" +
@@ -236,26 +241,33 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
 
     @Override
     public void sendBatchNotificationConcurrent(List<String> participantPrivateIds, String method, Object params) {
+        if (participantPrivateIds.size() < 5) {
+            sendBatchNotification(participantPrivateIds, method, params);
+            return;
+        }
         List<String> successList = new ArrayList<>();
         List<String> failList = new ArrayList<>();
-        Set<String> waitSendings = new HashSet<>(participantPrivateIds);
+        Set<String> prepares = new HashSet<>(participantPrivateIds);
+        Set<String> waitingSends = new HashSet<>();
         int size = participantPrivateIds.size();
         final String sendThreadName = Thread.currentThread().getName();
 
         List<RpcConnection> list = rpcConnections.gets(participantPrivateIds);
         CountDownLatch countDownLatch = new CountDownLatch(list.size());
         for (RpcConnection rpcConnection : list) {
+            prepares.remove(rpcConnection.getParticipantPrivateId());
+            waitingSends.add(rpcConnection.getParticipantPrivateId());
             NOTIFY_THREAD_POOL.submit(() -> {
                 String participantPrivateId = rpcConnection.getParticipantPrivateId();
                 try {
-                    waitSendings.remove(participantPrivateId);
-                    this.sendNotification0(participantPrivateId, method, params);
+                    this.sendNotification0(rpcConnection, method, params);
                     successList.add(participantPrivateId);
                 } catch (Exception e) {
                     failList.add(participantPrivateId);
                     log.error("{} Exception sending notification '{}': {} to participant with private id {}", sendThreadName, method, params,
                             participantPrivateId, e);
                 } finally {
+                    waitingSends.remove(participantPrivateId);
                     countDownLatch.countDown();
                 }
             });
@@ -269,7 +281,7 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
             log.warn("{} sendBatchNotificationConcurrent error method={},partSize = {}", sendThreadName, method, size);
         }
         log.info("{} sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
-                "successList:{}, failList:{}, waitSendings:{}", sendThreadName, method, params, successList, failList, waitSendings);
+                "successList:{}, failList:{}, waitingSends:{}, prepares:{}", sendThreadName, method, params, successList, failList, waitingSends, prepares);
     }
 
     @Override

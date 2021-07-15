@@ -379,7 +379,7 @@ public abstract class RpcAbstractHandler {
 
     /**
      * 这个接口返回的与会者对象必不未空，如果会议或者与会者对象不存在，会抛出BizException异常，上层会catch，返回错误码
-         * 有部分接口被我封装了Optional<Participant>返回值，要求强制判断非空。有时候是可以确保某个与会者不为空时可以使用sanityCheckOfSession
+     * 有部分接口被我封装了Optional<Participant>返回值，要求强制判断非空。有时候是可以确保某个与会者不为空时可以使用sanityCheckOfSession
      */
     protected Participant sanityCheckOfSession(RpcConnection rpcConnection) {
         return sanityCheckOfSession(rpcConnection.getSessionId(), rpcConnection.getUserUuid());

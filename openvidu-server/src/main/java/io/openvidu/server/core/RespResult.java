@@ -30,6 +30,12 @@ public class RespResult<T> {
         return respResult;
     }
 
+    public static <T> RespResult<T> end(ErrorCodeEnum code) {
+        RespResult<T> respResult = new RespResult<>();
+        respResult.setCode(code);
+        return respResult;
+    }
+
     public static <T> RespResult<T> ok(T result) {
         RespResult<T> respResult = new RespResult<>();
         respResult.setCode(ErrorCodeEnum.SUCCESS);
@@ -37,33 +43,7 @@ public class RespResult<T> {
         return respResult;
     }
 
-//    public static <T extends PageResult, E> RespResult<T> ok(IPage<E> pageInfo) {
-//        RespResult<T> respResult = new RespResult<>();
-//        respResult.setCode(ErrorCodeEnum.SUCCESS);
-//
-//        PageResult<E> pageResult = new PageResult<>();
-//        pageResult.setList(pageInfo.getRecords());
-//        pageResult.setPages(((int) (pageInfo.getPages())));
-//        pageResult.setTotal(pageInfo.getTotal());
-//        pageResult.setPageNum(((int) (pageInfo.getCurrent())));
-//        pageResult.setPageSize(((int) (pageInfo.getSize())));
-//        respResult.setResult((T) pageResult);
-//        return respResult;
-//    }
-//
-//    public static <T extends PageResult, E> RespResult<T> ok(Collection<E> records, IPage page) {
-//        RespResult<T> respResult = new RespResult<>();
-//        respResult.setCode(ErrorCodeEnum.SUCCESS);
-//
-//        PageResult<E> pageResult = new PageResult<>();
-//        pageResult.setList(records);
-//        pageResult.setPages(((int) (page.getPages())));
-//        pageResult.setTotal(page.getTotal());
-//        pageResult.setPageNum(((int) (page.getCurrent())));
-//        pageResult.setPageSize(((int) (page.getSize())));
-//        respResult.setResult((T) pageResult);
-//        return respResult;
-//    }
+
 
     public static <T> RespResult<T> ok(T result, Notification notification) {
         RespResult<T> respResult = new RespResult<>();
