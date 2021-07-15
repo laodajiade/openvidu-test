@@ -53,7 +53,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
 
         if (part != null) {
             //when the part on wall,change role to SUBSCRIBER
-            if (part.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1 && !OpenViduRole.ONLY_SHARE.equals(part.getRole())) {
+            if (part.getOrder() > conferenceSession.getPresetInfo().getSfuPublisherThreshold() - 1 && !OpenViduRole.ONLY_SHARE.equals(part.getRole())) {
                 part.changePartRole(OpenViduRole.SUBSCRIBER);
                 Session session = sessionManager.getSession(sessionId);
                 JsonArray changeRoleNotifiParam = session.getPartRoleChangedNotifyParamArr(part,
