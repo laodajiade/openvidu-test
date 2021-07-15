@@ -10,6 +10,7 @@ import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -113,7 +114,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             case "all":
                 return new AllSearch();
             default:
-                throw new UnsupportedOperationException("unsupported method search " + searchType);
+                log.warn("unsupported method search " + searchType);
+                throw new BizException(ErrorCodeEnum.REQUEST_PARAMS_ERROR);
         }
     }
 

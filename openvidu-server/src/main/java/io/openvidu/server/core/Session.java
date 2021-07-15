@@ -854,7 +854,10 @@ public class Session implements SessionInterface {
 		result.add("roleChange", partRoleChangedArrParam);
 		result.addProperty("partSize", getParticipants().size());
 		result.addProperty("timestamp", System.currentTimeMillis());
-		sessionManager.notificationService.sendBatchNotificationConcurrent(getParticipants(), ProtocolElements.PART_ORDER_OR_ROLE_CHANGE_NOTIFY_METHOD, result);
+		result.addProperty("source", source.getUuid());
+		result.addProperty("target", target.getUuid());
+		result.addProperty("operator", operatorPart.getUuid());
+		sessionManager.notificationService.sendBatchNotificationConcurrent(getParticipants(), ProtocolElements.REPLACE_PARTICIPANTS_ORDER_NOTIFY_METHOD, result);
 
 		pub2SubPartSet.forEach(pub2SubPart -> {
 			doPubToSub(pub2SubPart, operatorPart, sessionManager);

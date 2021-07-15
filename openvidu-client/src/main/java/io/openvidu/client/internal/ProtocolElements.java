@@ -313,6 +313,7 @@ public class ProtocolElements {
     public static final String PART_ORDER_OR_ROLE_CHANGE_NOTIFY_METHOD = "partOrderOrRoleChangeNotify";
 
 
+
     // 2.0 废弃 public static final String NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM = "connectionId";
     public static final String NOTIFY_PART_ROLE_CHANGED_UUID_PARAM = "uuid";
     public static final String NOTIFY_PART_ROLE_CHANGED_ORIGINAL_ROLE_PARAM = "originalRole";
@@ -749,6 +750,9 @@ public class ProtocolElements {
 
     public static final String UPDATE_PARTICIPANTS_ORDER_METHOD = "updateParticipantsOrder";
     public static final String UPDATE_PARTICIPANTS_ORDER_ORDEREDPARTS_PARAM = "orderedParts";
+
+    public static final String REPLACE_PARTICIPANTS_ORDER_METHOD = "replaceParticipantsOrder";
+    public static final String REPLACE_PARTICIPANTS_ORDER_NOTIFY_METHOD = "replaceParticipantsOrderNotify";
 
     public static final String PAUSEANDRESUMESTREAM_METHOD = "pauseAndResumeStream";
     public static final String PAUSEANDRESUMESTREAM_OPERATION_PARAM = "operation";
