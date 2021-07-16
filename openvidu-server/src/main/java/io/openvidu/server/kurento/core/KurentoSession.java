@@ -587,7 +587,7 @@ public class KurentoSession extends Session {
      * 是否需要新的分发网络
      */
     public boolean needMediaDeliveryKms(int loadFactor) {
-		int partSize = this.getMajorPartEachIncludeThorConnect().size();
+		int partSize = getPartSize();
 		int deliveryKmsSize = this.getDeliveryKmsManagers().size();
 		return ((partSize - 1) / loadFactor) > deliveryKmsSize;
 	}

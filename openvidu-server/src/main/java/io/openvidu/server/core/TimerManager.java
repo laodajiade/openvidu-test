@@ -154,7 +154,7 @@ public class TimerManager {
                 if (first == 0) {
                     JsonObject currentNotifyParam = new JsonObject();
                     currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
-                    session.getMajorPartEachIncludeThorConnect().stream().filter(p -> p.getTerminalType() != TerminalTypeEnum.S).collect(Collectors.toSet()).forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                    session.getParticipants().stream().filter(p -> p.getTerminalType() != TerminalTypeEnum.S).collect(Collectors.toSet()).forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
                     first++;
                 }
@@ -169,7 +169,7 @@ public class TimerManager {
                 }
 
                 log.info("dealPollingCheck roomId:{} polling check part:{} the index:{}", session.getSessionId(), participant.getParticipantPublicId(), index);
-                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                session.getParticipants().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.POLLING_CHECK_NOTIFY_METHOD, jsonCheckParam));
 
                 //notify next part polling to
@@ -180,7 +180,7 @@ public class TimerManager {
                 log.info("dealPollingCheck roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
                 JsonObject nextNotifyParam = new JsonObject();
                 nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getParticipantPublicId());
-                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+                session.getParticipants().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
                 index++;
             }

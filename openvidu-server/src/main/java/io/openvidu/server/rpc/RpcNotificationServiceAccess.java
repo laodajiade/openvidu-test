@@ -45,7 +45,7 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     private static final ThreadPoolExecutor NOTIFY_THREAD_POOL = new ThreadPoolExecutor(
             Math.max(Runtime.getRuntime().availableProcessors() * 10 + 4, 20), Math.max(Runtime.getRuntime().availableProcessors() * 40, 200),
             120L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(2000),
-            new ThreadFactoryBuilder().setNameFormat("notify_thread_pool-").setDaemon(true).build());
+            new ThreadFactoryBuilder().setNameFormat("notify_thread_pool-%d").setDaemon(true).build());
 
     /**
      * newRpcConnection 由access-server完成，信令不再负责创建

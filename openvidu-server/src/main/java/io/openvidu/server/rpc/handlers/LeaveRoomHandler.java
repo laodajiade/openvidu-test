@@ -111,8 +111,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                 //send notify
                 JsonObject params = new JsonObject();
                 params.addProperty("roomId", sessionId);
-                session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
-                        ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+                notificationService.sendBatchNotification(session.getParticipants(), ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
             } else {
                 //获取当前轮询信息
                 Map<String, Integer> map = timerManager.getPollingCompensationScheduler(sessionId);
@@ -133,7 +132,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             //send notify
             JsonObject params = new JsonObject();
             params.addProperty("roomId", sessionId);
-            session.getMajorPartEachIncludeThorConnect().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
+            session.getParticipants().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                     ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
         }
         UseTime.point("p5");
