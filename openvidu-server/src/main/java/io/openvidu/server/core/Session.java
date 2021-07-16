@@ -557,12 +557,13 @@ public class Session implements SessionInterface {
     public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
         checkClosed();
 
-        if (Objects.isNull(participants.get(participantPrivateId))) {
-        	return null;
+		List<Participant> collect = participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).collect(Collectors.toList());
+		if (Objects.isNull(collect)) {
+			return null;
 		}
-
-        return Objects.isNull(streamType) ? participants.get(participantPrivateId).get(StreamType.MAJOR.name()) :
-				participants.get(participantPrivateId).get(streamType.name());
+		return Objects.isNull(streamType) ?
+				collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(StreamType.MAJOR.name())).findFirst().get() :
+				collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(streamType.name())).findFirst().get();
     }
 
     public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
@@ -979,9 +980,9 @@ public class Session implements SessionInterface {
 			sessionManager.endSharing(this, participant, operatorPart.getUuid());
 		}
 
-        // TODO 2.0 吴冰 关闭发言
+        // 关闭发言
 		if(isSpeake(participant.getUuid())){
-
+			sessionManager.endSpeaker(this, participant, operatorPart.getUuid());
 		}
     }
 
