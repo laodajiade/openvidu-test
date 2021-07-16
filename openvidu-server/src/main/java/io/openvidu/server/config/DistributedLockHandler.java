@@ -47,12 +47,16 @@ public class DistributedLockHandler {
         try {
             if (lock.tryLock()) {
                 log.info("通过redisson 执行方法{},锁key值{}", ((MethodSignature) joinPoint.getSignature()).getMethod().getName(), key);
-                joinPoint.proceed();
+                try {
+                    joinPoint.proceed();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    lock.unlock();
+                }
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-        } finally {
-            lock.unlock();
         }
 
 
