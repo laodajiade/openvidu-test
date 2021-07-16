@@ -265,7 +265,7 @@ public class KurentoSession extends Session {
 
 		KurentoParticipant kParticipant = (KurentoParticipant) participant;
 		for (PublisherEndpoint publisherEndpoint : kParticipant.getPublishers().values()) {
-			for (Participant other : getParticipants()) {
+			for (Participant other : getParticipantsExclude(kParticipant)) {
 				try {
 					KurentoParticipant kOther = (KurentoParticipant) other;
 					kOther.cancelReceivingMedia(kOther.translateSubscribeId(kOther.getUuid(), publisherEndpoint.getStreamId()), reason);

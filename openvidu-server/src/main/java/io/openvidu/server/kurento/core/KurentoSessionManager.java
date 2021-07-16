@@ -197,9 +197,7 @@ public class KurentoSessionManager extends SessionManager {
             session.leaveRoom(participant, reason);
             UseTime.point("ip3");
             //update partInfo
-            if (!OpenViduRole.THOR.equals(participant.getRole())) {
-                roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
-            }
+            roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
 
             // Update control data structures
 //            if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {

@@ -436,6 +436,11 @@ public class Session implements SessionInterface {
         checkClosed();
         return new LinkedHashSet<>(this.participantList.values());
     }
+	public Set<Participant> getParticipantsExclude(Participant participant) {
+		Set<Participant> participants = getParticipants();
+		participants.removeIf(p -> p.getUuid().equals(participant.getUuid()));
+		return participants;
+	}
 
     @Deprecated // use getParticipants()
 	public Set<Participant> getMajorPartEachConnect() {
