@@ -128,7 +128,7 @@ public class KurentoSessionManager extends SessionManager {
                 if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                     participant.setMicStatus(ParticipantMicStatus.off);
                 } else {
-                    if (participant.getOrder() > (openviduConfig.getSfuPublisherSizeLimit() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+                    if (participant.getOrder() > (kSession.getPresetInfo().getSfuPublisherThreshold() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
                         participant.setMicStatus(ParticipantMicStatus.off);
                     }
                 }
@@ -151,27 +151,15 @@ public class KurentoSessionManager extends SessionManager {
             UseTime.point("join 1");
             kSession.join(participant);
             UseTime.point("join 2");
-            // todo 需要转移到分享接口
-            // record share status.
-            if (StreamType.SHARING.equals(participant.getStreamType())) {
-                participant.setShareStatus(ParticipantShareStatus.on);
-                Participant majorPart = getParticipant(sessionId, participant.getParticipantPrivateId());
-                majorPart.changeShareStatus(ParticipantShareStatus.on);
-            }
-            // todo 需要转移到分享接口
-            UseTime.point("db 1");
             // save part info
             roomManage.storePartHistory(participant, conference);
-            UseTime.point("db 2");
             // save max concurrent statistics
             cacheManage.updateMaxConcurrentOfDay(kSession.getParticipants().size(), conference.getProject());
-            UseTime.point("db 3");
             //save max concurrent in conference
             Conference concurrentCon = new Conference();
             concurrentCon.setConcurrentNumber(kSession.getParticipants().size());
             concurrentCon.setId(conference.getId());
             roomManage.storeConcurrentNumber(concurrentCon);
-            UseTime.point("db 4");
         } catch (OpenViduException e) {
             log.warn("PARTICIPANT {}: Error joining/creating session {}", participant.getParticipantPublicId(),
                     sessionId, e);
@@ -478,9 +466,7 @@ public class KurentoSessionManager extends SessionManager {
                     transactionId, null, kParticipant.getPublisher(streamType), streamType);
         }
 
-        // todo 2.0 注释掉 kSession.newPublisher(participant) 看起来暂时不需要
-        // kSession.newPublisher(participant);
-
+        kSession.registerPublisher();
         if (Objects.equals(StreamType.SHARING, streamType)
                 && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
             kSession.compositeService.setExistSharing(true);
@@ -1515,6 +1501,7 @@ public class KurentoSessionManager extends SessionManager {
             log.info("Start recording but session:{} is closed.", sessionId);
             return;
         }
+        session.setIsRecording(true);
 
         log.info("Start recording and sessionId is {}", sessionId);
         // set needed recording properties

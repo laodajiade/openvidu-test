@@ -242,6 +242,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("unMcuThreshold", session.getPresetInfo().getUnMcuThreshold());
 		roomInfoJson.addProperty("sharingUuid", session.getSharingPart().isPresent() ? session.getSharingPart().get().getUuid() : "");
 		roomInfoJson.addProperty("speakerUuid", session.getSpeakerPart().isPresent() ? session.getSpeakerPart().get().getUuid() : "");
+		roomInfoJson.addProperty("isRecording", session.getIsRecording());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
 		}

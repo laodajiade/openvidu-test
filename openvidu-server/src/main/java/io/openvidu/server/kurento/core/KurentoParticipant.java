@@ -294,6 +294,7 @@ public class KurentoParticipant extends Participant {
 		return this.isStreaming() && publisher != null && publisher.getEndpoint() != null;
 	}
 
+	@Deprecated
 	public void setPublisher(PublisherEndpoint publisher) {
 		this.publisher = publisher;
 	}

@@ -241,6 +241,11 @@ public class Session implements SessionInterface {
 		return this.openviduConfig.isLivingModuleEnabled() && MediaMode.ROUTED.equals(sessionProperties.mediaMode());
 	}
 
+
+	public boolean getIsRecording() {
+		return !closing && !closed && isRecording.get();
+	}
+
 	@Override
 	public boolean setIsRecording(boolean flag) {
 		return isRecording.compareAndSet(!flag, flag);

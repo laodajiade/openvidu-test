@@ -18,13 +18,11 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -81,12 +79,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             return;
         }
 
-        Participant participant;
-        try {
-            participant = sanityCheckOfSession(rpcConnection, "startConferenceRecord");
-        } catch (OpenViduException e) {
-            return;
-        }
+        Participant participant = sanityCheckOfSession(rpcConnection);
 
         // 权限校验（web：管理员，terminal：主持人）
         if (!participant.getRole().isController()) {
@@ -198,6 +191,15 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 通知与会者开始录制
         notifyStartRecording(rpcConnection.getSessionId());
 
+        // todo 2.0 录制，在第三阶段做，现在先给mock data
+        if (true) {
+            ConferenceRecord conferenceRecord = conferenceRecordManage.getByCondition(condition).get(0);
+            conferenceRecord.setStatus(ConferenceRecordStatusEnum.PROCESS.getStatus());
+            conferenceRecordManage.updateByPrimaryKey(conferenceRecord);
+            return;
+        }
+        // todo 2.0 录制，在第三阶段做，现在先给mock data
+
         asyncCheckRecordStatus(roomId, session, participant);
     }
 
@@ -215,7 +217,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
                     JsonObject notify = new JsonObject();
                     // notify.addProperty("reason", "serverInternalError");
                     notify.addProperty("reason", CommonConstants.SERVER_INTERNAL_ERROR);
-                    notificationService.sendBatchNotificationConcurrent(session.getMajorPartEachConnect(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
+                    notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
                 }
                 if (ConferenceRecordStatusEnum.PROCESS.getStatus().equals(recordStatus.getStatus())) {
                     recordingNum.incrementAndGet();

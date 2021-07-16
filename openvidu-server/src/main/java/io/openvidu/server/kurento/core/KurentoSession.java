@@ -156,19 +156,6 @@ public class KurentoSession extends Session {
 		}
 	}
 
-	public void newPublisher(Participant participant) {
-		registerPublisher();
-		for (Participant p : getParticipants()) {
-			if (participant.equals(p)) {
-				continue;
-			}
-			((KurentoParticipant) p).getNewOrExistingSubscriber(participant.getParticipantPublicId());
-		}
-
-		log.debug("SESSION {}: Virtually subscribed other participants {} to new publisher {}", sessionId,
-				participants.values(), participant.getParticipantPublicId());
-	}
-
 	public void cancelPublisher(Participant participant, EndReason reason) {
 		for (Participant subscriber : getParticipants()) {
 			if (participant.equals(subscriber)) {
@@ -179,7 +166,6 @@ public class KurentoSession extends Session {
 
 		log.debug("SESSION {}: Unsubscribed other participants {} from the publisher {}", sessionId,
 				participants.values(), participant.getParticipantPublicId());
-
 	}
 
 	@Override
