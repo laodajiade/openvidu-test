@@ -119,8 +119,8 @@ public class CallDetailRecord {
 			this.log(eventSessionEnd);
 
 			// Summary: log closed session
-			this.log(new SessionSummary(eventSessionEnd, sessionManager.removeFinalUsers(sessionId),
-					sessionManager.removeAccumulatedRecordings(sessionId)));
+//			this.log(new SessionSummary(eventSessionEnd, sessionManager.removeFinalUsers(sessionId),
+//					sessionManager.removeAccumulatedRecordings(sessionId)));
 		}
 	}
 
@@ -136,7 +136,7 @@ public class CallDetailRecord {
 		this.log(eventParticipantEnd);
 
 		// Summary: update final user ended connection
-		sessionManager.getFinalUsers(sessionId).get(participant.getFinalUserId()).setConnection(eventParticipantEnd);
+		//sessionManager.getFinalUsers(sessionId).get(participant.getFinalUserId()).setConnection(eventParticipantEnd);
 	}
 
 	public void recordNewPublisher(Participant participant, String sessionId, String streamId,
@@ -154,9 +154,9 @@ public class CallDetailRecord {
 			this.log(eventPublisherEnd);
 
 			// Summary: update final user ended publisher
-			sessionManager.getFinalUsers(eventPublisherEnd.getSessionId())
-					.get(eventPublisherEnd.getParticipant().getFinalUserId()).getConnections().get(participantPublicId)
-					.addPublisherClosed(streamId, eventPublisherEnd);
+//			sessionManager.getFinalUsers(eventPublisherEnd.getSessionId())
+//					.get(eventPublisherEnd.getParticipant().getFinalUserId()).getConnections().get(participantPublicId)
+//					.addPublisherClosed(streamId, eventPublisherEnd);
 		}
 	}
 
@@ -185,17 +185,6 @@ public class CallDetailRecord {
 					eventSubscriberEnd = new CDREventWebrtcConnection(eventSubscriberEnd, reason,
 							System.currentTimeMillis());
 					this.log(eventSubscriberEnd);
-
-					// Summary: update final user ended subscriber
-					if (Objects.isNull(sessionManager.getFinalUsers(eventSubscriberEnd.getSessionId())) ||
-							Objects.isNull(eventSubscriberEnd.getParticipant()) ||
-							Objects.isNull(sessionManager.getFinalUsers(eventSubscriberEnd.getSessionId())
-									.get(eventSubscriberEnd.getParticipant().getFinalUserId()))) {
-						return;
-					}
-					sessionManager.getFinalUsers(eventSubscriberEnd.getSessionId())
-							.get(eventSubscriberEnd.getParticipant().getFinalUserId()).getConnections()
-							.get(participantPublicId).addSubscriberClosed(streamId, eventSubscriberEnd);
 				}
 			}
 		}

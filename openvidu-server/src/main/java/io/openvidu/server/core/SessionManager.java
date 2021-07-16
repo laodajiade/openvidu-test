@@ -104,8 +104,8 @@ public abstract class SessionManager {
     protected ConcurrentMap<String, Session> sessionsNotActive = new ConcurrentHashMap<>();
     @Deprecated // todo 2.0废弃
     protected ConcurrentMap<String, ConcurrentHashMap<String, Participant>> sessionidParticipantpublicidParticipant = new ConcurrentHashMap<>();
-    @Deprecated // todo 2.0废弃
-    protected ConcurrentMap<String, ConcurrentHashMap<String, FinalUser>> sessionidFinalUsers = new ConcurrentHashMap<>();
+    //@Deprecated // todo 2.0废弃
+    //protected ConcurrentMap<String, ConcurrentHashMap<String, FinalUser>> sessionidFinalUsers = new ConcurrentHashMap<>();
     @Deprecated // todo 2.0废弃
     protected ConcurrentMap<String, ConcurrentLinkedQueue<CDREventRecording>> sessionidAccumulatedRecordings = new ConcurrentHashMap<>();
 
@@ -360,13 +360,13 @@ public abstract class SessionManager {
         return null;
     }
 
-    public Map<String, FinalUser> getFinalUsers(String sessionId) {
-        return this.sessionidFinalUsers.get(sessionId);
-    }
+//    public Map<String, FinalUser> getFinalUsers(String sessionId) {
+//        return this.sessionidFinalUsers.get(sessionId);
+//    }
 
-    public Map<String, FinalUser> removeFinalUsers(String sessionId) {
-        return this.sessionidFinalUsers.remove(sessionId);
-    }
+//    public Map<String, FinalUser> removeFinalUsers(String sessionId) {
+//        return this.sessionidFinalUsers.remove(sessionId);
+//    }
 
     public Collection<CDREventRecording> getAccumulatedRecordings(String sessionId) {
         return this.sessionidAccumulatedRecordings.get(sessionId);
@@ -411,7 +411,7 @@ public abstract class SessionManager {
         log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
         this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
         log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
+        //this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
         if (this.openviduConfig.isRecordingModuleEnabled()) {
             this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
         }
@@ -726,7 +726,7 @@ public abstract class SessionManager {
         log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
         sessionidParticipantpublicidParticipant.remove(sessionId);
         log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        sessionidFinalUsers.remove(sessionId);
+        //sessionidFinalUsers.remove(sessionId);
         sessionidAccumulatedRecordings.remove(sessionId);
         sessionidTokenTokenobj.remove(sessionId);
     }
