@@ -518,10 +518,13 @@ public class Session implements SessionInterface {
 
     public Set<Participant> getMajorPartEachIncludeThorConnect() {
         checkClosed();
-        return this.participants.values().stream()
+        return this.participantList.values().stream()
+                .filter(participant -> Objects.nonNull(participant) && participant.getStreamType().name().equals(StreamType.MAJOR.name()))
+                .collect(Collectors.toSet());
+/*         this.participants.values().stream()
                 .map(v -> v.get(StreamType.MAJOR.name()))
                 .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet());*/
     }
 
 //	public Set<Participant> getMajorPartEachExcludeThorConnect() {
