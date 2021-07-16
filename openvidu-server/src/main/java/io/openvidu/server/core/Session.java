@@ -495,10 +495,13 @@ public class Session implements SessionInterface {
 
 	public Set<Participant> getMajorPartEachIncludeThorConnect() {
 		checkClosed();
-		return this.participants.values().stream()
+		return this.participantList.values().stream()
+				.filter(participant -> Objects.nonNull(participant) && participant.getStreamType().name().equals(StreamType.MAJOR.name()))
+				.collect(Collectors.toSet());
+/*		return this.participants.values().stream()
 				.map(v -> v.get(StreamType.MAJOR.name()))
 				.filter(Objects::nonNull)
-				.collect(Collectors.toSet());
+				.collect(Collectors.toSet());*/
 	}
 
 //	public Set<Participant> getMajorPartEachExcludeThorConnect() {
@@ -519,12 +522,20 @@ public class Session implements SessionInterface {
 
 	public Set<Participant> getPartsExcludeModeratorAndSpeaker() {
 		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+/*		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
 				.filter(participant -> Objects.nonNull(participant)
 						&& !Objects.equals(OpenViduRole.THOR, participant.getRole())
 						&& !Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
 						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
 						&& !Objects.equals(OpenViduRole.ONLY_SHARE, participant.getRole()))
+				.collect(Collectors.toSet());*/
+		return this.participantList.values().stream()
+				.filter(participant -> Objects.nonNull(participant)
+						&& !Objects.equals(OpenViduRole.THOR, participant.getRole())
+						&& !Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
+						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
+						&& !Objects.equals(OpenViduRole.ONLY_SHARE, participant.getRole())
+						&& Objects.equals(StreamType.MAJOR.name(), participant.getStreamType().name()))
 				.collect(Collectors.toSet());
 	}
 
