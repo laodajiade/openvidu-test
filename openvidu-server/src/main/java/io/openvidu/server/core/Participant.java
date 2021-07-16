@@ -40,6 +40,8 @@ public class Participant {
 	protected String clientMetadata = ""; // Metadata provided on client side
 	protected String serverMetadata = ""; // Metadata provided on server side
 	private OpenViduRole role;
+	//TODO 2.0 Deprecated
+	@Deprecated
 	private StreamType streamType;
 	protected GeoLocation location; // Location of the participant
 	protected String platform; // Platform used by the participant to connect to the session
