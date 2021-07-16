@@ -249,7 +249,6 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         List<String> failList = new ArrayList<>();
         Set<String> prepares = new HashSet<>(participantPrivateIds);
         Set<String> waitingSends = new HashSet<>();
-        int size = participantPrivateIds.size();
         final String sendThreadName = Thread.currentThread().getName();
 
         List<RpcConnection> list = rpcConnections.gets(participantPrivateIds);
@@ -274,11 +273,11 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
         }
 
         try {
-            if (!countDownLatch.await((size * 2) + 100, TimeUnit.MILLISECONDS)) {
-                log.warn("{} sendBatchNotificationConcurrent timeout method={},partSize = {}", sendThreadName, method, size);
+            if (!countDownLatch.await((list.size() * 2) + 100, TimeUnit.MILLISECONDS)) {
+                log.warn("{} sendBatchNotificationConcurrent timeout method={},partSize = {}", sendThreadName, method, list.size());
             }
         } catch (InterruptedException e) {
-            log.warn("{} sendBatchNotificationConcurrent error method={},partSize = {}", sendThreadName, method, size);
+            log.warn("{} sendBatchNotificationConcurrent error method={},partSize = {}", sendThreadName, method, list.size());
         }
         log.info("{} sendBatchNotificationConcurrent - Notification method:{} and params: {}" +
                 "successList:{}, failList:{}, waitingSends:{}, prepares:{}", sendThreadName, method, params, successList, failList, waitingSends, prepares);
