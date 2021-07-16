@@ -127,10 +127,8 @@ public class KurentoSessionManager extends SessionManager {
                 participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
                 if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                     participant.setMicStatus(ParticipantMicStatus.off);
-                } else {
-                    if (participant.getOrder() > (kSession.getPresetInfo().getSfuPublisherThreshold() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
-                        participant.setMicStatus(ParticipantMicStatus.off);
-                    }
+                } else if (participant.getOrder() >= openviduConfig.getSmartMicOnThreshold()) {
+                    participant.setMicStatus(ParticipantMicStatus.off);
                 }
             }
             participant.setRoomSubject(preset.getRoomSubject());

@@ -174,6 +174,10 @@ public class OpenviduConfig {
 	private int sfuPublisherSizeLimit;
 
 	@Getter
+	@Value("${room.config.smartMicOnThreshold:7}")
+	private int smartMicOnThreshold;
+
+	@Getter
 	@Value("${conference.record.playback.server}")
 	private String recordPlaybackServer;
 
