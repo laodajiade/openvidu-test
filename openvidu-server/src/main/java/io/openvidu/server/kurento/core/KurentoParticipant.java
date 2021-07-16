@@ -583,7 +583,7 @@ public class KurentoParticipant extends Participant {
 		return subscriberEndpoint;
 	}
 
-//	todo 2.0 delete
+//	2.0 delete
 //	public void addIceCandidate(String endpointName, IceCandidate iceCandidate) {
 //		if (this.getParticipantPublicId().equals(endpointName)) {
 //			if (Objects.isNull(this.publisher)) {
@@ -718,7 +718,8 @@ public class KurentoParticipant extends Participant {
 	@Deprecated
 	@Override
 	public String getPublisherStreamId() {
-		return publisher.getStreamId();
+		//return publisher.getStreamId();
+		return publishers.get(StreamType.MAJOR).getStreamId();
 	}
 
 	public void resetPublisherEndpoint() {

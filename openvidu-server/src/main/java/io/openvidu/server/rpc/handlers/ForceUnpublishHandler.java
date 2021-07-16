@@ -29,7 +29,7 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, "forceUnpublish");
+            participant = sanityCheckOfSession(rpcConnection);
         } catch (OpenViduException e) {
             return;
         }

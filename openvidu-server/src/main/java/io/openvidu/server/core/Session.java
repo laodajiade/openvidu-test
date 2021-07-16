@@ -627,7 +627,7 @@ public class Session implements SessionInterface {
 		return Optional.ofNullable(participantList.get(uuid));
 	}
 
-	//todo 2.0 delete
+	//2.0 delete
 //	public Participant getSpeakerPart() {
 //		checkClosed();
 //		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))

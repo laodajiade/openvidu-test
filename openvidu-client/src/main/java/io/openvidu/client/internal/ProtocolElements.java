@@ -90,9 +90,8 @@ public class ProtocolElements {
     public static final String PUBLISHVIDEO_SDPOFFER_PARAM = "sdpOffer";
     public static final String PUBLISHVIDEO_DOLOOPBACK_PARAM = "doLoopback";
     public static final String PUBLISHVIDEO_SDPANSWER_PARAM = "sdpAnswer";
-    //todo 2.0 删除
-    @Deprecated
-    public static final String PUBLISHVIDEO_STREAMID_PARAM = "id";
+    //2.0 删除
+    //public static final String PUBLISHVIDEO_STREAMID_PARAM = "id";
     public static final String PUBLISHVIDEO_PUBLISHID_PARAM = "publishId";
     public static final String PUBLISHVIDEO_CREATEDAT_PARAM = "createdAt";
     public static final String PUBLISHVIDEO_HASAUDIO_PARAM = "hasAudio";
