@@ -51,7 +51,6 @@ public class SwapPartWindowHandler extends RpcAbstractHandler {
 
         // broadcast the changes of layout
         conferenceSession.getParticipants().forEach(participant -> {
-            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
             // broadcast the changes of layout
             this.notificationService.sendNotification(participant.getParticipantPrivateId(),
                     ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());

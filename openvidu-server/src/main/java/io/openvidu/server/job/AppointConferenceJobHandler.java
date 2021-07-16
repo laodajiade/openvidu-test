@@ -356,7 +356,7 @@ public class AppointConferenceJobHandler {
                 params.addProperty("roomId", session.getSessionId());
                 params.addProperty("ruid", session.getRuid());
 
-                Optional<Participant> moderator = participants.stream().filter(participant -> participant.getStreamType() == StreamType.MAJOR && participant.getRole() == OpenViduRole.MODERATOR)
+                Optional<Participant> moderator = participants.stream().filter(participant -> participant.getRole() == OpenViduRole.MODERATOR)
                         .findAny();
                 moderator.ifPresent(participant -> notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.ROOM_AUTO_DELAY_METHOD, params));
                 log.info("conferenceEndJobHandler session delay roomId = {}, ruid = {}", session.getSessionId(), session.getRuid());

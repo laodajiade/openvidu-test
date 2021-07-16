@@ -46,7 +46,7 @@ public interface SessionInterface {
 
 	Participant getParticipantByPublicId(String participantPublicId);
 
-	Map<String, Participant> getSameAccountParticipants(String userUuid);
+	//Map<String, Participant> getSameAccountParticipants(String userUuid);
 
 	int getActivePublishers();
 

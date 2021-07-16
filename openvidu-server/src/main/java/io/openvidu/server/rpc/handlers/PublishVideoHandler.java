@@ -69,8 +69,8 @@ public class PublishVideoHandler extends RpcAbstractHandler {
 
             sessionManager.createDeliverChannel(participant);
         } else {
-            log.error("Error: participant {} is not a publisher and role={} and streamType={}", participant.getParticipantPublicId()
-                    , participant.getRole(), participant.getStreamType());
+            log.error("Error: participant {} is not a publisher and role={}", participant.getParticipantPublicId()
+                    , participant.getRole());
             throw new OpenViduException(OpenViduException.Code.USER_UNAUTHORIZED_ERROR_CODE,
                     "Unable to publish video. The user does not have a valid token");
         }

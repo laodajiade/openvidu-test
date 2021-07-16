@@ -30,7 +30,6 @@ public class PutDownHandHandler extends RpcAbstractHandler {
                 ProtocolElements.PUT_DOWN_HAND_TARGET_ID_PARAM));
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         participants.forEach(participant -> {
-            if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (controlSpecialTarget && targetId.equals(participant.getUuid())) {
                     participant.changeHandStatus(ParticipantHandStatus.down);
                 } else if (!controlSpecialTarget) {
@@ -39,7 +38,6 @@ public class PutDownHandHandler extends RpcAbstractHandler {
 
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(),
                         ProtocolElements.PUT_DOWN_HAND_METHOD, request.getParams());
-            }
         });
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

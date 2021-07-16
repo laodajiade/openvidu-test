@@ -32,8 +32,7 @@ public class UploadShareCastPlayStrategyHandler extends RpcAbstractHandler {
 
         // notify the strategy change to the web THOR
         List<Participant> moderatorRoleParts = sessionManager.getParticipants(rpcConnection.getSessionId()).stream()
-                .filter(participant -> participant.getStreamType().equals(StreamType.MAJOR) && OpenViduRole.MODERATOR_ROLES
-                        .contains(participant.getRole())).collect(Collectors.toList());
+                .filter(participant -> OpenViduRole.MODERATOR_ROLES.contains(participant.getRole())).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(moderatorRoleParts)) {
             moderatorRoleParts.forEach(part -> this.notificationService.sendNotification(part.getParticipantPrivateId(),
                     ProtocolElements.UPLOADSHARECASTPLAYSTRATEGY_NOTIFY, request.getParams()));

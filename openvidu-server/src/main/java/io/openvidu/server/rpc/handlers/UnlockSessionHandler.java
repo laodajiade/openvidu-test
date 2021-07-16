@@ -32,7 +32,6 @@ public class UnlockSessionHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.UNLOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
             sessionManager.getParticipants(sessionId).forEach(participant -> {
-                if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.UNLOCK_SESSION_METHOD, params);
             });
         }

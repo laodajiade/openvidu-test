@@ -40,9 +40,8 @@ public class Participant {
 	protected String clientMetadata = ""; // Metadata provided on client side
 	protected String serverMetadata = ""; // Metadata provided on server side
 	private OpenViduRole role;
-	//TODO 2.0 Deprecated
-	@Deprecated
-	private StreamType streamType;
+	// delete by 2.0, streamType 流类型已经转移到publishers中。part不在拥有流状态，现在每个session每个人只有一个part
+	//private StreamType streamType;
 	protected GeoLocation location; // Location of the participant
 	protected String platform; // Platform used by the participant to connect to the session
 	//todo 2.0 与会者的流状态需要修改
@@ -113,7 +112,7 @@ public class Participant {
     protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(Long userId, String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
-					   StreamType streamType, String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability,String functionality) {
+					   String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability,String functionality) {
 		this.finalUserId = finalUserId;
 		this.participantPrivatetId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
@@ -126,7 +125,7 @@ public class Participant {
 		this.clientMetadata = clientMetadata;
 		this.userId = userId;
 		this.role = role;
-		this.streamType = streamType;
+		//this.streamType = streamType;
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
@@ -211,9 +210,9 @@ public class Participant {
 		this.role = role;
 	}
 
-	public StreamType getStreamType() {
-		return streamType;
-	}
+//	public StreamType getStreamType() {
+//		return streamType;
+//	}
 
 	public ParticipantHandStatus getHandStatus() {
 		return handStatus;
@@ -221,10 +220,8 @@ public class Participant {
 
     public void changeHandStatus(ParticipantHandStatus handStatus) {
         setHandStatus(handStatus);
-        if (StreamType.MAJOR.equals(streamType)) {
-			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.sessionId(sessionId).uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
-		}
+		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.sessionId(sessionId).uuid(uuid).field("handStatus").updateStatus(handStatus.name()).build()));
     }
 
 	public void setHandStatus(ParticipantHandStatus handStatus) {
@@ -235,10 +232,8 @@ public class Participant {
 
     public void changeMicStatus(ParticipantMicStatus micStatus) {
         setMicStatus(micStatus);
-		if (StreamType.MAJOR.equals(streamType)) {
-			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.sessionId(sessionId).uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
-		}
+		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.sessionId(sessionId).uuid(uuid).field("micStatus").updateStatus(micStatus.name()).build()));
     }
 
 	public void setMicStatus(ParticipantMicStatus micStatus) {
@@ -249,10 +244,8 @@ public class Participant {
 
 	public void changeVideoStatus(ParticipantVideoStatus status) {
 		setVideoStatus(status);
-		if (StreamType.MAJOR.equals(streamType)) {
-			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.sessionId(sessionId).uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
-		}
+		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.sessionId(sessionId).uuid(uuid).field("videoStatus").updateStatus(status.name()).build()));
 	}
 
     public void setVideoStatus(ParticipantVideoStatus status) {
@@ -279,11 +272,9 @@ public class Participant {
 
     public void changeSpeakerStatus(ParticipantSpeakerStatus status) {
         setSpeakerStatus(status);
-		if (StreamType.MAJOR.equals(streamType)) {
-			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.sessionId(sessionId).uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
-		}
-    }
+		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.sessionId(sessionId).uuid(uuid).field("speakerStatus").updateStatus(status.name()).build()));
+	}
 
 	public void setSpeakerStatus(ParticipantSpeakerStatus status) {
 		this.speakerStatus = status;
@@ -293,11 +284,9 @@ public class Participant {
 
     public void changeShareStatus(ParticipantShareStatus status) {
         setShareStatus(status);
-		if (StreamType.MAJOR.equals(streamType)) {
-			applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
-					.sessionId(sessionId).uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
-		}
-    }
+		applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+				.sessionId(sessionId).uuid(uuid).field("shareStatus").updateStatus(status.name()).build()));
+	}
 
 	public void setShareStatus(ParticipantShareStatus status) {
 		this.shareStatus = status;
@@ -447,7 +436,6 @@ public class Participant {
 		if (participantPublicId != null) {
 			builder.append("participantPublicId=").append(participantPublicId).append(", ");
 		}
-		builder.append("streamType=").append(streamType.name()).append(", ");
 		builder.append("streaming=").append(streaming).append("]");
 		return builder.toString();
 	}
@@ -466,6 +454,6 @@ public class Participant {
 	}
 
 	public boolean ableToUpdateRecord() {
-		return getRole().needToPublish() && getStreamType().isStreamTypeMixInclude();
+		return getRole().needToPublish();
 	}
 }

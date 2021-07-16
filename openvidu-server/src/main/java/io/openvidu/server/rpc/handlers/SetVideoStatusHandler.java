@@ -56,7 +56,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(t, s.getUserId().toString()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                        .filter(s -> Objects.equals(t, s.getUserId().toString())
                                 && !OpenViduRole.THOR.equals(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
@@ -69,7 +69,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         if (!Objects.isNull(accountTargets) && !accountTargets.isEmpty()) {
             accountTargets.forEach(account -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                        .filter(s -> Objects.equals(account, s.getUuid())
                                 && !OpenViduRole.THOR.equals(s.getRole())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
@@ -79,10 +79,8 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         }
 
         sessionManager.getParticipants(sessionId).forEach(participant -> {
-            if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.SET_VIDEO_STATUS_METHOD, request.getParams());
-            }
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                    ProtocolElements.SET_VIDEO_STATUS_METHOD, request.getParams());
         });
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

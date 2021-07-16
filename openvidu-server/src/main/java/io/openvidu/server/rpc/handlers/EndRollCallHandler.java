@@ -38,16 +38,14 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         Participant moderatorPart = conferenceSession.getParticipantByUUID(originator).orElseGet(null);
         Participant part = null;
         for (Participant participant : participants) {
-            if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                if (targetId.equals(participant.getUuid())) {
-                    participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
-                    targetConnectionId = participant.getParticipantPublicId();
-                    part = participant;
-                }
+            if (targetId.equals(participant.getUuid())) {
+                participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
+                targetConnectionId = participant.getParticipantPublicId();
+                part = participant;
+            }
 
-                if (originator.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
-                    sourceConnectionId = participant.getParticipantPublicId();
-                }
+            if (originator.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
+                sourceConnectionId = participant.getParticipantPublicId();
             }
         }
 
@@ -61,10 +59,8 @@ public class EndRollCallHandler extends RpcAbstractHandler {
                 //下墙处理音频及共享
                 sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
                 participants.forEach(participant -> {
-                    if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                        this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                                ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
-                    }
+                    this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                            ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
                 });
             }
         }

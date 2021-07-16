@@ -40,7 +40,7 @@ public class Notification {
 
 
     public void withParticipantIds(String roomId, SessionManager sessionManager) {
-        participantIds = sessionManager.getParticipants(roomId).stream().filter(p -> Objects.equals(StreamType.MAJOR, p.getStreamType()))
+        participantIds = sessionManager.getParticipants(roomId).stream()
                 .map(Participant::getParticipantPrivateId).collect(Collectors.toList());
     }
 }

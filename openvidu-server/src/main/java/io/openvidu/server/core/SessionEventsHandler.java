@@ -226,7 +226,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("allowRecord" , participant.getPreset().getAllowRecord().name());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWDESC_PARAM, participant.getAppShowDesc());
-		roomInfoJson.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
+		//roomInfoJson.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM, participant.getStreamType().name());
 		roomInfoJson.addProperty(ProtocolElements.SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM,participant.getPreset().getAllowPartOperSpeaker().name());
 		roomInfoJson.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
 		roomInfoJson.addProperty("automatically", session.isAutomatically());
@@ -297,12 +297,10 @@ public class SessionEventsHandler {
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
+			//notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
 			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
-			if (StreamType.MAJOR.equals(participant.getStreamType())) {
-				notifParams.addProperty("order", participant.getOrder());
-			}
+			notifParams.addProperty("order", participant.getOrder());
 			if (!Objects.isNull(rpcConnection.getTerminalConfig()))
 				notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, new Gson().fromJson(rpcConnection.getTerminalConfig(), JsonObject.class));
 		}
@@ -316,8 +314,7 @@ public class SessionEventsHandler {
 			// notification to existing participants. 'recordingStarted' will be sent to all
 			// existing participants when recorder first subscribe to a stream
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())
-						&& Objects.equals(StreamType.MAJOR, existingParticipant.getStreamType())) {
+				if (!participant.getParticipantPrivateId().equals(existingParticipant.getParticipantPrivateId())) {
 					notifyList.add(existingParticipant.getParticipantPrivateId());
 				}
 			}
@@ -374,13 +371,11 @@ public class SessionEventsHandler {
 				JsonObject notifyParam = new JsonObject();
 				JsonArray orderedParts = new JsonArray();
 				for (Participant exist : existParticipants) {
-					if (exist.getStreamType() == StreamType.MAJOR) {
-						JsonObject order = new JsonObject();
-						order.addProperty("account", exist.getUuid());
-						order.addProperty("uuid", exist.getUuid());
-						order.addProperty("order", exist.getOrder());
-						orderedParts.add(order);
-					}
+					JsonObject order = new JsonObject();
+					order.addProperty("account", exist.getUuid());
+					order.addProperty("uuid", exist.getUuid());
+					order.addProperty("order", exist.getOrder());
+					orderedParts.add(order);
 				}
 				notifyParam.add("orderedParts", orderedParts);
 
@@ -407,8 +402,7 @@ public class SessionEventsHandler {
 
 		List<String> notifyPartList = new ArrayList<>();
 		for (Participant p : remainingParticipants) {
-			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())
-					&& Objects.equals(StreamType.MAJOR, p.getStreamType())) {
+			if (!p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				notifyPartList.add(p.getParticipantPrivateId());
 			}
 		}
@@ -454,7 +448,7 @@ public class SessionEventsHandler {
 
 		JsonObject stream = new JsonObject();
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMID_PARAM, publisherEndpoint.getStreamId());
-		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, participant.getStreamType().name());
+		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_STREAMTYPE_PARAM, publisherEndpoint.getStreamType().name());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_CREATEDAT_PARAM, publisherEndpoint.createdAt());
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASAUDIO_PARAM, mediaOptions.hasAudio);
 		stream.addProperty(ProtocolElements.PARTICIPANTPUBLISHED_HASVIDEO_PARAM, mediaOptions.hasVideo);
@@ -488,7 +482,6 @@ public class SessionEventsHandler {
 
 		int nNotifyParticipantNum = 0;
 		for (Participant p : publisherParticipants) {
-			if (StreamType.MAJOR.equals(p.getStreamType())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 				nNotifyParticipantNum++;
@@ -498,7 +491,6 @@ public class SessionEventsHandler {
 					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
 				}
-			}
 		}
 		log.info("publisher participants num:{} subscriber participants num:{} nNotifyParticipantNum:{}",
 				publisherParticipants.size(), subscribeParticipants.size(), nNotifyParticipantNum);
@@ -515,7 +507,6 @@ public class SessionEventsHandler {
 			}
 
 			nParticipantIndex++;
-			if (StreamType.MAJOR.equals(p.getStreamType())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 
@@ -524,7 +515,6 @@ public class SessionEventsHandler {
 					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
 				}
-			}
 		}
 	}
 
@@ -618,7 +608,6 @@ public class SessionEventsHandler {
 
 		if (toSet.isEmpty()) {
 			for (Participant p : participants) {
-				if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
 			}
@@ -627,8 +616,7 @@ public class SessionEventsHandler {
 					.collect(Collectors.toSet());
 			for (String to : toSet) {
 				if (participantPublicIds.contains(to)) {
-					Optional<Participant> p = participants.stream().filter(x -> to.equals(x.getParticipantPublicId())
-							&& Objects.equals(StreamType.MAJOR, x.getStreamType())).findFirst();
+					Optional<Participant> p = participants.stream().filter(x -> to.equals(x.getParticipantPublicId())).findFirst();
 					rpcNotificationService.sendNotification(p.get().getParticipantPrivateId(),
 							ProtocolElements.PARTICIPANTSENDMESSAGE_METHOD, params);
 				} else {
@@ -653,7 +641,6 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM, reason);
 
 		for (Participant p : participants) {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId,
 						new JsonObject());
@@ -726,7 +713,6 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.RECORDINGSTARTED_NAME_PARAM, recording.getName());
 
 		for (Participant p : filteredParticipants) {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.RECORDINGSTARTED_METHOD, params);
 		}
@@ -756,7 +742,6 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.RECORDINGSTOPPED_REASON_PARAM, reason != null ? reason.name() : "");
 
 		for (Participant p : filteredParticipants) {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 					ProtocolElements.RECORDINGSTOPPED_METHOD, params);
 		}
@@ -795,7 +780,6 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.STREAMPROPERTYCHANGED_REASON_PARAM, filterReason);
 
 		for (Participant p : participants) {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			if (p.getParticipantPrivateId().equals(participant.getParticipantPrivateId())) {
 				// Affected participant
 				if (isRpcFromModerator) {
@@ -832,7 +816,6 @@ public class SessionEventsHandler {
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_EVENTTYPE_PARAM, eventType);
 		params.addProperty(ProtocolElements.FILTEREVENTLISTENER_DATA_PARAM, data.toString());
 		for (Participant p : participants) {
-			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) continue;
 			if (subscribedParticipants.contains(p.getParticipantPublicId())) {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.FILTEREVENTDISPATCHED_METHOD, params);

@@ -44,7 +44,6 @@ public class SharingControlHandler extends RpcAbstractHandler {
                 if (targetId.equals(p.getUuid())) {
                     p.changeShareStatus(shareStatus);
                 }
-                if (Objects.equals(StreamType.MAJOR, p.getStreamType()))
                     this.notificationService.sendNotification(p.getParticipantPrivateId(),
                             ProtocolElements.SHARING_CONTROL_NOTIFY, notifyObj);
             });

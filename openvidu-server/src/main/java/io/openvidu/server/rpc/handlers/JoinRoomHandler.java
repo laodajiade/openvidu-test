@@ -325,13 +325,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 clientMetadata = clientMetadataObj.toString();
 
-                // check ever already exits share part
-                if (StreamType.SHARING.equals(streamType) && Objects.nonNull(session)
-                        && session.getParticipants().stream().anyMatch(participant -> StreamType.SHARING.equals(participant.getStreamType()))) {
-                    errCode = ErrorCodeEnum.SHARING_ALREADY_EXISTS;
-                    break;
-                }
-
                 if (Objects.nonNull(session) && session.getPresetInfo().getAllowPart() != 0 && !Objects.equals(session.getConference().getProject(), rpcConnection.getProject())) {
                     log.info("not allow join room by outsiders,{}", rpcConnection.getUserUuid());
                     errCode = ErrorCodeEnum.CONFERENCE_NOT_EXIST;

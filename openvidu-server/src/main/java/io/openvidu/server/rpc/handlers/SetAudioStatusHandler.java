@@ -58,7 +58,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             if (ParticipantMicStatus.on.equals(micStatus)) {
                 accountTargets.forEach(account -> {
                     KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                            .filter(s -> Objects.equals(account, s.getUuid()) && Objects.equals(StreamType.MAJOR, s.getStreamType())
+                            .filter(s -> Objects.equals(account, s.getUuid())
                                     && !OpenViduRole.ONLY_SHARE.equals(s.getRole())
                                     && !OpenViduRole.NON_PUBLISH_ROLES.contains(s.getRole())).findFirst().orElse(null);
                     if (Objects.nonNull(part)) {
@@ -95,10 +95,8 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
-                if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
                     this.notificationService.sendNotification(p.getParticipantPrivateId(),
                             ProtocolElements.SET_AUDIO_STATUS_METHOD, request.getParams());
-                }
             }
         }
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

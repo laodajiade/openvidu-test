@@ -139,8 +139,8 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             // change the part role according to the sfu limit
-            if (StreamType.MAJOR.equals(participant.getStreamType()) && ConferenceModeEnum.SFU.equals(kSession.getConferenceMode())
-                    && participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1
+            if (ConferenceModeEnum.SFU.equals(kSession.getConferenceMode())
+                    && participant.getOrder() > kSession.getPresetInfo().getSfuPublisherThreshold() - 1
                     && !participant.getRole().equals(OpenViduRole.MODERATOR) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
                 participant.changePartRole(OpenViduRole.SUBSCRIBER);
             }
@@ -197,7 +197,7 @@ public class KurentoSessionManager extends SessionManager {
             session.leaveRoom(participant, reason);
             UseTime.point("ip3");
             //update partInfo
-            if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+            if (!OpenViduRole.THOR.equals(participant.getRole())) {
                 roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
             }
 
@@ -308,7 +308,7 @@ public class KurentoSessionManager extends SessionManager {
         session.leaveRoom(participant, reason);
         UseTime.point("ip3");
         //update partInfo
-        if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+        if (!OpenViduRole.THOR.equals(participant.getRole())) {
             roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
         }
         UseTime.point("ip4");
@@ -331,7 +331,7 @@ public class KurentoSessionManager extends SessionManager {
 //            }
 //        }
 
-        if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+        if (session.isShare(participant.getUuid())) {
             changeSharingStatusInConference(session, participant);
         }
 
@@ -387,12 +387,6 @@ public class KurentoSessionManager extends SessionManager {
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
             session.compositeService.setExistSharing(false);
             session.compositeService.setShareStreamId(null);
-        }
-        // record share status.
-        participant.setShareStatus(ParticipantShareStatus.off);
-        Participant majorPart = session.getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.MAJOR);
-        if (!Objects.isNull(majorPart)) {
-            majorPart.changeShareStatus(ParticipantShareStatus.off);
         }
     }
 
@@ -641,8 +635,7 @@ public class KurentoSessionManager extends SessionManager {
         for (int i = 0; i < 3; i++) {
             if (Objects.nonNull(senderParticipant = getSession(sessionId).getParticipants()
                     .stream()
-                    .filter(part -> part.getUserId().equals(userId) && !Objects.equals(OpenViduRole.THOR, part.getRole())
-                            && Objects.equals(StreamType.MAJOR, part.getStreamType()))
+                    .filter(part -> part.getUserId().equals(userId) && !Objects.equals(OpenViduRole.THOR, part.getRole()))
                     .findFirst().orElse(null))) {
                 return senderParticipant;
             } else {
@@ -651,7 +644,7 @@ public class KurentoSessionManager extends SessionManager {
         }
 
         return getSession(sessionId).getParticipants().stream().filter(part -> part.getUserId().equals(userId) &&
-                !Objects.equals(OpenViduRole.THOR, part.getRole()) && Objects.equals(StreamType.MAJOR, part.getStreamType()))
+                !Objects.equals(OpenViduRole.THOR, part.getRole()))
                 .findFirst().orElse(null);
     }
 
@@ -1077,11 +1070,9 @@ public class KurentoSessionManager extends SessionManager {
                 Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
                 boolean layoutChanged = false;
                 for (Participant part : samePrivateIdParts.values()) {
-                    if (part.getStreamType().isStreamTypeMixInclude()) {
                         layoutChanged |= session.leaveRoomSetLayout(part,
                                 !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
                                         ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
-                    }
                 }
 
                 if (layoutChanged) {
@@ -1543,7 +1534,6 @@ public class KurentoSessionManager extends SessionManager {
     @Override
     public void updateRecording(String sessionId, Participant curParticipant) {
         Session session;
-        log.info("updateRecording curParticipant " + curParticipant.getStreamType());
         if (Objects.nonNull(session = getSession(sessionId))) {
             log.info("Update recording and sessionId is {}", sessionId);
             KurentoSession kurentoSession = (KurentoSession) session;
@@ -1563,23 +1553,11 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     private boolean constructMediaSources(ConferenceRecordingProperties recordingProperties, KurentoSession kurentoSession, Participant curParticipant) {
-        Participant sharingPart = null, moderatorPart = null, speakerPart = null;
+        Participant sharingPart = kurentoSession.getSharingPart().orElse(null), moderatorPart = null, speakerPart = kurentoSession.getSpeakerPart().orElse(null);
         Set<Participant> participants = kurentoSession.getParticipants();
         for (Participant participant : participants) {
-            if (!participant.getStreamType().isStreamTypeMixInclude()) {
-                continue;
-            }
 
-            if (StreamType.SHARING.equals(participant.getStreamType())) {
-                sharingPart = participant;
-            }
-
-            if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
-                speakerPart = participant;
-            }
-
-            if (participant.getRole().isController() && participant.getRole().needToPublish()
-                    && participant.getStreamType().isSelfStream()) {
+            if (participant.getRole().isController() && participant.getRole().needToPublish()) {
                 moderatorPart = participant;
             }
         }
@@ -1648,10 +1626,8 @@ public class KurentoSessionManager extends SessionManager {
             } else {
                 Participant speakerPartMinorStream = demotionMinorStream(speakerPart, kurentoSession);
                 if (Objects.nonNull(curParticipant) &&
-                        (curParticipant.getUuid() == speakerPartMinorStream.getUuid() &&
-                                curParticipant.getStreamType() != speakerPartMinorStream.getStreamType())) {
-                    log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)",
-                            curParticipant.getUuid(), curParticipant.getStreamType());
+                        (curParticipant.getUuid().equals(speakerPartMinorStream.getUuid()))) {
+                    log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)"                           );
                     return false;
                 }
                 passThruList.add(constructPartRecordInfo(speakerPartMinorStream, 2));
@@ -1693,9 +1669,8 @@ public class KurentoSessionManager extends SessionManager {
 
     private JsonObject constructPartRecordInfo(Participant part, int order) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
-        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{}, steamType:{} record info.",
-                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(),
-                part.getStreamType().name());
+        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
+                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
 
         PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
@@ -1710,7 +1685,7 @@ public class KurentoSessionManager extends SessionManager {
             jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
             jsonObject.addProperty("order", order);
             jsonObject.addProperty("uuid", part.getUuid());
-            jsonObject.addProperty("streamType", part.getStreamType().name());
+            //jsonObject.addProperty("streamType", part.getStreamType().name());
             jsonObject.addProperty("osd", part.getUsername());
 
         }
@@ -1760,7 +1735,7 @@ public class KurentoSessionManager extends SessionManager {
         notify.addProperty("reason", CommonConstants.RECORD_STORAGE_LESS_THAN_TEN_PERCENT);
         session.getParticipants()
                 .stream()
-                .filter(participant -> StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().isController())
+                .filter(participant -> participant.getRole().isController())
                 .forEach(participant ->
                         rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify));
 
@@ -1810,9 +1785,7 @@ public class KurentoSessionManager extends SessionManager {
             JsonObject notify = new JsonObject();
             notify.addProperty("reason", reason);
             session.getParticipants().forEach(participant -> {
-                if (StreamType.MAJOR.equals(participant.getStreamType())) {
                     rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
-                }
             });
         } else {
             log.warn("Fail to stop the record and ruid:{}", session.getRuid());

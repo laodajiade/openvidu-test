@@ -131,13 +131,13 @@ public class Session implements SessionInterface {
 	 * 分享者
 	 */
 	@Setter
-	private Participant sharingPart = null;
+	protected Participant sharingPart = null;
 
 	/**
 	 * 发言中
 	 */
 	@Setter
-	private Participant speakerPart = null;
+	protected Participant speakerPart = null;
 
 	public Session(Session previousSession) {
 		this.sessionId = previousSession.getSessionId();
@@ -509,11 +509,8 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());*/
 		return this.participantList.values().stream()
 				.filter(participant -> Objects.nonNull(participant)
-						&& !Objects.equals(OpenViduRole.THOR, participant.getRole())
 						&& !Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())
-						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole())
-						&& !Objects.equals(OpenViduRole.ONLY_SHARE, participant.getRole())
-						&& Objects.equals(StreamType.MAJOR.name(), participant.getStreamType().name()))
+						&& !Objects.equals(OpenViduRole.MODERATOR, participant.getRole()))
 				.collect(Collectors.toSet());
 	}
 
@@ -554,16 +551,26 @@ public class Session implements SessionInterface {
 		return participants.get(participantPrivateId);
 	}
 
+	@Deprecated
     public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
+		//todo 2.0 必须修改
+		if (true) {
+			throw new UnsupportedOperationException("getPartByPrivateIdAndStreamType 需要重新实现");
+		}
+		//todo 2.0 必须修改
+
+
+
         checkClosed();
 
 		List<Participant> collect = participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).collect(Collectors.toList());
 		if (Objects.isNull(collect)) {
 			return null;
 		}
-		return Objects.isNull(streamType) ?
-				collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(StreamType.MAJOR.name())).findFirst().get() :
-				collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(streamType.name())).findFirst().get();
+		return null;
+		//return Objects.isNull(streamType) ?
+		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(StreamType.MAJOR.name())).findFirst().get() :
+		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(streamType.name())).findFirst().get();
     }
 
     public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
@@ -597,17 +604,16 @@ public class Session implements SessionInterface {
 		return null;
 	}
 
-	//todo 2.0 Deprecated
-	@Deprecated
-	@Override
-	public Map<String, Participant> getSameAccountParticipants(String userUuid) {
-		checkClosed();
-		return this.participants.values().stream()
-				.flatMap(v -> v.values().stream())
-				.filter(participant -> userUuid.equals(participant.getUuid())
-						&& !OpenViduRole.THOR.equals(participant.getRole()))
-				.collect(Collectors.toMap(v -> v.getStreamType().name(), Function.identity()));
-	}
+	// delete 2.0
+//	@Override
+//	public Map<String, Participant> getSameAccountParticipants(String userUuid) {
+//		checkClosed();
+//		return this.participants.values().stream()
+//				.flatMap(v -> v.values().stream())
+//				.filter(participant -> userUuid.equals(participant.getUuid())
+//						&& !OpenViduRole.THOR.equals(participant.getRole()))
+//				.collect(Collectors.toMap(v -> v.getStreamType().name(), Function.identity()));
+//	}
 
 	public Participant getParticipantByUserId(Long userId) {
     	checkClosed();
@@ -671,14 +677,14 @@ public class Session implements SessionInterface {
 	}
 
 	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
-    	if (StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
-    		int size = participantList.size();
+		if (!OpenViduRole.MODERATOR.equals(participant.getRole())) {
+			int size = participantList.size();
 			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
 					participant.getParticipantName(), sessionId, size);
 
 			return size > openviduConfig.getMcuMajorPartLimit();
 		}
-    	return false;
+		return false;
 	}
 
 	public void setMajorPartsOrder(Participant participant, RpcNotificationService rpcNotificationService) {
@@ -1134,8 +1140,7 @@ public class Session implements SessionInterface {
 
 	public void dealUpAndDownTheWall(Participant pup2SubPart, Participant sub2PubPart, SessionManager sessionManager, boolean isSub2PubSpeaker) {
         Set<Participant> participants = getParticipants();
-        Participant otherPart = getPartByPrivateIdAndStreamType(pup2SubPart.getParticipantPrivateId(),
-                StreamType.MAJOR.equals(pup2SubPart.getStreamType()) ? StreamType.SHARING : StreamType.MAJOR);
+        Participant otherPart = getPartByPrivateIdAndStreamType(pup2SubPart.getParticipantPrivateId(), StreamType.MAJOR);
 
         if (ParticipantHandStatus.speaker.equals(pup2SubPart.getHandStatus())) {
             // send endRoll notify
@@ -1143,10 +1148,8 @@ public class Session implements SessionInterface {
             params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId().toString());
             participants.forEach(part -> {
-                if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
                     sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.END_ROLL_CALL_METHOD, params);
-                }
             });
             pup2SubPart.changeHandStatus(ParticipantHandStatus.endSpeaker);
         }
@@ -1165,14 +1168,13 @@ public class Session implements SessionInterface {
             sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
                     null, EndReason.forceUnpublishByUser);
             sendStopShareNotify = true;
-			stopShareParams.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-					StreamType.SHARING.equals(otherPart.getStreamType()) ?
-							otherPart.getParticipantPublicId() : pup2SubPart.getParticipantPublicId());
+//			stopShareParams.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+//					StreamType.SHARING.equals(otherPart.getStreamType()) ?
+//							otherPart.getParticipantPublicId() : pup2SubPart.getParticipantPublicId());
         }
 
         // send conferenceLayoutChanged notify
 		for (Participant participant : participants) {
-			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
 						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
 				if (!sendStopShareNotify) {
@@ -1180,7 +1182,6 @@ public class Session implements SessionInterface {
 				}
 				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
 						ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, stopShareParams);
-			}
 		}
 
 		// change subscriberPart role
@@ -1199,10 +1200,8 @@ public class Session implements SessionInterface {
 			}
 		}
 		getParticipants().forEach(participant -> {
-			if (StreamType.MAJOR.equals(participant.getStreamType())) {
 				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
 						ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, notifyParam);
-			}
 		});
 	}
 
@@ -1229,8 +1228,7 @@ public class Session implements SessionInterface {
 			Set<Participant> participants = getMajorPartEachConnect();
 			Participant automaticOnWallPart = participants.stream()
 					.filter(participant -> !publishedParts.contains(participant.getParticipantPublicId())
-							&& OpenViduRole.SUBSCRIBER.equals(participant.getRole())
-							&& StreamType.MAJOR.equals(participant.getStreamType()))
+							&& OpenViduRole.SUBSCRIBER.equals(participant.getRole()))
 					.findAny().orElse(null);
 			if (Objects.nonNull(automaticOnWallPart)) {
 			    log.info("Put Part:{} On Wall Automatically in session:{}", automaticOnWallPart.getParticipantName(), automaticOnWallPart.getSessionId());
@@ -1271,7 +1269,8 @@ public class Session implements SessionInterface {
 					majorShareMixLinkedArr.add(newPart);
 				}
 			}
-		} else if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+		//} else if (Objects.equals(StreamType.SHARING, kurentoParticipant.getStreamType())) {
+		} else if (sharingPart != null && sharingPart.getUuid().equals(kurentoParticipant.getUuid())) {
 			majorShareMixLinkedArr = reorderIfPriorityJoined(StreamType.SHARING, kurentoParticipant.getParticipantPublicId());
 		} else {
 			JsonObject newPart = getPartOrderInfo(StreamType.MAJOR.name(), kurentoParticipant.getParticipantPublicId());
@@ -1357,8 +1356,7 @@ public class Session implements SessionInterface {
 			switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
 		}
 
-		if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus()) ||
-                Objects.equals(StreamType.SHARING, participant.getStreamType())) {
+		if (isSpeake(participant.getUuid()) || isShare(participant.getUuid())) {
 			reorder(moderatePublicId);
 		}
 
@@ -1557,8 +1555,7 @@ public class Session implements SessionInterface {
 	}
 
 	public boolean isModeratorHasMulticastplay() {
-		Participant moderatePart = getParticipants().stream().filter(participant ->
-				participant.getStreamType().equals(StreamType.MAJOR) && participant.getRole().equals(OpenViduRole.MODERATOR))
+		Participant moderatePart = getParticipants().stream().filter(participant -> participant.getRole().equals(OpenViduRole.MODERATOR))
 				.findAny().orElse(null);
 		return Objects.nonNull(moderatePart) && !StringUtils.isEmpty(moderatePart.getAbility())
 				&& moderatePart.getAbility().contains(CommonConstants.DEVICE_ABILITY_MULTICASTPALY);

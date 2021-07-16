@@ -43,18 +43,16 @@ public class ReplaceRollCallHandler extends RpcAbstractHandler {
 
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         participants.forEach(participant -> {
-            if (StreamType.MAJOR.equals(participant.getStreamType())) {
-                if (endTargetId.equals(participant.getUuid())) {
-                    participant.changeHandStatus(ParticipantHandStatus.down);
-                }
-
-                if (startTargetId.equals(participant.getUuid())) {
-                    participant.changeHandStatus(ParticipantHandStatus.speaker);
-
-                }
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.REPLACE_ROLL_CALL_METHOD, request.getParams());
+            if (endTargetId.equals(participant.getUuid())) {
+                participant.changeHandStatus(ParticipantHandStatus.down);
             }
+
+            if (startTargetId.equals(participant.getUuid())) {
+                participant.changeHandStatus(ParticipantHandStatus.speaker);
+
+            }
+            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+                    ProtocolElements.REPLACE_ROLL_CALL_METHOD, request.getParams());
         });
         sessionManager.replaceSpeaker(session, endPart, startPart, originator);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

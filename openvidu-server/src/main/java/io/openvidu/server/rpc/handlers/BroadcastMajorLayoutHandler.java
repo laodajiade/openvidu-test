@@ -63,7 +63,6 @@ public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
             notifyResult.add(ProtocolElements.MAJORLAYOUTNOTIFY_LAYOUT_PARAM, layout);
 
             sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p -> {
-                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
                 notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.MAJORLAYOUTNOTIFY_METHOD, notifyResult);
             });
 

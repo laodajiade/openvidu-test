@@ -61,13 +61,13 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
 
         if (CollectionUtils.isEmpty(accountTargets)) {
             session.getParticipants().forEach(participant -> {
-                if (Objects.equals(StreamType.MAJOR, participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())) {
+                if ( !OpenViduRole.THOR.equals(participant.getRole())) {
                     participant.changeSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
                 }
             });
         } else {
             session.getParticipants().forEach(participant -> {
-                if (Objects.equals(StreamType.MAJOR, participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())
+                if (!OpenViduRole.THOR.equals(participant.getRole())
                         && accountTargets.contains(participant.getUuid())) {
                     participant.changeSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
                 }
@@ -79,10 +79,8 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
         Set<Participant> participants = session.getParticipants();
         if (!CollectionUtils.isEmpty(participants)) {
             for (Participant p: participants) {
-                if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
                     this.notificationService.sendNotification(p.getParticipantPrivateId(),
                             ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, notifyObj);
-                }
             }
         }
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

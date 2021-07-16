@@ -103,8 +103,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
                     jsonObject.addProperty("moderatorToken", Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid())) && Objects.nonNull(cacheManage.getUserInfoByUUID(user.getUuid()).get("token")) ? cacheManage.getUserInfoByUUID(user.getUuid()).get("token").toString() : null);
                 }
             }
-            jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant ->
-                    StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
+            jsonObject.addProperty("joinNum", session.getParticipants().stream().filter(participant -> !OpenViduRole.THOR.equals(participant.getRole())).count());
         }
         Session notActiveSession = sessionManager.getSessionNotActive(conference.getRoomId());
         if (Objects.nonNull(notActiveSession) && !notActiveSession.isClosed()) {
@@ -115,8 +114,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
             jsonObject.addProperty("subject", conference.getConferenceSubject());
             jsonObject.addProperty("conferenceMode", conference.getConferenceMode());
             jsonObject.addProperty("startTime", conference.getStartTime().getTime());
-            jsonObject.addProperty("joinNum", notActiveSession.getParticipants().stream().filter(participant ->
-                    StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.THOR.equals(participant.getRole())).count());
+            jsonObject.addProperty("joinNum", notActiveSession.getParticipants().stream().filter(participant -> !OpenViduRole.THOR.equals(participant.getRole())).count());
         }
         return jsonObject;
     }

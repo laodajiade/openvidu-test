@@ -124,9 +124,6 @@ public class KurentoSession extends Session {
 			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
 				this.compositeService.setPipeline(this.getPipeline());
 				compositeService.createMajorShareComposite();
-				if (Objects.equals(StreamType.SHARING, participant.getStreamType())) {
-					compositeService.setExistSharing(true);
-				}
 			}
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
@@ -386,17 +383,13 @@ public class KurentoSession extends Session {
 		KurentoSession kurentoSession = (KurentoSession) this;
 		if (!CollectionUtils.isEmpty(participants)) {
 			for (Participant participant : participants) {
-				if (OpenViduRole.MODERATOR == participant.getRole() && StreamType.MAJOR == participant.getStreamType()) {
+				if (OpenViduRole.MODERATOR == participant.getRole()) {
 					moderator = participant;
 //					Participant minorModerator = getPartByPrivateIdAndStreamType(moderator.getParticipantPrivateId(), StreamType.MINOR);
 //					moderator = Optional.ofNullable(minorModerator).orElse(moderator);
 				}
-				if (StreamType.SHARING == participant.getStreamType()) {
-					sharing = participant;
-				}
-				if (StreamType.MAJOR == participant.getStreamType() && ParticipantHandStatus.speaker == participant.getHandStatus()) {
-					speaker = participant;
-				}
+				sharing = this.sharingPart;
+				speaker = this.speakerPart;
 			}
 
 			if (kurentoSession.equalsSipCompositeStream(moderator, sharing, speaker)) {

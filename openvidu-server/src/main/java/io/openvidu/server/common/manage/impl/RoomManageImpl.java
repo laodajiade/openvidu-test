@@ -72,10 +72,6 @@ public class RoomManageImpl implements RoomManage {
     @Override
     public void storePartHistory(Participant participant, Conference conference) {
         // save part history when stream type is MAJOR and role is not THOR
-        if (OpenViduRole.THOR.equals(participant.getRole()) ||
-                !StreamType.MAJOR.equals(participant.getStreamType())) {
-            return;
-        }
 
         //获取最新的用户名称
         User user = userManage.getUserByUserId(participant.getUserId());

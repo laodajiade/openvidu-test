@@ -87,7 +87,7 @@ public class KurentoParticipant extends Participant {
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager, LivingManager livingManager) {
 		super(participant.getUserId(),participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
-				kurentoSession.getSessionId(), participant.getRole(), participant.getStreamType(), participant.getClientMetadata(),
+				kurentoSession.getSessionId(), participant.getRole(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility(), participant.getFunctionality());
 		setMicStatus(participant.getMicStatus());
 		setVideoStatus(participant.getVideoStatus());
@@ -183,7 +183,7 @@ public class KurentoParticipant extends Participant {
 		publisher.setMediaOptions(mediaOptions);
 
 		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-		    if (Objects.equals(StreamType.SHARING, getStreamType())) {
+		    if (Objects.equals(StreamType.SHARING, streamType)) {
 				this.session.compositeService.setShareStreamId(publisher.getStreamId());
 			}
 
@@ -354,8 +354,7 @@ public class KurentoParticipant extends Participant {
 	private boolean isMcuInclude() {
 		return ConferenceModeEnum.MCU.equals(this.session.getConferenceMode())
 				&& !OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())
-				&& getStreamType().isStreamTypeMixInclude()
-				&& !(getStreamType().equals(StreamType.SHARING) && session.isModeratorHasMulticastplay());
+				&& !session.isShare(this.getUuid()) && session.isModeratorHasMulticastplay();
 	}
 
 	public void unpublishMedia(PublisherEndpoint publisherEndpoint, EndReason reason, long kmsDisconnectionTime) {
@@ -451,7 +450,7 @@ public class KurentoParticipant extends Participant {
 			subscriber.setEndpointName(subscriberStreamId);
 			subscriber.getEndpoint().setName(subscriberStreamId);
 			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + sender.getUuid() +
-					"_" + sender.getStreamType() + "_cid_" + RandomStringUtils.randomAlphabetic(6));
+					"_" + streamType + "_cid_" + RandomStringUtils.randomAlphabetic(6));
 			subscriber.setStreamId(subscriberStreamId);
 			returnObj.put("subscribeId", subscriberStreamId);
 			endpointConfig.addEndpointListeners(subscriber, "subscriber");
@@ -536,7 +535,7 @@ public class KurentoParticipant extends Participant {
 		}
 		this.subscribers.clear();
 		releaseAllPublisherEndpoint(reason, kmsDisconnectionTime);
-		if (Objects.equals(StreamType.SHARING, getStreamType()) &&
+		if (session.isShare(this.getUuid()) &&
 				!Objects.isNull(session.compositeService.getShareStreamId())) {
 			session.compositeService.setShareStreamId(null);
 		}

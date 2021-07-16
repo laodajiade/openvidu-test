@@ -32,7 +32,6 @@ public class RoomDelayHandler extends RpcAbstractHandler {
 
         sessionManager.getSession(sessionId).incDelayConfCnt();
         sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
-            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
             notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.ROOM_DELAY_METHOD, new JsonObject());
         });
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

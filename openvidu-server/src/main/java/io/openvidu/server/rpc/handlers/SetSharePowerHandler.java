@@ -53,7 +53,6 @@ public class SetSharePowerHandler extends RpcAbstractHandler {
         Set<Participant> participants = sessionManager.getParticipants(sessionId);
         if (!CollectionUtils.isEmpty(participants)) {
             participants.forEach(p -> {
-                if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
                 String userUuid = p.getUuid();
                 if ((Objects.isNull(targetIds) || targetIds.isEmpty()) || targetIds.contains(userUuid)) {
                     p.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(status));

@@ -41,11 +41,9 @@ public class RefuseInviteHandler extends RpcAbstractHandler {
             params.addProperty("username", user.getUsername());
             params.addProperty(ProtocolElements.REFUSE_INVITE_REASON_PARAM, reason);
 
-            for (Participant p: participants) {
-                if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                    this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.REFUSE_INVITE_METHOD, params);
-                }
+            for (Participant p : participants) {
+                this.notificationService.sendNotification(p.getParticipantPrivateId(),
+                        ProtocolElements.REFUSE_INVITE_METHOD, params);
             }
         }
 

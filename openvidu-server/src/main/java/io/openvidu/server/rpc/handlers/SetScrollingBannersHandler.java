@@ -62,16 +62,14 @@ public class SetScrollingBannersHandler extends RpcAbstractHandler {
         Set<Participant> participants = session.getParticipants();
         if (!CollectionUtils.isEmpty(participants)) {
             if (CollectionUtils.isEmpty(scrollingBannersConfig.getTargetIds())) {
-                for (Participant p: participants) {
-                    if (Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                        this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                                ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
-                    }
+                for (Participant p : participants) {
+                    this.notificationService.sendNotification(p.getParticipantPrivateId(),
+                            ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
                 }
             } else {
                 List<String> uuidList = scrollingBannersConfig.getTargetIds().stream().map(UserDto::getUuid).collect(Collectors.toList());
                 for (Participant p : participants) {
-                    if (Objects.equals(StreamType.MAJOR, p.getStreamType()) && (uuidList.contains(p.getUuid()) || Objects.equals(OpenViduRole.THOR, p.getRole()))) {
+                    if ( (uuidList.contains(p.getUuid()) || Objects.equals(OpenViduRole.THOR, p.getRole()))) {
                         this.notificationService.sendNotification(p.getParticipantPrivateId(),
                                 ProtocolElements.SET_SCROLLING_BANNERS_METHOD, request.getParams());
                     }

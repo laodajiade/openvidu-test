@@ -47,7 +47,6 @@ public class ForceUnpublishHandler extends RpcAbstractHandler {
             Session conferenceSession = sessionManager.getSession(rpcConnection.getSessionId());
             if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
                 conferenceSession.getParticipants().forEach(part -> {
-                    if (!Objects.equals(StreamType.MAJOR, part.getStreamType())) return;
                     // broadcast the changes of layout
                     this.notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());

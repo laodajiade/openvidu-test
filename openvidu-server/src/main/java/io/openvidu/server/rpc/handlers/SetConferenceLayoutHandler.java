@@ -72,8 +72,7 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                                 speakerId = participant.getParticipantPublicId();
                                 break;
                             }
-                            if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole()) &&
-                                    Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
+                            if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole())) {
                                 moderatorPublicId = participant.getParticipantPublicId();
                             }
                         }
@@ -83,7 +82,6 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
 
                     // broadcast the changes of layout
                     sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p -> {
-                        if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
                         notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
                                 conferenceSession.getLayoutNotifyInfo());
                     });
@@ -94,7 +92,6 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
                         conferenceSession.setLayoutMode(layoutModeEnum);
                     }
                     sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(p -> {
-                        if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
                         notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
                                 request.getParams());
                     });

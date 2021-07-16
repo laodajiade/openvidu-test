@@ -36,7 +36,6 @@ public class LockSessionHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.LOCK_SESSION_ROOM_ID_PARAM, sessionId);
 
             sessionManager.getParticipants(sessionId).forEach(participant -> {
-                if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) return;
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.LOCK_SESSION_METHOD, params);
             });
         }

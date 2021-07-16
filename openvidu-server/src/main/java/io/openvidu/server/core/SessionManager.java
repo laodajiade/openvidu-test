@@ -476,7 +476,7 @@ public abstract class SessionManager {
 
     public boolean isPublisherInSession(String sessionId, Participant participant, SessionPresetEnum sessionPresetEnum) {
         if (OpenViduRole.PUBLISHER.equals(participant.getRole()) || OpenViduRole.MODERATOR.equals(participant.getRole())
-                || (OpenViduRole.ONLY_SHARE.equals(participant.getRole()) && participant.getStreamType().equals(StreamType.SHARING)
+                || (OpenViduRole.ONLY_SHARE.equals(participant.getRole())
                 || participant.getTerminalType() == TerminalTypeEnum.S)
         ) {
             return true;
@@ -514,7 +514,7 @@ public abstract class SessionManager {
         if (session != null) {
             String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
             Participant p = new Participant(userId, finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
-                    StreamType.valueOf(streamType), clientMetadata, location, platform, null, ability, functionality);
+                    clientMetadata, location, platform, null, ability, functionality);
 //			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 //					p) != null) {
 //				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
@@ -546,7 +546,7 @@ public abstract class SessionManager {
         if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
             Participant p = new Participant(userId, null, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-                    sessionId, OpenViduRole.parseRole(role), StreamType.valueOf(streamType), clientMetadata, null, null, null, null, null);
+                    sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null);
             this.sessionidParticipantpublicidParticipant.get(sessionId)
                     .put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
             return p;
@@ -829,7 +829,6 @@ public abstract class SessionManager {
         }
         stopRecording(sessionId);
         session.getParticipants().forEach(p -> {
-            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
             notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
             RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
             if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
@@ -852,11 +851,9 @@ public abstract class SessionManager {
         String targetConnectionId;
         Participant existSpeakerPart = null;
         for (Participant participant : participants) {
-            if (Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
                 if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
                     existSpeakerPart = participant;
                 }
-            }
         }
 
         // do nothing when set roll call to the same speaker
@@ -925,9 +922,6 @@ public abstract class SessionManager {
         setSpeaker(conferenceSession, targetPart, connectionPart.getUuid());
         // broadcast the changes of layout
         participants.forEach(participant -> {
-            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                return;
-            }
             // SetRollCall notify  old
 //			this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.SET_ROLL_CALL_METHOD, params);
             if (sendChangeRole) {
@@ -988,7 +982,6 @@ public abstract class SessionManager {
             stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_MODE_PARAM, 0);
         }
         getParticipants(sessionId).forEach(part -> {
-            if (Objects.equals(StreamType.MAJOR, part.getStreamType())) {
                 if (micStatusFlag) {
                     this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
                 }
@@ -996,15 +989,11 @@ public abstract class SessionManager {
                     this.notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.SHARING_CONTROL_NOTIFY, stopSharingParams);
                 }
-            }
         });
     }
 
     private void sendEndRollCallNotify(Set<Participant> participants, JsonObject params, boolean sendChangeRole, JsonArray changeRoleNotifiParam) {
         participants.forEach(participant -> {
-            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                return;
-            }
             this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
             if (sendChangeRole) {
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(),
@@ -1102,14 +1091,12 @@ public abstract class SessionManager {
         Set<Participant> participants = session.getParticipants();
         session.setSpeakerPart(startPart);
         participants.forEach(participant -> {
-            if (StreamType.MAJOR.equals(participant.getStreamType())) {
                 if (endPart.getUuid().equals(participant.getUuid())) {
                     participant.changeHandStatus(ParticipantHandStatus.down);
                 }
                 if (startPart.getUuid().equals(participant.getUuid())) {
                     participant.changeHandStatus(ParticipantHandStatus.speaker);
                 }
-            }
         });
         if (endPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
             endPart.setRole(OpenViduRole.SUBSCRIBER);

@@ -39,7 +39,6 @@ public class TransferModeratorHandler extends RpcAbstractHandler {
         params.addProperty(ProtocolElements.TRANSFER_MODERATOR_SOURCE_ID_PARAM, sourceId);
         params.addProperty(ProtocolElements.TRANSFER_MODERATOR_TARGET_ID_PARAM, targetId);
         sessionManager.getParticipants(sessionId).forEach(p -> {
-            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
             if (Objects.equals(p.getUuid(), targetId)) {
                 p.setRole(OpenViduRole.MODERATOR);
             }

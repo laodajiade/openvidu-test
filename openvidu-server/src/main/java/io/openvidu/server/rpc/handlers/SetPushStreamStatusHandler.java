@@ -43,9 +43,7 @@ public class SetPushStreamStatusHandler extends RpcAbstractHandler {
         participant.setPushStreamStatus(PushStreamStatusEnum.valueOf(status));
         //send notify
         session.getParticipants().forEach(part -> {
-            if (StreamType.MAJOR.equals(part.getStreamType())) {
-                this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SETPUSHSTREAMSTATUS_METHOD, request.getParams());
-            }
+            this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SETPUSHSTREAMSTATUS_METHOD, request.getParams());
         });
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

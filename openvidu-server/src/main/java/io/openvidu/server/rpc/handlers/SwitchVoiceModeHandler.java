@@ -46,9 +46,7 @@ public class SwitchVoiceModeHandler extends RpcAbstractHandler {
         JsonObject notifyObj = request.getParams().deepCopy();
         notifyObj.addProperty(ProtocolElements.SWITCHVOICEMODE_SENDERCONNECTIONID_PARAM, participant.getParticipantPublicId());
         sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(part -> {
-            if (StreamType.MAJOR.equals(part.getStreamType())) {
-                notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SWITCHVOICEMODE_NOTIFY_METHOD, notifyObj);
-            }
+            notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SWITCHVOICEMODE_NOTIFY_METHOD, notifyObj);
         });
     }
 }

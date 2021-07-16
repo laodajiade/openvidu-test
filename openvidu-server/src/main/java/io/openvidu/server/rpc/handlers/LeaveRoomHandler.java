@@ -82,7 +82,6 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, sourceId);
 
             for (Participant participant1 : participants) {
-                if (!Objects.equals(StreamType.MAJOR, participant1.getStreamType())) continue;
                 if (participant1.getRole().equals(OpenViduRole.MODERATOR))
                     moderatePublicId = participant1.getParticipantPublicId();
                 if (Objects.equals(ParticipantHandStatus.speaker, participant1.getHandStatus()))
@@ -92,8 +91,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
             }
         }
 
-        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)
-                && participant.getStreamType().isStreamTypeMixInclude()) {
+        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
             sessionManager.setLayoutAndNotifyWhenLeaveRoom(sessionId, participant,
                     !Objects.equals(speakerId, participant.getParticipantPublicId()) ? speakerId : moderatePublicId);
         }
@@ -102,7 +100,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
         UseTime.point("p4");
         //判断轮询是否开启
         SessionPreset preset = session.getPresetInfo();
-        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType()) && !OpenViduRole.MODERATOR.equals(participant.getRole())) {
+        if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && !OpenViduRole.MODERATOR.equals(participant.getRole())) {
             Set<Participant> parts = session.getPartsExcludeModeratorAndSpeaker();
             if (CollectionUtils.isEmpty(parts)) {
                 //close room stopPolling
@@ -124,7 +122,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     timerManager.leaveRoomStartPollingAgainCompensation(sessionId, preset.getPollingIntervalTime(), index == 0 ? index : index - 1);
                 }
             }
-        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom()) && StreamType.MAJOR.equals(participant.getStreamType())
+        } else if (SessionPresetEnum.on.equals(preset.getPollingStatusInRoom())
                 && OpenViduRole.MODERATOR.equals(participant.getRole())) {
             //close room stopPolling
             preset.setPollingStatusInRoom(SessionPresetEnum.off);
@@ -136,13 +134,13 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                     ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
         }
         UseTime.point("p5");
-        if (!Objects.isNull(rpcConnection.getSerialNumber()) && StreamType.MAJOR.equals(participant.getStreamType())) {
+        if (!Objects.isNull(rpcConnection.getSerialNumber()) ) {
             cacheManage.setDeviceStatus(rpcConnection.getSerialNumber(), DeviceStatus.online.name());
         }
         log.info("Participant {} has left session {}", participant.getParticipantPublicId(),
                 rpcConnection.getSessionId());
         if (Objects.nonNull(session = sessionManager.getSession(sessionId)) && !session.isClosed()
-                && StreamType.MAJOR.equals(participant.getStreamType()) && participant.getRole().needToPublish()) {
+                && participant.getRole().needToPublish()) {
             session.putPartOnWallAutomatically(sessionManager);
         }
         rpcConnection.setReconnected(false);

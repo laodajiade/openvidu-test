@@ -97,9 +97,6 @@ public class CorpServiceExpiredNotifyHandler {
         Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
 
         participants.forEach(p -> {
-            if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) {
-                return;
-            }
             notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
             RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
             if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
