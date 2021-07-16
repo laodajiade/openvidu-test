@@ -94,8 +94,6 @@ public class Session implements SessionInterface {
 	protected int delayTimeUnit = 20 * 60;	// default 20min
 	protected boolean delay = false;
 	protected long endTime = Long.MAX_VALUE;
-	protected boolean notifyCountdown10Min = false;
-	protected boolean notifyCountdown1Min = false;
 	protected Long startRecordingTime;
 	protected Long stopRecordingTime;
 	protected Long startLivingTime;
@@ -388,14 +386,6 @@ public class Session implements SessionInterface {
 		this.delay = delay;
 	}
 
-	public void setNotifyCountdown10Min(boolean notifyCountdown10Min) { this.notifyCountdown10Min = notifyCountdown10Min; }
-
-	public boolean getNotifyCountdown10Min() { return this.notifyCountdown10Min; }
-
-	public void setNotifyCountdown1Min(boolean notifyCountdown1Min) { this.notifyCountdown1Min = notifyCountdown1Min; }
-
-	public boolean getNotifyCountdown1Min() { return this.notifyCountdown1Min; }
-
 
 	public Long getStartRecordingTime() {
 		return startRecordingTime;
@@ -433,19 +423,6 @@ public class Session implements SessionInterface {
 
 	public long getConfStartTime() {						// unit is ms
 		return getConference().getStartTime().getTime();
-	}
-
-	public long getConfEndTime() {// unit is ms
-		if (getPresetInfo().getRoomDuration() == -1) {
-			return 0;
-		}
-        int confDuration = Float.valueOf(getPresetInfo().getRoomDuration() * 60 * 60 * 1000).intValue() + getConfDelayTime() * 1000;
-        return getConfStartTime() + confDuration;
-
-	}
-
-	public long getConfRemainTime() {						// unit is second
-		return (getConfEndTime() - new Date().getTime()) / 1000;
 	}
 
 	/**
@@ -493,16 +470,17 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
-	public Set<Participant> getMajorPartEachIncludeThorConnect() {
-		checkClosed();
-		return this.participantList.values().stream()
-				.filter(participant -> Objects.nonNull(participant) && participant.getStreamType().name().equals(StreamType.MAJOR.name()))
-				.collect(Collectors.toSet());
-/*		return this.participants.values().stream()
-				.map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(Objects::nonNull)
-				.collect(Collectors.toSet());*/
-	}
+	// delete 2.0 use getParticipants()
+//	public Set<Participant> getMajorPartEachIncludeThorConnect() {
+//		checkClosed();
+//		return this.participantList.values().stream()
+//				.filter(participant -> Objects.nonNull(participant) && participant.getStreamType().name().equals(StreamType.MAJOR.name()))
+//				.collect(Collectors.toSet());
+///*		return this.participants.values().stream()
+//				.map(v -> v.get(StreamType.MAJOR.name()))
+//				.filter(Objects::nonNull)
+//				.collect(Collectors.toSet());*/
+//	}
 
 //	public Set<Participant> getMajorPartEachExcludeThorConnect() {
 //		checkClosed();

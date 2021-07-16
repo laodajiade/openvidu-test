@@ -246,7 +246,7 @@ public abstract class SessionManager {
             log.error("Session:{} not found.", sessionId);
             return Collections.emptySet();
         }
-        Set<Participant> participants = session.getMajorPartEachIncludeThorConnect();
+        Set<Participant> participants = session.getParticipants();
         participants.removeIf(Participant::isClosed);
         return participants;
     }

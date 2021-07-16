@@ -127,10 +127,8 @@ public class KurentoSessionManager extends SessionManager {
                 participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
                 if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                     participant.setMicStatus(ParticipantMicStatus.off);
-                } else {
-                    if (participant.getOrder() > (kSession.getPresetInfo().getSfuPublisherThreshold() - 1) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
-                        participant.setMicStatus(ParticipantMicStatus.off);
-                    }
+                } else if (participant.getOrder() >= openviduConfig.getSmartMicOnThreshold()) {
+                    participant.setMicStatus(ParticipantMicStatus.off);
                 }
             }
             participant.setRoomSubject(preset.getRoomSubject());
@@ -877,7 +875,7 @@ public class KurentoSessionManager extends SessionManager {
             });
 
             // send user break line
-            session.getMajorPartEachIncludeThorConnect().forEach(participant ->
+            session.getParticipants().forEach(participant ->
                     breakLineNotifyParams.forEach(jsonObject ->
                             rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
                                     ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
@@ -1004,7 +1002,7 @@ public class KurentoSessionManager extends SessionManager {
 
                 // notify clients mcu layout changed
                 JsonObject notifyParam = session.getLayoutNotifyInfo();
-                session.getMajorPartEachIncludeThorConnect().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
+                session.getParticipants().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
             }
         }
@@ -1029,7 +1027,7 @@ public class KurentoSessionManager extends SessionManager {
         // check if include moderator
         Session session;
         Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
-        Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getMajorPartEachIncludeThorConnect();
+        Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getParticipants();
         if (OpenViduRole.MODERATOR.equals(majorPart.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
             //stop polling
             SessionPreset sessionPreset = session.getPresetInfo();
