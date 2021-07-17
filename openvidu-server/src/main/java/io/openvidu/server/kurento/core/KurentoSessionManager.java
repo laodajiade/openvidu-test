@@ -199,25 +199,6 @@ public class KurentoSessionManager extends SessionManager {
             //update partInfo
             roomManage.updatePartHistory(session.getRuid(), participant.getUuid(), participant.getCreatedAt());
 
-            // Update control data structures
-//            if (sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-//                Participant p = sessionidParticipantpublicidParticipant.get(sessionId)
-//                        .remove(participant.getParticipantPublicId());
-//                boolean stillParticipant = false;
-//                if (Objects.nonNull(p)) {
-//                    for (Session s : sessions.values()) {
-//                        if (s.getParticipantByPrivateId(p.getParticipantPrivateId()) != null) {
-//                            stillParticipant = true;
-//                            break;
-//                        }
-//                    }
-//                    if (!stillParticipant) {
-//                        insecureUsers.remove(p.getParticipantPrivateId());
-//                    }
-//                }
-//            }
-
-
             if (session.isShare(participant.getUuid())) {
                 endSharing(session, participant, participant.getUuid());
                 //todo 2.0 share mcu
@@ -887,7 +868,7 @@ public class KurentoSessionManager extends SessionManager {
         if (Objects.nonNull(session = getSession(sessionId))) {
             Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
             participantOptional.ifPresent(participant -> {
-                evictParticipant(participant, evictStrategies, EndReason.sessionClosedByServer);
+                evictParticipant(participant, evictStrategies, EndReason.forceDisconnectByServer);
             });
         }
     }
@@ -921,7 +902,7 @@ public class KurentoSessionManager extends SessionManager {
             }
             // check if exists SHARING
             Participant sharePart;
-            if (session.getSharingPart().isPresent() && session.getSharingPart().get().getUuid().equals(evictParticipant.getUuid())) {
+            if (session.isShare(evictParticipant.getUuid())) {
                 //todo 2.0 不再需要发停止通知
 //                JsonObject params = new JsonObject();
 //                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,

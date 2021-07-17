@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.broker.ToOpenviduElement;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.*;
@@ -244,8 +246,21 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                     if (!partInfo.isEmpty() && Objects.nonNull(roomId) && !sessionId.equals(roomId)) {
                         log.info("参会者加入不同的会议室，踢出上个会议室,{},{},{}", roomId, rpcConnection.getUserUuid(), sessionId);
-                        sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
-                                Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                        Session preSession = sessionManager.getSession(roomId);
+                        if (Objects.nonNull(preSession)) {
+                            sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
+                                    Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                        } else {
+                            JsonObject msg = new JsonObject();
+                            msg.addProperty("method", ToOpenviduElement.EVICT_PARTICIPANT_BY_UUID_METHOD);
+
+                            JsonObject params = new JsonObject();
+                            params.addProperty("roomId", roomId);
+                            params.addProperty("uuid", rpcConnection.getUserUuid());
+                            msg.add("params", params);
+
+                            cacheManage.publish(BrokerChannelConstans.TO_OPENVIDU_CHANNEL, msg.toString());
+                        }
                     }
                 }
 

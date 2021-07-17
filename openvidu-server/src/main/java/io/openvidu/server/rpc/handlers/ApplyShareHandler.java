@@ -20,8 +20,6 @@ import java.util.Optional;
 @Service(ProtocolElements.APPLY_SHARE_METHOD)
 public class ApplyShareHandler extends ExRpcAbstractHandler<JsonObject> {
 
-    public static final Object share_lock = new Object();
-
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {
         String targetId = BindValidate.notEmptyAndGet(params, "targetId");
