@@ -152,15 +152,14 @@ public class AppointConferenceJobHandler {
         if (session == null) {
             return;
         }
-
-        List<Participant> moderatorAndThorPart = session.getModeratorAndThorPart();
-        if (!moderatorAndThorPart.isEmpty()) {
+        Participant moderatorPart = session.getModeratorPart();
+        if (moderatorPart != null) {
             JsonObject params = new JsonObject();
             params.addProperty("countdown", countdown);
             params.addProperty("startTime", appointConference.getStartTime().getTime());
             params.addProperty("moderatorName", appointConference.getModeratorName());
             params.addProperty("conferenceSubject", appointConference.getConferenceSubject());
-            notificationService.sendBatchNotificationConcurrent(new HashSet<>(moderatorAndThorPart), "nextConferenceToBeginNotify", params);
+            notificationService.sendNotification(moderatorPart.getParticipantPrivateId(), "nextConferenceToBeginNotify", params);
         }
 
         // 创建一个1分钟倒计时关闭会议

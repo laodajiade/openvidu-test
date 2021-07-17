@@ -854,10 +854,9 @@ public class KurentoSessionManager extends SessionManager {
     public void evictParticipantByPrivateId(String sessionId, String privateId, List<EvictParticipantStrategy> evictStrategies) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
-            Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(privateId);
-            if (samePrivateIdParts != null && !samePrivateIdParts.isEmpty()) {
-                // evict same privateId parts
-                evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.sessionClosedByServer);
+            Participant participant = session.getParticipantByPrivateId(privateId);
+            if (participant != null) {
+                evictParticipant(participant,evictStrategies,EndReason.sessionClosedByServer);
             }
         }
     }

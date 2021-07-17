@@ -66,9 +66,8 @@ public class Session implements SessionInterface {
 	protected RecordingManager recordingManager;
 	protected LivingManager livingManager;
 
-    //todo 不在使用，废弃了  participantList 代替 participants
-    @Deprecated
-    protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
+    //delete 2.0 不在使用，废弃了  participantList 代替 participants
+    //protected final ConcurrentMap<String, ConcurrentMap<String, Participant>> participants = new ConcurrentHashMap<>();
 
     /**
      * key = uuid,value = Participant
@@ -289,18 +288,13 @@ public class Session implements SessionInterface {
 	public Map<String, String> getLayoutRelativePartId() {
 		checkClosed();
 		Map<String, String> relativePartIdMap = new HashMap<>();
-		this.participants.values().stream()
-				.map(v -> v.get(StreamType.MAJOR.name()))
+		this.getParticipants()
 				.forEach(participant -> {
-					if (Objects.nonNull(participant)) {
-						if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-							relativePartIdMap.put("moderatorId", participant.getParticipantPublicId());
-						}
-						if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
-							relativePartIdMap.put("speakerId", participant.getParticipantPublicId());
-						}
-					} else {
-						log.info("participants:{}", participants.toString());
+					if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
+						relativePartIdMap.put("moderatorId", participant.getParticipantPublicId());
+					}
+					if (ParticipantHandStatus.speaker.equals(participant.getHandStatus())) {
+						relativePartIdMap.put("speakerId", participant.getParticipantPublicId());
 					}
 				});
 		return relativePartIdMap;
@@ -449,8 +443,7 @@ public class Session implements SessionInterface {
 
 	public Set<Participant> getMajorSipPart() {
 		checkClosed();
-		return this.participants.values().stream()
-				.map(v -> v.get(StreamType.MAJOR.name()))
+		return this.getParticipants().stream()
 				.filter(participant -> participant.getTerminalType()==TerminalTypeEnum.S)
 				.collect(Collectors.toSet());
 	}
@@ -461,19 +454,19 @@ public class Session implements SessionInterface {
 				.filter(participant -> Objects.nonNull(participant) && !Objects.equals(OpenViduRole.MODERATOR, participant.getRole()))
 				.collect(Collectors.toSet());
 	}
-
-	public Set<Participant> getMajorPartAllOrSpecificConnect(String userUuid) {
-		checkClosed();
-		return org.apache.commons.lang.StringUtils.isEmpty(userUuid) ? this.participants.values().stream()
-				.map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant)
-						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
-				.collect(Collectors.toSet()) : this.participants.values().stream()
-				.map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && userUuid.equals(participant.getUuid())
-						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
-				.collect(Collectors.toSet());
-	}
+// delete 2.0
+//	public Set<Participant> getMajorPartAllOrSpecificConnect(String userUuid) {
+//		checkClosed();
+//		return org.apache.commons.lang.StringUtils.isEmpty(userUuid) ? this.participants.values().stream()
+//				.map(v -> v.get(StreamType.MAJOR.name()))
+//				.filter(participant -> Objects.nonNull(participant)
+//						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
+//				.collect(Collectors.toSet()) : this.participants.values().stream()
+//				.map(v -> v.get(StreamType.MAJOR.name()))
+//				.filter(participant -> Objects.nonNull(participant) && userUuid.equals(participant.getUuid())
+//						&& !Objects.equals(OpenViduRole.THOR, participant.getRole()))
+//				.collect(Collectors.toSet());
+//	}
 
 	// delete 2.0 use getParticipants()
 //	public Set<Participant> getMajorPartEachIncludeThorConnect() {
@@ -495,13 +488,14 @@ public class Session implements SessionInterface {
 //				.collect(Collectors.toSet());
 //	}
 
-	public Set<Participant> getMajorAndMinorPartEachConnect() {
-		checkClosed();
-		return this.participants.values().stream()
-				.flatMap(v -> v.values().stream())
-				.filter(participant -> !OpenViduRole.THOR.equals(participant.getRole()))
-				.collect(Collectors.toSet());
-	}
+	//delete 2.0
+//	public Set<Participant> getMajorAndMinorPartEachConnect() {
+//		checkClosed();
+//		return this.participants.values().stream()
+//				.flatMap(v -> v.values().stream())
+//				.filter(participant -> !OpenViduRole.THOR.equals(participant.getRole()))
+//				.collect(Collectors.toSet());
+//	}
 
 	public Set<Participant> getPartsExcludeModeratorAndSpeaker() {
 		checkClosed();
@@ -521,8 +515,7 @@ public class Session implements SessionInterface {
 
     public List<Participant> getOrderedMajorAndOnWallParts() {
         checkClosed();
-        return this.participants.values().stream()
-                .map(v -> v.get(StreamType.MAJOR.name()))
+        return this.getParticipants().stream()
                 .filter(participant -> Objects.nonNull(participant) && participant.getRole().needToPublish()
 						&& participant.isStreaming())
 				.sorted(Comparator.comparing(Participant::getOrder))
@@ -551,10 +544,11 @@ public class Session implements SessionInterface {
 		return Optional.empty();
 	}
 
-	@Override
-	public ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId) {
-		return participants.get(participantPrivateId);
-	}
+	// detete 2.0
+//	@Override
+//	public ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId) {
+//		return participants.get(participantPrivateId);
+//	}
 
 	@Deprecated
     public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
@@ -577,26 +571,27 @@ public class Session implements SessionInterface {
 		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(StreamType.MAJOR.name())).findFirst().get() :
 		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(streamType.name())).findFirst().get();
     }
+		// delte 2.0
+//    public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
+//        checkClosed();
+//
+//        if (Objects.isNull(participants.get(participantPrivateId))) {
+//            return null;
+//        }
+//
+//        if (participants.get(participantPrivateId).values().size() <= 1) {
+//            return getParticipantByPrivateId(participantPrivateId);
+//        }
+//
+//        for (Participant p: participants.get(participantPrivateId).values()) {
+//            if (p.getParticipantPublicId().equals(participantPublicId)) {
+//                return p;
+//            }
+//        }
+//
+//		return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
+//    }
 
-    public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
-        checkClosed();
-
-        if (Objects.isNull(participants.get(participantPrivateId))) {
-            return null;
-        }
-
-        if (participants.get(participantPrivateId).values().size() <= 1) {
-            return getParticipantByPrivateId(participantPrivateId);
-        }
-
-        for (Participant p: participants.get(participantPrivateId).values()) {
-            if (p.getParticipantPublicId().equals(participantPublicId)) {
-                return p;
-            }
-        }
-
-		return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
-    }
 	//todo 2.0 Deprecated
 	@Deprecated
 	public Participant getParticipantByPublicId(String participantPublicId) {
@@ -621,10 +616,9 @@ public class Session implements SessionInterface {
 //	}
 
 	public Participant getParticipantByUserId(Long userId) {
-    	checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && userId.equals(participant.getUserId())
-						&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+		checkClosed();
+		return this.getParticipants().stream().filter(participant -> Objects.nonNull(participant) && userId.equals(participant.getUserId())
+				&& !participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
 	}
 
 	public Optional<Participant> getParticipantByUUID(String uuid) {
@@ -645,29 +639,32 @@ public class Session implements SessionInterface {
 		return this.participantList.values().stream().filter(p -> p.getRole() == OpenViduRole.MODERATOR).findFirst().orElseGet(null);
 	}
 
-	public List<Participant> getModeratorAndThorPart() {
-		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && participant.getRole().isController()).collect(Collectors.toList());
-	}
-	//todo 2.0 Deprecated
-	@Deprecated
-	public Participant getThorPart() {
-		checkClosed();
-		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
-				.filter(participant -> Objects.nonNull(participant) && participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
-	}
-		//todo 2.0 delete
+	// delete 2.0
+//	public List<Participant> getModeratorAndThorPart() {
+//		checkClosed();
+//		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+//				.filter(participant -> Objects.nonNull(participant) && participant.getRole().isController()).collect(Collectors.toList());
+//	}
+
+
+	//delete 2.0 Deprecated
+//	@Deprecated
+//	public Participant getThorPart() {
+//		checkClosed();
+//		return this.participants.values().stream().map(v -> v.get(StreamType.MAJOR.name()))
+//				.filter(participant -> Objects.nonNull(participant) && participant.getRole().equals(OpenViduRole.THOR)).findAny().orElse(null);
+//	}
+		//delete 2.0
 //	public Participant getSharingPart() {
 //		checkClosed();
 //		return this.participants.values().stream().map(v -> v.get(StreamType.SHARING.name())).filter(Objects::nonNull).findAny().orElse(null);
 //	}
-
-    public Participant getParticipantByStreamId(String streamId) {
-        checkClosed();
-        return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
-                participant.isStreaming() && streamId.equals(participant.getPublisherStreamId())).findAny().orElse(null);
-    }
+//delete 2.0
+//    public Participant getParticipantByStreamId(String streamId) {
+//        checkClosed();
+//        return this.participants.values().stream().flatMap(v -> v.values().stream()).filter(participant ->
+//                participant.isStreaming() && streamId.equals(participant.getPublisherStreamId())).findAny().orElse(null);
+//    }
 
 	public int getActivePublishers() {
 		return activePublishers.get();
@@ -800,7 +797,7 @@ public class Session implements SessionInterface {
 				getPartRoleChangedNotifyParamArr(sub2PubPart, originalRole, presentRole) : new JsonArray();
 		result.add("roleChange", subToPubChangedParam);
 
-		result.addProperty("partSize", participants.size());
+		result.addProperty("partSize", getPartSize());
 		result.addProperty("timestamp", System.currentTimeMillis());
 
 		notificationService.sendBatchNotificationConcurrent(getParticipants(), ProtocolElements.PART_ORDER_OR_ROLE_CHANGE_NOTIFY_METHOD, result);
@@ -1089,7 +1086,7 @@ public class Session implements SessionInterface {
 				participants.add(toJsonFunction.apply((KurentoParticipant) p));
 			}
 		});*/
-		this.participants.values().stream().flatMap(m -> m.values().stream()).forEach(p -> {
+		this.getParticipants().stream().forEach(p -> {
             if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(p.getParticipantPublicId())) {
                 participants.add(toJsonFunction.apply((KurentoParticipant) p));
             }

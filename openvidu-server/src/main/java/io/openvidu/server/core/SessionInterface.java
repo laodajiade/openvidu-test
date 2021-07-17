@@ -56,7 +56,8 @@ public interface SessionInterface {
 
 	Long getStartTime();
 
-    ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId);
+	// delte 2.0
+    //ConcurrentMap<String, Participant> getSamePrivateIdParts(String participantPrivateId);
 
 	boolean setIsRecording(boolean flag);
 

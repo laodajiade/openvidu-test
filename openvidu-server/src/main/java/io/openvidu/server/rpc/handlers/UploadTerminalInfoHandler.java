@@ -32,12 +32,10 @@ public class UploadTerminalInfoHandler extends RpcAbstractHandler {
         Session session;
         if (!StringUtils.isEmpty(rpcConnection.getSessionId()) &&
                 Objects.nonNull(session = sessionManager.getSession(rpcConnection.getSessionId()))) {
-            ConcurrentMap<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(rpcConnection.getParticipantPrivateId());
-            if (Objects.nonNull(samePrivateIdParts) && !samePrivateIdParts.isEmpty()) {
-                samePrivateIdParts.forEach((streamType, participant) -> {
-                    participant.setAbility(ability);
-                    participant.setFunctionality(functionality);
-                });
+            Participant participant =    session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
+            if (Objects.nonNull(participant)) {
+                participant.setAbility(ability);
+                participant.setFunctionality(functionality);
 
                 // notify
                 JsonObject params = request.getParams();

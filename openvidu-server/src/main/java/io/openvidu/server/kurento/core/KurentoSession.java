@@ -160,9 +160,6 @@ public class KurentoSession extends Session {
 			}
 			((KurentoParticipant) subscriber).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
-
-		log.debug("SESSION {}: Unsubscribed other participants {} from the publisher {}", sessionId,
-				participants.values(), participant.getParticipantPublicId());
 	}
 
 	@Override
@@ -217,7 +214,7 @@ public class KurentoSession extends Session {
                 kurentoParticipant.close(reason, true, 0);
 			}
 
-			participants.clear();
+			participantList.clear();
             compositeService.closeMajorShareComposite();
             if (Objects.nonNull(sipComposite)) {
 				sipComposite.release();

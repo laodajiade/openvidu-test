@@ -62,7 +62,7 @@ public class UrgedPeopleToEndHandler extends ExRpcAbstractHandler<JsonObject> {
         json.addProperty("ruid", session.getRuid());
         json.addProperty("roomId", roomId);
         json.addProperty("timestamp", System.currentTimeMillis());
-        notificationService.sendBatchNotification(new HashSet<>(session.getModeratorAndThorPart()),
+        notificationService.sendNotification(session.getModeratorPart().getParticipantPrivateId(),
                 ProtocolElements.URGED_PEOPLE_TO_END_NOTIFY_METHOD, json.toString());
     }
 }
