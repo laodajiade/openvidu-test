@@ -36,7 +36,7 @@ public class SetConferenceLayoutHandler extends RpcAbstractHandler {
             }
         }
         Participant moderator = sessionManager.getParticipant(rpcConnection.getSessionId(),
-                rpcConnection.getParticipantPrivateId(), StreamType.MAJOR);
+                rpcConnection.getParticipantPrivateId());
         // verify current user role
         if (!OpenViduRole.MODERATOR_ROLES.contains(moderator.getRole())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

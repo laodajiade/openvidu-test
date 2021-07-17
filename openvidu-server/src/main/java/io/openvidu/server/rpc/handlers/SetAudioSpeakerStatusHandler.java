@@ -43,7 +43,7 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
             return;
         }
         // verify request parameters
-        Participant moderator = session.getPartByPrivateIdAndStreamType(rpcConnection.getParticipantPrivateId(), StreamType.MAJOR);
+        Participant moderator = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
         if (CollectionUtils.isEmpty(accountTargets) && !moderator.getRole().isController()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);

@@ -1629,12 +1629,14 @@ public class KurentoSessionManager extends SessionManager {
         if (part.getTerminalType() != TerminalTypeEnum.HDC) {
             return part;
         }
-        Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
-        if (minorPart != null) {
-            if (minorPart.isStreaming())
-                return minorPart;
-            log.info("minorPart is not null but not streaming");
-        }
+        // todo 2.0 选择子流
+//        Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
+//        if (minorPart != null) {
+//            if (minorPart.isStreaming())
+//                return minorPart;
+//            log.info("minorPart is not null but not streaming");
+//        }
+        // todo 2.0 选择子流
         return part;
     }
 

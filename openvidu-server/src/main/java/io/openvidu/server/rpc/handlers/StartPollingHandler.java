@@ -38,7 +38,7 @@ public class StartPollingHandler extends RpcAbstractHandler {
             return;
         }
         // verify operate permission
-        Participant operatePart = session.getPartByPrivateIdAndStreamType(rpcConnection.getParticipantPrivateId(), StreamType.MAJOR);
+        Participant operatePart = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
         if (!operatePart.getRole().isController()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);

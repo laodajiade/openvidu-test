@@ -35,7 +35,7 @@ public class DistributeShareCastPlayStrategyHandler extends RpcAbstractHandler {
         ShareCastPlayStrategy.valueOf(shareCastPlayStrategy);
 
         if (!OpenViduRole.MODERATOR_ROLES.contains(sessionManager.getParticipant(rpcConnection.getSessionId(),
-                        rpcConnection.getParticipantPrivateId(), StreamType.MAJOR).getRole())) {
+                        rpcConnection.getParticipantPrivateId()).getRole())) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;

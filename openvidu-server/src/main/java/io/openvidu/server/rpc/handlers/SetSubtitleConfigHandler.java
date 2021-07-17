@@ -35,7 +35,7 @@ public class SetSubtitleConfigHandler extends RpcAbstractHandler {
         // check request ever from moderator
         Participant participant;
         Session session = sessionManager.getSession(sessionId);
-        if (Objects.isNull(session) || Objects.isNull(participant = session.getPartByPrivateIdAndStreamType(rpcConnection.getParticipantPrivateId(), StreamType.MAJOR))
+        if (Objects.isNull(session) || Objects.isNull(participant = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId()))
                 || !OpenViduRole.MODERATOR.equals(participant.getRole())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;

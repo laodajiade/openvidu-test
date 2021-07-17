@@ -550,27 +550,28 @@ public class Session implements SessionInterface {
 //		return participants.get(participantPrivateId);
 //	}
 
-	@Deprecated
-    public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
-		//todo 2.0 必须修改
-		if (true) {
-			throw new UnsupportedOperationException("getPartByPrivateIdAndStreamType 需要重新实现");
-		}
-		//todo 2.0 必须修改
-
-
-
-        checkClosed();
-
-		List<Participant> collect = participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).collect(Collectors.toList());
-		if (Objects.isNull(collect)) {
-			return null;
-		}
-		return null;
-		//return Objects.isNull(streamType) ?
-		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(StreamType.MAJOR.name())).findFirst().get() :
-		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(streamType.name())).findFirst().get();
-    }
+	// delete 2.0
+//	@Deprecated
+//    public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
+//		//todo 2.0 必须修改
+//		if (true) {
+//			throw new UnsupportedOperationException("getPartByPrivateIdAndStreamType 需要重新实现");
+//		}
+//		//todo 2.0 必须修改
+//
+//
+//
+//        checkClosed();
+//
+//		List<Participant> collect = participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).collect(Collectors.toList());
+//		if (Objects.isNull(collect)) {
+//			return null;
+//		}
+//		return null;
+//		//return Objects.isNull(streamType) ?
+//		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(StreamType.MAJOR.name())).findFirst().get() :
+//		//		collect.stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId) && p.getStreamType().name().equals(streamType.name())).findFirst().get();
+//    }
 		// delte 2.0
 //    public Participant getPartByPrivateIdAndPublicId(String participantPrivateId, String participantPublicId) {
 //        checkClosed();
@@ -1142,7 +1143,7 @@ public class Session implements SessionInterface {
 
 	public void dealUpAndDownTheWall(Participant pup2SubPart, Participant sub2PubPart, SessionManager sessionManager, boolean isSub2PubSpeaker) {
         Set<Participant> participants = getParticipants();
-        Participant otherPart = getPartByPrivateIdAndStreamType(pup2SubPart.getParticipantPrivateId(), StreamType.MAJOR);
+        Participant otherPart = getParticipantByPrivateId(pup2SubPart.getParticipantPrivateId());
 
         if (ParticipantHandStatus.speaker.equals(pup2SubPart.getHandStatus())) {
             // send endRoll notify

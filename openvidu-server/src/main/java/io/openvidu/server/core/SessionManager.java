@@ -275,19 +275,19 @@ public abstract class SessionManager {
      * @throws OpenViduException in case the session doesn't exist or the
      *                           participant doesn't belong to it
      */
-    //TODO 2.0废弃
-    @Deprecated
-    public Participant getParticipant(String sessionId, String participantPrivateId, StreamType streamType) throws OpenViduException {
-        Session session = sessions.get(sessionId);
-        if (session == null) {
-            throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
-        }
-        return session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
-		/*if (participant == null) {
-			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
-		}*/
-    }
+    // delete 2.0
+ //   @Deprecated
+//    public Participant getParticipant(String sessionId, String participantPrivateId, StreamType streamType) throws OpenViduException {
+//        Session session = sessions.get(sessionId);
+//        if (session == null) {
+//            throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
+//        }
+//        return session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
+//		/*if (participant == null) {
+//			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+//					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
+//		}*/
+//    }
 
     /**
      * Returns a participant in a session
@@ -322,24 +322,25 @@ public abstract class SessionManager {
      * @return {@link Participant}
      * @throws OpenViduException in case the participant doesn't exist
      */
-    public Participant getParticipant(String participantPrivateId, StreamType streamType) throws OpenViduException {
-        for (Session session : sessions.values()) {
-            if (!session.isClosed()) {
-                Participant participant = session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
-                if (!Objects.isNull(participant)) {
-                    return participant;
-                }
-//				if (Objects.isNull(participant))
-//					throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-//							"No participant with private id '" + participantPrivateId + "' was found");
-//				return participant;
-            }
-        }
-//		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-//				"No participant with private id '" + participantPrivateId + "' was found");
-        log.warn("No participant with private id:{} was found.", participantPrivateId);
-        return null;
-    }
+    // delete 2.0
+//    public Participant getParticipant(String participantPrivateId, StreamType streamType) throws OpenViduException {
+//        for (Session session : sessions.values()) {
+//            if (!session.isClosed()) {
+//                Participant participant = session.getParticipantByPrivateId(participantPrivateId, streamType);
+//                if (!Objects.isNull(participant)) {
+//                    return participant;
+//                }
+////				if (Objects.isNull(participant))
+////					throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+////							"No participant with private id '" + participantPrivateId + "' was found");
+////				return participant;
+//            }
+//        }
+////		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
+////				"No participant with private id '" + participantPrivateId + "' was found");
+//        log.warn("No participant with private id:{} was found.", participantPrivateId);
+//        return null;
+//    }
 
     /**
      * Returns a participant
@@ -349,7 +350,15 @@ public abstract class SessionManager {
      * @throws OpenViduException in case the participant doesn't exist
      */
     public Participant getParticipant(String participantPrivateId) throws OpenViduException {
-        return this.getParticipant(participantPrivateId, StreamType.MAJOR);
+        for (Session session : sessions.values()) {
+            if (!session.isClosed()) {
+                Participant participant = session.getParticipantByPrivateId(participantPrivateId);
+                if (!Objects.isNull(participant)) {
+                    return participant;
+                }
+            }
+        }
+        return null;
     }
 
     public Participant getModeratorPart(String sessionId) {
@@ -973,7 +982,7 @@ public abstract class SessionManager {
             audioParams.add(ProtocolElements.SET_VIDEO_TARGETS_PARAM, targetIds);
         }
         //判断是否存在共享
-        Participant sharePart = getSession(sessionId).getPartByPrivateIdAndStreamType(participant.getParticipantPrivateId(), StreamType.SHARING);
+        Participant sharePart = getSession(sessionId).getSharingPart().orElse(null);
         boolean existsSharingFlag;
         JsonObject stopSharingParams = new JsonObject();
         if (existsSharingFlag = Objects.nonNull(sharePart)) {
