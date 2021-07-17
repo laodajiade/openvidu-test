@@ -116,7 +116,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                 int pollingOrder = map.get("order");
                 int index = map.get("index");
                 if (participant.getOrder() == pollingOrder) {
-                    if (participant.getOrder() > openviduConfig.getSfuPublisherSizeLimit() - 1) {
+                    if (participant.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
                         index = 0;
                     }
                     timerManager.leaveRoomStartPollingAgainCompensation(sessionId, preset.getPollingIntervalTime(), index == 0 ? index : index - 1);

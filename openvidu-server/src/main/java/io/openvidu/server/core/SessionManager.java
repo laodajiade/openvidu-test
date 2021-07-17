@@ -380,6 +380,7 @@ public abstract class SessionManager {
         return null;
     }
 
+    @Deprecated //todo 2.0 废弃
     public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
         Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager, livingManager);
         dealSessionNotActiveStored(sessionId, sessionNotActive);
@@ -406,6 +407,7 @@ public abstract class SessionManager {
         return null;
     }
 
+    @Deprecated //todo 2.0 废弃
     private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
         this.sessionsNotActive.put(sessionId, sessionNotActive);
         log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
@@ -1116,6 +1118,7 @@ public abstract class SessionManager {
     }
 
 
+    @Deprecated //todo 2.0 废弃
     public Session storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
         log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
         Session session = storeSessionNotActiveWhileRoomCreated(roomId);
