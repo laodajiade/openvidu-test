@@ -536,7 +536,7 @@ public class Session implements SessionInterface {
 //		}
 //
 //        return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
-		return participantList.values().stream().filter(p -> p.getUuid().equals(participantPrivateId)).findFirst().orElseGet(null);
+		return participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).findFirst().orElseGet(null);
 	}
 
 	public Optional<Participant> getParticipantByPrivateId(String participantPrivateId, String uuid) {

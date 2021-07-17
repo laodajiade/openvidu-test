@@ -28,7 +28,7 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
     @Autowired
     private RpcNotificationService notificationService;
 
-    private static final Pattern NEEDED_EXPIRE_KEY_PATTERN = Pattern.compile("^ws:link:exception:(\\d+):(\\w+)$");
+    private static final Pattern NEEDED_EXPIRE_KEY_PATTERN = Pattern.compile("^ws:link:exception:(\\d+):(.*)$");
 
     public RedisKeyExpirationListener(RedisMessageListenerContainer listenerContainer) {
         super(listenerContainer);

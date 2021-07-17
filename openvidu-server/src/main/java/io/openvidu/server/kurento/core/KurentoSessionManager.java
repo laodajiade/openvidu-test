@@ -851,28 +851,21 @@ public class KurentoSessionManager extends SessionManager {
         if (partInfo != null && !partInfo.isEmpty() && partInfo.containsKey("roomId")
                 && rpcConnection.getSessionId().equals(partInfo.get("roomId").toString())
                 && Objects.nonNull(session = getSession(partInfo.get("roomId").toString()))) {
-            Map<String, Participant> samePrivateIdParts = session.getSamePrivateIdParts(rpcConnection.getParticipantPrivateId());
-            if (samePrivateIdParts == null || samePrivateIdParts.isEmpty()) {
+            Participant participant = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId());
+            if (participant == null) {
                 rpcNotificationService.closeRpcSession(rpcConnection.getParticipantPrivateId());
                 return;
             }
 
-            // construct break line notify params
-            List<JsonObject> breakLineNotifyParams = new ArrayList<>();
-            samePrivateIdParts.values().forEach(participant -> {
-                JsonObject singleNotifyParam = new JsonObject();
-                singleNotifyParam.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, participant.getParticipantPublicId());
-                breakLineNotifyParams.add(singleNotifyParam);
-            });
+            JsonObject singleNotifyParam = new JsonObject();
+            singleNotifyParam.addProperty(ProtocolElements.USER_BREAK_LINE_CONNECTION_ID_PARAM, participant.getParticipantPublicId());
+            singleNotifyParam.addProperty("uuid", participant.getUuid());
 
-            // send user break line
-            session.getParticipants().forEach(participant ->
-                    breakLineNotifyParams.forEach(jsonObject ->
-                            rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-                                    ProtocolElements.USER_BREAK_LINE_METHOD, jsonObject)));
+            rpcNotificationService.sendBatchNotificationConcurrent(session.getParticipantsExclude(participant),
+                    ProtocolElements.USER_BREAK_LINE_METHOD, singleNotifyParam);
 
             // evict same privateId parts
-            evictParticipantWithSamePrivateId(samePrivateIdParts, evictStrategies, EndReason.lastParticipantLeft);
+            evictParticipant(participant, evictStrategies, EndReason.lastParticipantLeft);
         }
     }
 
@@ -1068,9 +1061,9 @@ public class KurentoSessionManager extends SessionManager {
                 Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
                 boolean layoutChanged = false;
                 for (Participant part : samePrivateIdParts.values()) {
-                        layoutChanged |= session.leaveRoomSetLayout(part,
-                                !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
-                                        ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
+                    layoutChanged |= session.leaveRoomSetLayout(part,
+                            !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
+                                    ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
                 }
 
                 if (layoutChanged) {
@@ -1625,7 +1618,7 @@ public class KurentoSessionManager extends SessionManager {
                 Participant speakerPartMinorStream = demotionMinorStream(speakerPart, kurentoSession);
                 if (Objects.nonNull(curParticipant) &&
                         (curParticipant.getUuid().equals(speakerPartMinorStream.getUuid()))) {
-                    log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)"                           );
+                    log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)");
                     return false;
                 }
                 passThruList.add(constructPartRecordInfo(speakerPartMinorStream, 2));
@@ -1783,7 +1776,7 @@ public class KurentoSessionManager extends SessionManager {
             JsonObject notify = new JsonObject();
             notify.addProperty("reason", reason);
             session.getParticipants().forEach(participant -> {
-                    rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
+                rpcNotificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
             });
         } else {
             log.warn("Fail to stop the record and ruid:{}", session.getRuid());

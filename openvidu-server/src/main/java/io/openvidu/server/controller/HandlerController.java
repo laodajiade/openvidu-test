@@ -20,7 +20,11 @@ package io.openvidu.server.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.openvidu.server.client.RtcUserClient;
+import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.AccessTypeEnum;
+import io.openvidu.server.common.enums.CloseReason;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
+import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.RequestDTO;
 import io.openvidu.server.domain.RequestEx;
@@ -32,6 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
@@ -53,6 +60,9 @@ public class HandlerController {
 
     @Autowired
     private RtcUserClient rtcUserClient;
+
+    @Resource
+    protected CacheManage cacheManage;
 
     @PostMapping(value = "handler", produces = "application/json")
     public @ResponseBody
@@ -109,6 +119,44 @@ public class HandlerController {
             log.error(e.toString(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    @PostMapping(value = "afterConnectionClosed", produces = "application/json")
+    public @ResponseBody
+    RespResult<?> afterConnectionClosed(@RequestBody RequestDTO requestDTO) {
+        RpcConnection rpc;
+        if (Objects.isNull(requestDTO) || Objects.isNull(rpc = this.notificationService.getRpcConnection(requestDTO.getParticipantPrivateId()))) {
+            log.info("The connection already cleaned up when event 'afterConnectionClosed' callback.");
+            return RespResult.ok();
+        }
+
+        boolean overKeepAlive = false;
+        String closeReason = requestDTO.getParams().getString("closeReason");
+        log.info("After connection closed for WebSocket session: {} - Status: {}", rpc.getParticipantPrivateId(), closeReason);
+        if (!"NORMAL_CLOSURE".equals(closeReason)) {
+            String message;
+            switch (closeReason) {
+                case "NOT_RECEIVE_PING":
+                    overKeepAlive = true;
+                    message = "Evicting participant with private id {} because of a network disconnection";
+                    break;
+                default:
+                    message = "Evicting participant with private id {} because its websocket unexpectedly closed in the client side";
+                    break;
+            }
+            log.error(message, rpc.getParticipantPrivateId());
+        } else {
+            log.info("afterConnectionClosed and the status is null, private id : {}", rpc.getParticipantPrivateId());
+        }
+
+        // change the terminal status if the ws link accessIn succeeded
+        cacheManage.updateTerminalStatus(rpc, TerminalStatus.offline);
+        if (AccessTypeEnum.terminal.equals(rpc.getAccessType()) && Objects.nonNull(rpc.getTerminalType())
+                && Objects.nonNull(rpc.getUserUuid()) && Objects.nonNull(rpc.getSessionId())) {
+            // record ws exception link that in room before
+            cacheManage.recordWsExceptionLink(rpc, overKeepAlive);
+        }
+        return RespResult.ok();
     }
 
 }
