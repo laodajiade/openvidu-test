@@ -415,7 +415,7 @@ public class KurentoSessionManager extends SessionManager {
         SdpType sdpType = kurentoOptions.isOffer ? SdpType.OFFER : SdpType.ANSWER;
         KurentoSession kSession = kParticipant.getSession();
 
-        kParticipant.createPublishingEndpoint(mediaOptions, participant, streamType);
+        PublisherEndpoint publishingEndpoint = kParticipant.createPublishingEndpoint(mediaOptions, participant, streamType);
 
         /*
          * for (MediaElement elem : kurentoOptions.mediaElements) {
@@ -425,14 +425,14 @@ public class KurentoSessionManager extends SessionManager {
         String sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
                 kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType, streamType);
         // http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
-        kParticipant.getPublisher(streamType).internalAddIceCandidateCache();
+        publishingEndpoint.internalAddIceCandidateCache();
         if (sdpAnswer == null) {
             OpenViduException e = new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
                     "Error generating SDP response for publishing user " + participant.getParticipantPublicId());
             log.error("PARTICIPANT {}: Error publishing media", participant.getParticipantPublicId(), e);
 //            sessionEventsHandler.onPublishMedia(participant, null, kParticipant.getPublisher().createdAt(),
 //                    kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
-            sessionEventsHandler.onPublishMedia(participant, participant.getPublisherStreamId(),
+            sessionEventsHandler.onPublishMedia(participant, publishingEndpoint.getStreamId(),
                     kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
                     transactionId, null, kParticipant.getPublisher(streamType), streamType);
         }
@@ -444,7 +444,7 @@ public class KurentoSessionManager extends SessionManager {
         }
 
         if (sdpAnswer != null) {
-            sessionEventsHandler.onPublishMedia(participant, kParticipant.getPublisher(streamType).getEndpointName(),
+            sessionEventsHandler.onPublishMedia(participant, publishingEndpoint.getEndpointName(),
                     kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
                     transactionId, null, kParticipant.getPublisher(streamType), streamType);
         }

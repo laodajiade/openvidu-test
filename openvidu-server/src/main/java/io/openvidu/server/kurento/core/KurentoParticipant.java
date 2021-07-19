@@ -155,7 +155,7 @@ public class KurentoParticipant extends Participant {
 		}
 	}
 
-	public void createPublishingEndpoint(MediaOptions mediaOptions, Participant participant, StreamType streamType) {
+	public PublisherEndpoint createPublishingEndpoint(MediaOptions mediaOptions, Participant participant, StreamType streamType) {
 
 		PublisherEndpoint publisher;
 		synchronized (createPublisherLock) {
@@ -212,6 +212,7 @@ public class KurentoParticipant extends Participant {
 
 		// Remove streamId from publisher's map
 		this.session.publishedStreamIds.putIfAbsent(publisher.getStreamId(), this.getParticipantPrivateId());
+		return publisher;
 	}
 
 	public synchronized Filter getFilterElement(String id) {
