@@ -2,6 +2,7 @@ package io.openvidu.server.common.cache;
 
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.common.pojo.DongleInfo;
 import io.openvidu.server.rpc.RpcConnection;
 
 import javax.validation.constraints.NotNull;
@@ -59,8 +60,10 @@ public interface CacheManage {
     void delConferenceRelativeKey(String key);
 
     String getTerminalStatus(String uuid);
+
     /**
      * set expire key that record the ws exception link
+     *
      * @param rpcConnection ws link
      * @param overKeepAlive judge the error link ever not receive ping from client
      */
@@ -76,11 +79,11 @@ public interface CacheManage {
 
     void publish(String channel, String message);
 
-    void setCorpRemainDuration(String project,int remainderDuration);
+    void setCorpRemainDuration(String project, int remainderDuration);
 
     int getCorpRemainDuration(String project);
 
-    void setAdvanceCutDuration(String project,int advanceDuration);
+    void setAdvanceCutDuration(String project, int advanceDuration);
 
     int getAdvanceCutDuration(String project);
 
@@ -100,11 +103,15 @@ public interface CacheManage {
 
     JsonObject getMeetingQuality(String uuid);
 
-    void setMeetingQuality(String uuid,JsonObject object);
+    void setMeetingQuality(String uuid, JsonObject object);
 
     boolean checkDuplicationSendPhone(String phone, String usage);
 
     void roomLease(String sessionId, String ruid);
 
     boolean checkRoomLease(String sessionId, String ruid);
+
+    void setCropDongleInfo(String dongleInfo);
+
+    DongleInfo getCropDongleInfo();
 }

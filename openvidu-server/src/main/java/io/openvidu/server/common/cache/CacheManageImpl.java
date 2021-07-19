@@ -1,5 +1,6 @@
 package io.openvidu.server.common.cache;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
@@ -8,7 +9,9 @@ import io.openvidu.server.common.dao.DeviceMapper;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
+import io.openvidu.server.common.pojo.DongleInfo;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.utils.DESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.BoundHashOperations;
@@ -30,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class CacheManageImpl implements CacheManage {
+
+    public static DongleInfo dongleInfo;
 
     @Value("${hdc.retain.in.room.interval}")
     private long hdcRetainInRoomInterval;
@@ -403,5 +408,32 @@ public class CacheManageImpl implements CacheManage {
         String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
         String value = roomStringTemplate.opsForValue().get(key);
         return value != null && org.apache.commons.lang3.StringUtils.contains(value, ruid);
+    }
+
+
+    @Override
+    public void setCropDongleInfo(String dongleInfo) {
+        tokenStringTemplate.opsForValue().set(CacheKeyConstants.CORP_DONGLE_MESSAGE, dongleInfo);
+    }
+
+    @Override
+    public DongleInfo getCropDongleInfo() {
+        try {
+            if (dongleInfo == null) {
+                String rypt = tokenStringTemplate.opsForValue().get(CacheKeyConstants.CORP_DONGLE_MESSAGE);
+                if (StringUtils.isEmpty(rypt)) {
+                    return null;
+                }
+                String decrypt = DESUtil.decrypt(rypt);
+                DongleInfo redisdongleInfo = JSONObject.parseObject(decrypt, DongleInfo.class);
+                dongleInfo = redisdongleInfo;
+                return dongleInfo;
+            } else {
+                return dongleInfo;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
