@@ -57,7 +57,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
 		if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
-			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
+			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
 		} else {
 			publisher.connect(this.getEndpoint());
 		}
@@ -71,7 +71,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	public synchronized String subscribeAudio(PublisherEndpoint publisher) {
 		if (Objects.isNull(publisher)) {
 			log.info("web subscribe all audio mix output. but it is not input.");
-			internalSinkConnect(getCompositeService().getMajorShareHubPortOut(), this.getEndpoint(), MediaType.AUDIO);
+			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint(), MediaType.AUDIO);
 		} else {
 			publisher.connectAudioOut(this.getEndpoint());
 		}

@@ -12,12 +12,12 @@ public class CompositeService {
     private Session session;
     private MediaPipeline pipeline;
 
-    private Composite composite;
-    private final Object compositeCreateLock = new Object();
-    private final Object compositeReleaseLock = new Object();
+    private Composite majorShareComposite;
+    private final Object majorShareCompositeCreateLock = new Object();
+    private final Object majorShareCompositeReleaseLock = new Object();
 
-    private HubPort hubPortOut = null;
-    private ListenerSubscription hubPortOutSubscription = null;
+    private HubPort majorShareHubPortOut = null;
+    private ListenerSubscription majorShareHubPortOutSubscription = null;
 
 
     private boolean existSharing;
@@ -29,52 +29,48 @@ public class CompositeService {
         this.session = session;
     }
 
-    void createComposite(MediaPipeline pipeline) {
-        if (composite == null) {
-            synchronized (compositeCreateLock) {
-                if (composite != null) {
-                    return;
-                }
-
-                this.pipeline = pipeline;
-                log.info("SESSION {}: Creating Composite", session.getSessionId());
-                composite = new Composite.Builder(this.pipeline).build();
-                createHubPort();
+    void createMajorShareComposite() {
+        synchronized (majorShareCompositeCreateLock) {
+            if (pipeline == null || majorShareComposite != null) {
+                log.warn("create major share composite: majorShareComposite already exists or pipeline is null.");
+                return;
             }
-            composite.setName(session.getSessionId());
+            log.info("SESSION {}: Creating Major Share Composite", session.getSessionId());
+            majorShareComposite = new Composite.Builder(this.pipeline).build();
+            createMajorShareHubPortOut();
         }
-
+        majorShareComposite.setName(session.getSessionId());
 //        majorShareHubPortOut.setName(session.getSessionId() + "_mix_out");
     }
 
-    void closeComposite() {
-        releaseHubPortOut();
-        synchronized (compositeReleaseLock) {
-            if (Objects.isNull(composite)) {
+    void closeMajorShareComposite() {
+        releaseMajorShareHubPortOut();
+        synchronized (majorShareCompositeReleaseLock) {
+            if (Objects.isNull(majorShareComposite)) {
                 log.warn("majorShareComposite already released.");
                 return;
             }
-            composite.release();
-            composite = null;
+            majorShareComposite.release();
+            majorShareComposite = null;
             log.warn("Release MajorShareComposite");
         }
     }
 
-    public void createHubPort() {
-        hubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
-        hubPortOutSubscription = registerElemErrListener(hubPortOut);
+    public void createMajorShareHubPortOut() {
+        majorShareHubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+        majorShareHubPortOutSubscription = registerElemErrListener(majorShareHubPortOut);
         log.info("Sub EP create majorShareHubPortOut.");
     }
 
-    public HubPort getHubPortOut() {
-        return this.hubPortOut;
+    public HubPort getMajorShareHubPortOut() {
+        return this.majorShareHubPortOut;
     }
 
-    public void releaseHubPortOut() {
+    public void releaseMajorShareHubPortOut() {
         log.info("Release MajorShareHubPortOut");
-        unregisterErrorListeners(hubPortOut, hubPortOutSubscription);
-        if (!Objects.isNull(hubPortOut)) {
-            releaseElement(hubPortOut);
+        unregisterErrorListeners(majorShareHubPortOut, majorShareHubPortOutSubscription);
+        if (!Objects.isNull(majorShareHubPortOut)) {
+            releaseElement(majorShareHubPortOut);
         }
     }
 
@@ -123,7 +119,7 @@ public class CompositeService {
     }
 
     public Composite getMajorShareComposite() {
-        return composite;
+        return majorShareComposite;
     }
 
     public boolean isExistSharing() {
@@ -152,5 +148,11 @@ public class CompositeService {
 
     public MediaPipeline getPipeline() {
         return pipeline;
+    }
+
+    public void setPipeline(MediaPipeline pipeline) {
+        if (Objects.isNull(this.pipeline)) {
+            this.pipeline = pipeline;
+        }
     }
 }

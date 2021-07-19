@@ -26,8 +26,6 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -97,7 +95,6 @@ public class KurentoSession extends Session {
 		log.info("room lease thead stop,roomId={},ruid={}", sessionId, ruid);
 	});
 
-	@Deprecated
 	public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
 
 	public KurentoSession(Session sessionNotActive, Kms kms, KurentoSessionEventsHandler kurentoSessionHandler,
@@ -122,8 +119,7 @@ public class KurentoSession extends Session {
 			checkClosed();
 			createPipeline();
 			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
-				this.compositeService.setPipeline(this.getPipeline());
-				compositeService.createMajorShareComposite();
+				compositeService.createComposite(this.getPipeline());
 			}
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
@@ -215,7 +211,7 @@ public class KurentoSession extends Session {
 			}
 
 			participantList.clear();
-            compositeService.closeMajorShareComposite();
+            compositeService.closeComposite();
             if (Objects.nonNull(sipComposite)) {
 				sipComposite.release();
 			}
@@ -537,13 +533,12 @@ public class KurentoSession extends Session {
 		// Release pipeline, create a new one and prepare new PublisherEndpoints for
 		// allowed users
 		log.info("Reseting process: closing media pipeline for active session {}", this.sessionId);
-		compositeService.closeMajorShareComposite();
+		compositeService.closeComposite();
 		this.closePipeline(() -> {
 			log.info("Reseting process: media pipeline closed for active session {}", this.sessionId);
 			createPipeline();
 			log.info("Reset pipeline id:{}", this.getPipeline().getId());
-			compositeService.setPipeline(this.getPipeline());
-			compositeService.createMajorShareComposite();
+			compositeService.createComposite(this.getPipeline());
 			try {
 				if (!pipelineLatch.await(20, TimeUnit.SECONDS)) {
 					throw new Exception("MediaPipleine was not created in 20 seconds");

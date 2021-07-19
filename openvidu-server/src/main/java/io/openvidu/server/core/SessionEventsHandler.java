@@ -267,6 +267,17 @@ public class SessionEventsHandler {
 
 		new Thread(() -> deliveryOnParticipantJoined(session)).start();
 
+		// todo 2.0 临时代码，是否需要开启mcu
+		new Thread(() -> {
+			if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+				return;
+			}
+			if (session.getPresetInfo().getMcuThreshold() > session.getPartSize()) {
+				log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
+				session.setConferenceMode(ConferenceModeEnum.MCU);
+			}
+		}).start();
+
 	}
 
     private void deliveryOnParticipantJoined(Session session) {
