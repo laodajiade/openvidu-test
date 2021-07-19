@@ -95,7 +95,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	@Getter
 	private final ConcurrentMap<String, MediaChannel> mediaChannels = new ConcurrentHashMap<>();
 
-	private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
+    private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
 
 	//todo 2.0 需要删除
 	@Deprecated
@@ -106,14 +106,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 		this.endpointName = uuid + '_' + streamType + '_' + RandomStringUtils.randomAlphabetic(6);
 	}
 
-	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline, StreamType streamType,
-							 OpenviduConfig openviduConfig) {
-		super(web, owner, uuid, pipeline, openviduConfig, log);
-		String streamId = uuid + '_' + streamType + '_' + createdAt + "_" + RandomStringUtils.randomAlphabetic(6);
-		this.endpointName = streamId;
-		setStreamId(streamId);
-		this.streamType = streamType;
-	}
+    public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline, StreamType streamType,
+                             OpenviduConfig openviduConfig) {
+        super(web, owner, uuid, pipeline, openviduConfig, log);
+        String streamId = uuid + '_' + streamType + "_" + RandomStringUtils.randomAlphabetic(6);
+        this.endpointName = streamId;
+        setStreamId(streamId);
+        this.streamType = streamType;
+    }
 
 	@Override
 	protected void internalEndpointInitialization(final CountDownLatch endpointLatch) {
@@ -177,6 +177,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		sipCompositeHubPort.setMinOutputBitrate(2000000);
 		sipCompositeHubPort.setMaxOutputBitrate(2000000);
 		log.info("create sip composite {} hubport {}", composite.getName(), sipCompositeHubPort.getId());
+		sipCompositeHubPort.setName(this.getStreamId()+"_"+"hubPort");
 		return sipCompositeHubPort;
 	}
 

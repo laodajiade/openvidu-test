@@ -104,7 +104,7 @@ public class KurentoSession extends Session {
 		this.destroyKurentoClient = destroyKurentoClient;
 		this.kurentoSessionHandler = kurentoSessionHandler;
 		this.kurentoEndpointConfig = kurentoEndpointConfig;
-		this.compositeService = new CompositeService(sessionNotActive);
+		this.compositeService = new CompositeService(this);
 		log.info("New SESSION instance with id '{}'", sessionId);
 		kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
 		this.leaseThread.start();

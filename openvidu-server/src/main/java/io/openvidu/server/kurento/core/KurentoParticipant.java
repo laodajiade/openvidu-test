@@ -194,15 +194,17 @@ public class KurentoParticipant extends Participant {
             }
 
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
-		} else if (TerminalTypeEnum.S == getTerminalType()) {
-			log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
-			session.setConferenceMode(ConferenceModeEnum.MCU);
-			session.compositeService.createComposite(session.getPipeline());
-		}
+        } else if (TerminalTypeEnum.S == getTerminalType()) {
+            log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
+            session.setConferenceMode(ConferenceModeEnum.MCU);
+            session.compositeService.createComposite(session.getPipeline());
+        }
 
-		if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
-			session.asyncUpdateSipComposite();
-		}
+        if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
+            // session.asyncUpdateSipComposite();
+            log.info("session.compositeService.updateComposite()  ");
+            session.compositeService.updateComposite();
+        }
 
 		String debugRandomID = RandomStringUtils.randomAlphabetic(6);
 		publisher.getEndpoint().setName(publisher.getEndpointName());

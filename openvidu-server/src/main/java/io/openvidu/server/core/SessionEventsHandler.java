@@ -272,9 +272,10 @@ public class SessionEventsHandler {
 			if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
 				return;
 			}
-			if (session.getPresetInfo().getMcuThreshold() > session.getPartSize()) {
+			if (session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
 				log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
 				session.setConferenceMode(ConferenceModeEnum.MCU);
+				((KurentoSession) session).compositeService.createComposite(((KurentoSession) session).getPipeline());
 			}
 		}).start();
 
