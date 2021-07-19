@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class GetRoomLayoutHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;
         }
-        io.openvidu.server.core.Session conferenceSession = this.sessionManager.getSession(sessionId);
+        Session conferenceSession = this.sessionManager.getSession(sessionId);
         if (Objects.isNull(conferenceSession)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);

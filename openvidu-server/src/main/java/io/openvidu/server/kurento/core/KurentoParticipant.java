@@ -196,11 +196,11 @@ public class KurentoParticipant extends Participant {
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
 		} else if (TerminalTypeEnum.S == getTerminalType()) {
 			log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
-			Composite sipComposite = this.session.createSipComposite();
-			this.publisher.createSipCompositeHubPort(sipComposite);
+			session.setConferenceMode(ConferenceModeEnum.MCU);
+			session.compositeService.createComposite(session.getPipeline());
 		}
 
-		if (Objects.nonNull(session.getSipComposite())) {
+		if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
 			session.asyncUpdateSipComposite();
 		}
 
@@ -210,8 +210,6 @@ public class KurentoParticipant extends Participant {
 		publisher.getPassThru().addTag(strMSTagDebugPassThroughName, getParticipantName() + "_pt_cid_" + debugRandomID);
 		endpointConfig.addEndpointListeners(publisher, "publisher_" + streamType);
 
-		// Remove streamId from publisher's map
-		this.session.publishedStreamIds.putIfAbsent(publisher.getStreamId(), this.getParticipantPrivateId());
 		return publisher;
 	}
 

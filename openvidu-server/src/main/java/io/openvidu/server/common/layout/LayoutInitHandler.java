@@ -5,24 +5,69 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.LayoutModeTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.io.FileUtils;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
 public class LayoutInitHandler {
 
-    @Value("${conference.layout}")
-    private String conferenceLayouts;
+    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> normalLayoutMap = new ConcurrentHashMap<>(16);
+    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumLayoutMap = new ConcurrentHashMap<>(16);
+    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumT200LayoutMap = new ConcurrentHashMap<>(16);
 
-    private static ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = new ConcurrentHashMap<>(20);
+
     @PostConstruct
     public void init() {
-        JsonArray layoutArray = new Gson().fromJson(conferenceLayouts, JsonArray.class);
+        try {
+            initLayout(LayoutModeTypeEnum.NORMAL);
+            initLayout(LayoutModeTypeEnum.ROSTRUM);
+            initLayout(LayoutModeTypeEnum.ROSTRUM_T200);
+        } catch (Exception e) {
+            log.error("layout init error,exit", e);
+            System.exit(1);
+        }
+        log.info(normalLayoutMap.toString());
+        log.info(rostrumLayoutMap.toString());
+        log.info(rostrumT200LayoutMap.toString());
+    }
+
+    private void initLayout(LayoutModeTypeEnum typeEnum) throws IOException {
+        ClassPathResource resource = null;
+        ConcurrentHashMap<LayoutModeEnum, JsonArray> layoutMap = null;
+        switch (typeEnum) {
+            case NORMAL:
+                resource = new ClassPathResource("layout.json");
+                layoutMap = normalLayoutMap;
+                break;
+            case ROSTRUM:
+                resource = new ClassPathResource("rostrum-layout.json");
+                layoutMap = rostrumLayoutMap;
+                break;
+            case ROSTRUM_T200:
+                resource = new ClassPathResource("rostrum-t200-layout.json");
+                layoutMap = rostrumT200LayoutMap;
+                break;
+            default:
+                log.error("LayoutModeTypeEnum not found {},exit", typeEnum.name());
+                System.exit(1);
+        }
+        File sourceFile = resource.getFile();
+        String layoutJson = FileUtils.readFileToString(sourceFile, "UTF-8");
+        initLayout(layoutJson, layoutMap);
+    }
+
+    private void initLayout(String layoutJson, Map<LayoutModeEnum, JsonArray> layoutMap) {
+        JsonArray layoutArray = new Gson().fromJson(layoutJson, JsonArray.class);
         int mode, x, y, width, height;
         for (JsonElement element : layoutArray) {
             JsonObject item = element.getAsJsonObject();
@@ -50,7 +95,7 @@ public class LayoutInitHandler {
     }
 
     public static JsonArray getLayoutByMode(LayoutModeEnum layoutModeEnum) {
-        return layoutMap.get(layoutModeEnum);
+        return normalLayoutMap.get(layoutModeEnum);
     }
 
 }
