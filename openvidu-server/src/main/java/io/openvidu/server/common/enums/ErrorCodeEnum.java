@@ -135,7 +135,12 @@ public enum ErrorCodeEnum {
     PRE_CONFERENCE_NOT_FINISHED(13087, "上个会议仍未结束，请等待"),
     ENP_POINT_NAME_NOT_EXIST(13088, "endPointName不存在"),
     MUST_SHARING_ROLE(13089, "必须是分享角色"),
-
+    NOT_SUPPORT_RECORDING_SERVER(13090,"当前不支持录制服务"),
+    NOT_SUPPORT_SIP_REGISTEE(13091,"当前不支持SIP注册服务"),
+    NOT_SUPPORT_H323_REGISTEE(13092,"当前不支持H323注册服务"),
+    NOT_SUPPORT_LIVEING_SERVER(13093,"当前不支持直播服务"),
+    NOT_SUPPORT_TRAVERSING_SERVER(13094,"当前不支持穿透服务"),
+    RECORDING_SERVER_UPPER_LIMIT(13095,"已达企业录制会议数量上限,请稍后再试"),
 
     DEVICE_NOT_FOUND(13100, "设备不存在"),
     DEVICE_BUSY(13101,"设备在会议或升级中");

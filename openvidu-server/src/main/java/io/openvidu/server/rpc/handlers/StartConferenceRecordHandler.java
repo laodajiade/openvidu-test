@@ -10,6 +10,7 @@ import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPresetEnum;
+import io.openvidu.server.job.DognelScheduledExecutor;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.LocalDateTimeUtils;
@@ -111,6 +112,20 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.UNSUPPORTED_RECORD_OPERATION);
             return;
+        }
+
+        if (DognelScheduledExecutor.dongleInfo != null) {
+            DongleInfo dongleInfo = DognelScheduledExecutor.dongleInfo;
+            if (dongleInfo.getRecordingLicense() > 0) {
+                recordService = true;
+            } else {
+                recordService = false;
+            }
+            if (recordingNum.get() > dongleInfo.getRecordingLicense()) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.RECORDING_SERVER_UPPER_LIMIT);
+                return;
+            }
         }
 
         // 录制服务是否启用（在有效期内）

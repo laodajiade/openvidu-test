@@ -268,8 +268,8 @@ public class AppointConferenceJobHandler {
                 // change the conference status
                 Conference conference = constructConf(appointConference);
                 conferenceMapper.insertSelective(conference);
-                Session session = sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
-                session.setEndTime(appointConference.getEndTime().getTime());
+//                Session session = sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
+//                session.setEndTime(appointConference.getEndTime().getTime());
 
                 appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid());
             } else {
