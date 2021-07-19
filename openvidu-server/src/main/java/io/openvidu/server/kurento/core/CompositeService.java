@@ -3,7 +3,10 @@ package io.openvidu.server.kurento.core;
 import io.openvidu.server.core.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.*;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Objects;
 
 @Slf4j
@@ -27,6 +30,8 @@ public class CompositeService {
 
     public CompositeService(Session session) {
         this.session = session;
+
+
     }
 
     void createComposite(MediaPipeline pipeline) {
