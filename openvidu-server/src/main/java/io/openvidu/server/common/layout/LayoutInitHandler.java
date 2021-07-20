@@ -1,5 +1,6 @@
 package io.openvidu.server.common.layout;
 
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,12 +9,15 @@ import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.enums.LayoutModeTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -61,9 +65,11 @@ public class LayoutInitHandler {
                 log.error("LayoutModeTypeEnum not found {},exit", typeEnum.name());
                 System.exit(1);
         }
-        File sourceFile = resource.getFile();
-        String layoutJson = FileUtils.readFileToString(sourceFile, "UTF-8");
-        initLayout(layoutJson, layoutMap);
+
+        List<String> lines = IOUtils.readLines(resource.getInputStream(), "UTF-8");
+        String json = Joiner.on("").join(lines);
+        log.info("layout json "+json);
+        initLayout(json, layoutMap);
     }
 
     private void initLayout(String layoutJson, Map<LayoutModeEnum, JsonArray> layoutMap) {
