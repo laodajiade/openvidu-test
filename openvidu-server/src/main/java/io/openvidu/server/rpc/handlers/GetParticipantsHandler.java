@@ -194,7 +194,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM,
                         publisher.getMediaOptions().videoDimensions);
 
-                stream.addProperty("StreamType",
+                stream.addProperty("streamType",
                         publisher.getStreamType().name());
                 JsonElement filter = publisher.getMediaOptions().getFilter() != null
                         ? publisher.getMediaOptions().getFilter().toJson()
