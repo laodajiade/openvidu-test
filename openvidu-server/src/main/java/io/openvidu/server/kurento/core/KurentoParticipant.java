@@ -151,7 +151,7 @@ public class KurentoParticipant extends Participant {
 			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
 					this.session.getPipeline(), this.openviduConfig);
 
-			this.publisher.setCompositeService(this.session.compositeService);
+			this.publisher.setCompositeService(this.session.getCompositeService());
 		}
 	}
 
@@ -165,12 +165,12 @@ public class KurentoParticipant extends Participant {
 				publisher = new PublisherEndpoint(webParticipant, this, participant.getUuid(),
 						this.session.getPipeline(), streamType, this.openviduConfig);
 
-				publisher.setCompositeService(this.session.compositeService);
+				publisher.setCompositeService(this.session.getCompositeService());
 			} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
 				//todo 2.0 这里好像有个old publisher 泄露了
 				publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
 						this.session.getPipeline(), streamType, this.openviduConfig);
-				publisher.setCompositeService(this.session.compositeService);
+				publisher.setCompositeService(this.session.getCompositeService());
 			}
 			publishers.put(streamType, publisher);
 		}
@@ -184,19 +184,19 @@ public class KurentoParticipant extends Participant {
 
 		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
 		    if (Objects.equals(StreamType.SHARING, streamType)) {
-				this.session.compositeService.setShareStreamId(publisher.getStreamId());
+				this.session.getCompositeService().setShareStreamId(publisher.getStreamId());
 			}
 
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
         } else if (TerminalTypeEnum.S == getTerminalType()) {
             log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
-            session.compositeService.createComposite(session.getPipeline());
+            session.getCompositeService().createComposite(session.getPipeline());
         }
 
         if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
             // session.asyncUpdateSipComposite();
             log.info("session.compositeService.updateComposite()  ");
-            session.compositeService.updateComposite();
+            session.getCompositeService().updateComposite();
         }
 
 		String debugRandomID = RandomStringUtils.randomAlphabetic(6);
@@ -530,8 +530,8 @@ public class KurentoParticipant extends Participant {
 		this.subscribers.clear();
 		releaseAllPublisherEndpoint(reason, kmsDisconnectionTime);
 		if (session.isShare(this.getUuid()) &&
-				!Objects.isNull(session.compositeService.getShareStreamId())) {
-			session.compositeService.setShareStreamId(null);
+				!Objects.isNull(session.getCompositeService().getShareStreamId())) {
+			session.getCompositeService().setShareStreamId(null);
 		}
 	}
 
@@ -544,7 +544,7 @@ public class KurentoParticipant extends Participant {
 	 */
 	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
-				this.getPipeline(), this.session.compositeService, this.openviduConfig);
+				this.getPipeline(), this.session.getCompositeService(), this.openviduConfig);
 
 		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {
@@ -560,7 +560,7 @@ public class KurentoParticipant extends Participant {
 
 	public SubscriberEndpoint getNewAndCompareSubscriber(String senderPublicId, MediaPipeline pipeline, SubscriberEndpoint compare) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
-				pipeline, this.session.compositeService, this.openviduConfig);
+				pipeline, this.session.getCompositeService(), this.openviduConfig);
 		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
 		if (existingSendingEndpoint != null) {
 			if (existingSendingEndpoint == compare) {
@@ -722,7 +722,7 @@ public class KurentoParticipant extends Participant {
             this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
                     this.session.getPipeline(), this.openviduConfig);
 
-            this.publisher.setCompositeService(this.session.compositeService);
+            this.publisher.setCompositeService(this.session.getCompositeService());
         }
 	}
 

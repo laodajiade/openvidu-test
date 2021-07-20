@@ -912,10 +912,13 @@ public abstract class SessionManager {
         targetConnectionId = targetPart.getParticipantPublicId();
 
         if (isMcu) {
+            //todo 2.0 MCU 演讲布局
             // change conference layout
-            conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+           // conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
             // json RPC notify KMS layout changed.
-            conferenceSession.invokeKmsConferenceLayout();
+            //conferenceSession.invokeKmsConferenceLayout();
+            getSession(targetPart.getSessionId()).getCompositeService().updateComposite();
+            //todo 2.0 MCU 演讲布局
         }
 
         JsonObject params = new JsonObject();
@@ -939,11 +942,6 @@ public abstract class SessionManager {
             if (sendChangeRole) {
                 this.notificationService.sendNotification(participant.getParticipantPrivateId(),
                         ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
-            }
-            if (isMcu) {
-                // broadcast the changes of layout
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
             }
             JsonArray targetIds = new JsonArray();
             targetIds.add(targetPart.getUuid());

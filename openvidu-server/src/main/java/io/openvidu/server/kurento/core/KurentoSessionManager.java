@@ -364,8 +364,8 @@ public class KurentoSessionManager extends SessionManager {
     public void changeSharingStatusInConference(KurentoSession session, Participant participant) {
         // change composite and sharing publisher share status
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            session.compositeService.setExistSharing(false);
-            session.compositeService.setShareStreamId(null);
+            session.getCompositeService().setExistSharing(false);
+            session.getCompositeService().setShareStreamId(null);
         }
     }
 
@@ -440,7 +440,7 @@ public class KurentoSessionManager extends SessionManager {
         kSession.registerPublisher();
         if (Objects.equals(StreamType.SHARING, streamType)
                 && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
-            kSession.compositeService.setExistSharing(true);
+            kSession.getCompositeService().setExistSharing(true);
         }
 
         if (sdpAnswer != null) {
@@ -914,8 +914,8 @@ public class KurentoSessionManager extends SessionManager {
                 // change session share status
                 if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
                     KurentoSession kurentoSession = (KurentoSession) session;
-                    kurentoSession.compositeService.setExistSharing(false);
-                    kurentoSession.compositeService.setShareStreamId(null);
+                    kurentoSession.getCompositeService().setExistSharing(false);
+                    kurentoSession.getCompositeService().setShareStreamId(null);
                 }
             }
 
@@ -966,9 +966,9 @@ public class KurentoSessionManager extends SessionManager {
                 session.invokeKmsConferenceLayout();
 
                 // notify clients mcu layout changed
-                JsonObject notifyParam = session.getLayoutNotifyInfo();
-                session.getParticipants().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
-                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
+//                JsonObject notifyParam = session.getLayoutNotifyInfo();
+//                session.getParticipants().forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
+//                        ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, notifyParam));
             }
         }
     }
@@ -1031,8 +1031,8 @@ public class KurentoSessionManager extends SessionManager {
                 // change session share status
                 if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
                     KurentoSession kurentoSession = (KurentoSession) session;
-                    kurentoSession.compositeService.setExistSharing(false);
-                    kurentoSession.compositeService.setShareStreamId(null);
+                    kurentoSession.getCompositeService().setExistSharing(false);
+                    kurentoSession.getCompositeService().setShareStreamId(null);
                 }
 
             }
@@ -1052,9 +1052,9 @@ public class KurentoSessionManager extends SessionManager {
                     session.invokeKmsConferenceLayout();
 
                     // notify client the change of layout
-                    JsonObject params = session.getLayoutNotifyInfo();
-                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+//                    JsonObject params = session.getLayoutNotifyInfo();
+//                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+//                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
                 }
             }
 
@@ -1650,7 +1650,7 @@ public class KurentoSessionManager extends SessionManager {
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
             publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
                     kurentoParticipant.getSession().getPipeline(), this.openviduConfig);
-            publisherEndpoint.setCompositeService(kurentoParticipant.getSession().compositeService);
+            publisherEndpoint.setCompositeService(kurentoParticipant.getSession().getCompositeService());
             publisherEndpoint.setPassThru(new PassThrough.Builder(kurentoParticipant.getSession().getPipeline()).build());
             kurentoParticipant.setPublisher(publisherEndpoint);
         }

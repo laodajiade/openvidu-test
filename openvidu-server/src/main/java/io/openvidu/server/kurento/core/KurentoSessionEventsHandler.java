@@ -17,6 +17,7 @@
 
 package io.openvidu.server.kurento.core;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -68,7 +69,15 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 		return null;
 	}
 
-	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
-		rpcNotificationService.sendNotification(participarntPrivateId, method, param);
+	public void notifyClient(String participantPrivateId, String method, JsonObject param) {
+		rpcNotificationService.sendNotification(participantPrivateId, method, param);
+	}
+
+	public void notifyClient(List<String> participantPrivateIds, String method, JsonObject param) {
+		rpcNotificationService.sendBatchNotificationConcurrent(participantPrivateIds, method, param);
+	}
+
+	public void notifyClient(Set<Participant> parts, String method, JsonObject param) {
+		rpcNotificationService.sendBatchNotificationConcurrent(parts, method, param);
 	}
 }

@@ -58,7 +58,7 @@ public class CompositeWrapper {
 	public CompositeWrapper(KurentoSession session, String path, EndpointTypeEnum typeEnum) {
 		this.session = session;
 		this.composite = session.getConferenceMode().equals(ConferenceModeEnum.SFU) ?
-				new Composite.Builder(session.getPipeline()).build() : session.compositeService.getComposite();
+				new Composite.Builder(session.getPipeline()).build() : session.getCompositeService().getComposite();
 
 		switch (typeEnum) {
 			case recording:

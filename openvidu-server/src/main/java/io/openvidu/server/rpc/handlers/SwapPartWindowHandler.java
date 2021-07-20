@@ -50,11 +50,11 @@ public class SwapPartWindowHandler extends RpcAbstractHandler {
         conferenceSession.invokeKmsConferenceLayout();
 
         // broadcast the changes of layout
-        conferenceSession.getParticipants().forEach(participant -> {
-            // broadcast the changes of layout
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                    ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
-        });
+//        conferenceSession.getParticipants().forEach(participant -> {
+//            // broadcast the changes of layout
+//            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
+//                    ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+//        });
 
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

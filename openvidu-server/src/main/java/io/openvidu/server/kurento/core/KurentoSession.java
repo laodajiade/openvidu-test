@@ -70,7 +70,7 @@ public class KurentoSession extends Session {
 
 	private final ConcurrentHashMap<String, String> filterStates = new ConcurrentHashMap<>();
 
-	public CompositeService compositeService;
+	private CompositeService compositeService;
 
 	private Composite sipComposite;
 
@@ -119,9 +119,9 @@ public class KurentoSession extends Session {
 		synchronized (joinOrLeaveLock) {
 			checkClosed();
 			createPipeline();
-			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
-				compositeService.createComposite(this.getPipeline());
-			}
+//			if (Objects.equals(getConferenceMode(), ConferenceModeEnum.MCU)) {
+//				compositeService.createComposite(this.getPipeline());
+//			}
 			KurentoParticipant kurentoParticipant = new KurentoParticipant(participant, this, this.kurentoEndpointConfig,
 					this.openviduConfig, this.recordingManager, this.livingManager);
 
@@ -561,8 +561,16 @@ public class KurentoSession extends Session {
 		});
 	}
 
-	public void notifyClient(String participarntPrivateId, String method, JsonObject param) {
-		kurentoSessionHandler.notifyClient(participarntPrivateId, method, param);
+	public void notifyClient(String participantPrivateId, String method, JsonObject param) {
+		kurentoSessionHandler.notifyClient(participantPrivateId, method, param);
+	}
+
+	public void notifyClient(List<String> participantPrivateId, String method, JsonObject param) {
+		kurentoSessionHandler.notifyClient(participantPrivateId, method, param);
+	}
+
+	public void notifyClient(Set<Participant> participants, String method, JsonObject param) {
+		kurentoSessionHandler.notifyClient(participants, method, param);
 	}
 
 	public List<DeliveryKmsManager> getDeliveryKmsManagers() {

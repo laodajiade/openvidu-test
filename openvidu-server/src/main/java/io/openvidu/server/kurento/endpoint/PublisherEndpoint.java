@@ -125,7 +125,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		KurentoSession kurentoSession = ((KurentoParticipant) this.getOwner()).getSession();
         if (kurentoSession.getConferenceMode().equals(ConferenceModeEnum.MCU)) {
         	if (Objects.isNull(getCompositeService())) {
-        		setCompositeService(kurentoSession.compositeService);
+        		setCompositeService(kurentoSession.getCompositeService());
 			}
             majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
             log.info("Pub EP create majorShareHubPort.");

@@ -45,11 +45,11 @@ public class UnpublishVideoHandler extends RpcAbstractHandler {
             // broadcast the changes of layout
             Session conferenceSession = sessionManager.getSession(rpcConnection.getSessionId());
             if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-                conferenceSession.getParticipants().forEach(part -> {
-                    // broadcast the changes of layout
-                    this.notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
-                });
+//                conferenceSession.getParticipants().forEach(part -> {
+//                    // broadcast the changes of layout
+//                    this.notificationService.sendNotification(part.getParticipantPrivateId(),
+//                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+//                });
             }
         } else {
             log.error("Error: participant {} is neither a moderator nor a thor.", participant.getParticipantPublicId());

@@ -85,6 +85,8 @@ public class ProtocolElements {
     public static final String JOINROOM_NICKNAME_PARAM = "nickname";
 
 
+    public static final String CONFERENCE_MODE_CHANGED_NOTIFY_METHOD = "conferenceModeChangedNotify";
+
     public static final String PUBLISHVIDEO_METHOD = "publishVideo";
     public static final String PUBLISHVIDEO_STREAM_TYPE_PARAM = "streamType";
     public static final String PUBLISHVIDEO_SDPOFFER_PARAM = "sdpOffer";
@@ -220,7 +222,7 @@ public class ProtocolElements {
     public static final String SETCONFERENCELAYOUT_REPLACEMENT_PARAM = "replacement";
     public static final String SETCONFERENCELAYOUT_SHAREINCLUDE_PARAM = "shareInclude";
 
-    public static final String CONFERENCELAYOUTCHANGED_NOTIFY = "conferenceLayoutChanged";
+    public static final String CONFERENCE_LAYOUT_CHANGED_NOTIFY = "conferenceLayoutChanged";
     public static final String CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM = "mode";
     public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM = "partLinkedList";
     public static final String CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM = "automatically";

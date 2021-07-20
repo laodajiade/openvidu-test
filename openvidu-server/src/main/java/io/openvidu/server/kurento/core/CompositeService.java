@@ -3,8 +3,10 @@ package io.openvidu.server.kurento.core;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
+import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.Participant;
@@ -17,6 +19,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,7 +48,10 @@ public class CompositeService {
     @Getter
     private JsonArray layoutCoordinates = new JsonArray();
 
-    private List<PublisherEndpoint> sources = new ArrayList<>();
+    @Getter
+    private LayoutModeEnum layoutMode;
+
+    private List<PublisherEndpoint> sourcesPublisher = new ArrayList<>();
 
 
     public CompositeService(Session session) {
@@ -65,6 +71,9 @@ public class CompositeService {
                 composite = new Composite.Builder(this.pipeline).build();
                 createHubPortOut();
                 updateComposite();
+
+                session.setConferenceMode(ConferenceModeEnum.MCU);
+                conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_MODE_CHANGED_NOTIFY_METHOD);
             }
             composite.setName(session.getSessionId());
         }
@@ -231,7 +240,9 @@ public class CompositeService {
 //                    log.error("Send Sip Composite Layout Exception:\n", e);
 //                }
 //            }
-            session.setConferenceMode(ConferenceModeEnum.MCU);
+
+            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+
         } catch (Exception e) {
             log.error("getSipCompositeElements error", e);
         }
@@ -261,6 +272,8 @@ public class CompositeService {
                 log.error("Send Sip Composite Layout Exception:\n", e);
             }
         }
+
+        this.sourcesPublisher = publishers;
     }
 
     private int getCompositeElements(Participant participant, List<PublisherEndpoint> publishers, int mcuNum) {
@@ -315,7 +328,7 @@ public class CompositeService {
         kmsRequest.setMethod("invoke");
         kmsRequest.setParams(params);
         log.info("send mcu composite setLayout params:{}", params);
-
+        this.layoutMode = layoutMode;
         setLayoutCoordinates(layoutInfos);
         return kmsRequest;
     }
@@ -327,5 +340,43 @@ public class CompositeService {
             jo.remove("object");
         }
         this.layoutCoordinates = jsonElements;
+    }
+
+    private void conferenceLayoutChangedNotify(String method) {
+        JsonObject params = new JsonObject();
+        params.addProperty("roomId", session.getSessionId());
+        params.addProperty("conferenceMode", session.getConferenceMode().name());
+        params.addProperty("timestamp", System.currentTimeMillis());
+
+        if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+            JsonObject layoutInfoObj = new JsonObject();
+            layoutInfoObj.addProperty("mode", layoutMode.getMode());
+            layoutInfoObj.add("linkedCoordinates", session.getCompositeService().getLayoutCoordinates());
+            params.add("layoutInfo", layoutInfoObj);
+        }
+
+        params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, session.getCompositeService().getMixFlowArr());
+        session.notifyClient(session.getParticipants(), method, params);
+    }
+
+
+    public JsonArray getMixFlowArr() {
+        JsonArray mixFlowsArr = new JsonArray(1);
+        if (!StringUtils.isEmpty(this.getMixStreamId())) {
+            JsonObject mixJsonObj = new JsonObject();
+            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+                    this.getMixStreamId());
+            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
+            mixFlowsArr.add(mixJsonObj);
+
+//            if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
+//                JsonObject shareJsonObj = new JsonObject();
+//                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
+//                        kurentoSession.compositeService.getShareStreamId());
+//                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
+//                mixFlowsArr.add(shareJsonObj);
+//            }
+        }
+        return mixFlowsArr;
     }
 }

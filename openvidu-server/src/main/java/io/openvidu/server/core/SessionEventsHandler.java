@@ -256,7 +256,7 @@ public class SessionEventsHandler {
 		//result.add("value", resultArray);
 
 		if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-			roomInfoJson.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
+			roomInfoJson.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, session.getCompositeService().getMixFlowArr());
 
             JsonObject layoutInfoObj = new JsonObject();
 
@@ -275,7 +275,7 @@ public class SessionEventsHandler {
 			}
 			if (session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
 				log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
-				((KurentoSession) session).compositeService.createComposite(((KurentoSession) session).getPipeline());
+				((KurentoSession) session).getCompositeService().createComposite(((KurentoSession) session).getPipeline());
 			}
 		}).start();
 
@@ -498,12 +498,6 @@ public class SessionEventsHandler {
 				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
 						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 				nNotifyParticipantNum++;
-
-				// broadcast the changes of layout
-				if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
-				}
 		}
 		log.info("publisher participants num:{} subscriber participants num:{} nNotifyParticipantNum:{}",
 				publisherParticipants.size(), subscribeParticipants.size(), nNotifyParticipantNum);
@@ -524,34 +518,13 @@ public class SessionEventsHandler {
 						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
 
 				// broadcast the changes of layout
-				if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
-				}
+//				if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+//					rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
+//							ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, conferenceSession.getLayoutNotifyInfo());
+//				}
 		}
 	}
 
-	private JsonArray getMixFlowArr(String sessionId) {
-        Session session = sessionManager.getSession(sessionId);
-        JsonArray mixFlowsArr = new JsonArray(2);
-        KurentoSession kurentoSession = (KurentoSession) session;
-        if (!StringUtils.isEmpty(kurentoSession.compositeService.getMixStreamId())) {
-            JsonObject mixJsonObj = new JsonObject();
-            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-                    kurentoSession.compositeService.getMixStreamId());
-            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
-            mixFlowsArr.add(mixJsonObj);
-
-//            if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
-//                JsonObject shareJsonObj = new JsonObject();
-//                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-//                        kurentoSession.compositeService.getShareStreamId());
-//                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
-//                mixFlowsArr.add(shareJsonObj);
-//            }
-        }
-        return mixFlowsArr;
-    }
 
 	public void onUnpublishMedia(Participant participant, Set<Participant> participants, PublisherEndpoint publisherEndpoint,
 								 Integer transactionId, OpenViduException error, EndReason reason) {

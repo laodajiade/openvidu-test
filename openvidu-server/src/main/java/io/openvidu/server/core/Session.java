@@ -1177,8 +1177,6 @@ public class Session implements SessionInterface {
 
         // send conferenceLayoutChanged notify
 		for (Participant participant : participants) {
-				sessionManager.notificationService.sendNotification(participant.getParticipantPrivateId(),
-						ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, getLayoutNotifyInfo());
 				if (!sendStopShareNotify) {
 					continue;
 				}
@@ -1529,6 +1527,7 @@ public class Session implements SessionInterface {
 		return layoutInfos;
 	}
 
+	@Deprecated //todo 2.0
     public JsonObject getLayoutNotifyInfo() {
         JsonObject notifyResult = new JsonObject();
         notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, this.isAutomatically());
