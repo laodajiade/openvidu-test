@@ -63,7 +63,6 @@ public class Participant {
 	private String participantName;
 	protected ParticipantHandStatus handStatus;
 	protected ParticipantMicStatus micStatus;
-	protected ParticipantSharePowerStatus sharePowerStatus;
 	protected ParticipantVideoStatus videoStatus;
 	protected String roomSubject;
 
@@ -129,7 +128,6 @@ public class Participant {
 		this.location = location;
 		this.platform = platform;
 		this.handStatus = ParticipantHandStatus.down;
-		this.sharePowerStatus = ParticipantSharePowerStatus.off;
 		this.videoStatus = ParticipantVideoStatus.on;
 		this.micStatus = ParticipantMicStatus.on;
 		this.speakerStatus = ParticipantSpeakerStatus.on;
@@ -251,10 +249,6 @@ public class Participant {
     public void setVideoStatus(ParticipantVideoStatus status) {
         this.videoStatus = status;
     }
-
-	public ParticipantSharePowerStatus getSharePowerStatus() { return sharePowerStatus; }
-
-	public void setSharePowerStatus(ParticipantSharePowerStatus status) { this.sharePowerStatus = status; }
 
 	public String getRoomSubject() { return this.roomSubject; }
 

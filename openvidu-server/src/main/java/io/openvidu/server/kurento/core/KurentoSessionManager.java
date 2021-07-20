@@ -122,9 +122,7 @@ public class KurentoSessionManager extends SessionManager {
             // 如果是主持人，所有权限都打开
             SessionPreset preset = getPresetInfo(sessionId);
             if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-                participant.setSharePowerStatus(ParticipantSharePowerStatus.on);
             } else {
-                participant.setSharePowerStatus(ParticipantSharePowerStatus.valueOf(preset.getSharePowerInRoom().name()));
                 if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                     participant.setMicStatus(ParticipantMicStatus.off);
                 } else if (participant.getOrder() >= openviduConfig.getSmartMicOnThreshold()) {

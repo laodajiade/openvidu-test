@@ -1051,11 +1051,13 @@ public abstract class SessionManager {
 
     public void setSharing(Session session, Participant sharingPart, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
+            sharingPart.setShareStatus(ParticipantShareStatus.on);
             session.setSharingPart(sharingPart);
             JsonObject result = new JsonObject();
             result.addProperty("roomId", session.getSessionId());
             result.addProperty("shareId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
+
 
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
         }
@@ -1075,6 +1077,7 @@ public abstract class SessionManager {
 
     public void endSharing(Session session, Participant sharingPart, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
+            sharingPart.setShareStatus(ParticipantShareStatus.off);
             session.setSharingPart(null);
 
             JsonObject result = new JsonObject();

@@ -91,7 +91,6 @@ public class KurentoParticipant extends Participant {
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility(), participant.getFunctionality());
 		setMicStatus(participant.getMicStatus());
 		setVideoStatus(participant.getVideoStatus());
-		setSharePowerStatus(participant.getSharePowerStatus());
 		setHandStatus(participant.getHandStatus());
 		setRoomSubject(participant.getRoomSubject());
 		setAppShowInfo(participant.getAppShowName(), participant.getAppShowDesc());
