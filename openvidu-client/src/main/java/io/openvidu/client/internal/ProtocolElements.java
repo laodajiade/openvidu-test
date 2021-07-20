@@ -575,6 +575,7 @@ public class ProtocolElements {
 
     public static final String PARTICIPANTEVICTED_METHOD = "participantEvicted";
     public static final String PARTICIPANTEVICTED_CONNECTIONID_PARAM = "connectionId";
+    public static final String PARTICIPANTE_VICTED_UUID_PARAM = "uuid";
     public static final String PARTICIPANTEVICTED_REASON_PARAM = "reason";
 
     public static final String PARTICIPANTPUBLISHED_METHOD = "participantPublished";

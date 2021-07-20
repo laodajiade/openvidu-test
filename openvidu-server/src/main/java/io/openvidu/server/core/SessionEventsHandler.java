@@ -55,10 +55,10 @@ import java.util.stream.Collectors;
 
 public class SessionEventsHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(SessionEventsHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(SessionEventsHandler.class);
 
 	@Autowired
-	protected RpcNotificationService rpcNotificationService;
+    protected RpcNotificationService rpcNotificationService;
 
 	@Autowired
 	protected InfoHandler infoHandler;
@@ -672,24 +672,26 @@ public class SessionEventsHandler {
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, new JsonObject());
 	}
 
-	public void onForceDisconnect(Participant moderator, Participant evictedParticipant, Set<Participant> participants,
-								  Integer transactionId, OpenViduException error, EndReason reason) {
+    public void onForceDisconnect(Participant moderator, Participant evictedParticipant, Set<Participant> participants,
+                                  Integer transactionId, OpenViduException error, EndReason reason) {
 
-		boolean isRpcCall = transactionId != null;
-		if (isRpcCall) {
-			if (error != null) {
-				rpcNotificationService.sendErrorResponse(moderator.getParticipantPrivateId(), transactionId, null,
-						error);
-				return;
-			}
-			rpcNotificationService.sendResponse(moderator.getParticipantPrivateId(), transactionId, new JsonObject());
-		}
+        boolean isRpcCall = transactionId != null;
+        if (isRpcCall) {
+            if (error != null) {
+                rpcNotificationService.sendErrorResponse(moderator.getParticipantPrivateId(), transactionId, null,
+                        error);
+                return;
+            }
+            rpcNotificationService.sendResponse(moderator.getParticipantPrivateId(), transactionId, new JsonObject());
+        }
 
-		if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
-			JsonObject params = new JsonObject();
-			params.addProperty(ProtocolElements.PARTICIPANTEVICTED_CONNECTIONID_PARAM,
-					evictedParticipant.getParticipantPublicId());
-			params.addProperty(ProtocolElements.PARTICIPANTEVICTED_REASON_PARAM, reason != null ? reason.name() : "");
+        if (!Objects.equals(EndReason.closeSessionByModerator, reason)) {
+            JsonObject params = new JsonObject();
+            params.addProperty(ProtocolElements.PARTICIPANTEVICTED_CONNECTIONID_PARAM,
+                    evictedParticipant.getParticipantPublicId());
+            params.addProperty(ProtocolElements.PARTICIPANTE_VICTED_UUID_PARAM,
+                    evictedParticipant.getUuid());
+            params.addProperty(ProtocolElements.PARTICIPANTEVICTED_REASON_PARAM, reason != null ? reason.name() : "");
 
 //			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(evictedParticipant.getParticipantPublicId())) {
 //				log.info("evictedParticipant ParticipantPublicId {}", evictedParticipant.getParticipantPublicId());
@@ -711,9 +713,9 @@ public class SessionEventsHandler {
 //					}
 //				}
 //			}
-			rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
-		}
-	}
+            rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.PARTICIPANTEVICTED_METHOD, params);
+        }
+    }
 
 	public void sendRecordingStartedNotification(Session session, Recording recording) {
 
