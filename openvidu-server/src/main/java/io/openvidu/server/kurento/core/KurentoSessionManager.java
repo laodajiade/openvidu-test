@@ -757,7 +757,8 @@ public class KurentoSessionManager extends SessionManager {
         lessLoadedKms.addKurentoSession(session);
 
         session.setConference(conference);
-        session.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
+        //session.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
+        session.setConferenceMode(ConferenceModeEnum.SFU);
         session.setPresetInfo(getPresetInfo(sessionId));
         session.setRuid(conference.getRuid());
         sessions.put(session.getSessionId(), session);

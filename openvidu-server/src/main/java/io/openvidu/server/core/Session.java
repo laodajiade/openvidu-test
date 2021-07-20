@@ -31,6 +31,7 @@ import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.DeliveryKmsManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
@@ -79,13 +80,13 @@ public class Session implements SessionInterface {
 	protected String ruid;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
-	// TODO. Maybe we should relate conference in here.
 	protected Conference conference;
 	protected SessionPreset preset;
 	protected ConferenceModeEnum conferenceMode;
 	protected boolean automatically = true;
 	protected LayoutModeEnum layoutMode;
-	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(LayoutModeEnum.ONE);
+	protected LayoutModeTypeEnum layoutModeTypeEnum = LayoutModeTypeEnum.NORMAL;
+	protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutModeTypeEnum, LayoutModeEnum.ONE);
 	protected LayoutChangeTypeEnum layoutChangeTypeEnum;
 	protected JsonArray layoutInfo = new JsonArray(1);
 	protected int moderatorIndex = -1;
@@ -1504,6 +1505,8 @@ public class Session implements SessionInterface {
 		}
 	}
 
+	//todo 2.0 use session.getCompositeService().getLayoutCoordinates()
+	@Deprecated
 	public JsonArray getCurrentPartInMcuLayout() {
     	JsonArray layoutInfos = new JsonArray(50);
     	if (majorShareMixLinkedArr.size() == 0) return layoutInfos;
@@ -1583,6 +1586,9 @@ public class Session implements SessionInterface {
 		return Optional.ofNullable(speakerPart);
 	}
 
+	public CompositeService getCompositeService(){
+		return null;
+	}
 	/**
 	 * 检查舒服是分享者
 	 */

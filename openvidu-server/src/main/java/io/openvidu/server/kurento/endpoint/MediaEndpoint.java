@@ -31,7 +31,6 @@ import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.lb.rtn.RTNFactory;
 import io.openvidu.server.lb.rtn.RTNObject;
-import org.apache.commons.lang.RandomStringUtils;
 import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,7 +218,7 @@ public abstract class MediaEndpoint {
 	}
 
 	public Composite getMajorShareComposite() {
-		return this.compositeService.getMajorShareComposite();
+		return this.compositeService.getComposite();
 	}
 
 	public CompositeService getCompositeService() {

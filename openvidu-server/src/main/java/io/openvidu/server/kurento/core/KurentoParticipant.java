@@ -196,7 +196,6 @@ public class KurentoParticipant extends Participant {
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
         } else if (TerminalTypeEnum.S == getTerminalType()) {
             log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
-            session.setConferenceMode(ConferenceModeEnum.MCU);
             session.compositeService.createComposite(session.getPipeline());
         }
 

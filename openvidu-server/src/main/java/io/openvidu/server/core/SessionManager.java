@@ -1128,14 +1128,14 @@ public abstract class SessionManager {
     }
 
 
-    @Deprecated //todo 2.0 废弃
-    public Session storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
-        log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
-        Session session = storeSessionNotActiveWhileRoomCreated(roomId);
-        session.setConference(conference);
-        session.setRuid(conference.getRuid());
-        return session;
-    }
+//    @Deprecated //delete 2.0 废弃
+//    public Session storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
+//        log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
+//        Session session = storeSessionNotActiveWhileRoomCreated(roomId);
+//        session.setConference(conference);
+//        session.setRuid(conference.getRuid());
+//        return session;
+//    }
 
     public abstract void startRecording(String sessionId);
 

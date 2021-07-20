@@ -34,6 +34,7 @@ import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.utils.SafeSleep;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.EventListener;
@@ -600,5 +601,10 @@ public class KurentoSession extends Session {
 	public void notifyPublishChannelPass(KurentoParticipant kurentoParticipant, PublisherEndpoint endpoint) {
 		kurentoSessionHandler.notifyPublishMedias(kurentoParticipant, endpoint,
 				getSessionId(), getParticipants());
+	}
+
+	@Override
+	public CompositeService getCompositeService(){
+		return this.compositeService;
 	}
 }

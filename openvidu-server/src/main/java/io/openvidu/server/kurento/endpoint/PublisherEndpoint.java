@@ -109,7 +109,7 @@ public class PublisherEndpoint extends MediaEndpoint {
     public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline, StreamType streamType,
                              OpenviduConfig openviduConfig) {
         super(web, owner, uuid, pipeline, openviduConfig, log);
-        String streamId = uuid + '_' + streamType + "_" + RandomStringUtils.randomAlphabetic(6);
+        String streamId = uuid + '_' + streamType + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase();
         this.endpointName = streamId;
         setStreamId(streamId);
         this.streamType = streamType;

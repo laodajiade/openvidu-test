@@ -32,6 +32,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.config.InfoHandler;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.exception.NoSuchKmsException;
+import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.KurentoFilter;
@@ -259,7 +260,8 @@ public class SessionEventsHandler {
 			roomInfoJson.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, getMixFlowArr(sessionId));
 
             JsonObject layoutInfoObj = new JsonObject();
-            layoutInfoObj.add("linkedCoordinates", session.getCurrentPartInMcuLayout());
+
+			layoutInfoObj.add("linkedCoordinates", session.getCompositeService().getLayoutCoordinates());
 			roomInfoJson.add("layoutInfo", layoutInfoObj);
         }
 		result.add("roomInfo", roomInfoJson);
@@ -274,7 +276,6 @@ public class SessionEventsHandler {
 			}
 			if (session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
 				log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
-				session.setConferenceMode(ConferenceModeEnum.MCU);
 				((KurentoSession) session).compositeService.createComposite(((KurentoSession) session).getPipeline());
 			}
 		}).start();
@@ -866,4 +867,5 @@ public class SessionEventsHandler {
 	public void sendSuccessResp(String participantPrivateId, Integer transactionId) {
 		rpcNotificationService.sendResponse(participantPrivateId, transactionId, new JsonObject());
 	}
+
 }

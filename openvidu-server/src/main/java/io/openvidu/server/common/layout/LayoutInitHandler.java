@@ -88,13 +88,23 @@ public class LayoutInitHandler {
                 obj.addProperty("width", width);
                 obj.addProperty("height", height);
                 layouts.add(obj);
-
             }
             layoutMap.put(layoutMode, layouts);
         }
     }
 
     public static JsonArray getLayoutByMode(LayoutModeEnum layoutModeEnum) {
+        return getLayoutByMode(LayoutModeTypeEnum.NORMAL, layoutModeEnum);
+    }
+
+    public static JsonArray getLayoutByMode(LayoutModeTypeEnum type, LayoutModeEnum layoutModeEnum) {
+        if (type == LayoutModeTypeEnum.NORMAL) {
+            return normalLayoutMap.get(layoutModeEnum);
+        } else if (type == LayoutModeTypeEnum.ROSTRUM) {
+            return rostrumLayoutMap.get(layoutModeEnum);
+        } else if (type == LayoutModeTypeEnum.ROSTRUM_T200) {
+            return rostrumT200LayoutMap.get(layoutModeEnum);
+        }
         return normalLayoutMap.get(layoutModeEnum);
     }
 

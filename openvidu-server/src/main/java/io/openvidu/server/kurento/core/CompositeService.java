@@ -1,7 +1,9 @@
 package io.openvidu.server.kurento.core;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.layout.LayoutInitHandler;
@@ -9,6 +11,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.utils.SafeSleep;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
@@ -36,6 +39,9 @@ public class CompositeService {
 
     private String mixMajorShareStreamId;
     private String shareStreamId;
+
+    @Getter
+    private JsonArray layoutCoordinates = new JsonArray();
 
     private List<PublisherEndpoint> sources = new ArrayList<>();
 
@@ -78,7 +84,7 @@ public class CompositeService {
     }
 
     private void createHubPortOut() {
-        hubPortOut = new HubPort.Builder(getMajorShareComposite()).build();
+        hubPortOut = new HubPort.Builder(getComposite()).build();
         hubPortOutSubscription = registerElemErrListener(hubPortOut);
         log.info("Sub EP create hubPortOut.");
     }
@@ -139,7 +145,7 @@ public class CompositeService {
         element.removeErrorListener(subscription);
     }
 
-    public Composite getMajorShareComposite() {
+    public Composite getComposite() {
         return composite;
     }
 
@@ -173,7 +179,6 @@ public class CompositeService {
 
 
     public void updateComposite() {
-        log.info("1111111111111111111111111 updateComposite ");
         SafeSleep.sleepMilliSeconds(200);
 
         Participant moderator = null, sharing = null, speaker = null;
@@ -227,6 +232,7 @@ public class CompositeService {
 //                    log.error("Send Sip Composite Layout Exception:\n", e);
 //                }
 //            }
+            session.setConferenceMode(ConferenceModeEnum.MCU);
         } catch (Exception e) {
             log.error("getSipCompositeElements error", e);
         }
@@ -236,7 +242,6 @@ public class CompositeService {
      * 等分布局
      */
     private void normalLayout() {
-        log.info("222222222222222222222222222");
         List<Participant> parts = session.getParticipants().stream()
                 .filter(p -> p.getOrder() < session.getPresetInfo().getSfuPublisherThreshold())
                 .sorted(Comparator.comparing(Participant::getOrder))
@@ -247,20 +252,16 @@ public class CompositeService {
         for (Participant part : parts) {
             mcuNum = getCompositeElements(part, publishers, mcuNum);
         }
-        log.info("33333333333333333333333333333");
         log.info("normal MCU composite number:{} and composite hub port ids:{}", mcuNum, publishers.toString());
         if (mcuNum > 0) {
             try {
-                log.info("555555555555555555555555555");
                 session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                         session.getSessionId(), publishers, LayoutModeEnum.getLayoutMode(mcuNum)));
                 SafeSleep.sleepMilliSeconds(300);
-                log.info("6666666666666666666666666");
             } catch (Exception e) {
                 log.error("Send Sip Composite Layout Exception:\n", e);
             }
         }
-        log.info("444444444444444444444444");
     }
 
     private int getCompositeElements(Participant participant, List<PublisherEndpoint> publishers, int mcuNum) {
@@ -290,17 +291,20 @@ public class CompositeService {
         // construct composite layout info
         JsonArray layoutInfos = new JsonArray(3);
         JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutMode);
+
         AtomicInteger index = new AtomicInteger(0);
         layoutCoordinates.forEach(coordinates -> {
             if (index.get() < layoutMode.getMode()) {
 
                 PublisherEndpoint publisherEndpoint = publishers.get(index.get());
                 JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
-                elementsLayout.addProperty("connectionId", publisherEndpoint.getStreamId());
+                elementsLayout.addProperty("streamId", publisherEndpoint.getStreamId());
                 elementsLayout.addProperty("streamType", publisherEndpoint.getStreamType().name());
                 elementsLayout.addProperty("object", publisherEndpoint.getSipCompositeHubPort().getId());
                 elementsLayout.addProperty("hasVideo", true);
                 elementsLayout.addProperty("onlineStatus", "online");
+                elementsLayout.addProperty("order", publisherEndpoint.getOwner().getOrder());
+                elementsLayout.addProperty("uuid", publisherEndpoint.getOwner().getUuid());
                 index.incrementAndGet();
                 layoutInfos.add(elementsLayout);
             }
@@ -313,6 +317,16 @@ public class CompositeService {
         kmsRequest.setParams(params);
         log.info("send mcu composite setLayout params:{}", params);
 
+        setLayoutCoordinates(layoutInfos);
         return kmsRequest;
+    }
+
+    private void setLayoutCoordinates(JsonArray layoutInfos) {
+        JsonArray jsonElements = layoutInfos.deepCopy();
+        for (JsonElement jsonElement : jsonElements) {
+            JsonObject jo = jsonElement.getAsJsonObject();
+            jo.remove("object");
+        }
+        this.layoutCoordinates = jsonElements;
     }
 }
