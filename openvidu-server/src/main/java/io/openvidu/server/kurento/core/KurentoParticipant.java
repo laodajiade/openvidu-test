@@ -187,12 +187,6 @@ public class KurentoParticipant extends Participant {
 				this.session.compositeService.setShareStreamId(publisher.getStreamId());
 			}
 
-            if (StringUtils.isEmpty(this.session.compositeService.getMixMajorShareStreamId())) {
-                String mixMajorShareStreamId = RandomStringUtils.random(32, true, true)
-                        + "_" + "MAJOR-SHARE-MIX";
-                this.session.compositeService.setMixMajorShareStreamId(mixMajorShareStreamId);
-            }
-
 			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
         } else if (TerminalTypeEnum.S == getTerminalType()) {
             log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());

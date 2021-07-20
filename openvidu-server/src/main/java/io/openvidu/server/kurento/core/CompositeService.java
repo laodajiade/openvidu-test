@@ -13,6 +13,7 @@ import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.utils.SafeSleep;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
@@ -37,7 +38,8 @@ public class CompositeService {
 
     private boolean existSharing;
 
-    private String mixMajorShareStreamId;
+    private String mixStreamId;
+
     private String shareStreamId;
 
     @Getter
@@ -48,6 +50,7 @@ public class CompositeService {
 
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
+        this.mixStreamId = session.getSessionId() + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase() + "_" + "MIX";
     }
 
     public void createComposite(MediaPipeline pipeline) {
@@ -157,12 +160,8 @@ public class CompositeService {
         this.existSharing = existSharing;
     }
 
-    public void setMixMajorShareStreamId(String mixMajorShareStreamId) {
-        this.mixMajorShareStreamId = mixMajorShareStreamId;
-    }
-
-    public String getMixMajorShareStreamId() {
-        return mixMajorShareStreamId;
+    public String getMixStreamId() {
+        return mixStreamId;
     }
 
     public String getShareStreamId() {

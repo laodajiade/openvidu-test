@@ -52,7 +52,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
 	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
 		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-				getCompositeService().getMixMajorShareStreamId() : publisher.getOwner().getUuid());
+				getCompositeService().getMixStreamId() : publisher.getOwner().getUuid());
 
 		String sdpAnswer = processOffer(sdpOffer);
 		gatherCandidates();
