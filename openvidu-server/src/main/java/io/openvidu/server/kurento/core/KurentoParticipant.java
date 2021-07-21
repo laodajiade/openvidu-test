@@ -40,7 +40,6 @@ import org.kurento.client.internal.server.KurentoServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -86,7 +85,7 @@ public class KurentoParticipant extends Participant {
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager, LivingManager livingManager) {
-		super(participant.getUserId(),participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
+		super(participant.getUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility(), participant.getFunctionality());
 		setMicStatus(participant.getMicStatus());
@@ -720,7 +719,7 @@ public class KurentoParticipant extends Participant {
 	}
 
 	public void notifyClient(String method, JsonObject param) {
-		this.session.notifyClient(this.participantPrivatetId, method, param);
+		this.session.notifyClient(this.participantPrivateId, method, param);
 	}
 
 	@Override
