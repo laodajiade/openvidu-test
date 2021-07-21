@@ -175,19 +175,13 @@ public class KurentoParticipant extends Participant {
 		}
 
 		publisher.createEndpoint(publisher.getPublisherLatch());
-		if (getPublisher(streamType).getEndpoint() == null) {
-			this.setStreaming(false);
-			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
-		}
-		publisher.setMediaOptions(mediaOptions);
+        if (getPublisher(streamType).getEndpoint() == null) {
+            this.setStreaming(false);
+            throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
+        }
+        publisher.setMediaOptions(mediaOptions);
 
-		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-		    if (Objects.equals(StreamType.SHARING, streamType)) {
-				this.session.getCompositeService().setShareStreamId(publisher.getStreamId());
-			}
-
-			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
-        } else if (TerminalTypeEnum.S == getTerminalType()) {
+        if (TerminalTypeEnum.S == getTerminalType() && this.session.getConferenceMode() != ConferenceModeEnum.MCU) {
             log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
             session.getCompositeService().createComposite(session.getPipeline());
         }

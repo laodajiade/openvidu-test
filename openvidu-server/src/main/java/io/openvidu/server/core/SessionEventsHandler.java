@@ -493,14 +493,9 @@ public class SessionEventsHandler {
 			}
 		}
 
-		int nNotifyParticipantNum = 0;
-		for (Participant p : publisherParticipants) {
-				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
-				nNotifyParticipantNum++;
-		}
-		log.info("publisher participants num:{} subscriber participants num:{} nNotifyParticipantNum:{}",
-				publisherParticipants.size(), subscribeParticipants.size(), nNotifyParticipantNum);
+		rpcNotificationService.sendBatchNotificationConcurrent(publisherParticipants, ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+		log.info("publisher participants num:{} subscriber participants num:{}",
+				publisherParticipants.size(), subscribeParticipants.size());
 
 		int nParticipantIndex = 0;
 		for (Participant p : subscribeParticipants) {
