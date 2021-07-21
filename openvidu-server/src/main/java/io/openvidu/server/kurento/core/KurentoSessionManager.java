@@ -570,8 +570,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
-                log.warn(
-                        "PARTICIPANT {}: Requesting to recv media from user {} "
+                log.warn("PARTICIPANT {}: Requesting to recv media from user {} "
                                 + "in session {} but user is not streaming media",
                         participant.getParticipantPublicId(), senderParticipant.getUuid(), session.getSessionId());
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,

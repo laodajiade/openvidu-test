@@ -547,10 +547,13 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
+		String subscribeId = resultObj.get("subscribeId").toString();
 		JsonObject result = new JsonObject();
 		result.addProperty("sdpAnswer", sdpAnswer);
-		result.addProperty("subscribeId", resultObj.get("subscribeId").toString());
+		result.addProperty("subscribeId", subscribeId);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
+
+		((KurentoParticipant) participant).getSubscribers().get(subscribeId).gatherCandidates();
 	}
 
 	public void onUnsubscribe(Participant participant, Integer transactionId, OpenViduException error) {

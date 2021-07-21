@@ -223,7 +223,7 @@ public class KurentoParticipant extends Participant {
 	public PublisherEndpoint getPublisher(StreamType streamType) {
 		PublisherEndpoint publisherEndpoint = this.publishers.get(streamType);
 		if (publisherEndpoint == null) {
-			log.error(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
+			log.warn(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
 			return null;
 		}
 		try {
