@@ -93,15 +93,6 @@ public class Participant {
 
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
-	protected PushStreamStatusEnum pushStreamStatus = PushStreamStatusEnum.on;
-
-	public PushStreamStatusEnum getPushStreamStatus() {
-		return pushStreamStatus;
-	}
-
-	public void setPushStreamStatus(PushStreamStatusEnum pushStreamStatus) {
-		this.pushStreamStatus = pushStreamStatus;
-	}
 
 	@Getter
 	@Setter

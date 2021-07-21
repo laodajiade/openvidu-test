@@ -767,7 +767,7 @@ public class ProtocolElements {
     public static final String SETPUSHSTREAMSTATUS_METHOD = "setPushStreamStatus";
     public static final String SETPUSHSTREAMSTATUS_ROOMID_PARAM = "roomId";
     public static final String SETPUSHSTREAMSTATUS_UUID_PARAM = "uuid";
-    public static final String SETPUSHSTREAMSTATUS_CONNECTIONID_PARAM = "connectionId";
+    public static final String SET_PUSH_STREAM_STATUS_STREAM_TYPE_PARAM = "streamType";
     public static final String SETPUSHSTREAMSTATUS_STATUS_PARAM = "status";
 
     public static final String GETSPECIFICPAGEOFDEPT_METHOD = "getSpecificPageOfDept";

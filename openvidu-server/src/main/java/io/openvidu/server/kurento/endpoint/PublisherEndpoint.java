@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.PushStreamStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.config.OpenviduConfig;
@@ -86,6 +87,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	private boolean connected = false;
 	private boolean isChannelPassed = false;
+
+	@Setter
+	@Getter
+	private PushStreamStatusEnum pushStreamStatus = PushStreamStatusEnum.on;
 
 	@Getter
 	private CountDownLatch publisherLatch = new CountDownLatch(1);

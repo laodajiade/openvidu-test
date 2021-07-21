@@ -215,7 +215,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		roomInfoJson.addProperty("subtitleConfig", session.getSubtitleConfig().name());
 		roomInfoJson.addProperty("order",participant.getOrder());
-		roomInfoJson.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
+		//roomInfoJson.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
 		roomInfoJson.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
 		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
 			roomInfoJson.add("extraInfo", session.getSubtitleExtraConfig());

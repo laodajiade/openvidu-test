@@ -135,7 +135,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         userObj.addProperty("speakerStatus", kurentoParticipant.getSpeakerStatus().name());
         userObj.addProperty("isVoiceMode", participant.getVoiceMode().equals(VoiceMode.on));
         userObj.addProperty("order", participant.getOrder());
-        userObj.addProperty("pushStreamStatus", participant.getPushStreamStatus().name());
+
         userObj.addProperty("ability", rpcConnection.getAbility());
         userObj.addProperty("functionality", rpcConnection.getFunctionality());
         if (UserType.register.equals(kurentoParticipant.getUserType())) {
@@ -200,6 +200,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                         ? publisher.getMediaOptions().getFilter().toJson()
                         : new JsonObject();
                 stream.add(ProtocolElements.JOINROOM_PEERSTREAMFILTER_PARAM, filter);
+
+                stream.addProperty("pushStreamStatus", publisher.getPushStreamStatus().name());
 
                 streamsArray.add(stream);
             } catch (Exception e) {
