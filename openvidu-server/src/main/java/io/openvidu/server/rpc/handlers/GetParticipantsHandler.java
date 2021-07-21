@@ -231,9 +231,9 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
             int reverse = getIntParam(request, "reverse");
             int limit = getIntParam(request, "limit");
             if (reverse == 1) {
-                return session.getParticipants().stream().filter(p -> p.getOrder() > order).limit(limit).sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toCollection(LinkedHashSet::new));
+                return session.getParticipants().stream().filter(p -> p.getOrder() >= order).limit(limit).sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toCollection(LinkedHashSet::new));
             } else {
-                return session.getParticipants().stream().filter(p -> p.getOrder() > order).limit(limit).sorted(Comparator.comparing(Participant::getOrder).reversed()).collect(Collectors.toCollection(LinkedHashSet::new));
+                return session.getParticipants().stream().filter(p -> p.getOrder() >= order).limit(limit).sorted(Comparator.comparing(Participant::getOrder).reversed()).collect(Collectors.toCollection(LinkedHashSet::new));
             }
         }
     }

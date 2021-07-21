@@ -46,7 +46,7 @@ public class DistributedLockHandler {
         RLock lock = redissonClient.getLock(CacheKeyConstants.REDISSON_LOCK_PREFIX_KEY + key);
         try {
             if (lock.tryLock()) {
-                log.info("通过redisson 执行方法{},锁key值{}", ((MethodSignature) joinPoint.getSignature()).getMethod().getName(), key);
+                log.debug("通过redisson 执行方法{},锁key值{}", ((MethodSignature) joinPoint.getSignature()).getMethod().getName(), key);
                 try {
                     joinPoint.proceed();
                 } catch (Exception e) {
