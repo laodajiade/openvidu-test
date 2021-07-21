@@ -102,14 +102,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 
     private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
 
-	//todo 2.0 需要删除
-	@Deprecated
-	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline,
-							 OpenviduConfig openviduConfig) {
-		super(web, owner, uuid, pipeline, openviduConfig, log);
-		this.streamType = StreamType.MAJOR;
-		this.endpointName = uuid + '_' + streamType + '_' + RandomStringUtils.randomAlphabetic(6);
-	}
+	//delete 2.0 需要删除
+//	@Deprecated
+//	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline,
+//							 OpenviduConfig openviduConfig) {
+//		super(web, owner, uuid, pipeline, openviduConfig, log);
+//		this.streamType = StreamType.MAJOR;
+//		this.endpointName = uuid + '_' + streamType + '_' + RandomStringUtils.randomAlphabetic(6);
+//	}
 
     public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline, StreamType streamType,
                              OpenviduConfig openviduConfig) {

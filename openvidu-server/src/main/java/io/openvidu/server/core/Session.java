@@ -1195,7 +1195,7 @@ public class Session implements SessionInterface {
 		JsonObject notifyParam = getPartRoleChangedNotifyParam(partChanged, originalRole, presentRole);
 		if (OpenViduRole.PUBLISHER.equals(presentRole)) {
 			KurentoParticipant kurentoParticipant = (KurentoParticipant) partChanged;
-			kurentoParticipant.createPublisher();
+			//kurentoParticipant.createPublisher();
 			if (isSub2PubSpeaker) {
 				notifyParam.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_HAND_STATUS_PARAM, ParticipantHandStatus.speaker.name());
 			}

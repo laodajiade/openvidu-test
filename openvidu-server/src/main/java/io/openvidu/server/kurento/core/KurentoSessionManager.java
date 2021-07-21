@@ -1639,13 +1639,13 @@ public class KurentoSessionManager extends SessionManager {
         log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
                 part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
 
-        PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
+        PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(StreamType.MAJOR);
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
             publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
-                    kurentoParticipant.getSession().getPipeline(), this.openviduConfig);
+                    kurentoParticipant.getSession().getPipeline(), StreamType.MAJOR, this.openviduConfig);
             publisherEndpoint.setCompositeService(kurentoParticipant.getSession().getCompositeService());
             publisherEndpoint.setPassThru(new PassThrough.Builder(kurentoParticipant.getSession().getPipeline()).build());
-            kurentoParticipant.setPublisher(publisherEndpoint);
+            kurentoParticipant.setPublisher(StreamType.MAJOR, publisherEndpoint);
         }
         JsonObject jsonObject = new JsonObject();
         if (Objects.nonNull(publisherEndpoint.getPassThru())) {

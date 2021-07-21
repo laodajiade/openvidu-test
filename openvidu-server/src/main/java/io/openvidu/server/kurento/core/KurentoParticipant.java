@@ -141,17 +141,18 @@ public class KurentoParticipant extends Participant {
 		// ↑↑↑↑↑↑↑↑↑ 杨宇 注释于2021年3月2日17:56:49，
 	}
 
-	public void createPublisher() {
-		log.info("#####create publisher when role changed and id:{}", getParticipantName());
-		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
-                (Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
-			// Initialize a PublisherEndpoint
-			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
-					this.session.getPipeline(), this.openviduConfig);
-
-			this.publisher.setCompositeService(this.session.getCompositeService());
-		}
-	}
+	// delete 2.0
+//	public void createPublisher() {
+//		log.info("#####create publisher when role changed and id:{}", getParticipantName());
+//		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
+//                (Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
+//			// Initialize a PublisherEndpoint
+//			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+//					this.session.getPipeline(), StreamType.MAJOR,this.openviduConfig);
+//
+//			this.publisher.setCompositeService(this.session.getCompositeService());
+//		}
+//	}
 
 	public PublisherEndpoint createPublishingEndpoint(MediaOptions mediaOptions, Participant participant, StreamType streamType) {
 
@@ -208,7 +209,7 @@ public class KurentoParticipant extends Participant {
 		Filter filter = getFilterElement(id);
 		filters.remove(id);
 		if (filter != null) {
-			publisher.revert(filter);
+			//publisher.revert(filter);
 		}
 	}
 
@@ -284,6 +285,10 @@ public class KurentoParticipant extends Participant {
 	@Deprecated
 	public void setPublisher(PublisherEndpoint publisher) {
 		this.publisher = publisher;
+	}
+
+	public void setPublisher(StreamType streamType, PublisherEndpoint publisher) {
+		this.publishers.put(streamType, publisher);
 	}
 
 	public ConcurrentMap<String, SubscriberEndpoint> getSubscribers() {
@@ -711,10 +716,10 @@ public class KurentoParticipant extends Participant {
 	public void resetPublisherEndpoint() {
 		log.info("Reseting publisher endpoint for participant {}", this.getParticipantPublicId());
         if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
-            this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
-                    this.session.getPipeline(), this.openviduConfig);
+//            this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+//                    this.session.getPipeline(), this.openviduConfig);
 
-            this.publisher.setCompositeService(this.session.getCompositeService());
+            //this.publisher.setCompositeService(this.session.getCompositeService());
         }
 	}
 
