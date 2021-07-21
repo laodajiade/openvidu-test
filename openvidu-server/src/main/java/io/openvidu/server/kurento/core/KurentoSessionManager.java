@@ -131,11 +131,6 @@ public class KurentoSessionManager extends SessionManager {
             }
             participant.setRoomSubject(preset.getRoomSubject());
 
-            // change the part role according to the mcu limit
-            if (ConferenceModeEnum.MCU.equals(kSession.getConferenceMode()) && kSession.needToChangePartRoleAccordingToLimit(participant)) {
-                participant.changePartRole(OpenViduRole.SUBSCRIBER);
-            }
-
             // change the part role according to the sfu limit
             if (ConferenceModeEnum.SFU.equals(kSession.getConferenceMode())
                     && participant.getOrder() > kSession.getPresetInfo().getSfuPublisherThreshold() - 1
@@ -242,10 +237,9 @@ public class KurentoSessionManager extends SessionManager {
                 updateRecording(session.getSessionId());
             }
 
-            // sip离会且会议中没sip，则将composite释放
-            if (participant.getTerminalType() == TerminalTypeEnum.S && session.getMajorSipPart().size() == 0) {
-                log.info("releaseSipComposite by last sip leaveRoom");
-                //todo 优化 session.releaseSipComposite();
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU && participant.getRole().needToPublish()) {
+                log.info("1111111111111111111111111111111111111");
+                session.getCompositeService().asyncUpdateComposite();
             }
 
             if (session.isClosing()) {
@@ -945,8 +939,10 @@ public class KurentoSessionManager extends SessionManager {
 //            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
 //                    null, reason));
             evictParticipant(evictParticipant, null, null, reason);
+
+            // delete 2.0
             // deal auto on wall
-            session.putPartOnWallAutomatically(this);
+            // session.putPartOnWallAutomatically(this);
         }
 
         // clear the rpc connection if necessary
@@ -1060,8 +1056,8 @@ public class KurentoSessionManager extends SessionManager {
             samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
                     null, reason));
 
-            // deal auto on wall
-            session.putPartOnWallAutomatically(this);
+            // delete deal auto on wall
+            //session.putPartOnWallAutomatically(this);
         }
 
         // clear the rpc connection if necessary

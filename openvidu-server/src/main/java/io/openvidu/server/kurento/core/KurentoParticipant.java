@@ -195,7 +195,7 @@ public class KurentoParticipant extends Participant {
         if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
             // session.asyncUpdateSipComposite();
             log.info("session.compositeService.updateComposite()  ");
-            session.getCompositeService().updateComposite();
+            session.getCompositeService().asyncUpdateComposite();
         }
 
 		String debugRandomID = RandomStringUtils.randomAlphabetic(6);
@@ -231,7 +231,7 @@ public class KurentoParticipant extends Participant {
 		PublisherEndpoint publisherEndpoint = this.publishers.get(streamType);
 		if (publisherEndpoint == null) {
 			log.error(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
-			throw new BizException(ErrorCodeEnum.SERVER_INTERNAL_ERROR);
+			return null;
 		}
 		try {
 			if (!publisherEndpoint.getPublisherLatch().await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {

@@ -917,7 +917,7 @@ public abstract class SessionManager {
            // conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
             // json RPC notify KMS layout changed.
             //conferenceSession.invokeKmsConferenceLayout();
-            getSession(targetPart.getSessionId()).getCompositeService().updateComposite();
+            getSession(targetPart.getSessionId()).getCompositeService().asyncUpdateComposite();
             //todo 2.0 MCU 演讲布局
         }
 

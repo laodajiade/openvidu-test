@@ -60,8 +60,9 @@ public class ChangePartRoleHandler extends RpcAbstractHandler {
 
 
         if (OpenViduRole.MODERATOR.equals(toDownWallPart.getRole()) ||
-                !ConferenceModeEnum.MCU.equals(session.getConferenceMode()) ||
-                session.getPartSize() < openviduConfig.getMcuMajorPartLimit()) {
+                !ConferenceModeEnum.MCU.equals(session.getConferenceMode())
+                // ||                session.getPartSize() < openviduConfig.getMcuMajorPartLimit()
+        ) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;

@@ -678,16 +678,17 @@ public class Session implements SessionInterface {
 		this.activePublishers.decrementAndGet();
 	}
 
-	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
-		if (!OpenViduRole.MODERATOR.equals(participant.getRole())) {
-			int size = participantList.size();
-			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
-					participant.getParticipantName(), sessionId, size);
-
-			return size > openviduConfig.getMcuMajorPartLimit();
-		}
-		return false;
-	}
+	// delete 2.0
+//	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
+//		if (!OpenViduRole.MODERATOR.equals(participant.getRole())) {
+//			int size = participantList.size();
+//			log.info("ParticipantName:{} join session:{} and after increment majorPart size:{}",
+//					participant.getParticipantName(), sessionId, size);
+//
+//			return size > openviduConfig.getMcuMajorPartLimit();
+//		}
+//		return false;
+//	}
 
 	public void setMajorPartsOrder(Participant participant, RpcNotificationService rpcNotificationService) {
 		int order;
@@ -1213,33 +1214,34 @@ public class Session implements SessionInterface {
 		return param;
 	}
 
-	// TODO record the order when part publish and put the first order part which down the wall
+	// delete 2.0
+	// record the order when part publish and put the first order part which down the wall
 	// current version put the random participant who down the wall
-	public void putPartOnWallAutomatically(SessionManager sessionManager) {
-		if (closing) {
-			log.info("session:{} is closing, no need to putPartOnWallAutomatically.", sessionId);
-			return;
-		}
-		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && participantList.size() >= openviduConfig.getMcuMajorPartLimit()) {
-			List<String> publishedParts = new ArrayList<>(16);
-			for (JsonElement jsonElement : majorShareMixLinkedArr) {
-				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
-			}
-			Set<Participant> participants = getMajorPartEachConnect();
-			Participant automaticOnWallPart = participants.stream()
-					.filter(participant -> !publishedParts.contains(participant.getParticipantPublicId())
-							&& OpenViduRole.SUBSCRIBER.equals(participant.getRole()))
-					.findAny().orElse(null);
-			if (Objects.nonNull(automaticOnWallPart)) {
-			    log.info("Put Part:{} On Wall Automatically in session:{}", automaticOnWallPart.getParticipantName(), automaticOnWallPart.getSessionId());
-				changeThePartRole(sessionManager, automaticOnWallPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, false);
-			} else {
-				log.info("Not found the below wall SUBSCRIBER participant.");
-			}
-		} else {
-			log.info("Not above the conditions when put Part On Wall Automatically.");
-		}
-	}
+//	public void putPartOnWallAutomatically(SessionManager sessionManager) {
+//		if (closing) {
+//			log.info("session:{} is closing, no need to putPartOnWallAutomatically.", sessionId);
+//			return;
+//		}
+//		if (ConferenceModeEnum.MCU.equals(getConferenceMode()) && participantList.size() >= se.getMcuMajorPartLimit()) {
+//			List<String> publishedParts = new ArrayList<>(16);
+//			for (JsonElement jsonElement : majorShareMixLinkedArr) {
+//				publishedParts.add(jsonElement.getAsJsonObject().get("connectionId").getAsString());
+//			}
+//			Set<Participant> participants = getMajorPartEachConnect();
+//			Participant automaticOnWallPart = participants.stream()
+//					.filter(participant -> !publishedParts.contains(participant.getParticipantPublicId())
+//							&& OpenViduRole.SUBSCRIBER.equals(participant.getRole()))
+//					.findAny().orElse(null);
+//			if (Objects.nonNull(automaticOnWallPart)) {
+//			    log.info("Put Part:{} On Wall Automatically in session:{}", automaticOnWallPart.getParticipantName(), automaticOnWallPart.getSessionId());
+//				changeThePartRole(sessionManager, automaticOnWallPart, OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER, false);
+//			} else {
+//				log.info("Not found the below wall SUBSCRIBER participant.");
+//			}
+//		} else {
+//			log.info("Not above the conditions when put Part On Wall Automatically.");
+//		}
+//	}
 
 	public JsonArray getMajorShareMixLinkedArr() {
 		return majorShareMixLinkedArr;

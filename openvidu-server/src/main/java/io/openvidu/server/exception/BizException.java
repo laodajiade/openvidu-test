@@ -10,6 +10,11 @@ public class BizException extends RuntimeException {
         this.errorCodeEnum = errorCodeEnum;
     }
 
+    public BizException(ErrorCodeEnum errorCodeEnum, String message) {
+        super(message);
+        this.errorCodeEnum = errorCodeEnum;
+    }
+
     public ErrorCodeEnum getRespEnum() {
         return errorCodeEnum;
     }

@@ -163,9 +163,9 @@ public class OpenviduConfig {
 	@Value("${kms.load.limit.switch}")
 	private int kmsLoadLimitSwitch;
 
-	@Getter
-	@Value("${mcu.composite.limit.size}")
-	private int mcuMajorPartLimit;
+//	@Getter
+//	@Value("${mcu.composite.limit.size}")
+//	private int mcuMajorPartLimit;
 
 	// delete 2.0 Deprecated use  getPresetInfo().getSfuPublisherThreshold()
 //	@Deprecated
