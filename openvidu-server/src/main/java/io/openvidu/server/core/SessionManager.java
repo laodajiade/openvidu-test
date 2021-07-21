@@ -276,7 +276,7 @@ public abstract class SessionManager {
      *                           participant doesn't belong to it
      */
     // delete 2.0
- //   @Deprecated
+    //   @Deprecated
 //    public Participant getParticipant(String sessionId, String participantPrivateId, StreamType streamType) throws OpenViduException {
 //        Session session = sessions.get(sessionId);
 //        if (session == null) {
@@ -410,6 +410,15 @@ public abstract class SessionManager {
         Session sessionNotActive = new Session(sessionId,
                 new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
         dealSessionNotActiveStored(sessionId, sessionNotActive);
+        return sessionNotActive;
+    }
+
+    public Session SessionNotActiveWhileRoomCreated(String sessionId, Conference conference) {
+        Session sessionNotActive = new Session(sessionId,
+                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
+        sessionNotActive.setConference(conference);
+        sessionNotActive.setRuid(conference.getRuid());
+        this.sessionsNotActive.put(sessionId, sessionNotActive);
         return sessionNotActive;
     }
 
@@ -863,9 +872,9 @@ public abstract class SessionManager {
         String targetConnectionId;
         Participant existSpeakerPart = null;
         for (Participant participant : participants) {
-                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-                    existSpeakerPart = participant;
-                }
+            if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
+                existSpeakerPart = participant;
+            }
         }
 
         // do nothing when set roll call to the same speaker
@@ -914,7 +923,7 @@ public abstract class SessionManager {
         if (isMcu) {
             //todo 2.0 MCU 演讲布局
             // change conference layout
-           // conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
+            // conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
             // json RPC notify KMS layout changed.
             //conferenceSession.invokeKmsConferenceLayout();
             getSession(targetPart.getSessionId()).getCompositeService().asyncUpdateComposite();
@@ -992,13 +1001,13 @@ public abstract class SessionManager {
             stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_MODE_PARAM, 0);
         }
         getParticipants(sessionId).forEach(part -> {
-                if (micStatusFlag) {
-                    this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
-                }
-                if (existsSharingFlag) {
-                    this.notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.SHARING_CONTROL_NOTIFY, stopSharingParams);
-                }
+            if (micStatusFlag) {
+                this.notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SET_AUDIO_STATUS_METHOD, audioParams);
+            }
+            if (existsSharingFlag) {
+                this.notificationService.sendNotification(part.getParticipantPrivateId(),
+                        ProtocolElements.SHARING_CONTROL_NOTIFY, stopSharingParams);
+            }
         });
     }
 
@@ -1104,12 +1113,12 @@ public abstract class SessionManager {
         Set<Participant> participants = session.getParticipants();
         session.setSpeakerPart(startPart);
         participants.forEach(participant -> {
-                if (endPart.getUuid().equals(participant.getUuid())) {
-                    participant.changeHandStatus(ParticipantHandStatus.down);
-                }
-                if (startPart.getUuid().equals(participant.getUuid())) {
-                    participant.changeHandStatus(ParticipantHandStatus.speaker);
-                }
+            if (endPart.getUuid().equals(participant.getUuid())) {
+                participant.changeHandStatus(ParticipantHandStatus.down);
+            }
+            if (startPart.getUuid().equals(participant.getUuid())) {
+                participant.changeHandStatus(ParticipantHandStatus.speaker);
+            }
         });
         if (endPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
             endPart.setRole(OpenViduRole.SUBSCRIBER);
