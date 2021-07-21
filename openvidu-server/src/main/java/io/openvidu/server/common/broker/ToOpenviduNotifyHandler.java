@@ -1,12 +1,15 @@
 package io.openvidu.server.common.broker;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.EvictParticipantStrategy;
+import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.job.AppointConferenceJobHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.UrgedPeopleToEndHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,9 @@ public class ToOpenviduNotifyHandler {
     private CacheManage cacheManage;
 
     @Autowired
+    AppointConferenceJobHandler appointConferenceJobHandler;
+
+    @Autowired
     FixedRoomExpiredHandler fixedRoomExpiredHandler;
 
     @Resource
@@ -66,6 +72,12 @@ public class ToOpenviduNotifyHandler {
                     case ToOpenviduElement.EVICT_PARTICIPANT_BY_UUID_METHOD:
                         sessionManager.evictParticipantByUUID(params.get("roomId").getAsString(), params.get("uuid").getAsString(),
                                 Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                        break;
+                    case ToOpenviduElement.SEBD_INVITE_NOTICE:
+                        appointConferenceJobHandler.sendInviteNoticy(
+                                JSONObject.parseObject(params.get("appointConference").getAsString(), AppointConference.class),
+                                params.get("ruid").getAsString()
+                        );
                         break;
                 }
             } catch (Exception e) {

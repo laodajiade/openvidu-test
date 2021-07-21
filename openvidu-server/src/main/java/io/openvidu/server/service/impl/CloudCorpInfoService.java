@@ -15,7 +15,7 @@ import java.util.List;
  * @author: WuBing
  * @create: 2021-06-28 15:23
  **/
-@Service
+//@Service
 public class CloudCorpInfoService implements CorpInfoService {
 
     @Autowired

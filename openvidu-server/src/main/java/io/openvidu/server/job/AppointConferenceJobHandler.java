@@ -1,6 +1,7 @@
 package io.openvidu.server.job;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sensegigit.cockcrow.CrowOnceHelper;
@@ -8,7 +9,9 @@ import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.common.broker.ToOpenviduElement;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.*;
@@ -268,8 +271,8 @@ public class AppointConferenceJobHandler {
                 // change the conference status
                 Conference conference = constructConf(appointConference);
                 conferenceMapper.insertSelective(conference);
-//                Session session = sessionManager.storeSessionNotActiveWhileAppointCreate(conference.getRoomId(), conference);
-//                session.setEndTime(appointConference.getEndTime().getTime());
+                Session session = sessionManager.SessionNotActiveWhileRoomCreated(conference.getRoomId(), conference);
+                session.setEndTime(appointConference.getEndTime().getTime());
 
                 appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid());
             } else {
@@ -277,29 +280,20 @@ public class AppointConferenceJobHandler {
                 //todo 修改定时任务在下一分钟
             }
 
-            if (isSameRoom(appointConference.getRoomId(), ruid)) {
-                if (appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
-                    // sendNotify
-                    List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
+            List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
 
-                    if (Objects.isNull(appointParts) || appointParts.isEmpty()) {
-                        log.error("conferenceBeginJobHandler appointParts is empty, ruid:{}", ruid);
-                        return ReturnT.FAIL;
-                    }
-                    // 邀请通知
-                    Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
-                    log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
-                    inviteParticipant(appointConference, uuidSet);
-                }
-            } else {
-                FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
-                if (fixedRoom != null) {
-                    log.info("fixed appt begin but room always used, send toBegin notify {}", ruid);
-                    nextConferenceToBeginNotify(ruid, 2);
-                }
+            if (Objects.isNull(appointParts) || appointParts.isEmpty()) {
+                log.error("conferenceBeginJobHandler appointParts is empty, ruid:{}", ruid);
+                return ReturnT.FAIL;
             }
-
-
+            //广播到所有服务  寻找存在该session的服务执行
+            JsonObject msg = new JsonObject();
+            msg.addProperty("method", ToOpenviduElement.SEBD_INVITE_NOTICE);
+            JsonObject params = new JsonObject();
+            params.addProperty("ruid", ruid);
+            params.addProperty("appointConference", JSONObject.toJSONString(appointConference));
+            msg.add("params", params);
+            cacheManage.publish(BrokerChannelConstans.TO_OPENVIDU_CHANNEL, msg.toString());
             // 删除定时任务
             crowOnceHelper.delCrowOnce(jobId);
             return ReturnT.SUCCESS;
@@ -320,6 +314,31 @@ public class AppointConferenceJobHandler {
         fixFinishConferenceStatus();
         return ReturnT.SUCCESS;
     }
+
+    /**
+     * 判断该服务上是否含有当前会议   如果不含有则通过redis 广播然后在其他服务上寻找会议
+     */
+    public void sendInviteNoticy(AppointConference appointConference, String ruid) {
+
+        if (isSameRoom(appointConference.getRoomId(), ruid)) {
+            if (appointConference.getAutoInvite().equals(AutoInviteEnum.AUTO_INVITE.getValue())) {
+                // sendNotify
+                List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);
+                // 邀请通知
+                Set<String> uuidSet = appointParts.stream().map(AppointParticipant::getUuid).collect(Collectors.toSet());
+                log.info("conferenceBeginJobHandler notify begin...uuidSet={}", uuidSet);
+                inviteParticipant(appointConference, uuidSet);
+            }
+        } else {
+            FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
+            if (fixedRoom != null) {
+                log.info("fixed appt begin but room always used, send toBegin notify {}", ruid);
+                nextConferenceToBeginNotify(ruid, 2);
+            }
+        }
+
+    }
+
 
     /**
      * 1、预约会议到了结束时间，如果会议没人则关闭会议室，否则推送延迟结束广告
