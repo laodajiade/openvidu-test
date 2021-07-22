@@ -1136,7 +1136,7 @@ public class Session implements SessionInterface {
                 lastPart = getParticipantByPublicId(lastPartObj.get("connectionId").getAsString());
             }
         }
-        dealUpAndDownTheWall(lastPart, subscriberPart, sessionManager, true);
+//        dealUpAndDownTheWall(lastPart, subscriberPart, sessionManager, true);
 
 		return ErrorCodeEnum.SUCCESS;
 	}
@@ -1162,6 +1162,7 @@ public class Session implements SessionInterface {
 
         // evict the parts in session and notify KMS layout changed
         Participant moderatorPart = getModeratorPart();
+        
         sessionManager.unpublishStream(this, pup2SubPart.getPublisherStreamId(), moderatorPart,
                 null, EndReason.forceUnpublishByUser);
 
