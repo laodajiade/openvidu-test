@@ -278,13 +278,9 @@ public class KurentoParticipant extends Participant {
 		return this.publishers;
 	}
 
+	//todo 2.0 需要修改
 	public boolean isPublisherStreaming() {
 		return this.isStreaming() && publisher != null && publisher.getEndpoint() != null;
-	}
-
-	@Deprecated
-	public void setPublisher(PublisherEndpoint publisher) {
-		this.publisher = publisher;
 	}
 
 	public void setPublisher(StreamType streamType, PublisherEndpoint publisher) {

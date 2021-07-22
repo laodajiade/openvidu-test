@@ -450,7 +450,7 @@ public class KurentoSessionManager extends SessionManager {
         KurentoSession session = kParticipant.getSession();
 
         for (DeliveryKmsManager deliveryKmsManager : session.getDeliveryKmsManagers()) {
-            log.debug("dispatcher uuid {}, publisherId = {}", kParticipant.getUuid(), kParticipant.getPublisher().getStreamId());
+            log.debug("dispatcher uuid {}, publisherId = {}", kParticipant.getUuid(), kParticipant.getPublisher(StreamType.MAJOR).getStreamId());
             deliveryKmsManager.dispatcher(kParticipant);
         }
     }
@@ -668,7 +668,7 @@ public class KurentoSessionManager extends SessionManager {
     public void streamPropertyChanged(Participant participant, Integer transactionId, String streamId, String property,
                                       JsonElement newValue, String reason) {
         KurentoParticipant kParticipant = (KurentoParticipant) participant;
-        streamId = kParticipant.getPublisherStreamId();
+        streamId = kParticipant.getPublisher(StreamType.MAJOR).getStreamId();
         MediaOptions streamProperties = kParticipant.getPublisherMediaOptions();
 
         Boolean hasAudio = streamProperties.hasAudio();
@@ -971,7 +971,7 @@ public class KurentoSessionManager extends SessionManager {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             // del part info in cache
-            session.getMajorPartEachConnect().forEach(participant -> cacheManage.delPartInfo(participant.getUuid()));
+            session.getParticipants().forEach(participant -> cacheManage.delPartInfo(participant.getUuid()));
             // del room info in cache
             cacheManage.delRoomInfo(sessionId);
             // update conference status in DB
@@ -1173,7 +1173,7 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
                         "User '" + publisher.getParticipantPublicId() + " not streaming media in session '"
                                 + session.getSessionId() + "'");
-            } else if (kParticipantPublisher.getPublisher().getFilter() != null) {
+            } else if (kParticipantPublisher.getPublisher(StreamType.MAJOR).getFilter() != null) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to applyFilter to user {} "
                                 + "in session {} but user already has a filter",
@@ -1197,7 +1197,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             log.info("State of filter for participant {}: {}", publisher.getParticipantPublicId(),
-                    ((KurentoParticipant) publisher).getPublisher().filterCollectionsToString());
+                    ((KurentoParticipant) publisher).getPublisher(StreamType.MAJOR).filterCollectionsToString());
 
         } else {
             log.warn("PARTICIPANT {}: Requesting to applyFilter to stream {} "
@@ -1224,7 +1224,7 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
                         "User '" + participant.getParticipantPublicId() + " not streaming media in session '"
                                 + session.getSessionId() + "'");
-            } else if (kParticipant.getPublisher().getFilter() == null) {
+            } else if (kParticipant.getPublisher(StreamType.MAJOR).getFilter() == null) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to removeFilter to user {} "
                                 + "in session {} but user does NOT have a filter",
@@ -1241,7 +1241,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             log.info("State of filter for participant {}: {}", kParticipant.getParticipantPublicId(),
-                    kParticipant.getPublisher().filterCollectionsToString());
+                    kParticipant.getPublisher(StreamType.MAJOR).filterCollectionsToString());
 
         } else {
             log.warn("PARTICIPANT {}: Requesting to removeFilter to stream {} "
@@ -1268,7 +1268,7 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
                         "User '" + participant.getParticipantPublicId() + " not streaming media in session '"
                                 + session.getSessionId() + "'");
-            } else if (kParticipant.getPublisher().getFilter() == null) {
+            } else if (kParticipant.getPublisher(StreamType.MAJOR).getFilter() == null) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to execFilterMethod to user {} "
                                 + "in session {} but user does NOT have a filter",
@@ -1308,7 +1308,7 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
                         "User '" + kParticipantPublishing.getParticipantPublicId() + " not streaming media in session '"
                                 + session.getSessionId() + "'");
-            } else if (kParticipantPublishing.getPublisher().getFilter() == null) {
+            } else if (kParticipantPublishing.getPublisher(StreamType.MAJOR).getFilter() == null) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to addFilterEventListener to user {} "
                                 + "in session {} but user does NOT have a filter",
@@ -1320,7 +1320,7 @@ public class KurentoSessionManager extends SessionManager {
             } else {
                 try {
                     this.addFilterEventListenerInPublisher(kParticipantPublishing, eventType);
-                    kParticipantPublishing.getPublisher().addParticipantAsListenerOfFilterEvent(eventType,
+                    kParticipantPublishing.getPublisher(StreamType.MAJOR).addParticipantAsListenerOfFilterEvent(eventType,
                             userSubscribing.getParticipantPublicId());
                 } catch (OpenViduException e) {
                     throw e;
@@ -1328,7 +1328,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             log.info("State of filter for participant {}: {}", kParticipantPublishing.getParticipantPublicId(),
-                    kParticipantPublishing.getPublisher().filterCollectionsToString());
+                    kParticipantPublishing.getPublisher(StreamType.MAJOR).filterCollectionsToString());
 
         } else {
             throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
@@ -1352,7 +1352,7 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
                         "User '" + participantPublishing.getParticipantPublicId() + " not streaming media in session '"
                                 + session.getSessionId() + "'");
-            } else if (kParticipantPublishing.getPublisher().getFilter() == null) {
+            } else if (kParticipantPublishing.getPublisher(StreamType.MAJOR).getFilter() == null) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to removeFilterEventListener to user {} "
                                 + "in session {} but user does NOT have a filter",
@@ -1363,7 +1363,7 @@ public class KurentoSessionManager extends SessionManager {
                                 + " has no filter applied in session '" + session.getSessionId() + "'");
             } else {
                 try {
-                    PublisherEndpoint pub = kParticipantPublishing.getPublisher();
+                    PublisherEndpoint pub = kParticipantPublishing.getPublisher(StreamType.MAJOR);
                     if (pub.removeParticipantAsListenerOfFilterEvent(eventType, subscriber.getParticipantPublicId())) {
                         // If there are no more participants listening to the event remove the event
                         // from the GenericMediaElement
@@ -1375,7 +1375,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             log.info("State of filter for participant {}: {}", kParticipantPublishing.getParticipantPublicId(),
-                    kParticipantPublishing.getPublisher().filterCollectionsToString());
+                    kParticipantPublishing.getPublisher(StreamType.MAJOR).filterCollectionsToString());
 
         }
     }
@@ -1398,37 +1398,37 @@ public class KurentoSessionManager extends SessionManager {
         props.forEach(prop -> {
             builder.withConstructorParam(prop.getName(), prop.getValue());
         });
-        kParticipant.getPublisher().apply(builder.build());
-        kParticipant.getPublisher().getMediaOptions().setFilter(filter);
+        kParticipant.getPublisher(StreamType.MAJOR).apply(builder.build());
+        kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().setFilter(filter);
     }
 
     private void removeFilterInPublisher(KurentoParticipant kParticipant) {
-        kParticipant.getPublisher().cleanAllFilterListeners();
-        kParticipant.getPublisher().revert(kParticipant.getPublisher().getFilter());
-        kParticipant.getPublisher().getMediaOptions().setFilter(null);
+        kParticipant.getPublisher(StreamType.MAJOR).cleanAllFilterListeners();
+        kParticipant.getPublisher(StreamType.MAJOR).revert(kParticipant.getPublisher(StreamType.MAJOR).getFilter());
+        kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().setFilter(null);
     }
 
     private KurentoFilter execFilterMethodInPublisher(KurentoParticipant kParticipant, String method,
                                                       JsonObject params) {
-        kParticipant.getPublisher().execMethod(method, params);
-        KurentoFilter filter = kParticipant.getPublisher().getMediaOptions().getFilter();
+        kParticipant.getPublisher(StreamType.MAJOR).execMethod(method, params);
+        KurentoFilter filter = kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().getFilter();
         KurentoFilter updatedFilter = new KurentoFilter(filter.getType(), filter.getOptions(), method, params);
-        kParticipant.getPublisher().getMediaOptions().setFilter(updatedFilter);
+        kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().setFilter(updatedFilter);
         return updatedFilter;
     }
 
     private void addFilterEventListenerInPublisher(KurentoParticipant kParticipant, String eventType)
             throws OpenViduException {
-        PublisherEndpoint pub = kParticipant.getPublisher();
+        PublisherEndpoint pub = kParticipant.getPublisher(StreamType.MAJOR);
         if (!pub.isListenerAddedToFilterEvent(eventType)) {
             final String connectionId = kParticipant.getParticipantPublicId();
-            final String streamId = kParticipant.getPublisherStreamId();
+            final String streamId = kParticipant.getPublisher(StreamType.MAJOR).getStreamId();
             final String filterType = kParticipant.getPublisherMediaOptions().getFilter().getType();
             try {
                 ListenerSubscription listener = pub.getFilter().addEventListener(eventType, event -> {
                     sessionEventsHandler.onFilterEventDispatched(connectionId, streamId, filterType, event.getType(),
                             event.getData(), kParticipant.getSession().getParticipants(),
-                            kParticipant.getPublisher().getPartipantsListentingToFilterEvent(eventType));
+                            kParticipant.getPublisher(StreamType.MAJOR).getPartipantsListentingToFilterEvent(eventType));
                 });
                 pub.storeListener(eventType, listener);
             } catch (Exception e) {
@@ -1441,9 +1441,9 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     private void removeFilterEventListenerInPublisher(KurentoParticipant kParticipant, String eventType) {
-        PublisherEndpoint pub = kParticipant.getPublisher();
+        PublisherEndpoint pub = kParticipant.getPublisher(StreamType.MAJOR);
         if (pub.isListenerAddedToFilterEvent(eventType)) {
-            GenericMediaElement filter = kParticipant.getPublisher().getFilter();
+            GenericMediaElement filter = kParticipant.getPublisher(StreamType.MAJOR).getFilter();
             filter.removeEventListener(pub.removeListener(eventType));
         }
     }

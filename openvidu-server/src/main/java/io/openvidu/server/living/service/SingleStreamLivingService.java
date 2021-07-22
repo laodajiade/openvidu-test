@@ -3,6 +3,7 @@ package io.openvidu.server.living.service;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.java.client.LivingProperties;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
@@ -52,7 +53,7 @@ public class SingleStreamLivingService extends LivingService {
                 } catch (OpenViduException e) {
                     log.error(
                             "Cannot start single stream live for stream {} in session {}: {}. Skipping to next stream being published",
-                            p.getPublisherStreamId(), session.getSessionId(), e.getMessage());
+                            p.getUuid(), session.getSessionId(), e.getMessage());
                     continue;
                 }
                 try {
@@ -92,7 +93,7 @@ public class SingleStreamLivingService extends LivingService {
 
     public void startLiveEndpointForPublisherEndpoint(Session session, String livingId,
                                                       MediaProfileSpecType profile, Participant participant) {
-        log.info("Starting single stream live for stream {} in session {}", participant.getPublisherStreamId(),
+        log.info("Starting single stream live for stream {} in session {}", participant.getUuid(),
                 session.getSessionId());
 
         if (livingId == null) {
@@ -106,26 +107,26 @@ public class SingleStreamLivingService extends LivingService {
                 profile = generateMediaProfile(living.getLivingProperties(), participant);
             } catch (OpenViduException e) {
                 log.error("Cannot start single stream live for stream {} in session {}: {}",
-                        participant.getPublisherStreamId(), session.getSessionId(), e.getMessage());
+                        participant.getUuid(), session.getSessionId(), e.getMessage());
                 return;
             }
         }
 
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
-        MediaPipeline pipeline = kurentoParticipant.getPublisher().getPipeline();
+        MediaPipeline pipeline = kurentoParticipant.getPublisher(StreamType.MAJOR).getPipeline();
 
         LiveEndpoint live = new LiveEndpoint.Builder(pipeline, "").build();
 
-        connectAccordingToProfile(kurentoParticipant.getPublisher(), live, profile);
-
+        connectAccordingToProfile(kurentoParticipant.getPublisher(StreamType.MAJOR), live, profile);
+        PublisherEndpoint publisher = kurentoParticipant.getPublisher(StreamType.MAJOR);
         LiveEndpointWrapper wrapper = new LiveEndpointWrapper(live, participant.getParticipantPublicId(),
-                livingId, participant.getPublisherStreamId(), participant.getClientMetadata(),
-                participant.getServerMetadata(), kurentoParticipant.getPublisher().getMediaOptions().hasAudio(),
-                kurentoParticipant.getPublisher().getMediaOptions().hasVideo(),
-                kurentoParticipant.getPublisher().getMediaOptions().getTypeOfVideo());
+                livingId, publisher.getStreamId(), participant.getClientMetadata(),
+                participant.getServerMetadata(), publisher.getMediaOptions().hasAudio(),
+                publisher.getMediaOptions().hasVideo(),
+                publisher.getMediaOptions().getTypeOfVideo());
 
-        activeLivers.get(session.getSessionId()).put(participant.getPublisherStreamId(), wrapper);
-        storedLivers.get(session.getSessionId()).put(participant.getPublisherStreamId(), wrapper);
+        activeLivers.get(session.getSessionId()).put(publisher.getStreamId(), wrapper);
+        storedLivers.get(session.getSessionId()).put(publisher.getStreamId(), wrapper);
         wrapper.getLiver().startLive();
     }
 
@@ -156,8 +157,8 @@ public class SingleStreamLivingService extends LivingService {
         KurentoParticipant kParticipant = (KurentoParticipant) participant;
         MediaProfileSpecType profile = null;
 
-        boolean streamHasAudio = kParticipant.getPublisher().getMediaOptions().hasAudio();
-        boolean streamHasVideo = kParticipant.getPublisher().getMediaOptions().hasVideo();
+        boolean streamHasAudio = kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().hasAudio();
+        boolean streamHasVideo = kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().hasVideo();
         boolean propertiesHasAudio = properties.hasAudio();
         boolean propertiesHasVideo = properties.hasVideo();
 
