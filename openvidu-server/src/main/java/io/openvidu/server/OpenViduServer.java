@@ -34,6 +34,7 @@ import io.openvidu.server.core.TokenGeneratorDefault;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.coturn.CoturnCredentialsServiceFactory;
 import io.openvidu.server.exception.NoSuchKmsException;
+import io.openvidu.server.job.StartLoader;
 import io.openvidu.server.kurento.core.KurentoParticipantEndpointConfig;
 import io.openvidu.server.kurento.core.KurentoSessionEventsHandler;
 import io.openvidu.server.kurento.core.KurentoSessionManager;
@@ -48,6 +49,8 @@ import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.RpcNotificationServiceAccess;
+import io.openvidu.server.service.CorpInfoService;
+import io.openvidu.server.service.impl.PrivateCorpInfoService;
 import io.openvidu.server.utils.CommandExecutor;
 import io.openvidu.server.utils.GeoLocationByIp;
 import io.openvidu.server.utils.GeoLocationByIpDummy;
@@ -90,6 +93,10 @@ public class OpenViduServer implements JsonRpcConfigurer {
 
 	@Autowired
 	OpenviduConfig openviduConfig;
+
+
+	@Autowired
+	StartLoader startLoader;
 
 	public static final String KMSS_URIS_PROPERTY = "kms.uris";
 
@@ -137,6 +144,14 @@ public class OpenViduServer implements JsonRpcConfigurer {
 	@ConditionalOnMissingBean
 	public SessionEventsHandler sessionEventsHandler() {
 		return new KurentoSessionEventsHandler();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public CorpInfoService corpInfoService() {
+		//private deploy  dongle check
+		startLoader.check();
+		return new PrivateCorpInfoService();
 	}
 
 	@Bean
