@@ -27,7 +27,6 @@ import java.util.Optional;
 @Service
 public class SetRollCallHandler extends RpcAbstractHandler {
 
-    public static final Object roll_call_lock = new Object();
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -51,14 +50,14 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             return;
         }
 
-        if (targetPart.getTerminalType() == TerminalTypeEnum.S) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.SIP_CANNOT_BE_A_SPEAKER);
-            return;
-        }
+//        if (targetPart.getTerminalType() == TerminalTypeEnum.S) {
+//            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//                    null, ErrorCodeEnum.SIP_CANNOT_BE_A_SPEAKER);
+//            return;
+//        }
 
         // check if target participant is SUBSCRIBER
-        if (OpenViduRole.SUBSCRIBER.equals(targetPart.getRole())
+/*        if (OpenViduRole.SUBSCRIBER.equals(targetPart.getRole())
                 && Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
             ErrorCodeEnum errorCodeEnum;
 
@@ -68,7 +67,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             } else {
                 // invalid rpc call when size of major part is not up to 12
                 log.error("Invalid rpc call when size of major part is:{} in session:{} is not up to {}",
-                        conferenceSession.getPartSize(), sessionId,  conferenceSession.getPresetInfo().getMcuThreshold());
+                        conferenceSession.getPartSize(), sessionId, conferenceSession.getPresetInfo().getMcuThreshold());
                 errorCodeEnum = ErrorCodeEnum.SERVER_INTERNAL_ERROR;
             }
 
@@ -81,13 +80,13 @@ public class SetRollCallHandler extends RpcAbstractHandler {
                         null, errorCodeEnum);
             }
             return;
-        }
+        }*/
         if ("applicant".equals(type) && targetPart.getHandStatus() == ParticipantHandStatus.down) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PARTICIPANT_DOWN_HAND_NOW);
             return;
         }
-        ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart,originatorOp.get());
+        ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart, originatorOp.get());
         //发言
         if (ErrorCodeEnum.SET_ROLL_CALL_SAME_PART.equals(errorCode)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
