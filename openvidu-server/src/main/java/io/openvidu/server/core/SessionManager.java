@@ -532,12 +532,12 @@ public abstract class SessionManager {
     }
 
     public Participant newParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata, String role,
-                                      String streamType, GeoLocation location, String platform, String ability, String functionality) {
+                                      GeoLocation location, String platform, String deviceModel,String ability, String functionality) {
         Session session = getSession(sessionId);
         if (session != null) {
             String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
             Participant p = new Participant(userId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
-                    clientMetadata, location, platform, null, ability, functionality);
+                    clientMetadata, location, platform, deviceModel, null, ability, functionality);
 //			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 //					p) != null) {
 //				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
@@ -569,7 +569,7 @@ public abstract class SessionManager {
         if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
             Participant p = new Participant(userId,  participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-                    sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null);
+                    sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null,null, null);
             this.sessionidParticipantpublicidParticipant.get(sessionId)
                     .put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
             return p;
