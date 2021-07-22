@@ -21,12 +21,8 @@ import org.springframework.stereotype.Service;
 public class ApplyFilterHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Participant participant;
-        try {
-            participant = sanityCheckOfSession(rpcConnection, "applyFilter");
-        } catch (OpenViduException e) {
-            return;
-        }
+        Participant participant = sanityCheckOfSession(rpcConnection);;
+
 
         String filterType = getStringParam(request, ProtocolElements.FILTER_TYPE_PARAM);
         String streamId = getStringParam(request, ProtocolElements.FILTER_STREAMID_PARAM);

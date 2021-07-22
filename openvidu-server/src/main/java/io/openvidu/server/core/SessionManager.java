@@ -390,53 +390,54 @@ public abstract class SessionManager {
         return null;
     }
 
-    @Deprecated //todo 2.0 废弃
-    public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
-        Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager, livingManager);
-        dealSessionNotActiveStored(sessionId, sessionNotActive);
-        showTokens();
-        return sessionNotActive;
-    }
+//    @Deprecated //delete 2.0 废弃
+//    public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
+//        Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager, livingManager);
+//        dealSessionNotActiveStored(sessionId, sessionNotActive);
+//        showTokens();
+//        return sessionNotActive;
+//    }
 
-    public Session storeSessionNotActive(Session sessionNotActive) {
-        final String sessionId = sessionNotActive.getSessionId();
-        dealSessionNotActiveStored(sessionId, sessionNotActive);
-        showTokens();
-        return sessionNotActive;
-    }
+    //delete 2.0 废弃
+//    public Session storeSessionNotActive(Session sessionNotActive) {
+//        final String sessionId = sessionNotActive.getSessionId();
+//        dealSessionNotActiveStored(sessionId, sessionNotActive);
+//        showTokens();
+//        return sessionNotActive;
+//    }
 
-    @Deprecated //todo 2.0 废弃
-    public Session storeSessionNotActiveWhileRoomCreated(String sessionId) {
-        Session sessionNotActive = new Session(sessionId,
-                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
-        dealSessionNotActiveStored(sessionId, sessionNotActive);
-        return sessionNotActive;
-    }
+//    @Deprecated //delete 2.0 废弃
+//    public Session storeSessionNotActiveWhileRoomCreated(String sessionId) {
+//        Session sessionNotActive = new Session(sessionId,
+//                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
+//        dealSessionNotActiveStored(sessionId, sessionNotActive);
+//        return sessionNotActive;
+//    }
 
-    public Session SessionNotActiveWhileRoomCreated(String sessionId, Conference conference) {
-        Session sessionNotActive = new Session(sessionId,
-                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
-        sessionNotActive.setConference(conference);
-        sessionNotActive.setRuid(conference.getRuid());
-        this.sessionsNotActive.put(sessionId, sessionNotActive);
-        return sessionNotActive;
-    }
+//    public Session SessionNotActiveWhileRoomCreated(String sessionId, Conference conference) {
+//        Session sessionNotActive = new Session(sessionId,
+//                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
+//        sessionNotActive.setConference(conference);
+//        sessionNotActive.setRuid(conference.getRuid());
+//        this.sessionsNotActive.put(sessionId, sessionNotActive);
+//        return sessionNotActive;
+//    }
 
     public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
         return null;
     }
 
-    @Deprecated //todo 2.0 废弃
-    private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
-        this.sessionsNotActive.put(sessionId, sessionNotActive);
-        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
-        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        //this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
-        if (this.openviduConfig.isRecordingModuleEnabled()) {
-            this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
-        }
-    }
+//    @Deprecated //delete 2.0 废弃
+//    private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
+//        this.sessionsNotActive.put(sessionId, sessionNotActive);
+//        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
+//        this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
+//        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
+//        //this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
+//        if (this.openviduConfig.isRecordingModuleEnabled()) {
+//            this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
+//        }
+//    }
 
     public String newToken(String sessionId, OpenViduRole role, String serverMetadata,
                            KurentoTokenOptions kurentoTokenOptions) throws OpenViduException {
@@ -530,11 +531,11 @@ public abstract class SessionManager {
     }
 
     public Participant newParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata, String role,
-                                      String streamType, GeoLocation location, String platform, String finalUserId, String ability, String functionality) {
+                                      String streamType, GeoLocation location, String platform, String ability, String functionality) {
         Session session = getSession(sessionId);
         if (session != null) {
             String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
-            Participant p = new Participant(userId, finalUserId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
+            Participant p = new Participant(userId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
                     clientMetadata, location, platform, null, ability, functionality);
 //			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 //					p) != null) {
@@ -566,7 +567,7 @@ public abstract class SessionManager {
                                               String role, String streamType) {
         if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
-            Participant p = new Participant(userId, null, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
+            Participant p = new Participant(userId,  participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
                     sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null);
             this.sessionidParticipantpublicidParticipant.get(sessionId)
                     .put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);

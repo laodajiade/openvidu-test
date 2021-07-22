@@ -20,12 +20,7 @@ import org.springframework.stereotype.Service;
 public class ExecFilterMethodHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        Participant participant;
-        try {
-            participant = sanityCheckOfSession(rpcConnection, "execFilterMethod");
-        } catch (OpenViduException e) {
-            return;
-        }
+        Participant participant = sanityCheckOfSession(rpcConnection);
         String streamId = getStringParam(request, ProtocolElements.FILTER_STREAMID_PARAM);
         String filterMethod = getStringParam(request, ProtocolElements.FILTER_METHOD_PARAM);
         JsonObject filterParams = new JsonParser().parse(getStringParam(request, ProtocolElements.FILTER_PARAMS_PARAM))

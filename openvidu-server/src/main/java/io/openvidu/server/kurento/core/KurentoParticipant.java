@@ -40,7 +40,6 @@ import org.kurento.client.internal.server.KurentoServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -86,7 +85,7 @@ public class KurentoParticipant extends Participant {
 	public KurentoParticipant(Participant participant, KurentoSession kurentoSession,
 			KurentoParticipantEndpointConfig endpointConfig, OpenviduConfig openviduConfig,
 			RecordingManager recordingManager, LivingManager livingManager) {
-		super(participant.getUserId(),participant.getFinalUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
+		super(participant.getUserId(), participant.getParticipantPrivateId(), participant.getParticipantPublicId(),
 				kurentoSession.getSessionId(), participant.getRole(), participant.getClientMetadata(),
 				participant.getLocation(), participant.getPlatform(), participant.getCreatedAt(), participant.getAbility(), participant.getFunctionality());
 		setMicStatus(participant.getMicStatus());
@@ -142,17 +141,18 @@ public class KurentoParticipant extends Participant {
 		// ↑↑↑↑↑↑↑↑↑ 杨宇 注释于2021年3月2日17:56:49，
 	}
 
-	public void createPublisher() {
-		log.info("#####create publisher when role changed and id:{}", getParticipantName());
-		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
-                (Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
-			// Initialize a PublisherEndpoint
-			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
-					this.session.getPipeline(), this.openviduConfig);
-
-			this.publisher.setCompositeService(this.session.getCompositeService());
-		}
-	}
+	// delete 2.0
+//	public void createPublisher() {
+//		log.info("#####create publisher when role changed and id:{}", getParticipantName());
+//		if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole()) &&
+//                (Objects.isNull(publisher) || Objects.isNull(publisher.getCompositeService()))) {
+//			// Initialize a PublisherEndpoint
+//			this.publisher = new PublisherEndpoint(webParticipant, this, getParticipantPublicId(),
+//					this.session.getPipeline(), StreamType.MAJOR,this.openviduConfig);
+//
+//			this.publisher.setCompositeService(this.session.getCompositeService());
+//		}
+//	}
 
 	public PublisherEndpoint createPublishingEndpoint(MediaOptions mediaOptions, Participant participant, StreamType streamType) {
 
@@ -175,19 +175,13 @@ public class KurentoParticipant extends Participant {
 		}
 
 		publisher.createEndpoint(publisher.getPublisherLatch());
-		if (getPublisher(streamType).getEndpoint() == null) {
-			this.setStreaming(false);
-			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
-		}
-		publisher.setMediaOptions(mediaOptions);
+        if (getPublisher(streamType).getEndpoint() == null) {
+            this.setStreaming(false);
+            throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
+        }
+        publisher.setMediaOptions(mediaOptions);
 
-		if (Objects.equals(this.session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-		    if (Objects.equals(StreamType.SHARING, streamType)) {
-				this.session.getCompositeService().setShareStreamId(publisher.getStreamId());
-			}
-
-			this.publisher.getMajorShareHubPort().addTag(strMSTagDebugMCUParticipant, getParticipantName());
-        } else if (TerminalTypeEnum.S == getTerminalType()) {
+        if (TerminalTypeEnum.S == getTerminalType() && this.session.getConferenceMode() != ConferenceModeEnum.MCU) {
             log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
             session.getCompositeService().createComposite(session.getPipeline());
         }
@@ -215,7 +209,7 @@ public class KurentoParticipant extends Participant {
 		Filter filter = getFilterElement(id);
 		filters.remove(id);
 		if (filter != null) {
-			publisher.revert(filter);
+			//publisher.revert(filter);
 		}
 	}
 
@@ -230,7 +224,7 @@ public class KurentoParticipant extends Participant {
 	public PublisherEndpoint getPublisher(StreamType streamType) {
 		PublisherEndpoint publisherEndpoint = this.publishers.get(streamType);
 		if (publisherEndpoint == null) {
-			log.error(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
+			log.warn(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
 			return null;
 		}
 		try {
@@ -291,6 +285,10 @@ public class KurentoParticipant extends Participant {
 	@Deprecated
 	public void setPublisher(PublisherEndpoint publisher) {
 		this.publisher = publisher;
+	}
+
+	public void setPublisher(StreamType streamType, PublisherEndpoint publisher) {
+		this.publishers.put(streamType, publisher);
 	}
 
 	public ConcurrentMap<String, SubscriberEndpoint> getSubscribers() {
@@ -718,15 +716,15 @@ public class KurentoParticipant extends Participant {
 	public void resetPublisherEndpoint() {
 		log.info("Reseting publisher endpoint for participant {}", this.getParticipantPublicId());
         if (!OpenViduRole.NON_PUBLISH_ROLES.contains(this.getRole())) {
-            this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
-                    this.session.getPipeline(), this.openviduConfig);
+//            this.publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+//                    this.session.getPipeline(), this.openviduConfig);
 
-            this.publisher.setCompositeService(this.session.getCompositeService());
+            //this.publisher.setCompositeService(this.session.getCompositeService());
         }
 	}
 
 	public void notifyClient(String method, JsonObject param) {
-		this.session.notifyClient(this.participantPrivatetId, method, param);
+		this.session.notifyClient(this.participantPrivateId, method, param);
 	}
 
 	@Override

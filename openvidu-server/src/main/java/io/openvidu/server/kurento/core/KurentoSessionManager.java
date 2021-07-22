@@ -570,8 +570,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
-                log.warn(
-                        "PARTICIPANT {}: Requesting to recv media from user {} "
+                log.warn("PARTICIPANT {}: Requesting to recv media from user {} "
                                 + "in session {} but user is not streaming media",
                         participant.getParticipantPublicId(), senderParticipant.getUuid(), session.getSessionId());
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
@@ -980,91 +979,91 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    //todo 2.0 Deprecated use evictParticipant()
-    @Deprecated
-    private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
-        // check if include moderator
-        Session session;
-        Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
-        Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getParticipants();
-        if (OpenViduRole.MODERATOR.equals(majorPart.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
-            //stop polling
-            SessionPreset sessionPreset = session.getPresetInfo();
-            sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
-            timerManager.stopPollingCompensation(majorPart.getSessionId());
-            JsonObject params = new JsonObject();
-            params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, majorPart.getSessionId());
-            participants.forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
-                    ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
-        }
-        if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
-                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {    // close the room
-
-            dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
-        } else {
-            // check if MAJOR is speaker
-            if (ParticipantHandStatus.speaker.equals(majorPart.getHandStatus())) {
-                JsonObject params = new JsonObject();
-                params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, majorPart.getSessionId());
-                params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, majorPart.getUuid());
-
-                // send end roll call
-                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.END_ROLL_CALL_METHOD, params));
-            }
-            // check if exists SHARING
-            Participant sharePart;
-            if (Objects.nonNull(sharePart = samePrivateIdParts.get(StreamType.SHARING.name()))) {
-                JsonObject params = new JsonObject();
-                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-                        sharePart.getParticipantPublicId());
-
-                // send stop SHARING
-                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
-                // change session share status
-                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                    KurentoSession kurentoSession = (KurentoSession) session;
-                    kurentoSession.getCompositeService().setExistSharing(false);
-                    kurentoSession.getCompositeService().setShareStreamId(null);
-                }
-
-            }
-
-            // change the layout if mode is MCU
-            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
-                boolean layoutChanged = false;
-                for (Participant part : samePrivateIdParts.values()) {
-                    layoutChanged |= session.leaveRoomSetLayout(part,
-                            !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
-                                    ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
-                }
-
-                if (layoutChanged) {
-                    // notify kms change the layout of MCU
-                    session.invokeKmsConferenceLayout();
-
-                    // notify client the change of layout
-//                    JsonObject params = session.getLayoutNotifyInfo();
-//                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-//                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
-                }
-            }
-
-            // evict participants
-            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
-                    null, reason));
-
-            // delete deal auto on wall
-            //session.putPartOnWallAutomatically(this);
-        }
-
-        // clear the rpc connection if necessary
-        if (evictStrategies.contains(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)) {
-            rpcNotificationService.closeRpcSession(majorPart.getParticipantPrivateId());
-        }
-    }
+    //delete 2.0 Deprecated use evictParticipant()
+    // @Deprecated
+//    private void evictParticipantWithSamePrivateId(Map<String, Participant> samePrivateIdParts, List<EvictParticipantStrategy> evictStrategies, EndReason reason) {
+//        // check if include moderator
+//        Session session;
+//        Participant majorPart = samePrivateIdParts.get(StreamType.MAJOR.name());
+//        Set<Participant> participants = (session = getSession(majorPart.getSessionId())).getParticipants();
+//        if (OpenViduRole.MODERATOR.equals(majorPart.getRole()) && session.getPresetInfo().getPollingStatusInRoom().equals(SessionPresetEnum.on)) {
+//            //stop polling
+//            SessionPreset sessionPreset = session.getPresetInfo();
+//            sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
+//            timerManager.stopPollingCompensation(majorPart.getSessionId());
+//            JsonObject params = new JsonObject();
+//            params.addProperty(ProtocolElements.STOP_POLLING_ROOMID_PARAM, majorPart.getSessionId());
+//            participants.forEach(part -> rpcNotificationService.sendNotification(part.getParticipantPrivateId(),
+//                    ProtocolElements.STOP_POLLING_NODIFY_METHOD, params));
+//        }
+//        if (OpenViduRole.MODERATOR.equals(majorPart.getRole())
+//                && evictStrategies.contains(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR)) {    // close the room
+//
+//            dealSessionClose(majorPart.getSessionId(), EndReason.sessionClosedByServer);
+//        } else {
+//            // check if MAJOR is speaker
+//            if (ParticipantHandStatus.speaker.equals(majorPart.getHandStatus())) {
+//                JsonObject params = new JsonObject();
+//                params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, majorPart.getSessionId());
+//                params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, majorPart.getUuid());
+//
+//                // send end roll call
+//                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+//                        ProtocolElements.END_ROLL_CALL_METHOD, params));
+//            }
+//            // check if exists SHARING
+//            Participant sharePart;
+//            if (Objects.nonNull(sharePart = samePrivateIdParts.get(StreamType.SHARING.name()))) {
+//                JsonObject params = new JsonObject();
+//                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+//                        sharePart.getParticipantPublicId());
+//
+//                // send stop SHARING
+//                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+//                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
+//                // change session share status
+//                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+//                    KurentoSession kurentoSession = (KurentoSession) session;
+//                    kurentoSession.getCompositeService().setExistSharing(false);
+//                    kurentoSession.getCompositeService().setShareStreamId(null);
+//                }
+//
+//            }
+//
+//            // change the layout if mode is MCU
+//            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+//                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
+//                boolean layoutChanged = false;
+//                for (Participant part : samePrivateIdParts.values()) {
+//                    layoutChanged |= session.leaveRoomSetLayout(part,
+//                            !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
+//                                    ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
+//                }
+//
+//                if (layoutChanged) {
+//                    // notify kms change the layout of MCU
+//                    session.invokeKmsConferenceLayout();
+//
+//                    // notify client the change of layout
+////                    JsonObject params = session.getLayoutNotifyInfo();
+////                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+////                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
+//                }
+//            }
+//
+//            // evict participants
+//            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
+//                    null, reason));
+//
+//            // delete deal auto on wall
+//            //session.putPartOnWallAutomatically(this);
+//        }
+//
+//        // clear the rpc connection if necessary
+//        if (evictStrategies.contains(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION)) {
+//            rpcNotificationService.closeRpcSession(majorPart.getParticipantPrivateId());
+//        }
+//    }
 
     @Override
     public KurentoMediaOptions generateMediaOptions(Request<JsonObject> request) throws OpenViduException {
@@ -1640,13 +1639,13 @@ public class KurentoSessionManager extends SessionManager {
         log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
                 part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
 
-        PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher();
+        PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(StreamType.MAJOR);
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
             publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
-                    kurentoParticipant.getSession().getPipeline(), this.openviduConfig);
+                    kurentoParticipant.getSession().getPipeline(), StreamType.MAJOR, this.openviduConfig);
             publisherEndpoint.setCompositeService(kurentoParticipant.getSession().getCompositeService());
             publisherEndpoint.setPassThru(new PassThrough.Builder(kurentoParticipant.getSession().getPipeline()).build());
-            kurentoParticipant.setPublisher(publisherEndpoint);
+            kurentoParticipant.setPublisher(StreamType.MAJOR, publisherEndpoint);
         }
         JsonObject jsonObject = new JsonObject();
         if (Objects.nonNull(publisherEndpoint.getPassThru())) {

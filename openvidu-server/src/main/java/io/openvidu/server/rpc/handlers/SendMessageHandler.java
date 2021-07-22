@@ -19,7 +19,7 @@ public class SendMessageHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, "signal");
+            participant = sanityCheckOfSession(rpcConnection);
         } catch (OpenViduException e) {
             return;
         }

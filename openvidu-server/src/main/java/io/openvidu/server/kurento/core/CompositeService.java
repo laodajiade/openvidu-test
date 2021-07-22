@@ -5,10 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.StreamModeEnum;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -55,7 +52,7 @@ public class CompositeService {
     private JsonArray layoutCoordinates = new JsonArray();
 
     @Getter
-    private LayoutModeEnum layoutMode;
+    private LayoutModeEnum layoutMode = LayoutModeEnum.ONE;
 
     private List<CompositeObject> sourcesPublisher = new ArrayList<>();
 

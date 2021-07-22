@@ -21,7 +21,7 @@ public class RemoveFilterEventListenerHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, "removeFilterEventListener");
+            participant = sanityCheckOfSession(rpcConnection);
         } catch (OpenViduException e) {
             return;
         }

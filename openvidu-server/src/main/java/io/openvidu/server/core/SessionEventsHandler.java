@@ -215,7 +215,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
 		roomInfoJson.addProperty("subtitleConfig", session.getSubtitleConfig().name());
 		roomInfoJson.addProperty("order",participant.getOrder());
-		roomInfoJson.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
+		//roomInfoJson.addProperty("pushStreamStatus",participant.getPushStreamStatus().name());
 		roomInfoJson.add("languageTypes", new Gson().fromJson(session.getLanguages().toString(), JsonArray.class));
 		if (Objects.nonNull(session.getSubtitleExtraConfig())) {
 			roomInfoJson.add("extraInfo", session.getSubtitleExtraConfig());
@@ -493,14 +493,9 @@ public class SessionEventsHandler {
 			}
 		}
 
-		int nNotifyParticipantNum = 0;
-		for (Participant p : publisherParticipants) {
-				rpcNotificationService.sendNotification(p.getParticipantPrivateId(),
-						ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
-				nNotifyParticipantNum++;
-		}
-		log.info("publisher participants num:{} subscriber participants num:{} nNotifyParticipantNum:{}",
-				publisherParticipants.size(), subscribeParticipants.size(), nNotifyParticipantNum);
+		rpcNotificationService.sendBatchNotificationConcurrent(publisherParticipants, ProtocolElements.PARTICIPANTPUBLISHED_METHOD, params);
+		log.info("publisher participants num:{} subscriber participants num:{}",
+				publisherParticipants.size(), subscribeParticipants.size());
 
 		int nParticipantIndex = 0;
 		for (Participant p : subscribeParticipants) {
@@ -552,10 +547,13 @@ public class SessionEventsHandler {
 			rpcNotificationService.sendErrorResponse(participant.getParticipantPrivateId(), transactionId, null, error);
 			return;
 		}
+		String subscribeId = resultObj.get("subscribeId").toString();
 		JsonObject result = new JsonObject();
 		result.addProperty("sdpAnswer", sdpAnswer);
-		result.addProperty("subscribeId", resultObj.get("subscribeId").toString());
+		result.addProperty("subscribeId", subscribeId);
 		rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
+
+		((KurentoParticipant) participant).getSubscribers().get(subscribeId).gatherCandidates();
 	}
 
 	public void onUnsubscribe(Participant participant, Integer transactionId, OpenViduException error) {

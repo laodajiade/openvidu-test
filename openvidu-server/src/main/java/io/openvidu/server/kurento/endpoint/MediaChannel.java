@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.server.common.enums.MediaChannelStateEnum;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.DeliveryKmsManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -88,8 +89,8 @@ public class MediaChannel {
                         DeliveryKmsManager deliveryKmsManager) {
         this(sourcePipeline, sourcePassThrough, targetPipeline, endpointName, deliveryKmsManager);
 
-        this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, openviduConfig);
-        this.publisher.setStreamId(publisherParticipant.getPublisherStreamId());
+        this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, StreamType.MAJOR, openviduConfig);
+        this.publisher.setStreamId(publisherParticipant.getPublisher(StreamType.MAJOR).getStreamId());
         this.publisher.setMediaOptions(publisherParticipant.getPublisherMediaOptions());
         this.publisher.createdAt = System.currentTimeMillis();
 

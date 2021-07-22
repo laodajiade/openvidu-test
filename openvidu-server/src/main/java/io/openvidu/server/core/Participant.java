@@ -32,8 +32,7 @@ import org.springframework.context.ApplicationContext;
 @Slf4j
 public class Participant {
 
-	protected String finalUserId; // ID to match this connection with a final user (HttpSession id)
-	protected String participantPrivatetId; // ID to identify the user on server (org.kurento.jsonrpc.Session.id)
+	protected String participantPrivateId; // ID to identify the user on server (org.kurento.jsonrpc.Session.id)
 	protected String participantPublicId; // ID to identify the user on clients
 	final private String sessionId; // ID of the session to which the participant belongs
 	protected Long createdAt; // Timestamp when this connection was established
@@ -93,15 +92,6 @@ public class Participant {
 
 	private SubtitleConfigEnum subtitleConfig = SubtitleConfigEnum.Off;
 	private SubtitleLanguageEnum subtitleLanguage = SubtitleLanguageEnum.cn;
-	protected PushStreamStatusEnum pushStreamStatus = PushStreamStatusEnum.on;
-
-	public PushStreamStatusEnum getPushStreamStatus() {
-		return pushStreamStatus;
-	}
-
-	public void setPushStreamStatus(PushStreamStatusEnum pushStreamStatus) {
-		this.pushStreamStatus = pushStreamStatus;
-	}
 
 	@Getter
 	@Setter
@@ -110,10 +100,9 @@ public class Participant {
 	private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
 
-	public Participant(Long userId, String finalUserId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
+	public Participant(Long userId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
 					   String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability,String functionality) {
-		this.finalUserId = finalUserId;
-		this.participantPrivatetId = participantPrivatetId;
+		this.participantPrivateId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
 		this.sessionId = sessionId;
 		if (createdAt != null) {
@@ -143,16 +132,12 @@ public class Participant {
 		setClientMetadata(clientMetadataObj.toString());
 	}
 
-	public String getFinalUserId() {
-		return finalUserId;
-	}
-
 	public String getParticipantPrivateId() {
-		return participantPrivatetId;
+		return participantPrivateId;
 	}
 
 	public void setParticipantPrivateId(String participantPrivateId) {
-		this.participantPrivatetId = participantPrivateId;
+		this.participantPrivateId = participantPrivateId;
 	}
 
 	public String getParticipantPublicId() {
@@ -382,7 +367,7 @@ public class Participant {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (participantPrivatetId == null ? 0 : participantPrivatetId.hashCode());
+		result = prime * result + (participantPrivateId == null ? 0 : participantPrivateId.hashCode());
 		result = prime * result + (streaming ? 1231 : 1237);
 		result = prime * result + (participantPublicId == null ? 0 : participantPublicId.hashCode());
 		return result;
@@ -400,11 +385,11 @@ public class Participant {
 			return false;
 		}
 		Participant other = (Participant) obj;
-		if (participantPrivatetId == null) {
-			if (other.participantPrivatetId != null) {
+		if (participantPrivateId == null) {
+			if (other.participantPrivateId != null) {
 				return false;
 			}
-		} else if (!participantPrivatetId.equals(other.participantPrivatetId)) {
+		} else if (!participantPrivateId.equals(other.participantPrivateId)) {
 			return false;
 		}
 		if (streaming != other.streaming) {
@@ -424,8 +409,8 @@ public class Participant {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
-		if (participantPrivatetId != null) {
-			builder.append("participantPrivateId=").append(participantPrivatetId).append(", ");
+		if (participantPrivateId != null) {
+			builder.append("participantPrivateId=").append(participantPrivateId).append(", ");
 		}
 		if (participantPublicId != null) {
 			builder.append("participantPublicId=").append(participantPublicId).append(", ");

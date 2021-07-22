@@ -352,7 +352,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 } else {
                     GeoLocation location = null;
                     participant = sessionManager.newParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata,
-                            role.name(), streamType.name(), location, platform, participantPrivatetId.substring(0, Math.min(16, participantPrivatetId.length())), rpcConnection.getAbility(), rpcConnection.getFunctionality());
+                            role.name(), streamType.name(), location, platform, rpcConnection.getAbility(), rpcConnection.getFunctionality());
                 }
 
                 String sessionTraceId;

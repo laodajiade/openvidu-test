@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.PushStreamStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.config.OpenviduConfig;
@@ -87,6 +88,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private boolean connected = false;
 	private boolean isChannelPassed = false;
 
+	@Setter
+	@Getter
+	private PushStreamStatusEnum pushStreamStatus = PushStreamStatusEnum.on;
+
 	@Getter
 	private CountDownLatch publisherLatch = new CountDownLatch(1);
 
@@ -97,14 +102,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 
     private Map<String, ListenerSubscription> elementsErrorSubscriptions = new HashMap<String, ListenerSubscription>();
 
-	//todo 2.0 需要删除
-	@Deprecated
-	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline,
-							 OpenviduConfig openviduConfig) {
-		super(web, owner, uuid, pipeline, openviduConfig, log);
-		this.streamType = StreamType.MAJOR;
-		this.endpointName = uuid + '_' + streamType + '_' + RandomStringUtils.randomAlphabetic(6);
-	}
+	//delete 2.0 需要删除
+//	@Deprecated
+//	public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline,
+//							 OpenviduConfig openviduConfig) {
+//		super(web, owner, uuid, pipeline, openviduConfig, log);
+//		this.streamType = StreamType.MAJOR;
+//		this.endpointName = uuid + '_' + streamType + '_' + RandomStringUtils.randomAlphabetic(6);
+//	}
 
     public PublisherEndpoint(boolean web, KurentoParticipant owner, String uuid, MediaPipeline pipeline, StreamType streamType,
                              OpenviduConfig openviduConfig) {

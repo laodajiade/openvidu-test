@@ -1195,7 +1195,7 @@ public class Session implements SessionInterface {
 		JsonObject notifyParam = getPartRoleChangedNotifyParam(partChanged, originalRole, presentRole);
 		if (OpenViduRole.PUBLISHER.equals(presentRole)) {
 			KurentoParticipant kurentoParticipant = (KurentoParticipant) partChanged;
-			kurentoParticipant.createPublisher();
+			//kurentoParticipant.createPublisher();
 			if (isSub2PubSpeaker) {
 				notifyParam.addProperty(ProtocolElements.NOTIFY_PART_ROLE_CHANGED_HAND_STATUS_PARAM, ParticipantHandStatus.speaker.name());
 			}
@@ -1529,14 +1529,14 @@ public class Session implements SessionInterface {
 		return layoutInfos;
 	}
 
-	@Deprecated //todo 2.0
-    public JsonObject getLayoutNotifyInfo() {
-        JsonObject notifyResult = new JsonObject();
-        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, this.isAutomatically());
-        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, this.getLayoutMode().getMode());
-        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
-        return notifyResult;
-    }
+//	@Deprecated //delete 2.0
+//    public JsonObject getLayoutNotifyInfo() {
+//        JsonObject notifyResult = new JsonObject();
+//        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, this.isAutomatically());
+//        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, this.getLayoutMode().getMode());
+//        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
+//        return notifyResult;
+//    }
 
 	public boolean getConferenceRecordStatus() {
 		return isRecordingConfigured() && isRecording.get();

@@ -55,7 +55,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
 				getCompositeService().getMixStreamId() : publisher.getOwner().getUuid());
 
 		String sdpAnswer = processOffer(sdpOffer);
-		gatherCandidates();
+		// gatherCandidates();
 		if (Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
 			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
 		} else {

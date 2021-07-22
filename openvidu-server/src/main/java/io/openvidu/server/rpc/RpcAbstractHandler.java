@@ -393,11 +393,6 @@ public abstract class RpcAbstractHandler {
         return participantOptional.get();
     }
 
-    @Deprecated
-    protected Participant sanityCheckOfSession(RpcConnection rpcConnection, String methodName) throws OpenViduException {
-        return sanityCheckOfSession(rpcConnection);
-    }
-
     // delete 2.0
 //    protected Participant sanityCheckOfSession(RpcConnection rpcConnection, String participantPublicId, String methodName) throws OpenViduException {
 //        String participantPrivateId = rpcConnection.getParticipantPrivateId();
