@@ -221,6 +221,7 @@ public class KurentoParticipant extends Participant {
 //		}
 	}
 
+	@Override
 	public PublisherEndpoint getPublisher(StreamType streamType) {
 		PublisherEndpoint publisherEndpoint = this.publishers.get(streamType);
 		if (publisherEndpoint == null) {

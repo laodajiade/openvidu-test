@@ -24,6 +24,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
 import io.openvidu.server.common.events.StatusEvent;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.Getter;
 import lombok.Setter;
@@ -348,6 +349,10 @@ public class Participant {
 	//todo 2.0 Deprecated
 	@Deprecated
 	public String getPublisherStreamId() {
+		return null;
+	}
+
+	public PublisherEndpoint getPublisher(StreamType streamType){
 		return null;
 	}
 

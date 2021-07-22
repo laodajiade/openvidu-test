@@ -8,15 +8,12 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.enums.LayoutModeTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,8 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LayoutInitHandler {
 
     private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> normalLayoutMap = new ConcurrentHashMap<>(16);
-    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumLayoutMap = new ConcurrentHashMap<>(16);
-    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumT200LayoutMap = new ConcurrentHashMap<>(16);
+    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumLayoutMap = new ConcurrentHashMap<>(5);
+    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumT200LayoutMap = new ConcurrentHashMap<>(7);
+    private static final ConcurrentHashMap<LayoutModeEnum, JsonArray> rostrumT200TwoLayoutMap = new ConcurrentHashMap<>(8);
 
 
     @PostConstruct
@@ -36,6 +34,7 @@ public class LayoutInitHandler {
             initLayout(LayoutModeTypeEnum.NORMAL);
             initLayout(LayoutModeTypeEnum.ROSTRUM);
             initLayout(LayoutModeTypeEnum.ROSTRUM_T200);
+            initLayout(LayoutModeTypeEnum.ROSTRUM_T200_TWO);
         } catch (Exception e) {
             log.error("layout init error,exit", e);
             System.exit(1);
@@ -43,6 +42,7 @@ public class LayoutInitHandler {
         log.info(normalLayoutMap.toString());
         log.info(rostrumLayoutMap.toString());
         log.info(rostrumT200LayoutMap.toString());
+        log.info(rostrumT200TwoLayoutMap.toString());
     }
 
     private void initLayout(LayoutModeTypeEnum typeEnum) throws IOException {
@@ -61,6 +61,10 @@ public class LayoutInitHandler {
                 resource = new ClassPathResource("rostrum-t200-layout.json");
                 layoutMap = rostrumT200LayoutMap;
                 break;
+            case ROSTRUM_T200_TWO:
+                resource = new ClassPathResource("rostrum-t200-two-layout.json");
+                layoutMap = rostrumT200TwoLayoutMap;
+                break;
             default:
                 log.error("LayoutModeTypeEnum not found {},exit", typeEnum.name());
                 System.exit(1);
@@ -68,7 +72,7 @@ public class LayoutInitHandler {
 
         List<String> lines = IOUtils.readLines(resource.getInputStream(), "UTF-8");
         String json = Joiner.on("").join(lines);
-        log.info("layout json "+json);
+        log.info("layout json " + json);
         initLayout(json, layoutMap);
     }
 
@@ -104,14 +108,17 @@ public class LayoutInitHandler {
     }
 
     public static JsonArray getLayoutByMode(LayoutModeTypeEnum type, LayoutModeEnum layoutModeEnum) {
-        if (type == LayoutModeTypeEnum.NORMAL) {
-            return normalLayoutMap.get(layoutModeEnum);
-        } else if (type == LayoutModeTypeEnum.ROSTRUM) {
-            return rostrumLayoutMap.get(layoutModeEnum);
-        } else if (type == LayoutModeTypeEnum.ROSTRUM_T200) {
-            return rostrumT200LayoutMap.get(layoutModeEnum);
+        switch (type) {
+            case NORMAL:
+                return normalLayoutMap.get(layoutModeEnum);
+            case ROSTRUM:
+                return rostrumLayoutMap.get(layoutModeEnum);
+            case ROSTRUM_T200:
+                return rostrumT200LayoutMap.get(layoutModeEnum);
+            case ROSTRUM_T200_TWO:
+                return rostrumT200TwoLayoutMap.get(layoutModeEnum);
+            default:
         }
         return normalLayoutMap.get(layoutModeEnum);
     }
-
 }

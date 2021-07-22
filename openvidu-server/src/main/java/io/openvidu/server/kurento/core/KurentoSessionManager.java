@@ -238,7 +238,6 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             if (session.getConferenceMode() == ConferenceModeEnum.MCU && participant.getRole().needToPublish()) {
-                log.info("1111111111111111111111111111111111111");
                 session.getCompositeService().asyncUpdateComposite();
             }
 

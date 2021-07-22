@@ -13,4 +13,5 @@ public enum LayoutModeTypeEnum {
     NORMAL,
     ROSTRUM,
     ROSTRUM_T200,
+    ROSTRUM_T200_TWO,
 }

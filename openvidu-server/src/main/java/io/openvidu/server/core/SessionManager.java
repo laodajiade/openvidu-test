@@ -37,6 +37,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.living.Living;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -1070,6 +1071,9 @@ public abstract class SessionManager {
 
 
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
@@ -1082,6 +1086,9 @@ public abstract class SessionManager {
             result.addProperty("originator", originatorUuid);
 
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.SET_ROLL_CALL_NOTIFY_METHOD, result);
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
@@ -1095,6 +1102,15 @@ public abstract class SessionManager {
             result.addProperty("shareId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_SHARE_NOTIFY_METHOD, result);
+
+            PublisherEndpoint sharingEp;
+            if (!Objects.isNull(sharingEp = sharingPart.getPublisher(StreamType.SHARING))) {
+                this.unpublishVideo(sharingPart, sharingEp.getStreamId(), null, EndReason.forceUnpublishByUser);
+            }
+
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
@@ -1107,6 +1123,10 @@ public abstract class SessionManager {
             result.addProperty("targetId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, result);
+
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
