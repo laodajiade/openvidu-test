@@ -25,8 +25,7 @@ public class SwitchVoiceModeHandler extends RpcAbstractHandler {
         VoiceMode operation = VoiceMode.valueOf(getStringParam(request, ProtocolElements.SWITCHVOICEMODE_OPERATION_PARAM));
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, (Objects.equals(operation, VoiceMode.on) ?
-                    "open" : "close") + " voice mode");
+            participant = sanityCheckOfSession(rpcConnection);
         } catch (OpenViduException e) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);

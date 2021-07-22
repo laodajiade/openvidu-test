@@ -29,7 +29,7 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, "forceDisconnect");
+            participant = sanityCheckOfSession(rpcConnection);
         } catch (OpenViduException e) {
             return;
         }

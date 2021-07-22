@@ -48,7 +48,7 @@ public class StartLiveHandler extends RpcAbstractHandler {
 
         Participant participant;
         try {
-            participant = sanityCheckOfSession(rpcConnection, "startLive");
+            participant = sanityCheckOfSession(rpcConnection);
         } catch (OpenViduException e) {
             return;
         }
