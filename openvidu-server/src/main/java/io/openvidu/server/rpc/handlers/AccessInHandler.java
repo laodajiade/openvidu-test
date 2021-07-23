@@ -56,7 +56,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         String deviceVersion = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEVERSION_PARAM, DEFAULT_DEVICE_VERSION);
         String ability = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_ABILITY_PARAM);
         String functionality = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_FUNCTIONALITY_PARAM);
-        String deviceModel = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
+        String deviceModel = getStringParam(request, ProtocolElements.ACCESS_IN_DEVICEMODEL_PARAM);
         String mac = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_MAC_PARAM);
         JsonElement terminalConfig = getOptionalParam(request, ProtocolElements.ACCESS_IN_TERMINALCONFIG_PARAM);
         String nickName = getStringOptionalParam(request, ProtocolElements.ACCESS_IN_NICKNAME_PARAM);
@@ -156,6 +156,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         rpcConnection.setUserType(userType);
         rpcConnection.setAccessType(accessType);
         rpcConnection.setTerminalType(terminalType);
+        rpcConnection.setDeviceModel(deviceModel);
         rpcConnection.setSerialNumber(deviceSerialNumber);
         rpcConnection.setUserId(userId);
         rpcConnection.setDeviceVersion(deviceVersion);

@@ -24,6 +24,7 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
 import io.openvidu.server.common.events.StatusEvent;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,6 +44,9 @@ public class Participant {
 	//private StreamType streamType;
 	protected GeoLocation location; // Location of the participant
 	protected String platform; // Platform used by the participant to connect to the session
+
+	@Getter
+	protected String deviceModel;
 	//todo 2.0 与会者的流状态需要修改
 	protected boolean streaming = false;
 	protected volatile boolean closed;
@@ -101,7 +105,7 @@ public class Participant {
     protected static final Gson gson = new GsonBuilder().create();
 
 	public Participant(Long userId, String participantPrivatetId, String participantPublicId, String sessionId, OpenViduRole role,
-					   String clientMetadata, GeoLocation location, String platform, Long createdAt, String ability,String functionality) {
+					   String clientMetadata, GeoLocation location, String platform, String deviceModel ,Long createdAt, String ability,String functionality) {
 		this.participantPrivateId = participantPrivatetId;
 		this.participantPublicId = participantPublicId;
 		this.sessionId = sessionId;
@@ -116,6 +120,7 @@ public class Participant {
 		//this.streamType = streamType;
 		this.location = location;
 		this.platform = platform;
+		this.deviceModel = deviceModel;
 		this.handStatus = ParticipantHandStatus.down;
 		this.videoStatus = ParticipantVideoStatus.on;
 		this.micStatus = ParticipantMicStatus.on;
@@ -348,6 +353,10 @@ public class Participant {
 	//todo 2.0 Deprecated
 	@Deprecated
 	public String getPublisherStreamId() {
+		return null;
+	}
+
+	public PublisherEndpoint getPublisher(StreamType streamType){
 		return null;
 	}
 

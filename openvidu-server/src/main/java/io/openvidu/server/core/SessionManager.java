@@ -37,6 +37,7 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.living.Living;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
@@ -531,12 +532,12 @@ public abstract class SessionManager {
     }
 
     public Participant newParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata, String role,
-                                      String streamType, GeoLocation location, String platform, String ability, String functionality) {
+                                      GeoLocation location, String platform, String deviceModel,String ability, String functionality) {
         Session session = getSession(sessionId);
         if (session != null) {
             String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
             Participant p = new Participant(userId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
-                    clientMetadata, location, platform, null, ability, functionality);
+                    clientMetadata, location, platform, deviceModel, null, ability, functionality);
 //			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
 //					p) != null) {
 //				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
@@ -568,7 +569,7 @@ public abstract class SessionManager {
         if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
 
             Participant p = new Participant(userId,  participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-                    sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null);
+                    sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null,null, null);
             this.sessionidParticipantpublicidParticipant.get(sessionId)
                     .put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
             return p;
@@ -1070,6 +1071,9 @@ public abstract class SessionManager {
 
 
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
@@ -1082,6 +1086,9 @@ public abstract class SessionManager {
             result.addProperty("originator", originatorUuid);
 
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.SET_ROLL_CALL_NOTIFY_METHOD, result);
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
@@ -1095,6 +1102,15 @@ public abstract class SessionManager {
             result.addProperty("shareId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_SHARE_NOTIFY_METHOD, result);
+
+            PublisherEndpoint sharingEp;
+            if (!Objects.isNull(sharingEp = sharingPart.getPublisher(StreamType.SHARING))) {
+                this.unpublishVideo(sharingPart, sharingEp.getStreamId(), null, EndReason.forceUnpublishByUser);
+            }
+
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
@@ -1107,6 +1123,10 @@ public abstract class SessionManager {
             result.addProperty("targetId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, result);
+
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
         }
     }
 
