@@ -800,6 +800,7 @@ public class Session implements SessionInterface {
 
 		result.addProperty("partSize", getPartSize());
 		result.addProperty("timestamp", System.currentTimeMillis());
+		result.addProperty("roomId", this.getSessionId());
 
 		notificationService.sendBatchNotificationConcurrent(getParticipants(), ProtocolElements.PART_ORDER_OR_ROLE_CHANGE_NOTIFY_METHOD, result);
 	}
