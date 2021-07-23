@@ -208,10 +208,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 				Participant participant = kurentoSession.getParticipantByPublicId(publicId);
 				if (!Objects.isNull(participant)) {
 					KurentoParticipant kPart = (KurentoParticipant) participant;
-					if (!Objects.isNull(kPart.getPublisher())) {
-						kPart.releaseElement(publicId, kPart.getPublisher().getMediaElementById(portId));
-						log.info("Release other part:'{}' connect self Composite and object id:{}", publicId, portId);
-					}
+					kPart.releaseAllPublisherEndpoint();
 				}
 			});
 

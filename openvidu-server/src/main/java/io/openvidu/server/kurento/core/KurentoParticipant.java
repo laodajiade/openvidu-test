@@ -641,17 +641,15 @@ public class KurentoParticipant extends Participant {
 			}
 
 			releaseElement(getParticipantPublicId(), publisherEndpoint.getEndpoint());
-			//todo 2.0 MCU
-			publisherEndpoint.closeAudioComposite();
+			//publisherEndpoint.closeAudioComposite();
 			if (Objects.nonNull(publisherEndpoint.getSipCompositeHubPort())) {
 				releaseElement(getParticipantPublicId(), publisherEndpoint.getSipCompositeHubPort());
 				session.asyncUpdateSipComposite();
 			}
-			//todo 2.0 MCU
 			this.session.deregisterPublisher();
-			//todo part streaming status need update
+			//todo 2.0 part streaming status need update
 			//setStreaming(false);
-			//todo part streaming status need update
+			//todo 2.0 part streaming status need update
 			this.publishers.remove(publisherEndpoint.getStreamType());
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
@@ -672,6 +670,12 @@ public class KurentoParticipant extends Participant {
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release subscriber endpoint for '{}' but is null",
 					this.getParticipantPublicId(), subscribeId);
+		}
+	}
+
+	public void releaseAllPublisherEndpoint() {
+		for (PublisherEndpoint publisherEndpoint : this.getPublishers().values()) {
+			this.releaseElement(publisherEndpoint.getStreamId(), publisherEndpoint.getEndpoint());
 		}
 	}
 

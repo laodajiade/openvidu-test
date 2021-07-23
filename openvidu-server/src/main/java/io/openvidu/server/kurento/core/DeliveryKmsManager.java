@@ -115,7 +115,7 @@ public class DeliveryKmsManager {
                 publisher.add((KurentoParticipant) participant);
             }
         }
-        String dispatchInfo = publisher.stream().map(p -> p.getUuid() + "(" + p.getPublisherStreamId() + ")").collect(Collectors.joining(","));
+        String dispatchInfo = publisher.stream().map(Participant::getUuid).collect(Collectors.joining(","));
         log.info("delivery media sessionId = {}，dispatch info {}", sessionId, dispatchInfo);
         publisher.stream().parallel().forEach(this::dispatcher);
         state = DeliveryKmsStateEnum.READY;

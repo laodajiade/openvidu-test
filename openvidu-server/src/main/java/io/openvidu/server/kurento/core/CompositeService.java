@@ -261,8 +261,8 @@ public class CompositeService {
         Participant sharing = session.getSharingPart().orElse(null);
 
         if (speaker != null && sharing != null) {
-            mcuNum = getCompositeElements(speaker, source, StreamType.MAJOR, mcuNum);
             mcuNum = getCompositeElements(sharing, source, StreamType.SHARING, mcuNum);
+            mcuNum = getCompositeElements(speaker, source, StreamType.MAJOR, mcuNum);
             this.layoutModeType = LayoutModeTypeEnum.ROSTRUM_T200_TWO;
         } else if (speaker != null) {
             mcuNum = getCompositeElements(speaker, source, StreamType.MAJOR, mcuNum);
