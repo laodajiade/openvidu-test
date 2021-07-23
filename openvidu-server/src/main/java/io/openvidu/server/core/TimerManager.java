@@ -153,14 +153,14 @@ public class TimerManager {
                 //notify current part:index=0 polling to
                 if (first == 0) {
                     JsonObject currentNotifyParam = new JsonObject();
-                    currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
+                    currentNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getUuid());
                     session.getParticipants().stream().filter(p -> p.getTerminalType() != TerminalTypeEnum.S).collect(Collectors.toSet()).forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                             ProtocolElements.POLLING_TO_NOTIFY_METHOD, currentNotifyParam));
                     first++;
                 }
                 //send notify polling check
                 JsonObject jsonCheckParam = new JsonObject();
-                jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participant.getParticipantPublicId());
+                jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM,participant.getUuid());
                 if (participant.isStreaming()) {
                     setOrder(participant.getOrder());
                     jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, true);
@@ -179,7 +179,7 @@ public class TimerManager {
                 }
                 log.info("dealPollingCheck roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
                 JsonObject nextNotifyParam = new JsonObject();
-                nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getParticipantPublicId());
+                nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getUuid());
                 session.getParticipants().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
                         ProtocolElements.POLLING_TO_NOTIFY_METHOD, nextNotifyParam));
                 index++;
