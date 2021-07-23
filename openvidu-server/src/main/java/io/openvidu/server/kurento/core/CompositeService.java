@@ -223,10 +223,10 @@ public class CompositeService {
 
     private void rostrumLayout() {
         Participant moderatorPart = session.getModeratorPart();
-        if (moderatorPart != null) {
+        if (moderatorPart != null && moderatorPart.getDeviceModel().equals("T200")) {
             layoutModeType = LayoutModeTypeEnum.ROSTRUM_T200;
         } else {
-            layoutModeType = LayoutModeTypeEnum.ROSTRUM_T200_TWO;
+            layoutModeType = LayoutModeTypeEnum.ROSTRUM;
         }
 
         List<Participant> parts = session.getParticipants().stream()
