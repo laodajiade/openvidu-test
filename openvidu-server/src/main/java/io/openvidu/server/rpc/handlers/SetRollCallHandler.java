@@ -32,7 +32,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String sessionId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM);
-        String type = getStringOptionalParam(request, "type");
+//        String type = getStringOptionalParam(request, "type");
 
         Session conferenceSession = sessionManager.getSession(sessionId);
         Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElseGet(null);
@@ -80,12 +80,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
                         null, errorCodeEnum);
             }
             return;
-        }*/
-        if ("applicant".equals(type) && targetPart.getHandStatus() == ParticipantHandStatus.down) {
+        }
+       if (targetPart.getHandStatus() == ParticipantHandStatus.down) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PARTICIPANT_DOWN_HAND_NOW);
             return;
-        }
+        }*/
         ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart, originatorOp.get());
         //发言
         if (ErrorCodeEnum.SET_ROLL_CALL_SAME_PART.equals(errorCode)) {
