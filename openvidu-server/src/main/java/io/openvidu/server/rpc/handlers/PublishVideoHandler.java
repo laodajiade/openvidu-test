@@ -67,7 +67,7 @@ public class PublishVideoHandler extends RpcAbstractHandler {
             MediaOptions options = sessionManager.generateMediaOptions(request);
             sessionManager.publishVideo(participant, options, request.getId(), streamType);
 
-            sessionManager.createDeliverChannel(participant);
+            sessionManager.createDeliverChannel(participant, streamType);
         } else {
             log.error("Error: participant {} is not a publisher and role={}", participant.getParticipantPublicId()
                     , participant.getRole());

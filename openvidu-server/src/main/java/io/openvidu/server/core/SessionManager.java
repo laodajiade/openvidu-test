@@ -1183,5 +1183,5 @@ public abstract class SessionManager {
      *
      * @param participant
      */
-    public abstract void createDeliverChannel(Participant participant);
+    public abstract void createDeliverChannel(Participant participant, StreamType streamType);
 }

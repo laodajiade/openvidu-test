@@ -395,7 +395,7 @@ public class KurentoParticipant extends Participant {
 				if (mediaChannel == null) {
 					log.warn("mediaChannel not exist");
 					synchronized (this) {
-						mediaChannel = deliveryKms.dispatcher(sender);
+						mediaChannel = deliveryKms.dispatcher(sender, senderPublisher);
 					}
 				}
 				log.info("mediaChannel state = {}", mediaChannel.getState().name());

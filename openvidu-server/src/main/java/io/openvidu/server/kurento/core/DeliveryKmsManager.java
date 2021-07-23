@@ -5,6 +5,7 @@ import io.openvidu.server.common.enums.DeliveryKmsStateEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.MediaChannel;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import lombok.Getter;
 import lombok.Setter;
@@ -117,22 +118,29 @@ public class DeliveryKmsManager {
         }
         String dispatchInfo = publisher.stream().map(Participant::getUuid).collect(Collectors.joining(","));
         log.info("delivery media sessionId = {}，dispatch info {}", sessionId, dispatchInfo);
-        publisher.stream().parallel().forEach(this::dispatcher);
+        publisher.stream().parallel().forEach(this::dispatcherPart);
         state = DeliveryKmsStateEnum.READY;
     }
 
-    public MediaChannel dispatcher(KurentoParticipant kParticipant) {
-        MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), kParticipant.getPublisher().getPassThru(), this.getPipeline(),
-                true, kParticipant, kParticipant.getPublisherStreamId(), kSession.getOpenviduConfig(), this);
-        MediaChannel oldMediaChannel = kParticipant.getPublisher().getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
+    public void dispatcherPart(KurentoParticipant kParticipant) {
+        for (PublisherEndpoint publisherEndpoint : kParticipant.getPublishers().values()) {
+            this.dispatcher(kParticipant, publisherEndpoint);
+        }
+    }
+
+    public MediaChannel dispatcher(KurentoParticipant kParticipant, PublisherEndpoint publisherEndpoint) {
+        MediaChannel mediaChannel = new MediaChannel(kSession.getPipeline(), publisherEndpoint.getPassThru(), this.getPipeline(),
+                true, kParticipant, publisherEndpoint.getStreamId(), kSession.getOpenviduConfig(), this);
+
+        MediaChannel oldMediaChannel = publisherEndpoint.getMediaChannels().putIfAbsent(this.getId(), mediaChannel);
         log.info("开始分发 {}, {}", kParticipant.getUuid(), mediaChannel.getId());
         if (oldMediaChannel != null) {
             log.info("participant {} 已创建通道 {}", kParticipant.getUuid(), this.id);
             return oldMediaChannel;
         }
-        this.dispatcherMap.put(kParticipant.getPublisherStreamId(), mediaChannel);
+        this.dispatcherMap.put(publisherEndpoint.getStreamId(), mediaChannel);
         mediaChannel.createChannel();
-        kParticipant.getPublisher().getMediaChannels().put(this.getId(), mediaChannel);
+        publisherEndpoint.getMediaChannels().put(this.getId(), mediaChannel);
         log.info("dispatcherMap {}", dispatcherMap);
         return mediaChannel;
     }

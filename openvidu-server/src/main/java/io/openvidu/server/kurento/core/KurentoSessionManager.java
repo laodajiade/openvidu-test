@@ -444,13 +444,13 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     @Override
-    public void createDeliverChannel(Participant participant) {
+    public void createDeliverChannel(Participant participant, StreamType streamType) {
         KurentoParticipant kParticipant = (KurentoParticipant) participant;
         KurentoSession session = kParticipant.getSession();
 
         for (DeliveryKmsManager deliveryKmsManager : session.getDeliveryKmsManagers()) {
             log.debug("dispatcher uuid {}, publisherId = {}", kParticipant.getUuid(), kParticipant.getPublisher(StreamType.MAJOR).getStreamId());
-            deliveryKmsManager.dispatcher(kParticipant);
+            deliveryKmsManager.dispatcher(kParticipant, kParticipant.getPublisher(streamType));
         }
     }
 
