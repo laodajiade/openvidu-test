@@ -787,7 +787,7 @@ public class Session implements SessionInterface {
 	 *
 	 * @param orderChange 是否有发生order变化
 	 */
-	private void notifyPartOrderOrRoleChanged(boolean orderChange, Participant sub2PubPart, boolean roleChanged,
+	public void notifyPartOrderOrRoleChanged(boolean orderChange, Participant sub2PubPart, boolean roleChanged,
 											  OpenViduRole originalRole, OpenViduRole presentRole,
 											  RpcNotificationService notificationService) {
 		// get part order info in session

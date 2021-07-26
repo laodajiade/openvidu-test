@@ -213,6 +213,7 @@ public class ProtocolElements {
     public static final String MAJORLAYOUTNOTIFY_TYPE_PARAM = "type";
     public static final String MAJORLAYOUTNOTIFY_LAYOUT_PARAM = "layout";
 
+    public static final String SET_CONFERENCE_MODE_METHOD = "setConferenceMode";
 
     public static final String SETCONFERENCELAYOUT_MODE_METHOD = "setConferenceLayout";
     public static final String SETCONFERENCELAYOUT_AUTOMATICAlly_PARAM = "automatically";

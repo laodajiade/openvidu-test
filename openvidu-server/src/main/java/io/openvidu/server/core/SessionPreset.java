@@ -54,7 +54,7 @@ public class SessionPreset {
 
     @Setter
     @Getter
-    private int mcuThreshold = 10;
+    private int mcuThreshold = 30;
 
     @Setter
     @Getter

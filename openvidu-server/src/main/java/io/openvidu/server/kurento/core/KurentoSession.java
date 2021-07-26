@@ -24,7 +24,6 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.EndReason;
@@ -34,7 +33,6 @@ import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
 import io.openvidu.server.utils.SafeSleep;
-import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.EventListener;
@@ -150,12 +148,14 @@ public class KurentoSession extends Session {
 		}
 	}
 
-	public void cancelPublisher(Participant participant, EndReason reason) {
+	public void cancelPublisher(PublisherEndpoint publisherEndpoint, EndReason reason) {
 		for (Participant subscriber : getParticipants()) {
-			if (participant.equals(subscriber)) {
-				continue;
+			KurentoParticipant kSubscriber = (KurentoParticipant) subscriber;
+			for (String subscribeId : kSubscriber.getSubscribers().keySet()) {
+				if (subscribeId.contains(publisherEndpoint.getStreamId())) {
+					kSubscriber.cancelReceivingMedia(subscribeId, reason);
+				}
 			}
-			((KurentoParticipant) subscriber).cancelReceivingMedia(participant.getParticipantPublicId(), reason);
 		}
 	}
 

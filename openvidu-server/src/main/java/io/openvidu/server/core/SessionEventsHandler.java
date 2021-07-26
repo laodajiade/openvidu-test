@@ -363,42 +363,44 @@ public class SessionEventsHandler {
 	/**
 	 * 通知端上排序有发生改变,
 	 */
-	private void asyncNotifyUpdateOrder(Session session) {
-		Thread thread = new Thread(() -> {
-			try {
-				TimeUnit.MILLISECONDS.sleep(200);//延迟0.2秒
-			} catch (InterruptedException e) {
-				//
-			}
-			synchronized (notifyUpdateOrderLock) {
-				notifyUpdateOrderLock.remove(session.getSessionId());
-			}
-			if (session.isClosing() || session.isClosed()) {
-				log.info("session {} is closing or is closed,stop notifyUpdateOrder", session.getSessionId());
-				return;
-			}
-			log.info("notifyUpdateOrder doing");
-			Set<Participant> existParticipants = session.getParticipants();
-			if (!CollectionUtils.isEmpty(existParticipants)) {
-				JsonObject notifyParam = new JsonObject();
-				JsonArray orderedParts = new JsonArray();
-				for (Participant exist : existParticipants) {
-					JsonObject order = new JsonObject();
-					order.addProperty("account", exist.getUuid());
-					order.addProperty("uuid", exist.getUuid());
-					order.addProperty("order", exist.getOrder());
-					orderedParts.add(order);
-				}
-				notifyParam.add("orderedParts", orderedParts);
-
-				List<String> notifyList = existParticipants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
-				rpcNotificationService.sendBatchNotification(notifyList,
-						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
-			}
-		});
-		thread.setName("asyncNotifyUpdateOrder-" + session.getSessionId() + "-thread");
-		thread.start();
-	}
+    private void asyncNotifyUpdateOrder(Session session) {
+        Thread thread = new Thread(() -> {
+            try {
+                TimeUnit.MILLISECONDS.sleep(200);//延迟0.2秒
+            } catch (InterruptedException e) {
+                //
+            }
+            synchronized (notifyUpdateOrderLock) {
+                notifyUpdateOrderLock.remove(session.getSessionId());
+            }
+            if (session.isClosing() || session.isClosed()) {
+                log.info("session {} is closing or is closed,stop notifyUpdateOrder", session.getSessionId());
+                return;
+            }
+            log.info("notifyUpdateOrder doing");
+            session.notifyPartOrderOrRoleChanged(true, null, false,
+                    OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER, rpcNotificationService);
+//			Set<Participant> existParticipants = session.getParticipants();
+//			if (!CollectionUtils.isEmpty(existParticipants)) {
+//				JsonObject notifyParam = new JsonObject();
+//				JsonArray orderedParts = new JsonArray();
+//				for (Participant exist : existParticipants) {
+//					JsonObject order = new JsonObject();
+//					order.addProperty("account", exist.getUuid());
+//					order.addProperty("uuid", exist.getUuid());
+//					order.addProperty("order", exist.getOrder());
+//					orderedParts.add(order);
+//				}
+//				notifyParam.add("orderedParts", orderedParts);
+//
+//				List<String> notifyList = existParticipants.stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
+//				rpcNotificationService.sendBatchNotification(notifyList,
+//						ProtocolElements.UPDATE_PARTICIPANTS_ORDER_METHOD, notifyParam);
+//			}
+        });
+        thread.setName("asyncNotifyUpdateOrder-" + session.getSessionId() + "-thread");
+        thread.start();
+    }
 
 	public void onParticipantLeft(Participant participant, String sessionId, Set<Participant> remainingParticipants,
 								  Integer transactionId, OpenViduException error, EndReason reason) {

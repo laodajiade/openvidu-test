@@ -11,7 +11,6 @@ import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -40,34 +39,39 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.UNRECOGNIZED_API);
             return;
         }
-        Optional<Participant> participantOptional = session.getParticipantByUUID(rpcConnection.getUserUuid());
-        if (!participantOptional.isPresent()) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.UNRECOGNIZED_API);
-            return;
-        }
 
-        Participant participant = participantOptional.get();
+        Participant participant = sanityCheckOfSession(rpcConnection);
 
-
-        String streamModeStr;
-        StreamModeEnum streamMode = !StringUtils.isEmpty(streamModeStr = getStringOptionalParam(request, STREAM_MODE_PARAM))
-                ? StreamModeEnum.valueOf(streamModeStr) : null;
-
+        StreamModeEnum streamMode = StreamModeEnum.valueOf(getStringOptionalParam(request, STREAM_MODE_PARAM, StreamModeEnum.SFU_SHARING.name()));
         String publishId = getStringParam(request, PUBLISH_ID_PARAM);
-        String uuid = getStringParam(request, SENDER_UUID_PARAM);
-        StreamType streamType = StreamType.valueOf(getStringParam(request, STREAM_TYPE_PARAM));
-//        publishId = publishId.substring(0, Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) ?
-//                publishId.lastIndexOf("_") : publishId.indexOf("_"));
         String sdpOffer = getStringParam(request, SDP_OFFER_PARAM);
+        StreamType streamType = StreamType.MAJOR;
 
-        Optional<Participant> senderPartOp = session.getParticipantByUUID(uuid);
-        if (!senderPartOp.isPresent()) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
-            return;
+        Participant senderPart;
+        if (participant.getUuid().equals("80103600005")){
+            log.info("调试");
+            publishId = session.getCompositeService().getMixStreamId();
+            streamMode = StreamModeEnum.MIX_MAJOR;
+        }
+        if (streamMode == StreamModeEnum.MIX_MAJOR) {
+            if (!Objects.equals(session.getCompositeService().getMixStreamId(), publishId)) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.UNRECOGNIZED_API);
+                return;
+            }
+            senderPart = participant;
+        } else {
+            String uuid = getStringParam(request, SENDER_UUID_PARAM);
+            streamType = StreamType.valueOf(getStringParam(request, STREAM_TYPE_PARAM));
+            Optional<Participant> senderPartOp = session.getParticipantByUUID(uuid);
+            if (!senderPartOp.isPresent()) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+                return;
+            }
+            senderPart = senderPartOp.get();
         }
 
-        sessionManager.subscribe(participant, senderPartOp.get(), streamType, streamMode, sdpOffer, publishId, request.getId());
+        sessionManager.subscribe(participant, senderPart, streamType, streamMode, sdpOffer, publishId, request.getId());
     }
 }

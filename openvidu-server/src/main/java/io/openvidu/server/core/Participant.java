@@ -25,11 +25,15 @@ import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
 import io.openvidu.server.common.events.StatusEvent;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
+import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+
+import java.util.concurrent.ConcurrentMap;
+
 @Slf4j
 public class Participant {
 
@@ -312,8 +316,19 @@ public class Participant {
 		this.platform = platform;
 	}
 
+	//todo 2.0 Deprecated
+	@Deprecated
 	public boolean isStreaming() {
 		return streaming;
+	}
+
+	public boolean isStreaming(StreamType streamType) {
+		PublisherEndpoint publisher = this.getPublisher(streamType);
+		if (publisher == null) {
+			return false;
+		}
+		//todo 2.0 Endpoint streaming type
+		return true;
 	}
 
 	public boolean isClosed() {
@@ -357,6 +372,10 @@ public class Participant {
 	}
 
 	public PublisherEndpoint getPublisher(StreamType streamType){
+		return null;
+	}
+
+	public ConcurrentMap<String, SubscriberEndpoint> getSubscribers() {
 		return null;
 	}
 

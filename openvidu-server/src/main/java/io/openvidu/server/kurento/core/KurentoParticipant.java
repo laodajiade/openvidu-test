@@ -72,12 +72,14 @@ public class KurentoParticipant extends Participant {
 	//private CountDownLatch publisherLatch = new CountDownLatch(1);
 
 	private final ConcurrentMap<String, Filter> filters = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
+    /**
+     * key = subscribeId , value = ep
+     */
+    private final ConcurrentMap<String, SubscriberEndpoint> subscribers = new ConcurrentHashMap<>();
 
 
 	private final Object createPublisherLock = new Object();
 
-	private final String strMSTagDebugMCUParticipant = "debugMCUParticipant";
 	private final String strMSTagDebugEndpointName = "debugEndpointName";
 	private final String strMSTagDebugPassThroughName = "debugPassThroughName";
 
@@ -288,6 +290,7 @@ public class KurentoParticipant extends Participant {
 		this.publishers.put(streamType, publisher);
 	}
 
+	@Override
 	public ConcurrentMap<String, SubscriberEndpoint> getSubscribers() {
 		return this.subscribers;
 	}
@@ -360,33 +363,30 @@ public class KurentoParticipant extends Participant {
 	 */
 	public String receiveMediaFrom(KurentoParticipant sender, StreamModeEnum streamMode, String sdpOffer, StreamType streamType,
 								   String publishStreamId, Map<String, Object> returnObj) {
-		PublisherEndpoint senderPublisher = sender.getPublisher(streamType);
-		if (senderPublisher == null) {
-			throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "没有找到 senderPublisher");
+		String subscriberStreamId = null;
+		PublisherEndpoint senderPublisher = null;
+		if (!Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
+			senderPublisher = sender.getPublisher(streamType);
+			if (senderPublisher == null) {
+				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "没有找到 senderPublisher");
+			}
+			if (!senderPublisher.getStreamId().equals(publishStreamId)) {
+				log.warn("{} 拉的{},{}的流的streamId不匹配{}!={},自动修正", this.getUuid(), sender.getUuid(),
+						streamType.name(), senderPublisher.getStreamId(), publishStreamId);
+				publishStreamId = senderPublisher.getStreamId();
+			}
+			log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getUuid(),
+					publishStreamId, this.session.getSessionId());
+			subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
+			log.info("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getUuid(),
+					subscriberStreamId);
+		} else {
+			subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
 		}
-		if (senderPublisher.getStreamId().equals(publishStreamId)) {
-			log.warn("{} 拉的{},{}的流的streamId不匹配{}!={},自动修正", this.getUuid(), sender.getUserId(),
-					streamType.name(), senderPublisher.getStreamId(), publishStreamId);
-			publishStreamId = senderPublisher.getStreamId();
-		}
 
-		log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getUuid(),
-				publishStreamId, this.session.getSessionId());
-		log.trace("PARTICIPANT {}: SdpOffer for {} is {}", this.getParticipantPublicId(), publishStreamId, sdpOffer);
-
-		String subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
-
-		if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) &&
-				publishStreamId.equals(this.getParticipantPublicId())) {
-			log.warn("PARTICIPANT {}: trying to configure loopback by subscribing", this.getParticipantPublicId());
-			throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE, "Can loopback only when publishing media");
-		}
-
-		log.info("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getUuid(),
-				subscriberStreamId);
 
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(subscriberStreamId);
-		if (subscriber.getEndpoint() == null) {
+		if (subscriber.getEndpoint() == null && !Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
 			//todo 2.0 级联需要修改
 			subscriber = getNewOrExistingSubscriber(subscriberStreamId);
 			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
@@ -443,24 +443,23 @@ public class KurentoParticipant extends Participant {
 			returnObj.put("subscribeId", subscriberStreamId);
 			endpointConfig.addEndpointListeners(subscriber, "subscriber");
 		} catch (OpenViduException e) {
-			this.subscribers.remove(senderPublisher.getStreamId());
+            this.subscribers.remove(publishStreamId);
 			throw e;
 		}
 
-		log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), senderPublisher.getStreamId());
+        log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), publishStreamId);
 		try {
 			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, senderPublisher, streamMode);
-			log.trace("PARTICIPANT {}: Subscribing SdpAnswer is {}", this.getParticipantPublicId(), sdpAnswer);
-			log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
-					senderPublisher.getStreamId(), this.session.getSessionId());
+            log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
+                    publishStreamId, this.session.getSessionId());
 
 			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(this.getParticipantPublicId())) {
 				endpointConfig.getCdr().recordNewSubscriber(this, this.session.getSessionId(),
-						senderPublisher.getStreamId(), sender.getParticipantPublicId(), subscriber.createdAt());
+						subscriberStreamId, sender.getParticipantPublicId(), subscriber.createdAt());
 			}
 
 			if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU) &&
-					Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode)) {
+                    Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
 				if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
 					subscriber.subscribeAudio(this.getPublisher());
 				} else {
@@ -477,22 +476,23 @@ public class KurentoParticipant extends Participant {
 			} else {
 				log.error("Exception connecting subscriber endpoint " + "to publisher endpoint", e);
 			}
-			this.subscribers.remove(senderPublisher.getStreamId());
+			this.subscribers.remove(subscriberStreamId);
 			releaseSubscriberEndpoint(senderPublisher.getStreamId(), subscriber, null);
 		}
 		return null;
 	}
 
-	public String translateSubscribeId(String receiveUuid, String publishStreamId) {
-		return receiveUuid + "_receive_" + publishStreamId;
-	}
+    public String translateSubscribeId(String receiveUuid, String publishStreamId) {
+        return receiveUuid + "_receive_" + publishStreamId;
+        //return publishStreamId;
+    }
 
 	public void cancelReceivingMedia(String subscribeId, EndReason reason) {
 		log.info("PARTICIPANT {}: cancel receiving media from {}", this.getParticipantPublicId(), subscribeId);
 		SubscriberEndpoint subscriberEndpoint = subscribers.remove(subscribeId);
 
 		if (subscriberEndpoint == null || subscriberEndpoint.getEndpoint() == null) {
-			log.warn("PARTICIPANT {}: Trying to cancel receiving video from user {}. "
+			log.warn("PARTICIPANT {}: Trying to cancel receiving video from subscribeId {}. "
 					+ "But there is no such subscriber endpoint.", this.getParticipantPublicId(), subscribeId);
 		} else {
 			releaseSubscriberEndpoint(subscribeId, subscriberEndpoint, reason);
@@ -533,24 +533,24 @@ public class KurentoParticipant extends Participant {
 	 * Returns a {@link SubscriberEndpoint} for the given participant public id. The
 	 * endpoint is created if not found.
 	 *
-	 * @param senderPublicId id of another user
+	 * @param subscribeId id of another user
 	 * @return the endpoint instance
 	 */
-	public SubscriberEndpoint getNewOrExistingSubscriber(String senderPublicId) {
-		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
-				this.getPipeline(), this.session.getCompositeService(), this.openviduConfig);
+    public SubscriberEndpoint getNewOrExistingSubscriber(String subscribeId) {
+        SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, subscribeId,
+                this.getPipeline(), this.session.getCompositeService(), this.openviduConfig);
 
-		SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(senderPublicId, subscriberEndpoint);
-		if (existingSendingEndpoint != null) {
-			subscriberEndpoint = existingSendingEndpoint;
-			log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),
-					senderPublicId);
-		} else {
-			log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(), senderPublicId);
-		}
+        SubscriberEndpoint existingSendingEndpoint = this.subscribers.putIfAbsent(subscribeId, subscriberEndpoint);
+        if (existingSendingEndpoint != null) {
+            subscriberEndpoint = existingSendingEndpoint;
+            log.trace("PARTICIPANT {}: Already exists a subscriber endpoint to user {}", this.getParticipantPublicId(),
+                    subscribeId);
+        } else {
+            log.debug("PARTICIPANT {}: New subscriber endpoint to user {}", this.getParticipantPublicId(), subscribeId);
+        }
 
-		return subscriberEndpoint;
-	}
+        return subscriberEndpoint;
+    }
 
 	public SubscriberEndpoint getNewAndCompareSubscriber(String senderPublicId, MediaPipeline pipeline, SubscriberEndpoint compare) {
 		SubscriberEndpoint subscriberEndpoint = new SubscriberEndpoint(webParticipant, this, senderPublicId,
@@ -589,9 +589,10 @@ public class KurentoParticipant extends Participant {
 
 	public ErrorCodeEnum addIceCandidate(String endpointName, IceCandidate iceCandidate) {
 		if (!endpointName.contains("_receive_")) {
+		//if (endpointName.startsWith(this.getUuid())) {
 			Optional<PublisherEndpoint> find = this.publishers.values().stream().filter(ep -> ep.getStreamId().equals(endpointName)).findFirst();
 			if (!find.isPresent()) {
-				log.warn("can`t find endpointName");
+				log.warn("can`t find endpointName {},{}", this.getUuid(), endpointName);
 				return ErrorCodeEnum.ENP_POINT_NAME_NOT_EXIST;
 			} else {
 				find.get().addIceCandidate(iceCandidate);

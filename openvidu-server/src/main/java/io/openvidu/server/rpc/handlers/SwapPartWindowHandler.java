@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;

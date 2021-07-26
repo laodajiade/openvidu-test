@@ -165,7 +165,7 @@ public class CallDetailRecord {
 		if (Objects.equals(OpenViduRole.THOR, participant.getRole())) return;
 		CDREventWebrtcConnection publisher = this.publications.get(senderPublicId);
 		CDREventWebrtcConnection subscriber = new CDREventWebrtcConnection(sessionId, streamId, participant,
-				publisher.mediaOptions, senderPublicId, timestamp);
+				publisher == null ? null : publisher.mediaOptions, senderPublicId, timestamp);
 		this.subscriptions.putIfAbsent(participant.getParticipantPublicId(), new ConcurrentSkipListSet<>());
 		this.subscriptions.get(participant.getParticipantPublicId()).add(subscriber);
 		this.log(subscriber);

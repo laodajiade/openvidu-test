@@ -472,7 +472,7 @@ public class KurentoSessionManager extends SessionManager {
             }
 
             kParticipant.unpublishMedia(publisherEndpoint, reason, 0);
-            session.cancelPublisher(participant, reason);
+            session.cancelPublisher(publisherEndpoint, reason);
 
             Set<Participant> participants = session.getParticipants();
             sessionEventsHandler.onUnpublishMedia(participant, participants, publisherEndpoint, transactionId, null, reason);
@@ -557,18 +557,11 @@ public class KurentoSessionManager extends SessionManager {
             KurentoParticipant kParticipant = (KurentoParticipant) participant;
             session = ((KurentoParticipant) participant).getSession();
 
-            if (!StreamModeEnum.MIX_MAJOR_AND_SHARING.equals(streamMode)) {
-                senderParticipant = senderParticipant;
-            } else {
-//                if (!Objects.equals(OpenViduRole.THOR, participant.getRole())) {
-//                    senderParticipant = participant;
-//                } else {
-//                    senderParticipant = getInviteDelayPart(participant.getSessionId(), participant.getUserId());
-//                }
-                //todo mcu
+            if (StreamModeEnum.MIX_MAJOR == streamMode) {
+                senderParticipant = participant;
             }
 
-            if (!Objects.equals(StreamModeEnum.MIX_MAJOR_AND_SHARING, streamMode) && !senderParticipant.isStreaming()) {
+            if (!Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) && !senderParticipant.isStreaming(streamType)) {
                 log.warn("PARTICIPANT {}: Requesting to recv media from user {} "
                                 + "in session {} but user is not streaming media",
                         participant.getParticipantPublicId(), senderParticipant.getUuid(), session.getSessionId());
@@ -586,6 +579,7 @@ public class KurentoSessionManager extends SessionManager {
         } catch (OpenViduException e) {
             log.error("PARTICIPANT {}: Error subscribing to {}", participant.getParticipantPublicId(), publishStreamId, e);
             sessionEventsHandler.onSubscribe(participant, session, null, resultObj, transactionId, e);
+            return;
         } catch (Exception e) {
             log.error("Exception:", e);
         }
@@ -597,24 +591,6 @@ public class KurentoSessionManager extends SessionManager {
         if (sdpAnswer != null) {
             sessionEventsHandler.onSubscribe(participant, session, sdpAnswer, resultObj, transactionId, null);
         }
-    }
-
-    private Participant getInviteDelayPart(String sessionId, Long userId) throws InterruptedException {
-        Participant senderParticipant;
-        for (int i = 0; i < 3; i++) {
-            if (Objects.nonNull(senderParticipant = getSession(sessionId).getParticipants()
-                    .stream()
-                    .filter(part -> part.getUserId().equals(userId) && !Objects.equals(OpenViduRole.THOR, part.getRole()))
-                    .findFirst().orElse(null))) {
-                return senderParticipant;
-            } else {
-                Thread.sleep(3000);
-            }
-        }
-
-        return getSession(sessionId).getParticipants().stream().filter(part -> part.getUserId().equals(userId) &&
-                !Objects.equals(OpenViduRole.THOR, part.getRole()))
-                .findFirst().orElse(null);
     }
 
     @Override

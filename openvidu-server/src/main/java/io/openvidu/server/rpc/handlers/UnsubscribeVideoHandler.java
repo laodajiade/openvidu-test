@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,13 @@ public class UnsubscribeVideoHandler extends RpcAbstractHandler {
         }
         Participant participant = participantOptional.get();
         String subscribeId = getStringParam(request, SUBSCRIBE_ID_PARAM);
+        SubscriberEndpoint subscriberEndpoint = participant.getSubscribers().get(subscribeId);
+        if (subscriberEndpoint == null) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.ENP_POINT_NAME_NOT_EXIST);
+            return;
+        }
+
         sessionManager.unsubscribe(participant, subscribeId, request.getId());
     }
 }

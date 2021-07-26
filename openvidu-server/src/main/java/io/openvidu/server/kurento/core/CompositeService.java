@@ -446,16 +446,8 @@ public class CompositeService {
             JsonObject mixJsonObj = new JsonObject();
             mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
                     this.getMixStreamId());
-            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR_AND_SHARING.name());
+            mixJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.MIX_MAJOR.name());
             mixFlowsArr.add(mixJsonObj);
-
-//            if (!StringUtils.isEmpty(kurentoSession.compositeService.getShareStreamId())) {
-//                JsonObject shareJsonObj = new JsonObject();
-//                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMID_PARAM,
-//                        kurentoSession.compositeService.getShareStreamId());
-//                shareJsonObj.addProperty(ProtocolElements.JOINROOM_MIXFLOWS_STREAMMODE_PARAM, StreamModeEnum.SFU_SHARING.name());
-//                mixFlowsArr.add(shareJsonObj);
-//            }
         }
         return mixFlowsArr;
     }
