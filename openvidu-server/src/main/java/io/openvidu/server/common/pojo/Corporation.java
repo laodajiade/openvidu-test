@@ -35,4 +35,8 @@ public class Corporation {
     private LocalDateTime recordingExpireDate;
 
     private Integer remainderDuration;
+
+    private int sfuPublisherThreshold;
+
+    private int mcuThreshold;
 }

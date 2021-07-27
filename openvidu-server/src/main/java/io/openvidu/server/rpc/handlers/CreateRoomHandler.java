@@ -14,6 +14,7 @@ import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.service.CorpInfoService;
 import io.openvidu.server.utils.RandomRoomIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -58,6 +59,10 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     private FixedRoomMapper fixedRoomMapper;
     @Autowired
     private FixedRoomManagerMapper fixedRoomManagerMapper;
+
+    @Autowired
+    CorpInfoService corpInfoService;
+
 
     private static final ReentrantLock GLOBAL_LOCK = new ReentrantLock();
 
@@ -197,10 +202,13 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 String allowPartOperMic = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM);
                 String allowPartOperShare = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM);
                 String quietStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM);
-
+                Corporation corporation = corpInfoService.selectByCorpProject(rpcConnection.getProject());
                 SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                         roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
-
+                if (Objects.nonNull(corporation.getMcuThreshold())&& Objects.nonNull(corporation.getSfuPublisherThreshold())) {
+                    preset.setMcuThreshold(corporation.getMcuThreshold());
+                    preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
+                }
                 if (roomIdType == RoomIdTypeEnums.fixed) {
                     FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
                     preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
@@ -208,7 +216,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                     preset.setRoomCapacity(fixedRoom.getRoomCapacity());
                 }
 
-                Session session =  sessionManager.createSession(sessionId, conference);
+                Session session = sessionManager.createSession(sessionId, conference);
                 session.setPresetInfo(preset);
                 if (appt != null) {
                     session.setEndTime(appt.getEndTime().getTime());
@@ -259,7 +267,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     }
 
     private ErrorCodeEnum generalVerification(RpcConnection rpcConnection) {
-        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        Corporation corporation = corpInfoService.selectByCorpProject(rpcConnection.getProject());
 
         if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
             return ErrorCodeEnum.SERVICE_NOT_ACTIVATION_OR_EXPIRED;

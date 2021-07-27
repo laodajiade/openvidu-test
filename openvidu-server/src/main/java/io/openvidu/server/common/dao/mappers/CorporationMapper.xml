@@ -14,10 +14,12 @@
     <result column="recording_activation_date" jdbcType="DATE" property="recordingActivationDate" />
     <result column="recording_expire_date" jdbcType="DATE" property="recordingExpireDate" />
     <result column="remainder_duration" jdbcType="INTEGER" property="remainderDuration" />
+    <result column="mcu_threshold" jdbcType="INTEGER" property="mcuThreshold" />
+    <result column="sfu_publisher_threshold" jdbcType="INTEGER" property="sfuPublisherThreshold" />
   </resultMap>
   <sql id="Base_Column_List">
     id, corp_name, project, create_time, update_time, capacity, recording_capacity, activation_date, expire_date, remainder_duration,
-    recording_activation_date, recording_expire_date
+    recording_activation_date, recording_expire_date,mcu_threshold,sfu_publisher_threshold
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select

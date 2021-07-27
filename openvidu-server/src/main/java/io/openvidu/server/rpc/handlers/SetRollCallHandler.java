@@ -2,11 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoSession;
@@ -16,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -50,11 +45,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             return;
         }
 
-//        if (targetPart.getTerminalType() == TerminalTypeEnum.S) {
-//            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-//                    null, ErrorCodeEnum.SIP_CANNOT_BE_A_SPEAKER);
-//            return;
-//        }
+
 
         // check if target participant is SUBSCRIBER
 /*        if (OpenViduRole.SUBSCRIBER.equals(targetPart.getRole())
