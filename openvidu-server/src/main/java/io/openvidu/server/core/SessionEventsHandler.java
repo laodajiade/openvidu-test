@@ -93,6 +93,8 @@ public class SessionEventsHandler {
 		CDR.recordSessionDestroyed(sessionId, reason);
 	}
 
+
+
 	public void onParticipantJoined(Conference conference, Participant participant, String sessionId, Set<Participant> existingParticipants,
 									Integer transactionId, OpenViduException error) {
 		if (error != null) {

@@ -66,7 +66,7 @@ public class SendSubtitleHandler extends RpcAbstractHandler {
             notifyParam.addProperty("status", status);
 
             JsonObject recognitionSubtitleObj = recogSubtitleObj;
-            session.getMajorPartEachConnect().forEach(participant -> {
+            session.getParticipants().forEach(participant -> {
                 if (participant.getSubtitleConfig().needToDisPatchSubtitle()) {
                     JsonArray eachSubtitleArr = new JsonArray(8);
                     eachSubtitleArr.add(recognitionSubtitleObj);

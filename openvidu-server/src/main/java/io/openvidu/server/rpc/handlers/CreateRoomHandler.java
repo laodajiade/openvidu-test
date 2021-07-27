@@ -280,7 +280,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             AtomicInteger limitCapacity = new AtomicInteger();
             sessions.forEach(e -> {
                 if (rpcConnection.getProject().equals(e.getConference().getProject())) {
-                    limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                    limitCapacity.addAndGet(e.getPartSize());
                 }
             });
             //query sd_corporation info
