@@ -3,30 +3,29 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
-import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.common.pojo.Corporation;
+import io.openvidu.server.common.pojo.Device;
+import io.openvidu.server.common.pojo.DeviceSearch;
+import io.openvidu.server.common.pojo.UserLoginHistory;
 import io.openvidu.server.core.AppVersion;
-import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
-import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.*;
+import io.openvidu.server.utils.DateUtil;
+import io.openvidu.server.utils.StringUtil;
+import io.openvidu.server.utils.ValidPeriodHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author geedow

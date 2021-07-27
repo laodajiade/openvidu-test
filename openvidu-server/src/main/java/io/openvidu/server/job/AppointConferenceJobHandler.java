@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -261,6 +260,11 @@ public class AppointConferenceJobHandler {
 
                 SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
+
+                if (Objects.nonNull(corporation.getMcuThreshold())&& Objects.nonNull(corporation.getSfuPublisherThreshold())) {
+                    preset.setMcuThreshold(corporation.getMcuThreshold());
+                    preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
+                }
                 //sessionManager.setPresetInfo(appointConference.getRoomId(), preset);
                 if (RoomIdTypeEnums.calculationRoomType(appointConference.getRoomId()) == RoomIdTypeEnums.fixed) {
                     FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());

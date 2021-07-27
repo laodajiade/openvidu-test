@@ -22,7 +22,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.CloseReason;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
 import io.openvidu.server.core.RespResult;
@@ -111,9 +110,9 @@ public class HandlerController {
             rpcExHandler.handleRequest(rpcConnection, request);
             rtcUserClient.updateRpcConnection(rpcConnection);
 
-            if (rpcConnection.getLoginTime() == null || rpcConnection.getLoginTime() == 0) {
+/*            if (rpcConnection.getLoginTime() == null || rpcConnection.getLoginTime() == 0) {
                 return RespResult.fail(ErrorCodeEnum.FAIL);
-            }
+            }*/
             return RespResult.ok(rpcConnection);
         } catch (Exception e) {
             log.error(e.toString(), e);
