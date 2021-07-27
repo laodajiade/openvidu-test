@@ -643,6 +643,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 			// change the link order and unify the capability(send recv) of both two points
 			internalSinkConnect(sipCompositeHubPort, current);
 		}
+		//todo 2.0 MCU 这里不确定要不要
 		if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
 			internalSinkConnect(current, majorShareHubPort, MediaType.VIDEO);
 			if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {
@@ -759,6 +760,14 @@ public class PublisherEndpoint extends MediaEndpoint {
 //	public HubPort getMajorHubPort() {
 //		return majorHubPort;
 //	}
+
+	public HubPort createMajorShareHubPort(Composite composite){
+		majorShareHubPort = new HubPort.Builder(composite).build();
+		log.info("Pub EP create majorShareHubPort.");
+		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+
+		return majorShareHubPort;
+	}
 
 	public HubPort getMajorShareHubPort() {
 		return majorShareHubPort;

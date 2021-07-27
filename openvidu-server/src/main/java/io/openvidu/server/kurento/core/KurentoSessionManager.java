@@ -573,7 +573,7 @@ public class KurentoSessionManager extends SessionManager {
                     streamType, publishStreamId, resultObj);
             if (sdpAnswer == null) {
                 throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
-                        "Unable to generate SDP answer when subscribing '" + participant.getParticipantPublicId()
+                        "Unable to generate SDP answer when subscribing '" + participant.getUuid()
                                 + "' to '" + publishStreamId + "'");
             }
         } catch (OpenViduException e) {

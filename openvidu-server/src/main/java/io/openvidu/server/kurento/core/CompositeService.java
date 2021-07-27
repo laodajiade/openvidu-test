@@ -103,7 +103,9 @@ public class CompositeService {
     }
 
     private void createHubPortOut() {
-        hubPortOut = new HubPort.Builder(getComposite()).build();
+        hubPortOut = new HubPort.Builder(composite).build();
+        this.hubPortOut.setMinOutputBitrate(2000000);
+        this.hubPortOut.setMaxOutputBitrate(2000000);
         hubPortOutSubscription = registerElemErrListener(hubPortOut);
         log.info("Sub EP create hubPortOut.");
     }
@@ -358,8 +360,8 @@ public class CompositeService {
     private int getCompositeElements(PublisherEndpoint publisher, int mcuNum) {
         HubPort hubPort;
         if (publisher != null) {
-            if (Objects.isNull(hubPort = publisher.getSipCompositeHubPort())) {
-                hubPort = publisher.createSipCompositeHubPort(this.composite);
+            if (Objects.isNull(hubPort = publisher.getMajorShareHubPort())) {
+                hubPort = publisher.createMajorShareHubPort(this.composite);
             }
             publisher.getEndpoint().connect(hubPort);
         }
@@ -386,7 +388,9 @@ public class CompositeService {
                 PublisherEndpoint publisherEndpoint = compositeObject.endpoint;
                 if (publisherEndpoint != null) {
                     elementsLayout.addProperty("streamId", publisherEndpoint.getStreamId());
-                    elementsLayout.addProperty("object", publisherEndpoint.getSipCompositeHubPort().getId());
+                    elementsLayout.addProperty("object", publisherEndpoint.getMajorShareHubPort().getId());
+                } else {
+                    return;
                 }
                 elementsLayout.addProperty("onlineStatus", "online");
                 elementsLayout.addProperty("onlineStatus", "online");

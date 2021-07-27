@@ -1,6 +1,7 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
+import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.StreamType;
@@ -48,11 +49,17 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
         StreamType streamType = StreamType.MAJOR;
 
         Participant senderPart;
-        if (participant.getUuid().equals("80103600005")){
-            log.info("调试");
+        if (session.getConferenceMode()== ConferenceModeEnum.MCU && participant.getUuid().equals("81100212770")){
+            log.info("调试 81100212770");
             publishId = session.getCompositeService().getMixStreamId();
             streamMode = StreamModeEnum.MIX_MAJOR;
         }
+        if (session.getConferenceMode()== ConferenceModeEnum.MCU && participant.getUuid().equals("81103600038")){
+            log.info("调试 81103600038");
+            publishId = session.getCompositeService().getMixStreamId();
+            streamMode = StreamModeEnum.MIX_MAJOR;
+        }
+
         if (streamMode == StreamModeEnum.MIX_MAJOR) {
             if (!Objects.equals(session.getCompositeService().getMixStreamId(), publishId)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

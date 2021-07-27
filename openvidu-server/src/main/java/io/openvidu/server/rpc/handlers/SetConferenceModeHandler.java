@@ -36,6 +36,7 @@ public class SetConferenceModeHandler extends ExRpcAbstractHandler<JsonObject> {
         Session session = sessionManager.getSession(roomId);
 
         session.getCompositeService().createComposite(((KurentoSession) session).getPipeline());
+        session.getCompositeService().asyncUpdateComposite();
         return RespResult.ok();
     }
 }
