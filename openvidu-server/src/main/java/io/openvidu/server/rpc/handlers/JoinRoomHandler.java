@@ -269,7 +269,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // verify room capacity limit.
                 if (!Objects.isNull(session) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
-                    Set<Participant> majorParts = session.getMajorPartEachConnect();
+                    Set<Participant> majorParts = session.getParticipants();
                     if (StreamType.MAJOR.equals(streamType) && majorParts.size() > preset.getRoomCapacity() - 1) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
                         errCode = ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED;
@@ -285,7 +285,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         AtomicInteger limitCapacity = new AtomicInteger();
                         sessions.forEach(e -> {
                             if (project.equals(e.getConference().getProject())) {
-                                limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                                limitCapacity.addAndGet(e.getPartSize());
                             }
                         });
                         //query sd_corporation info

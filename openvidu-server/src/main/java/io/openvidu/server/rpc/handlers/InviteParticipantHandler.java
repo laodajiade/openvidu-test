@@ -57,7 +57,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
         SessionPreset preset = sessionManager.getPresetInfo(sessionId);
         if (!Objects.isNull(sessionManager.getSession(sessionId))) {
-            Set<Participant> majorParts = sessionManager.getSession(sessionId).getMajorPartEachConnect();
+            Set<Participant> majorParts = sessionManager.getSession(sessionId).getParticipants();
             if ((majorParts.size() + targetIds.size()) > preset.getRoomCapacity()) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED);
@@ -71,7 +71,7 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             AtomicInteger limitCapacity = new AtomicInteger();
             sessions.forEach(e -> {
                 if (rpcConnection.getProject().equals(e.getConference().getProject())) {
-                    limitCapacity.addAndGet(e.getMajorPartEachConnect().size());
+                    limitCapacity.addAndGet(e.getPartSize());
                 }
             });
             //query sd_corporation info

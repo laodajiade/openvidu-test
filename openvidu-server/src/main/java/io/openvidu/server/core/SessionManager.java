@@ -102,9 +102,9 @@ public abstract class SessionManager {
 
     protected ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
     protected ConcurrentMap<String, Session> sessionsNotActive = new ConcurrentHashMap<>();
-    @Deprecated // todo 2.0废弃
-    protected ConcurrentMap<String, ConcurrentHashMap<String, Participant>> sessionidParticipantpublicidParticipant = new ConcurrentHashMap<>();
-    //@Deprecated // todo 2.0废弃
+    //@Deprecated // delete 2.0废弃
+    //protected ConcurrentMap<String, ConcurrentHashMap<String, Participant>> sessionidParticipantpublicidParticipant = new ConcurrentHashMap<>();
+    //@Deprecated // delete 2.0废弃
     //protected ConcurrentMap<String, ConcurrentHashMap<String, FinalUser>> sessionidFinalUsers = new ConcurrentHashMap<>();
     @Deprecated // todo 2.0废弃
     protected ConcurrentMap<String, ConcurrentLinkedQueue<CDREventRecording>> sessionidAccumulatedRecordings = new ConcurrentHashMap<>();
@@ -507,15 +507,10 @@ public abstract class SessionManager {
     }
 
     public boolean isModeratorInSession(String sessionId, Participant participant) {
-        if (!this.isInsecureParticipant(participant.getParticipantPrivateId())) {
-            if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-                return OpenViduRole.MODERATOR_ROLES.contains(participant.getRole());
-            } else {
-                return false;
-            }
-        } else {
-            return true;
+        if (participant.getSessionId().equals(sessionId)) {
+            return OpenViduRole.MODERATOR_ROLES.contains(participant.getRole());
         }
+        return false;
     }
 
     public boolean isInsecureParticipant(String participantPrivateId) {
@@ -565,16 +560,9 @@ public abstract class SessionManager {
     //	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
     public Participant newRecorderParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata,
                                               String role, String streamType) {
-        if (this.sessionidParticipantpublicidParticipant.get(sessionId) != null) {
-
-            Participant p = new Participant(userId, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
-                    sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null, null);
-            this.sessionidParticipantpublicidParticipant.get(sessionId)
-                    .put(ProtocolElements.RECORDER_PARTICIPANT_PUBLICID, p);
-            return p;
-        } else {
-            throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, sessionId);
-        }
+        Participant p = new Participant(userId, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
+                sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null, null);
+        return p;
     }
 
     public Token consumeToken(String sessionId, String participantPrivateId, String token) {
@@ -745,9 +733,9 @@ public abstract class SessionManager {
         cleanCacheCollections(sessionId);
         sessions.remove(sessionId);
         sessionsNotActive.remove(sessionId);
-        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        sessionidParticipantpublicidParticipant.remove(sessionId);
-        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
+        // log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
+        // sessionidParticipantpublicidParticipant.remove(sessionId);
+        // log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
         //sessionidFinalUsers.remove(sessionId);
         sessionidAccumulatedRecordings.remove(sessionId);
         sessionidTokenTokenobj.remove(sessionId);

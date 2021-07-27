@@ -437,10 +437,11 @@ public class Session implements SessionInterface {
 		return participants;
 	}
 
-    @Deprecated // use getParticipants()
-	public Set<Participant> getMajorPartEachConnect() {
-		return getParticipants();
-	}
+    //delete 2.0
+//    @Deprecated // use getParticipants()
+//	public Set<Participant> getMajorPartEachConnect() {
+//		return getParticipants();
+//	}
 
 	public Set<Participant> getMajorSipPart() {
 		checkClosed();
