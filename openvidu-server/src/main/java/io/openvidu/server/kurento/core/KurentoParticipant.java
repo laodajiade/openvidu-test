@@ -387,7 +387,6 @@ public class KurentoParticipant extends Participant {
 
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(subscriberStreamId);
 		if (subscriber.getEndpoint() == null && !Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-			//todo 2.0 级联需要修改
 			subscriber = getNewOrExistingSubscriber(subscriberStreamId);
 			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
 				DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
@@ -798,7 +797,7 @@ public class KurentoParticipant extends Participant {
 			});
 		}
 	}
-// todo 2.0 @Deprecated
+// delete 2.0 @Deprecated
 //	/**
 //	 * pause or resume stream
 //	 * @param targetPart Participant
