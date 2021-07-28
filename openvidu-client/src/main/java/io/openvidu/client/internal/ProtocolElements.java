@@ -18,7 +18,6 @@ package io.openvidu.client.internal;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -306,6 +305,7 @@ public class ProtocolElements {
     public static final String REPLACE_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
     public static final String REPLACE_ROLL_CALL_END_TARGET_ID_PARAM = "endTargetId";
     public static final String REPLACE_ROLL_CALL_START_TARGET_ID_PARAM = "startTargetId";
+    public static final String REPLACE_ROLL_CALL_ORIGINATOR_PARAM = "originator";
 
     public static final String CHANGE_PART_ROLE_METHOD = "changePartRole";
     public static final String CHANGE_PART_ROLE_CHANGED_TO_ON_THE_WALL_PARAM = "toOnTheWall";

@@ -50,7 +50,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         if (part != null) {
             //when the part on wall,change role to SUBSCRIBER
 
-                //下墙处理音频及共享
+                //下墙处理音频及共享通知
                 sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
 
 
