@@ -31,6 +31,7 @@
     select id, parent_id, dept_name
     from sd_department
     where corp_id = #{corpId,jdbcType=BIGINT}
+    rder by sort_number asc
   </select>
 
   <select id="selectRootDept" parameterType="java.lang.String" resultMap="BaseResultMap">

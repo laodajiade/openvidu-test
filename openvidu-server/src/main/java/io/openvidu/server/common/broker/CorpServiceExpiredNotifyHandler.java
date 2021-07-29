@@ -46,6 +46,8 @@ public class CorpServiceExpiredNotifyHandler {
     @Autowired
     protected RpcNotificationService notificationService;
 
+    private static final Object lock = new Object();
+
     @Async
     public void notify(String message) {
         log.info("corp in modified to notify corpId:" + message);
@@ -73,18 +75,24 @@ public class CorpServiceExpiredNotifyHandler {
                 );
 
         if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
-            closeRoomByConcurrent(corporation.getProject());
+            closeRoomByConcurrent(corporation.getProject(), EndReason.serviceExpired);
+        }
+
+        if (remainderDuration <= 0) {
+            closeRoomByConcurrent(corporation.getProject(), EndReason.callDurationUsedUp);
         }
     }
 
-    public void closeRoomByConcurrent(String project) {
-        Collection<Session> sessions = sessionManager.getSessions();
+    public void closeRoomByConcurrent(String project, EndReason reason) {
+        synchronized (lock) {
+            Collection<Session> sessions = sessionManager.getSessions();
 
-        for (Session session : sessions) {
-            // close room and notify
-            if (Objects.equals(project, session.getConference().getProject())) {
-                if (!RoomIdTypeEnums.isFixed(session.getSessionId())) {
-                    closeRoomAndNotify(session, EndReason.serviceExpired);
+            for (Session session : sessions) {
+                // close room and notify
+                if (Objects.equals(project, session.getConference().getProject())) {
+                    if (!RoomIdTypeEnums.isFixed(session.getSessionId())) {
+                        closeRoomAndNotify(session, reason);
+                    }
                 }
             }
         }

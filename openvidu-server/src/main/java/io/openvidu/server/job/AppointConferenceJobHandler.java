@@ -335,7 +335,7 @@ public class AppointConferenceJobHandler {
             }
         } else {
             FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
-            if (fixedRoom != null) {
+            if (fixedRoom != null && appointConference.getDelayStartTime() == null) {
                 log.info("fixed appt begin but room always used, send toBegin notify {}", ruid);
                 nextConferenceToBeginNotify(ruid, 2);
             }

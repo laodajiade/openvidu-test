@@ -127,9 +127,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     Conference cfc = conference.get(0);
                     if (cfc.getRoomIdType().equals("fixed") && StringUtils.startsWithIgnoreCase(ruid, "appt-")
                             && !Objects.equals(ruid, cfc.getRuid())) {
-                        //errCode = ErrorCodeEnum.ROOM_IS_IN_USE;
-                        errCode = ErrorCodeEnum.PRE_CONFERENCE_NOT_FINISHED;
-                        break;
+                        AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
+                        if (appointConference != null && appointConference.getStatus() == 0 && appointConference.getStartTime().after(new Date())) {
+                            errCode = ErrorCodeEnum.APPOINTMENT_CONFERENCE_DID_NOT_START;
+                        } else {
+                            errCode = ErrorCodeEnum.PRE_CONFERENCE_NOT_FINISHED;
+                        }
                     }
                     ruid = cfc.getRuid();
                 }

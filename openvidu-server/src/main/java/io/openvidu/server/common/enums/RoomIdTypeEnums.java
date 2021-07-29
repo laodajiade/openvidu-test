@@ -40,10 +40,7 @@ public enum RoomIdTypeEnums {
     }
 
     public static boolean isShortId(String roomId) {
-        if (StringUtils.isBlank(roomId)) {
-            return false;
-        }
-        return roomId.length() == 4;
+        return StringUtils.length(roomId) == 4;
     }
 
 

@@ -1,6 +1,6 @@
 package io.openvidu.server.common.redis;
 
-import io.openvidu.server.utils.RedisUtils;
+import io.openvidu.server.common.cache.CacheManage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -16,15 +16,14 @@ public class RecordingRedisPublisher {
     private final static String TOPIC_RECORDING_FILE = "recording-file-operation";
 
     @Resource
-    private RedisUtils redisUtils;
+    private CacheManage cacheManage;
 
     public void send(String topic, String strObj) {
         log.info("Send Topic:{}, Message:{}", topic, strObj);
         try {
-            redisUtils.publish(topic, strObj);
-            log.info(topic + "消息发送成功:{}", strObj);
+            cacheManage.publish(topic, strObj);
         } catch (Exception e) {
-            log.info(topic + "消息发送失败:{}异常信息{}", strObj, e.getMessage());
+            log.error(topic + "send Topic error:{}", strObj, e);
         }
     }
 
