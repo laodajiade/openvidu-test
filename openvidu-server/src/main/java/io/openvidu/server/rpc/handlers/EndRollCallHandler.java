@@ -1,12 +1,10 @@
 package io.openvidu.server.rpc.handlers;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoSession;
@@ -51,18 +49,11 @@ public class EndRollCallHandler extends RpcAbstractHandler {
 
         if (part != null) {
             //when the part on wall,change role to SUBSCRIBER
-            if (part.getOrder() > conferenceSession.getPresetInfo().getSfuPublisherThreshold() - 1 && !OpenViduRole.ONLY_SHARE.equals(part.getRole())) {
-                part.changePartRole(OpenViduRole.SUBSCRIBER);
-                Session session = sessionManager.getSession(sessionId);
-                JsonArray changeRoleNotifiParam = session.getPartRoleChangedNotifyParamArr(part,
-                        OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
-                //下墙处理音频及共享
+
+                //下墙处理音频及共享通知
                 sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
-                participants.forEach(participant -> {
-                    this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                            ProtocolElements.NOTIFY_PART_ROLE_CHANGED_METHOD, changeRoleNotifiParam);
-                });
-            }
+
+
         }
 
         if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
@@ -89,7 +80,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
                         conferenceSession.getLayoutNotifyInfo());
             }
         });*/
-        sessionManager.endSpeaker(conferenceSession, targetPart, originator);
+//        sessionManager.endSpeaker(conferenceSession, targetPart, originator);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
         // update recording

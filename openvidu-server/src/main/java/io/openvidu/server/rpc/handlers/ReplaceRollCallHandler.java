@@ -3,16 +3,12 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 /**
  * 2021年4月28日 和SDK沟通过，暂时没有在使用这个接口
@@ -41,7 +37,7 @@ public class ReplaceRollCallHandler extends RpcAbstractHandler {
         }
 
 
-        Set<Participant> participants = sessionManager.getParticipants(sessionId);
+/*        Set<Participant> participants = sessionManager.getParticipants(sessionId);
         participants.forEach(participant -> {
             if (endTargetId.equals(participant.getUuid())) {
                 participant.changeHandStatus(ParticipantHandStatus.down);
@@ -53,7 +49,7 @@ public class ReplaceRollCallHandler extends RpcAbstractHandler {
             }
             this.notificationService.sendNotification(participant.getParticipantPrivateId(),
                     ProtocolElements.REPLACE_ROLL_CALL_METHOD, request.getParams());
-        });
+        });*/
         sessionManager.replaceSpeaker(session, endPart, startPart, originator);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
 
