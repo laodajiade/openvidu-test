@@ -330,8 +330,9 @@ public class CompositeService {
         log.info("normal MCU composite number:{} and composite hub port ids:{}", mcuNum, source.toString());
         if (mcuNum > 0) {
             try {
+                layoutMode = LayoutModeEnum.getLayoutMode(mcuNum);
                 session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
-                        session.getSessionId(), source, LayoutModeEnum.getLayoutMode(mcuNum)));
+                        session.getSessionId(), source, layoutMode));
                 SafeSleep.sleepMilliSeconds(300);
             } catch (Exception e) {
                 log.error("Send Sip Composite Layout Exception:\n", e);
@@ -392,8 +393,6 @@ public class CompositeService {
                 } else {
                     return;
                 }
-                elementsLayout.addProperty("onlineStatus", "online");
-                elementsLayout.addProperty("onlineStatus", "online");
                 elementsLayout.addProperty("order", compositeObject.order);
                 elementsLayout.addProperty("uuid", compositeObject.uuid);
                 elementsLayout.addProperty("username", compositeObject.username);

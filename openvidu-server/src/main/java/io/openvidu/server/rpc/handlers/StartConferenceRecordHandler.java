@@ -32,9 +32,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     @Value("${min.interval.stop}")
     private Long minIntervalStop;
 
-    @Resource
-    private FixedRoomMapper fixedRoomMapper;
-
     @Value("${record.service:true}")
     private boolean recordService = true;
 
@@ -47,6 +44,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         String roomId = getStringParam(request, ProtocolElements.START_CONF_RECORD_ROOMID_PARAM);
         boolean forceRec = getBooleanOptionalParam(request, "force");
 
+        //todo 2.0 分布式支持
         if (ArtisanEnum.RECORDING_NUM.getValue().equals(recordingNum.get())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.OTHER_RECORDING_LATER_RETRY);
@@ -206,15 +204,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         // 通知与会者开始录制
         notifyStartRecording(rpcConnection.getSessionId());
 
-        // todo 2.0 录制，在第三阶段做，现在先给mock data
-        if (true) {
-            ConferenceRecord conferenceRecord = conferenceRecordManage.getByCondition(condition).get(0);
-            conferenceRecord.setStatus(ConferenceRecordStatusEnum.PROCESS.getStatus());
-            conferenceRecordManage.updateByPrimaryKey(conferenceRecord);
-            return;
-        }
-        // todo 2.0 录制，在第三阶段做，现在先给mock data
-
         asyncCheckRecordStatus(roomId, session, participant);
     }
 
@@ -247,8 +236,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         Session session = sessionManager.getSession(sessionId);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("startRecordingTime", session.getStartRecordingTime());
-        session.getParticipants().forEach(participant ->
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.START_CONF_RECORD_METHOD, jsonObject));
+        this.notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.START_CONF_RECORD_METHOD, jsonObject);
     }
 
     private ConferenceRecord constructConferenceRecord(RpcConnection rpcConnection, Session session) {

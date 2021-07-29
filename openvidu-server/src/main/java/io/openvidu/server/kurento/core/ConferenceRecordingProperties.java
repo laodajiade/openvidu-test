@@ -1,6 +1,7 @@
 package io.openvidu.server.kurento.core;
 
 import com.google.gson.JsonArray;
+import io.openvidu.server.common.enums.LayoutModeTypeEnum;
 import io.openvidu.server.common.enums.RecordOutputMode;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,9 +20,11 @@ public class ConferenceRecordingProperties {
     private String roomId;
     private String ruid;
     private Long startTime;
+    private Long updateTime;
     private String rootPath;
     private RecordOutputMode outputMode;
     private MediaProfileSpecType mediaProfileSpecType;
     private Integer layoutMode;
+    private LayoutModeTypeEnum layoutModeTypeEnum;
     private JsonArray mediaSources;
 }

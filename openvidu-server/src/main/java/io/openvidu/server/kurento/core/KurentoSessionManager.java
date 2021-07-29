@@ -1440,15 +1440,23 @@ public class KurentoSessionManager extends SessionManager {
                 .roomId(kurentoSession.getSessionId())
                 .ruid(kurentoSession.getRuid())
                 .startTime(kurentoSession.getStartRecordingTime())
+                .updateTime(System.currentTimeMillis())
                 .rootPath(openviduConfig.getRecordingPath())
                 .outputMode(RecordOutputMode.COMPOSED)
                 .mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
+//
+//        // construct needed media source according to participants that joined the room
+//        if (constructMediaSources(recordingProperties, kurentoSession, null)) {
+//            // pub start recording task
+//            recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
+//        }
 
-        // construct needed media source according to participants that joined the room
-        if (constructMediaSources(recordingProperties, kurentoSession, null)) {
+        RecorderService recorderService = new RecorderService(session);
+        if (recorderService.constructMediaSources(recordingProperties)) {
             // pub start recording task
             recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
         }
+
     }
 
     @Override
@@ -1516,14 +1524,6 @@ public class KurentoSessionManager extends SessionManager {
                 boolean haveMajorStream = false;
                 if (Objects.nonNull(speakerPart)) {
                     haveMajorStream = true;
-
-//                    if (Objects.nonNull(curParticipant) &&
-//                            (curParticipant.getUuid().equals(speakerPart.getUuid()) &&
-//                             curParticipant.getStreamType() != speakerPart.getStreamType())) {
-//                        log.warn("cur participant uuid:{} streamType:{} we need major streamType(Maybe major stream is not publish now)",
-//                                curParticipant.getUuid(), curParticipant.getStreamType());
-//                        return false;
-//                    }
 
                     passThruList.add(constructPartRecordInfo(speakerPart, order));
                     order++;

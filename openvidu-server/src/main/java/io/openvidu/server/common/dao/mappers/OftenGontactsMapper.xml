@@ -39,7 +39,7 @@
 
     <!-- 删除常用联系人 -->
     <delete id="delOftenContacts" parameterType="java.lang.String">
-        delete from sd_often_contacts where contacts_uuid = #{uuid}
+        delete from sd_often_contacts where contacts_uuid = #{uuid} and user_id = #{userId}
     </delete>
 
     <!-- 查看是否是常用联系人 -->

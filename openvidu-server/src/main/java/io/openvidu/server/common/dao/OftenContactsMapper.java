@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Administrator
@@ -19,7 +18,7 @@ public interface OftenContactsMapper {
      * @param map
      * @return
      */
-    List<OftenContactsVo> getOftenContactsList(Map<String,Object> map);
+    List<OftenContactsVo> getOftenContactsList(Map<String, Object> map);
 
     /**
      * 添加常用联系人
@@ -32,17 +31,15 @@ public interface OftenContactsMapper {
 
     /**
      * 删除常用联系人
-     *
-     * @param uuid
-     * @return
      */
-    int delOftenContacts(String uuid);
+    int delOftenContacts(@Param("uuid") String uuid, @Param("userId") long userId);
 
 
     /**
      * 查看是否是常用联系人
+     *
      * @param map
      * @return
      */
-    boolean  isOftenContacts(Map<String,Object> map);
+    boolean isOftenContacts(Map<String, Object> map);
 }

@@ -75,7 +75,7 @@ public class SetFrequentContactsHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.REPEAT_DEL_CONTACTS);
                 return;
             }
-            oftenContactsMapper.delOftenContacts(uuid);
+            oftenContactsMapper.delOftenContacts(uuid, rpcConnection.getUserId());
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         }
     }
