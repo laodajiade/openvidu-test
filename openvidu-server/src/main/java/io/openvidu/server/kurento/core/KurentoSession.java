@@ -26,6 +26,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.LayoutModeEnum;
 import io.openvidu.server.common.layout.LayoutInitHandler;
+import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -69,6 +70,8 @@ public class KurentoSession extends Session {
 	private final ConcurrentHashMap<String, String> filterStates = new ConcurrentHashMap<>();
 
 	private CompositeService compositeService;
+
+	private RecorderService recorderService;
 
 	private Composite sipComposite;
 
@@ -614,5 +617,12 @@ public class KurentoSession extends Session {
 	@Override
 	public CompositeService getCompositeService(){
 		return this.compositeService;
+	}
+
+	public RecorderService getRecorderService(RecordingRedisPublisher recordingRedisPublisher) {
+		if (recorderService == null) {
+			this.recorderService = new RecorderService(this, recordingRedisPublisher);
+		}
+		return recorderService;
 	}
 }

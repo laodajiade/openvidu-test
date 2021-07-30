@@ -3,15 +3,15 @@ package io.openvidu.server.kurento.core;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.LayoutModeTypeEnum;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.kurento.client.MediaProfileSpecType;
 import org.kurento.client.PassThrough;
 
 import java.util.*;
@@ -38,21 +38,57 @@ public class RecorderService {
 
     private List<CompositeObjectWrapper> sourcesPublisher = new ArrayList<>();
 
+    private RecordingRedisPublisher recordingRedisPublisher;
+
     private JsonArray passThruList = new JsonArray();
 
-    private ConferenceRecordingProperties recordingProperties;
-
-    public RecorderService(Session session) {
+    public RecorderService(Session session, RecordingRedisPublisher recordingRedisPublisher) {
         this.session = (KurentoSession) session;
+        this.recordingRedisPublisher = recordingRedisPublisher;
     }
 
-    public boolean constructMediaSources(ConferenceRecordingProperties recordingProperties) {
+    public void startRecording() {
+        ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
+                .project(session.getConference().getProject())
+                .roomId(session.getSessionId())
+                .ruid(session.getRuid())
+                .startTime(session.getStartRecordingTime())
+                .updateTime(System.currentTimeMillis())
+                .rootPath(openviduConfig.getRecordingPath())
+                .outputMode(RecordOutputMode.COMPOSED)
+                .mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
+        if (this.constructMediaSources(recordingProperties)) {
+            // pub start recording task
+            recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
+        }
+    }
+
+    public void updateRecording() {
+        ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
+                .ruid(session.getRuid())
+                .updateTime(System.currentTimeMillis())
+                .outputMode(RecordOutputMode.COMPOSED).build();
+        if (this.constructMediaSources(recordingProperties)) {
+            // pub start recording task
+            recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateRecording.buildMqMsg(recordingProperties).toString());
+        } else {
+            log.warn("Not found required participant and do not update the recording.");
+        }
+    }
+
+    public void stopRecording() {
+        // pub stop recording task
+        recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
+                .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
+    }
+
+
+    private boolean constructMediaSources(ConferenceRecordingProperties recordingProperties) {
         Set<Participant> participants = session.getParticipants();
         if (participants.isEmpty()) {
             log.warn("participants is empty");
             return false;
         }
-        this.recordingProperties = recordingProperties;
 
         try {
             if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {

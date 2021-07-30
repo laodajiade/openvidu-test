@@ -1266,8 +1266,6 @@ public abstract class SessionManager {
 
     public abstract void updateRecording(String sessionId);
 
-    public abstract void updateRecording(String sessionId, Participant curParticipant);
-
     public abstract void handleRecordErrorEvent(Object msg);
 
     /**

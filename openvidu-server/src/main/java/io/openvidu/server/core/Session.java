@@ -30,11 +30,9 @@ import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.CorpMcuConfig;
+import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.config.OpenviduConfig;
-import io.openvidu.server.kurento.core.CompositeService;
-import io.openvidu.server.kurento.core.DeliveryKmsManager;
-import io.openvidu.server.kurento.core.KurentoParticipant;
-import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.kurento.core.*;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -1593,6 +1591,10 @@ public class Session implements SessionInterface {
 	public CompositeService getCompositeService(){
 		return null;
 	}
+
+    public RecorderService getRecorderService( RecordingRedisPublisher recordingRedisPublisher){
+	    return null;
+    }
 	/**
 	 * 检查舒服是分享者
 	 */

@@ -45,7 +45,10 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.JsonUtils;
-import org.kurento.client.*;
+import org.kurento.client.GenericMediaElement;
+import org.kurento.client.IceCandidate;
+import org.kurento.client.ListenerSubscription;
+import org.kurento.client.PassThrough;
 import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
@@ -57,7 +60,6 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class KurentoSessionManager extends SessionManager {
 
@@ -823,7 +825,7 @@ public class KurentoSessionManager extends SessionManager {
         if (Objects.nonNull(session = getSession(sessionId))) {
             Participant participant = session.getParticipantByPrivateId(privateId);
             if (participant != null) {
-                evictParticipant(participant,evictStrategies,EndReason.sessionClosedByServer);
+                evictParticipant(participant, evictStrategies, EndReason.sessionClosedByServer);
             }
         }
     }
@@ -1433,30 +1435,7 @@ public class KurentoSessionManager extends SessionManager {
         session.setIsRecording(true);
 
         log.info("Start recording and sessionId is {}", sessionId);
-        // set needed recording properties
-        KurentoSession kurentoSession = (KurentoSession) session;
-        ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
-                .project(kurentoSession.getConference().getProject())
-                .roomId(kurentoSession.getSessionId())
-                .ruid(kurentoSession.getRuid())
-                .startTime(kurentoSession.getStartRecordingTime())
-                .updateTime(System.currentTimeMillis())
-                .rootPath(openviduConfig.getRecordingPath())
-                .outputMode(RecordOutputMode.COMPOSED)
-                .mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
-//
-//        // construct needed media source according to participants that joined the room
-//        if (constructMediaSources(recordingProperties, kurentoSession, null)) {
-//            // pub start recording task
-//            recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
-//        }
-
-        RecorderService recorderService = new RecorderService(session);
-        if (recorderService.constructMediaSources(recordingProperties)) {
-            // pub start recording task
-            recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
-        }
-
+        session.getRecorderService(recordingRedisPublisher).startRecording();
     }
 
     @Override
@@ -1470,126 +1449,109 @@ public class KurentoSessionManager extends SessionManager {
         log.info("Stop recording and sessionId is {}", sessionId);
         session.setIsRecording(false);
         // pub stop recording task
-        recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
-                .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
+        session.getRecorderService(recordingRedisPublisher).stopRecording();
     }
 
     @Override
     public void updateRecording(String sessionId) {
-        updateRecording(sessionId, null);
-    }
-
-    @Override
-    public void updateRecording(String sessionId, Participant curParticipant) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             log.info("Update recording and sessionId is {}", sessionId);
-            KurentoSession kurentoSession = (KurentoSession) session;
-            ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
-                    .ruid(kurentoSession.getRuid())
-                    .updateTime(System.currentTimeMillis())
-                    .outputMode(RecordOutputMode.COMPOSED).build();
-            RecorderService recorderService = new RecorderService(session);
-            if (recorderService.constructMediaSources(recordingProperties)) {
-                // pub start recording task
-                recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateRecording.buildMqMsg(recordingProperties).toString());
-            } else {
-                log.warn("Not found required participant and do not update the recording.");
-            }
-
-
+            session.getRecorderService(recordingRedisPublisher).updateRecording();
         } else {
             log.info("Update recording but session:{} is closed.", sessionId);
         }
     }
 
-    private boolean constructMediaSources(ConferenceRecordingProperties recordingProperties, KurentoSession kurentoSession, Participant curParticipant) {
-        Participant sharingPart = kurentoSession.getSharingPart().orElse(null), moderatorPart = null, speakerPart = kurentoSession.getSpeakerPart().orElse(null);
-        Set<Participant> participants = kurentoSession.getParticipants();
-        for (Participant participant : participants) {
 
-            if (participant.getRole().isController() && participant.getRole().needToPublish()) {
-                moderatorPart = participant;
-            }
-        }
-
-        JsonObject mediaSourceObj = new JsonObject();
-        mediaSourceObj.addProperty("kmsLocated", kurentoSession.getKms().getIp());
-        mediaSourceObj.addProperty("mediaPipelineId", kurentoSession.getPipeline().getId());
-
-        int order = 1;
-        JsonArray passThruList = new JsonArray();
-        if (Objects.isNull(sharingPart)) {
-            // layout of recording is the same as MCU layout
-            if (ConferenceModeEnum.SFU == kurentoSession.getConferenceMode()) {
-                List<Participant> parts = kurentoSession.getOrderedMajorAndOnWallParts();
-                recordingProperties.setLayoutMode(parts.size());
-                boolean haveMajorStream = false;
-                if (Objects.nonNull(speakerPart)) {
-                    haveMajorStream = true;
-
-                    passThruList.add(constructPartRecordInfo(speakerPart, order));
-                    order++;
-                }
-                List<Participant> notSpeakerParts = parts.stream().filter(participant -> !ParticipantHandStatus.speaker.equals(participant.getHandStatus())).collect(Collectors.toList());
-                for (Participant participant : notSpeakerParts) {
-                    if (haveMajorStream) {
-                        passThruList.add(constructPartRecordInfo(demotionMinorStream(participant, kurentoSession), order));
-                    } else {
-                        haveMajorStream = true;
-                        passThruList.add(constructPartRecordInfo(participant, order));
-                    }
-                    order++;
-                }
-            } else {
-                recordingProperties.setLayoutMode(kurentoSession.getLayoutMode().getMode());
-                JsonArray majorShareMixLinkedArr = kurentoSession.getMajorShareMixLinkedArr();
-
-                for (JsonElement jsonElement : majorShareMixLinkedArr) {
-                    String publicId = jsonElement.getAsJsonObject().get("connectionId").getAsString();
-                    Optional<Participant> part = participants.stream()
-                            .filter(participant -> Objects.equals(publicId, participant.getParticipantPublicId())).findAny();
-                    if (part.isPresent()) {
-                        passThruList.add(constructPartRecordInfo(part.get(), order));
-                        order++;
-                    }
-                }
-            }
-        } else {
-            if (Objects.isNull(moderatorPart)) {
-                log.error("Moderator participant not found.");
-                return false;
-            }
-
-            // specific recording layout
-            passThruList.add(constructPartRecordInfo(sharingPart, 1));
-            if (Objects.isNull(speakerPart)) {
-                passThruList.add(constructPartRecordInfo(demotionMinorStream(moderatorPart, kurentoSession), 2));
-                recordingProperties.setLayoutMode(LayoutModeEnum.TWO.getMode());
-            } else {
-                Participant speakerPartMinorStream = demotionMinorStream(speakerPart, kurentoSession);
-                if (Objects.nonNull(curParticipant) &&
-                        (curParticipant.getUuid().equals(speakerPartMinorStream.getUuid()))) {
-                    log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)");
-                    return false;
-                }
-                passThruList.add(constructPartRecordInfo(speakerPartMinorStream, 2));
-                passThruList.add(constructPartRecordInfo(demotionMinorStream(moderatorPart, kurentoSession), 3));
-                recordingProperties.setLayoutMode(LayoutModeEnum.THREE.getMode());
-            }
-        }
-
-        if (passThruList.size() == 0) {
-            log.error("No passThru elements added.");
-            return false;
-        }
-        mediaSourceObj.add("passThruList", passThruList);
-        JsonArray mediaSources = new JsonArray();
-        mediaSources.add(mediaSourceObj);
-
-        recordingProperties.setMediaSources(mediaSources);
-        return true;
-    }
+    //delete 2.0
+//    private boolean constructMediaSources(ConferenceRecordingProperties recordingProperties, KurentoSession kurentoSession, Participant curParticipant) {
+//        Participant sharingPart = kurentoSession.getSharingPart().orElse(null), moderatorPart = null, speakerPart = kurentoSession.getSpeakerPart().orElse(null);
+//        Set<Participant> participants = kurentoSession.getParticipants();
+//        for (Participant participant : participants) {
+//
+//            if (participant.getRole().isController() && participant.getRole().needToPublish()) {
+//                moderatorPart = participant;
+//            }
+//        }
+//
+//        JsonObject mediaSourceObj = new JsonObject();
+//        mediaSourceObj.addProperty("kmsLocated", kurentoSession.getKms().getIp());
+//        mediaSourceObj.addProperty("mediaPipelineId", kurentoSession.getPipeline().getId());
+//
+//        int order = 1;
+//        JsonArray passThruList = new JsonArray();
+//        if (Objects.isNull(sharingPart)) {
+//            // layout of recording is the same as MCU layout
+//            if (ConferenceModeEnum.SFU == kurentoSession.getConferenceMode()) {
+//                List<Participant> parts = kurentoSession.getOrderedMajorAndOnWallParts();
+//                recordingProperties.setLayoutMode(parts.size());
+//                boolean haveMajorStream = false;
+//                if (Objects.nonNull(speakerPart)) {
+//                    haveMajorStream = true;
+//
+//                    passThruList.add(constructPartRecordInfo(speakerPart, order));
+//                    order++;
+//                }
+//                List<Participant> notSpeakerParts = parts.stream().filter(participant -> !ParticipantHandStatus.speaker.equals(participant.getHandStatus())).collect(Collectors.toList());
+//                for (Participant participant : notSpeakerParts) {
+//                    if (haveMajorStream) {
+//                        passThruList.add(constructPartRecordInfo(demotionMinorStream(participant, kurentoSession), order));
+//                    } else {
+//                        haveMajorStream = true;
+//                        passThruList.add(constructPartRecordInfo(participant, order));
+//                    }
+//                    order++;
+//                }
+//            } else {
+//                recordingProperties.setLayoutMode(kurentoSession.getLayoutMode().getMode());
+//                JsonArray majorShareMixLinkedArr = kurentoSession.getMajorShareMixLinkedArr();
+//
+//                for (JsonElement jsonElement : majorShareMixLinkedArr) {
+//                    String publicId = jsonElement.getAsJsonObject().get("connectionId").getAsString();
+//                    Optional<Participant> part = participants.stream()
+//                            .filter(participant -> Objects.equals(publicId, participant.getParticipantPublicId())).findAny();
+//                    if (part.isPresent()) {
+//                        passThruList.add(constructPartRecordInfo(part.get(), order));
+//                        order++;
+//                    }
+//                }
+//            }
+//        } else {
+//            if (Objects.isNull(moderatorPart)) {
+//                log.error("Moderator participant not found.");
+//                return false;
+//            }
+//
+//            // specific recording layout
+//            passThruList.add(constructPartRecordInfo(sharingPart, 1));
+//            if (Objects.isNull(speakerPart)) {
+//                passThruList.add(constructPartRecordInfo(demotionMinorStream(moderatorPart, kurentoSession), 2));
+//                recordingProperties.setLayoutMode(LayoutModeEnum.TWO.getMode());
+//            } else {
+//                Participant speakerPartMinorStream = demotionMinorStream(speakerPart, kurentoSession);
+//                if (Objects.nonNull(curParticipant) &&
+//                        (curParticipant.getUuid().equals(speakerPartMinorStream.getUuid()))) {
+//                    log.warn("cur participant uuid:{} streamType:{} we need minor streamType(Maybe minor stream is not publish now)");
+//                    return false;
+//                }
+//                passThruList.add(constructPartRecordInfo(speakerPartMinorStream, 2));
+//                passThruList.add(constructPartRecordInfo(demotionMinorStream(moderatorPart, kurentoSession), 3));
+//                recordingProperties.setLayoutMode(LayoutModeEnum.THREE.getMode());
+//            }
+//        }
+//
+//        if (passThruList.size() == 0) {
+//            log.error("No passThru elements added.");
+//            return false;
+//        }
+//        mediaSourceObj.add("passThruList", passThruList);
+//        JsonArray mediaSources = new JsonArray();
+//        mediaSources.add(mediaSourceObj);
+//
+//        recordingProperties.setMediaSources(mediaSources);
+//        return true;
+//    }
 
     /**
      * 降级选择子流
