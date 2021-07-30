@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -49,16 +51,14 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
         StreamType streamType = StreamType.MAJOR;
 
         Participant senderPart;
-        if (session.getConferenceMode()== ConferenceModeEnum.MCU && participant.getUuid().equals("81100212770")){
-            log.info("调试 81100212770");
+        log.info("11111111111111111 {}",session.getConferenceMode());
+        List<String> devParts = Arrays.asList("81103600038-1", "81100212770", "80103600005");
+        if (session.getConferenceMode() == ConferenceModeEnum.MCU && devParts.contains(participant.getUuid())) {
+            log.info("调试 {}", participant.getUuid());
             publishId = session.getCompositeService().getMixStreamId();
             streamMode = StreamModeEnum.MIX_MAJOR;
         }
-        if (session.getConferenceMode()== ConferenceModeEnum.MCU && participant.getUuid().equals("81103600038")){
-            log.info("调试 81103600038");
-            publishId = session.getCompositeService().getMixStreamId();
-            streamMode = StreamModeEnum.MIX_MAJOR;
-        }
+
 
         if (streamMode == StreamModeEnum.MIX_MAJOR) {
             if (!Objects.equals(session.getCompositeService().getMixStreamId(), publishId)) {

@@ -17,25 +17,22 @@
 
 package io.openvidu.server.kurento.core;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import io.openvidu.server.common.enums.StreamType;
-import org.kurento.client.IceCandidate;
-
 import com.google.gson.JsonObject;
-
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.SessionEventsHandler;
+import org.kurento.client.IceCandidate;
+
+import java.util.List;
+import java.util.Set;
 
 public class KurentoSessionEventsHandler extends SessionEventsHandler {
 
 	public KurentoSessionEventsHandler() {
 	}
 
-	public void onIceCandidate(String roomName, String participantPrivateId, String senderUuid, String endpointName,
+	public void onIceCandidate(String roomId, String participantPrivateId, String senderUuid, String endpointName,
 			IceCandidate candidate) {
 		JsonObject params = new JsonObject();
 
@@ -44,6 +41,13 @@ public class KurentoSessionEventsHandler extends SessionEventsHandler {
 		params.addProperty(ProtocolElements.ICECANDIDATE_SDPMLINEINDEX_PARAM, candidate.getSdpMLineIndex());
 		params.addProperty(ProtocolElements.ICECANDIDATE_SDPMID_PARAM, candidate.getSdpMid());
 		params.addProperty(ProtocolElements.ICECANDIDATE_CANDIDATE_PARAM, candidate.getCandidate());
+		params.addProperty(ProtocolElements.ICECANDIDATE_CANDIDATE_PARAM, candidate.getCandidate());
+		if (endpointName.contains("_MIX")) {
+			params.addProperty("streamMode", StreamModeEnum.MIX_MAJOR.name());
+		} else {
+			params.addProperty("streamMode", StreamModeEnum.SFU_SHARING.name());
+		}
+
 		rpcNotificationService.sendNotification(participantPrivateId, ProtocolElements.ICECANDIDATE_METHOD, params);
 	}
 

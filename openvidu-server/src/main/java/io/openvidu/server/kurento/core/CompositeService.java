@@ -61,7 +61,7 @@ public class CompositeService {
 
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
-        this.mixStreamId = session.getSessionId() + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase() + "_" + "MIX";
+        this.mixStreamId = session.getSessionId() + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase() + "_MIX";
         compositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("composite-thread-" + session.getSessionId() + "-%d")
                 .setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
@@ -345,11 +345,17 @@ public class CompositeService {
     private int getCompositeElements(Participant participant, List<CompositeObjectWrapper> source, StreamType streamType, int mcuNum) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         PublisherEndpoint publisher = kurentoParticipant.getPublisher(streamType);
-
-        if (publisher == null && streamType == StreamType.MINOR) {
-            streamType = StreamType.MAJOR;
-            publisher = kurentoParticipant.getPublisher(streamType);
+        log.info("1111111111111111111111111111 {},{}", kurentoParticipant.getUuid(), streamType);
+        log.info("2222222222222222222222222222 {}", publisher == null);
+        if (publisher == null) {
+            //todo
+            publisher = new PublisherEndpoint(true, kurentoParticipant, kurentoParticipant.getUuid(),
+                    kurentoParticipant.getSession().getPipeline(), streamType, this.session.getOpenviduConfig());
+            publisher.setCompositeService(this.session.getCompositeService());
+            publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
+            kurentoParticipant.setPublisher(streamType, publisher);
         }
+        log.info("3333333333333333333333333 {}", publisher.getStreamId());
 
         source.add(new CompositeObjectWrapper(kurentoParticipant, streamType, publisher));
         return getCompositeElements(publisher, mcuNum);
@@ -397,9 +403,11 @@ public class CompositeService {
                 elementsLayout.addProperty("uuid", compositeObject.uuid);
                 elementsLayout.addProperty("username", compositeObject.username);
                 elementsLayout.addProperty("streamType", compositeObject.streamType.name());
+                //elementsLayout.addProperty("streamType", "streamType");
+                elementsLayout.addProperty("connectionId", "connectionId");
                 elementsLayout.addProperty("onlineStatus", "online");
                 elementsLayout.addProperty("hasVideo", true);
-                elementsLayout.addProperty("streaming", publisherEndpoint != null);
+                //elementsLayout.addProperty("streaming", publisherEndpoint != null);
                 index.incrementAndGet();
                 layoutInfos.add(elementsLayout);
             }

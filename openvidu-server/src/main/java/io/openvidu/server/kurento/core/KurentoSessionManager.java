@@ -1551,26 +1551,25 @@ public class KurentoSessionManager extends SessionManager {
 //        return true;
 //    }
 
-    /**
-     * 降级选择子流
-     *
-     * @param part 需要降级的参会者，必须是硬终端
-     * @return 如果有子流则返回子流，否则返回主流
-     */
-    private Participant demotionMinorStream(Participant part, KurentoSession kurentoSession) {
-        if (part.getTerminalType() != TerminalTypeEnum.HDC) {
-            return part;
-        }
-        // todo 2.0 选择子流
-//        Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
-//        if (minorPart != null) {
-//            if (minorPart.isStreaming())
-//                return minorPart;
-//            log.info("minorPart is not null but not streaming");
+    // delete 2.0
+//    /**
+//     * 降级选择子流
+//     *
+//     * @param part 需要降级的参会者，必须是硬终端
+//     * @return 如果有子流则返回子流，否则返回主流
+//     */
+//    private Participant demotionMinorStream(Participant part, KurentoSession kurentoSession) {
+//        if (part.getTerminalType() != TerminalTypeEnum.HDC) {
+//            return part;
 //        }
-        // todo 2.0 选择子流
-        return part;
-    }
+////        Participant minorPart = kurentoSession.getPartByPrivateIdAndStreamType(part.getParticipantPrivateId(), StreamType.MINOR);
+////        if (minorPart != null) {
+////            if (minorPart.isStreaming())
+////                return minorPart;
+////            log.info("minorPart is not null but not streaming");
+////        }
+//        return part;
+//    }
 
     private JsonObject constructPartRecordInfo(Participant part, int order) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) part;

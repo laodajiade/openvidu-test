@@ -2,6 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoSession;
@@ -32,9 +33,11 @@ public class SetConferenceModeHandler extends ExRpcAbstractHandler<JsonObject> {
             return RespResult.ok();
         }
 
-        log.info("调试接口，将会议转为MCU");
         Session session = sessionManager.getSession(roomId);
-
+        if (session == null) {
+            return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
+        }
+        log.info("调试接口，将会议转为MCU");
         session.getCompositeService().createComposite(((KurentoSession) session).getPipeline());
         session.getCompositeService().asyncUpdateComposite();
         return RespResult.ok();
