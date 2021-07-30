@@ -1432,7 +1432,6 @@ public class KurentoSessionManager extends SessionManager {
             log.info("Start recording but session:{} is closed.", sessionId);
             return;
         }
-        session.setIsRecording(true);
 
         log.info("Start recording and sessionId is {}", sessionId);
         session.getRecorderService(recordingRedisPublisher).startRecording();
@@ -1447,7 +1446,6 @@ public class KurentoSessionManager extends SessionManager {
         }
 
         log.info("Stop recording and sessionId is {}", sessionId);
-        session.setIsRecording(false);
         // pub stop recording task
         session.getRecorderService(recordingRedisPublisher).stopRecording();
     }

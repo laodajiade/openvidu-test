@@ -26,8 +26,6 @@ public class RecorderService {
 
     private boolean existSharing;
 
-    protected OpenviduConfig openviduConfig;
-
     @Getter
     private JsonArray layoutCoordinates = new JsonArray();
 
@@ -54,13 +52,14 @@ public class RecorderService {
                 .ruid(session.getRuid())
                 .startTime(session.getStartRecordingTime())
                 .updateTime(System.currentTimeMillis())
-                .rootPath(openviduConfig.getRecordingPath())
+                .rootPath(session.getOpenviduConfig().getRecordingPath())
                 .outputMode(RecordOutputMode.COMPOSED)
-                .mediaProfileSpecType(MediaProfileSpecType.valueOf(openviduConfig.getMediaProfileSpecType())).build();
+                .mediaProfileSpecType(MediaProfileSpecType.valueOf(session.getOpenviduConfig().getMediaProfileSpecType())).build();
         if (this.constructMediaSources(recordingProperties)) {
             // pub start recording task
             recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
         }
+        session.setIsRecording(true);
     }
 
     public void updateRecording() {
@@ -80,6 +79,7 @@ public class RecorderService {
         // pub stop recording task
         recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.stopRecording.buildMqMsg(ConferenceRecordingProperties.builder()
                 .ruid(session.getRuid()).outputMode(RecordOutputMode.COMPOSED).build()).toString());
+        session.setIsRecording(false);
     }
 
 
@@ -251,7 +251,7 @@ public class RecorderService {
         }
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
             publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
-                    kurentoParticipant.getSession().getPipeline(), streamType, this.openviduConfig);
+                    kurentoParticipant.getSession().getPipeline(), streamType, this.session.getOpenviduConfig());
             publisherEndpoint.setCompositeService(this.session.getCompositeService());
             publisherEndpoint.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             kurentoParticipant.setPublisher(streamType, publisherEndpoint);

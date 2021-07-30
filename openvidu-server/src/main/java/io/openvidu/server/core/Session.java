@@ -513,14 +513,15 @@ public class Session implements SessionInterface {
 				.collect(Collectors.toSet());
 	}
 
-    public List<Participant> getOrderedMajorAndOnWallParts() {
-        checkClosed();
-        return this.getParticipants().stream()
-                .filter(participant -> Objects.nonNull(participant) && participant.getRole().needToPublish()
-						&& participant.isStreaming())
-				.sorted(Comparator.comparing(Participant::getOrder))
-				.collect(Collectors.toList());
-	}
+	//delete 2.0
+//    public List<Participant> getOrderedMajorAndOnWallParts() {
+//        checkClosed();
+//        return this.getParticipants().stream()
+//                .filter(participant -> Objects.nonNull(participant) && participant.getRole().needToPublish()
+//						&& participant.isStreaming())
+//				.sorted(Comparator.comparing(Participant::getOrder))
+//				.collect(Collectors.toList());
+//	}
 
 	public Participant getParticipantByPrivateId(String participantPrivateId) {
 		checkClosed();
@@ -529,7 +530,7 @@ public class Session implements SessionInterface {
 //		}
 //
 //        return participants.get(participantPrivateId).get(StreamType.MAJOR.name());
-		return participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).findFirst().orElseGet(null);
+        return participantList.values().stream().filter(p -> p.getParticipantPrivateId().equals(participantPrivateId)).findFirst().orElse(null);
 	}
 
 	public Optional<Participant> getParticipantByPrivateId(String participantPrivateId, String uuid) {
