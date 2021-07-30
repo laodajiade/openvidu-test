@@ -135,12 +135,12 @@ public class RecorderService {
 
         int otherPartSize = 0;
         int i = 0;
-        while (otherPartSize < 5) {
+        while (otherPartSize < 5 && i < parts.size()) {
             Participant part = parts.get(i++);
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            passThruList.add(constructPartRecordInfo(part, source, StreamType.SHARING, order++));
+            passThruList.add(constructPartRecordInfo(part, source, StreamType.MAJOR, order++));
             otherPartSize++;
         }
 
@@ -163,7 +163,7 @@ public class RecorderService {
 
         int otherPartSize = 0;
         int i = 0;
-        while (otherPartSize < 3) {
+        while (otherPartSize < 3 && i < parts.size()) {
             Participant part = parts.get(i++);
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;

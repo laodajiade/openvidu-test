@@ -48,7 +48,9 @@ public enum RecordingOperationEnum {
             params.addProperty("ruid", recordingProperties.getRuid());
             params.addProperty("outPutMode", recordingProperties.getOutputMode().name());
             params.addProperty("layoutMode", recordingProperties.getLayoutMode());
+            params.addProperty("layoutModeType", recordingProperties.getLayoutModeTypeEnum().name());
             params.add("mediaSources", recordingProperties.getMediaSources());
+            params.addProperty("serialId", RandomStringUtils.randomAlphabetic(6));
 
             return wrapperMsg(params);
         }

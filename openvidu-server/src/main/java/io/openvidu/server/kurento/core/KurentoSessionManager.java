@@ -1487,14 +1487,17 @@ public class KurentoSessionManager extends SessionManager {
             KurentoSession kurentoSession = (KurentoSession) session;
             ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
                     .ruid(kurentoSession.getRuid())
+                    .updateTime(System.currentTimeMillis())
                     .outputMode(RecordOutputMode.COMPOSED).build();
-
-            if (constructMediaSources(recordingProperties, kurentoSession, curParticipant)) {
-                // pub update recording task
+            RecorderService recorderService = new RecorderService(session);
+            if (recorderService.constructMediaSources(recordingProperties)) {
+                // pub start recording task
                 recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateRecording.buildMqMsg(recordingProperties).toString());
             } else {
                 log.warn("Not found required participant and do not update the recording.");
             }
+
+
         } else {
             log.info("Update recording but session:{} is closed.", sessionId);
         }

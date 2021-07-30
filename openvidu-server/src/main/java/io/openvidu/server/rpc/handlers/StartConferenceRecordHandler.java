@@ -45,7 +45,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
         boolean forceRec = getBooleanOptionalParam(request, "force");
 
         //todo 2.0 分布式支持
-        if (ArtisanEnum.RECORDING_NUM.getValue().equals(recordingNum.get())) {
+        if (envConfig.deployType != DeployTypeEnum.SASS && ArtisanEnum.RECORDING_NUM.getValue().equals(recordingNum.get())) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.OTHER_RECORDING_LATER_RETRY);
             return;
