@@ -24,7 +24,10 @@ import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
-import org.kurento.client.*;
+import org.kurento.client.Continuation;
+import org.kurento.client.MediaElement;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +60,8 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		String sdpAnswer = processOffer(sdpOffer);
 		// gatherCandidates();
 		if (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint(), MediaType.VIDEO);
+			log.info("666666666666666666666  {} {}", this.getStreamId(),this.getEndpoint().toString());
+			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint());
 		} else {
 			publisher.connect(this.getEndpoint());
 		}
@@ -79,8 +83,26 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		return "";
 	}
 
+	private void internalSinkConnect(final MediaElement source, final MediaElement sink) {
+		source.connect(sink, new Continuation<Void>() {
+			//source.connect(sink, mediaType, new Continuation<Void>() {
+			@Override
+			public void onSuccess(Void result) throws Exception {
+				log.info("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
+						source.getId(), sink.getId());
+			}
+
+			@Override
+			public void onError(Throwable cause) throws Exception {
+				log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
+						source.getId(), sink.getId(), cause);
+			}
+		});
+	}
+
 	private void internalSinkConnect(final MediaElement source, final MediaElement sink, MediaType mediaType) {
 		source.connect(sink, mediaType, new Continuation<Void>() {
+		//source.connect(sink, mediaType, new Continuation<Void>() {
 			@Override
 			public void onSuccess(Void result) throws Exception {
 				log.debug("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),

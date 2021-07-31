@@ -437,7 +437,8 @@ public class KurentoParticipant extends Participant {
 			subscriber.setEndpointName(subscriberStreamId);
 			subscriber.getEndpoint().setName(subscriberStreamId);
 			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + sender.getUuid() +
-					"_" + streamType + "_cid_" + RandomStringUtils.randomAlphabetic(6));
+					"_" + streamType + "_cid_" + RandomStringUtils.randomAlphabetic(6) + "_stream_" + subscriber.getStreamId());
+					//"_" + streamType + "_stream_" + subscriber.getStreamId());
 			subscriber.setStreamId(subscriberStreamId);
 			returnObj.put("subscribeId", subscriberStreamId);
 			endpointConfig.addEndpointListeners(subscriber, "subscriber");
