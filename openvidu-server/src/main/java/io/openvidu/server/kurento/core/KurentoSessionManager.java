@@ -408,7 +408,7 @@ public class KurentoSessionManager extends SessionManager {
         SdpType sdpType = kurentoOptions.isOffer ? SdpType.OFFER : SdpType.ANSWER;
         KurentoSession kSession = kParticipant.getSession();
 
-        PublisherEndpoint publishingEndpoint = kParticipant.createPublishingEndpoint(mediaOptions, participant, streamType);
+        PublisherEndpoint publishingEndpoint = kParticipant.createPublishingEndpoint(mediaOptions, streamType);
 
         /*
          * for (MediaElement elem : kurentoOptions.mediaElements) {
