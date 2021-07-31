@@ -59,13 +59,13 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
             publishId = session.getCompositeService().getMixStreamId();
             streamMode = StreamModeEnum.MIX_MAJOR;
         }
-        String uuid2 = getStringParam(request, SENDER_UUID_PARAM);
-        if (devParts.contains(participant.getUuid()) && !"81103600038".equals(uuid2)) {
-            log.info("拦截掉其他的拉流 {}", uuid2);
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.UNRECOGNIZED_API);
-            return;
-        }
+//        String uuid2 = getStringParam(request, SENDER_UUID_PARAM);
+//        if (devParts.contains(participant.getUuid()) && !"81103600038".equals(uuid2)) {
+//            log.info("拦截掉其他的拉流 {}", uuid2);
+//            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//                    null, ErrorCodeEnum.UNRECOGNIZED_API);
+//            return;
+//        }
         // todo 调试代码
 
 

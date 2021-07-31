@@ -56,6 +56,11 @@ public class CompositeService {
 
     private LayoutModeTypeEnum layoutModeType = LayoutModeTypeEnum.NORMAL;
 
+
+    private LayoutModeEnum lastLayoutMode = null;
+
+    private LayoutModeTypeEnum lastLayoutModeType = null;
+
     private List<CompositeObjectWrapper> sourcesPublisher = new ArrayList<>();
 
 
@@ -209,21 +214,40 @@ public class CompositeService {
         }
 
         try {
+            List<CompositeObjectWrapper> newPoint;
             if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {
-                rostrumLayout();
+                newPoint = rostrumLayout();
             } else {
                 layoutModeType = LayoutModeTypeEnum.NORMAL;
-                normalLayout();
+                newPoint = normalLayout();
             }
 
-            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+            if (isLayoutChange(newPoint)) {
+                if (newPoint.size() > 0) {
+                    try {
+                        session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
+                                session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
+
+                        this.lastLayoutModeType = this.layoutModeType;
+                        this.lastLayoutMode = this.layoutMode;
+                        this.sourcesPublisher = newPoint;
+
+                        conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+
+                    } catch (Exception e) {
+                        log.error("Send Composite Layout Exception:", e);
+                    }
+                }
+            } else {
+                log.info("The layout of {} has not changed", session.getSessionId());
+            }
         } catch (Exception e) {
             log.error("getSipCompositeElements error", e);
         }
     }
 
 
-    private void rostrumLayout() {
+    private List<CompositeObjectWrapper> rostrumLayout() {
         Participant moderatorPart = session.getModeratorPart();
         if (moderatorPart != null && moderatorPart.getDeviceModel().equals("T200")) {
             layoutModeType = LayoutModeTypeEnum.ROSTRUM_T200;
@@ -236,40 +260,31 @@ public class CompositeService {
                 .sorted(Comparator.comparing(Participant::getOrder))
                 .collect(Collectors.toList());
 
-        int mcuNum = 0;
         List<CompositeObjectWrapper> source = new ArrayList<>();
 
         if (layoutModeType == LayoutModeTypeEnum.ROSTRUM_T200) {
-            mcuNum = getT200RostrumElement(parts, mcuNum, source);
+            getT200RostrumElement(parts, source);
         } else {
-            mcuNum = getRostrumElement(parts, mcuNum, source);
+            getRostrumElement(parts, source);
         }
 
-        log.info("rostrum MCU composite number:{} and composite hub port ids:{}", mcuNum, source.toString());
-        if (mcuNum > 0) {
-            try {
-                session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
-                        session.getSessionId(), source, LayoutModeEnum.getLayoutMode(mcuNum)));
-                SafeSleep.sleepMilliSeconds(300);
-            } catch (Exception e) {
-                log.error("Send Composite Layout Exception:", e);
-            }
-        }
+        log.info("rostrum MCU composite number:{} and composite hub port ids:{}", source.size(), source.toString());
+        return source;
     }
 
 
-    private int getT200RostrumElement(List<Participant> parts, int mcuNum, List<CompositeObjectWrapper> source) {
+    private void getT200RostrumElement(List<Participant> parts, List<CompositeObjectWrapper> source) {
         Participant speaker = session.getSpeakerPart().orElse(null);
         Participant sharing = session.getSharingPart().orElse(null);
 
         if (speaker != null && sharing != null) {
-            mcuNum = getCompositeElements(sharing, source, StreamType.SHARING, mcuNum);
-            mcuNum = getCompositeElements(speaker, source, StreamType.MAJOR, mcuNum);
+            getCompositeElements(sharing, source, StreamType.SHARING);
+            getCompositeElements(speaker, source, StreamType.MAJOR);
             this.layoutModeType = LayoutModeTypeEnum.ROSTRUM_T200_TWO;
         } else if (speaker != null) {
-            mcuNum = getCompositeElements(speaker, source, StreamType.MAJOR, mcuNum);
+            getCompositeElements(speaker, source, StreamType.MAJOR);
         } else if (sharing != null) {
-            mcuNum = getCompositeElements(sharing, source, StreamType.SHARING, mcuNum);
+            getCompositeElements(sharing, source, StreamType.SHARING);
         } else {
             log.error("speaker and sharing part not found");
             throw new IllegalStateException("speaker and sharing part not found");
@@ -277,24 +292,23 @@ public class CompositeService {
 
         int otherPartSize = 0;
         int i = 0;
-        while (otherPartSize < 5) {
+        while (otherPartSize < 5 && i < parts.size()) {
             Participant part = parts.get(i++);
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            mcuNum = getCompositeElements(part, source, StreamType.MAJOR, mcuNum);
+            getCompositeElements(part, source, StreamType.MAJOR);
             otherPartSize++;
         }
-        return mcuNum;
     }
 
-    private int getRostrumElement(List<Participant> parts, int mcuNum, List<CompositeObjectWrapper> source) {
+    private void getRostrumElement(List<Participant> parts, List<CompositeObjectWrapper> source) {
         Participant speaker = session.getSpeakerPart().orElse(null);
         Participant sharing = session.getSharingPart().orElse(null);
         if (speaker != null) {
-            mcuNum = getCompositeElements(speaker, source, StreamType.MAJOR, mcuNum);
+            getCompositeElements(speaker, source, StreamType.MAJOR);
         } else if (sharing != null) {
-            mcuNum = getCompositeElements(sharing, source, StreamType.SHARING, mcuNum);
+            getCompositeElements(sharing, source, StreamType.SHARING);
         } else {
             log.error("speaker and sharing part not found");
             throw new IllegalStateException("speaker and sharing part not found");
@@ -302,78 +316,76 @@ public class CompositeService {
 
         int otherPartSize = 0;
         int i = 0;
-        while (otherPartSize < 3) {
+        while (otherPartSize < 3 && i < parts.size()) {
             Participant part = parts.get(i++);
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            mcuNum = getCompositeElements(part, source, StreamType.MAJOR, mcuNum);
+            getCompositeElements(part, source, StreamType.MAJOR);
             otherPartSize++;
         }
-        return mcuNum;
     }
 
     /**
      * 等分布局
+     * return 如果布局有变化，返回true，否则返回false
      */
-    private void normalLayout() {
+    private List<CompositeObjectWrapper> normalLayout() {
         List<Participant> parts = session.getParticipants().stream()
                 .filter(p -> p.getOrder() < session.getPresetInfo().getSfuPublisherThreshold())
                 .sorted(Comparator.comparing(Participant::getOrder))
                 .collect(Collectors.toList());
 
-        int mcuNum = 0;
         List<CompositeObjectWrapper> source = new ArrayList<>(parts.size());
         for (Participant part : parts) {
-            mcuNum = getCompositeElements(part, source, StreamType.MAJOR, mcuNum);
+            getCompositeElements(part, source, StreamType.MAJOR);
         }
-        log.info("normal MCU composite number:{} and composite hub port ids:{}", mcuNum, source.toString());
-        if (mcuNum > 0) {
+
+
+        log.info("normal MCU composite number:{} and composite hub port ids:{}", source.size(), source.toString());
+        if (source.size() > 0) {
             try {
-                layoutMode = LayoutModeEnum.getLayoutMode(mcuNum);
+                layoutMode = LayoutModeEnum.getLayoutMode(source.size());
                 session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                         session.getSessionId(), source, layoutMode));
-                SafeSleep.sleepMilliSeconds(300);
             } catch (Exception e) {
-                log.error("Send Sip Composite Layout Exception:\n", e);
+                log.error("Send Composite Layout Exception:\n", e);
             }
         }
-
-        this.sourcesPublisher = source;
+        return source;
     }
 
-    private int getCompositeElements(Participant participant, List<CompositeObjectWrapper> source, StreamType streamType, int mcuNum) {
+    private void getCompositeElements(Participant participant, List<CompositeObjectWrapper> source, StreamType streamType) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         PublisherEndpoint publisher = kurentoParticipant.getPublisher(streamType);
-        log.info("1111111111111111111111111111 {},{}", kurentoParticipant.getUuid(), streamType);
-        log.info("2222222222222222222222222222 {}", publisher == null);
         if (publisher == null) {
+            log.info("{} {}`s publisher is null, create it", participant.getUuid(), streamType);
             //todo
             publisher = new PublisherEndpoint(true, kurentoParticipant, kurentoParticipant.getUuid(),
                     kurentoParticipant.getSession().getPipeline(), streamType, this.session.getOpenviduConfig());
             publisher.setCompositeService(this.session.getCompositeService());
             publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             kurentoParticipant.setPublisher(streamType, publisher);
+            log.info("{} {} publisher create {}", participant.getUuid(), streamType, publisher.getStreamId());
         }
-        log.info("3333333333333333333333333 {}", publisher.getStreamId());
 
         source.add(new CompositeObjectWrapper(kurentoParticipant, streamType, publisher));
-        return getCompositeElements(publisher, mcuNum);
+        getCompositeElements(publisher);
     }
 
     /**
      *
      */
-    private int getCompositeElements(PublisherEndpoint publisher, int mcuNum) {
+    private void getCompositeElements(PublisherEndpoint publisher) {
         HubPort hubPort;
         if (publisher != null) {
             if (Objects.isNull(hubPort = publisher.getMajorShareHubPort())) {
                 hubPort = publisher.createMajorShareHubPort(this.composite);
             }
-            publisher.getEndpoint().connect(hubPort);
+            if (publisher.getEndpoint() != null) {
+                publisher.getEndpoint().connect(hubPort);
+            }
         }
-        //publisher.internalSinkConnect(publisher.getEndpoint(), hubPort);
-        return ++mcuNum;
     }
 
     private Request<JsonObject> composeLayoutRequest(String pipelineId, String sessionId, List<CompositeObjectWrapper> objects, LayoutModeEnum layoutMode) {
@@ -463,6 +475,27 @@ public class CompositeService {
         return mixFlowsArr;
     }
 
+    /**
+     * 前后布局对比
+     *
+     * @return 有变化返回true
+     */
+    private boolean isLayoutChange(List<CompositeObjectWrapper> newObjects) {
+        if (layoutMode != lastLayoutMode || layoutModeType != lastLayoutModeType) {
+            return true;
+        }
+        if (this.sourcesPublisher.size() != newObjects.size()) {
+            return true;
+        }
+
+        for (int i = 0; i < sourcesPublisher.size(); i++) {
+            if (!Objects.equals(sourcesPublisher.get(i), newObjects.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static class CompositeObjectWrapper {
         String uuid;
         String username;
@@ -476,6 +509,22 @@ public class CompositeService {
             this.order = participant.getOrder();
             this.streamType = streamType;
             this.endpoint = endpoint;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CompositeObjectWrapper that = (CompositeObjectWrapper) o;
+            return order == that.order &&
+                    Objects.equals(uuid, that.uuid) &&
+                    Objects.equals(username, that.username) &&
+                    streamType == that.streamType;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(uuid, username, order, streamType);
         }
 
         @Override
