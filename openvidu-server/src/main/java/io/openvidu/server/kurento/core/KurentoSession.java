@@ -542,7 +542,7 @@ public class KurentoSession extends Session {
 			log.info("Reseting process: media pipeline closed for active session {}", this.sessionId);
 			createPipeline();
 			log.info("Reset pipeline id:{}", this.getPipeline().getId());
-			compositeService.createComposite(this.getPipeline());
+			compositeService.createComposite();
 			try {
 				if (!pipelineLatch.await(20, TimeUnit.SECONDS)) {
 					throw new Exception("MediaPipleine was not created in 20 seconds");

@@ -38,7 +38,7 @@ public class SetConferenceModeHandler extends ExRpcAbstractHandler<JsonObject> {
             return RespResult.fail(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
         }
         log.info("调试接口，将会议转为MCU");
-        session.getCompositeService().createComposite(((KurentoSession) session).getPipeline());
+        session.getCompositeService().createComposite();
         session.getCompositeService().asyncUpdateComposite();
         return RespResult.ok();
     }

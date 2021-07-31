@@ -185,7 +185,7 @@ public class KurentoParticipant extends Participant {
 
         if (TerminalTypeEnum.S == getTerminalType() && this.session.getConferenceMode() != ConferenceModeEnum.MCU) {
             log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
-            session.getCompositeService().createComposite(session.getPipeline());
+            session.getCompositeService().createComposite();
         }
 
         if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {

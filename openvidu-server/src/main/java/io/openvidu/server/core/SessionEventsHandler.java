@@ -44,8 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -270,16 +268,15 @@ public class SessionEventsHandler {
 
 		new Thread(() -> deliveryOnParticipantJoined(session)).start();
 
-		// todo 2.0 临时代码，是否需要开启mcu
-		new Thread(() -> {
-			if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
-				return;
+		// 是否开启MCU和MCU布局切换
+		if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+			if (participant.getRole().needToPublish()) {
+				session.getCompositeService().asyncUpdateComposite();
 			}
-			if (session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
-				log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
-				((KurentoSession) session).getCompositeService().createComposite(((KurentoSession) session).getPipeline());
-			}
-		}).start();
+		} else if (session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
+			log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
+			session.getCompositeService().createComposite();
+		}
 
 	}
 

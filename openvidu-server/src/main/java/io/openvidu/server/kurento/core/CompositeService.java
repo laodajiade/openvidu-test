@@ -67,14 +67,14 @@ public class CompositeService {
                 .setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
     }
 
-    public void createComposite(MediaPipeline pipeline) {
+    public void createComposite() {
         if (composite == null) {
             synchronized (compositeCreateLock) {
                 if (composite != null) {
                     return;
                 }
 
-                this.pipeline = pipeline;
+                this.pipeline = session.getPipeline();
                 log.info("SESSION {}: Creating Composite", session.getSessionId());
                 composite = new Composite.Builder(this.pipeline).build();
                 createHubPortOut();
