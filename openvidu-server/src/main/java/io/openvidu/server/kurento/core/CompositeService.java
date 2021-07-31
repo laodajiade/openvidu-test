@@ -205,11 +205,11 @@ public class CompositeService {
     }
 
     private void updateComposite() {
-        log.info("do updateComposite {}", session.getSessionId());
+        log.info("MCU updateComposite {}", session.getSessionId());
         SafeSleep.sleepMilliSeconds(200);
         Set<Participant> participants = session.getParticipants();
         if (participants.isEmpty()) {
-            log.warn("participants is empty");
+            log.warn("MCU updateComposite participants is empty");
             return;
         }
 
@@ -222,7 +222,7 @@ public class CompositeService {
                 newPoint = normalLayout();
             }
 
-            if (isLayoutChange(newPoint)) {
+            if (isLayoutChange(newPoint, true)) {
                 if (newPoint.size() > 0) {
                     try {
                         session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
@@ -231,9 +231,9 @@ public class CompositeService {
                         this.lastLayoutModeType = this.layoutModeType;
                         this.lastLayoutMode = this.layoutMode;
                         this.sourcesPublisher = newPoint;
-
-                        conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
-
+                        if (isLayoutChange(newPoint, false)) {
+                            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+                        }
                     } catch (Exception e) {
                         log.error("Send Composite Layout Exception:", e);
                     }
@@ -242,7 +242,7 @@ public class CompositeService {
                 log.info("The layout of {} has not changed", session.getSessionId());
             }
         } catch (Exception e) {
-            log.error("getSipCompositeElements error", e);
+            log.error("MCU update Composite error", e);
         }
     }
 
@@ -343,15 +343,6 @@ public class CompositeService {
 
 
         log.info("normal MCU composite number:{} and composite hub port ids:{}", source.size(), source.toString());
-        if (source.size() > 0) {
-            try {
-                layoutMode = LayoutModeEnum.getLayoutMode(source.size());
-                session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
-                        session.getSessionId(), source, layoutMode));
-            } catch (Exception e) {
-                log.error("Send Composite Layout Exception:\n", e);
-            }
-        }
         return source;
     }
 
@@ -360,10 +351,10 @@ public class CompositeService {
         PublisherEndpoint publisher = kurentoParticipant.getPublisher(streamType);
         if (publisher == null) {
             log.info("{} {}`s publisher is null, create it", participant.getUuid(), streamType);
-            //todo
-            publisher = new PublisherEndpoint(true, kurentoParticipant, kurentoParticipant.getUuid(),
-                    kurentoParticipant.getSession().getPipeline(), streamType, this.session.getOpenviduConfig());
-            publisher.setCompositeService(this.session.getCompositeService());
+//            publisher = new PublisherEndpoint(true, kurentoParticipant, kurentoParticipant.getUuid(),
+//                    kurentoParticipant.getSession().getPipeline(), streamType, this.session.getOpenviduConfig());
+            publisher = kurentoParticipant.createPublisher(streamType);
+            publisher.setCompositeService(this);
             publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             kurentoParticipant.setPublisher(streamType, publisher);
             log.info("{} {} publisher create {}", participant.getUuid(), streamType, publisher.getStreamId());
@@ -478,9 +469,10 @@ public class CompositeService {
     /**
      * 前后布局对比
      *
+     * @param streamChange 是否对比streamId的变化
      * @return 有变化返回true
      */
-    private boolean isLayoutChange(List<CompositeObjectWrapper> newObjects) {
+    private boolean isLayoutChange(List<CompositeObjectWrapper> newObjects, boolean streamChange) {
         if (layoutMode != lastLayoutMode || layoutModeType != lastLayoutModeType) {
             return true;
         }
@@ -490,6 +482,9 @@ public class CompositeService {
 
         for (int i = 0; i < sourcesPublisher.size(); i++) {
             if (!Objects.equals(sourcesPublisher.get(i), newObjects.get(i))) {
+                return true;
+            }
+            if (streamChange && !Objects.equals(sourcesPublisher.get(i).endpoint.getStreamId(), newObjects.get(i).endpoint.getStreamId())) {
                 return true;
             }
         }

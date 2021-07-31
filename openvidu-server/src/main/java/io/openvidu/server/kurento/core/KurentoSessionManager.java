@@ -1571,30 +1571,31 @@ public class KurentoSessionManager extends SessionManager {
 //        return part;
 //    }
 
-    private JsonObject constructPartRecordInfo(Participant part, int order) {
-        KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
-        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
-                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
-
-        PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(StreamType.MAJOR);
-        if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
-            publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
-                    kurentoParticipant.getSession().getPipeline(), StreamType.MAJOR, this.openviduConfig);
-            publisherEndpoint.setCompositeService(kurentoParticipant.getSession().getCompositeService());
-            publisherEndpoint.setPassThru(new PassThrough.Builder(kurentoParticipant.getSession().getPipeline()).build());
-            kurentoParticipant.setPublisher(StreamType.MAJOR, publisherEndpoint);
-        }
-        JsonObject jsonObject = new JsonObject();
-        if (Objects.nonNull(publisherEndpoint.getPassThru())) {
-            jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
-            jsonObject.addProperty("order", order);
-            jsonObject.addProperty("uuid", part.getUuid());
-            //jsonObject.addProperty("streamType", part.getStreamType().name());
-            jsonObject.addProperty("osd", part.getUsername());
-
-        }
-        return jsonObject;
-    }
+    //delete 2.0
+//    private JsonObject constructPartRecordInfo(Participant part, int order) {
+//        KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
+//        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
+//                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
+//
+//        PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(StreamType.MAJOR);
+//        if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
+//            publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
+//                    kurentoParticipant.getSession().getPipeline(), StreamType.MAJOR, this.openviduConfig);
+//            publisherEndpoint.setCompositeService(kurentoParticipant.getSession().getCompositeService());
+//            publisherEndpoint.setPassThru(new PassThrough.Builder(kurentoParticipant.getSession().getPipeline()).build());
+//            kurentoParticipant.setPublisher(StreamType.MAJOR, publisherEndpoint);
+//        }
+//        JsonObject jsonObject = new JsonObject();
+//        if (Objects.nonNull(publisherEndpoint.getPassThru())) {
+//            jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
+//            jsonObject.addProperty("order", order);
+//            jsonObject.addProperty("uuid", part.getUuid());
+//            //jsonObject.addProperty("streamType", part.getStreamType().name());
+//            jsonObject.addProperty("osd", part.getUsername());
+//
+//        }
+//        return jsonObject;
+//    }
 
     @Override
     public void handleRecordErrorEvent(Object msg) {

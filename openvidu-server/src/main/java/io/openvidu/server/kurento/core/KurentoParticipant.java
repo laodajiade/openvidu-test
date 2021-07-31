@@ -156,25 +156,10 @@ public class KurentoParticipant extends Participant {
 //		}
 //	}
 
-	public PublisherEndpoint createPublishingEndpoint(MediaOptions mediaOptions, Participant participant, StreamType streamType) {
+	public PublisherEndpoint createPublishingEndpoint(MediaOptions mediaOptions, StreamType streamType) {
 
 		PublisherEndpoint publisher;
-		synchronized (createPublisherLock) {
-			publisher = publishers.get(streamType);
-			if (Objects.isNull(publisher)) {
-				// Initialize a PublisherEndpoint
-				publisher = new PublisherEndpoint(webParticipant, this, participant.getUuid(),
-						this.session.getPipeline(), streamType, this.openviduConfig);
-
-				publisher.setCompositeService(this.session.getCompositeService());
-			} else if (participant.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
-				//todo 2.0 这里好像有个old publisher 泄露了
-				publisher = new PublisherEndpoint(webParticipant, this, participant.getParticipantPublicId(),
-						this.session.getPipeline(), streamType, this.openviduConfig);
-				publisher.setCompositeService(this.session.getCompositeService());
-			}
-			publishers.put(streamType, publisher);
-		}
+		publisher = createPublisher(streamType);
 
 		publisher.createEndpoint(publisher.getPublisherLatch());
         if (getPublisher(streamType).getEndpoint() == null) {
@@ -200,6 +185,27 @@ public class KurentoParticipant extends Participant {
 		publisher.getPassThru().addTag(strMSTagDebugPassThroughName, getParticipantName() + "_pt_cid_" + debugRandomID);
 		endpointConfig.addEndpointListeners(publisher, "publisher_" + streamType);
 
+		return publisher;
+	}
+
+	public PublisherEndpoint createPublisher(StreamType streamType) {
+		PublisherEndpoint publisher;
+		synchronized (createPublisherLock) {
+			publisher = publishers.get(streamType);
+			if (Objects.isNull(publisher)) {
+				// Initialize a PublisherEndpoint
+				publisher = new PublisherEndpoint(webParticipant, this, this.getUuid(),
+						this.session.getPipeline(), streamType, this.openviduConfig);
+
+				publisher.setCompositeService(this.session.getCompositeService());
+			} else if (this.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
+				//todo 2.0 这里好像有个old publisher 泄露了
+				publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
+						this.session.getPipeline(), streamType, this.openviduConfig);
+				publisher.setCompositeService(this.session.getCompositeService());
+			}
+			publishers.put(streamType, publisher);
+		}
 		return publisher;
 	}
 

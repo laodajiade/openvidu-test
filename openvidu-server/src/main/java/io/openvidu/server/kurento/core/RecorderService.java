@@ -250,9 +250,7 @@ public class RecorderService {
             publisherEndpoint = kurentoParticipant.getPublisher(streamType);
         }
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
-            publisherEndpoint = new PublisherEndpoint(true, kurentoParticipant, part.getParticipantPublicId(),
-                    kurentoParticipant.getSession().getPipeline(), streamType, this.session.getOpenviduConfig());
-            publisherEndpoint.setCompositeService(this.session.getCompositeService());
+            publisherEndpoint = kurentoParticipant.createPublisher(streamType);
             publisherEndpoint.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             kurentoParticipant.setPublisher(streamType, publisherEndpoint);
         }
