@@ -98,12 +98,12 @@ public class CompositeService {
         releaseHubPortOut();
         synchronized (compositeReleaseLock) {
             if (Objects.isNull(composite)) {
-                log.warn("majorShareComposite already released.");
+                log.warn("MCU composite already released.");
                 return;
             }
             composite.release();
             composite = null;
-            log.warn("Release MajorShareComposite");
+            log.warn("Release MCU composite");
         }
     }
 

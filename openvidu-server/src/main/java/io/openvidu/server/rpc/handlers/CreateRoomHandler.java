@@ -205,10 +205,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 Corporation corporation = corpInfoService.selectByCorpProject(rpcConnection.getProject());
                 SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
                         roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
-                if (Objects.nonNull(corporation.getMcuThreshold())&& Objects.nonNull(corporation.getSfuPublisherThreshold())) {
-                    preset.setMcuThreshold(corporation.getMcuThreshold());
-                    preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
-                }
+                preset.setMcuThreshold(corporation.getMcuThreshold());
+                preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
                 if (roomIdType == RoomIdTypeEnums.fixed) {
                     FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(sessionId);
                     preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);

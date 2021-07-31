@@ -36,7 +36,7 @@ public class Corporation {
 
     private Integer remainderDuration;
 
-    private int sfuPublisherThreshold;
+    private Integer sfuPublisherThreshold;
 
-    private int mcuThreshold;
+    private Integer mcuThreshold;
 }
