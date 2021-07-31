@@ -199,6 +199,7 @@ public class KurentoParticipant extends Participant {
 
 				publisher.setCompositeService(this.session.getCompositeService());
 			} else if (this.getRole().needToPublish() && Objects.nonNull(publisher.getMediaOptions())) {
+				log.info("fffffffffffffffffffffffffffffff {} {}",this.getUuid(),streamType);
 				//todo 2.0 这里好像有个old publisher 泄露了
 //				publisher = new PublisherEndpoint(webParticipant, this, this.getParticipantPublicId(),
 //						this.session.getPipeline(), streamType, this.openviduConfig);
