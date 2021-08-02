@@ -222,18 +222,19 @@ public class CompositeService {
                 newPoint = normalLayout();
             }
 
-            if (isLayoutChange(newPoint, true) || true) {
+            if (isLayoutChange(newPoint, true)) {
+                log.info("The layout of {} has changed", session.getSessionId());
                 if (newPoint.size() > 0) {
                     try {
                         session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                                 session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
+                        if (isLayoutChange(newPoint, false)) {
+                            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+                        }
 
                         this.lastLayoutModeType = this.layoutModeType;
                         this.lastLayoutMode = this.layoutMode;
                         this.sourcesPublisher = newPoint;
-                        if (isLayoutChange(newPoint, false)) {
-                            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
-                        }
                     } catch (Exception e) {
                         log.error("Send Composite Layout Exception:", e);
                     }
