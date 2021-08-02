@@ -132,9 +132,9 @@ public class PublisherEndpoint extends MediaEndpoint {
         	if (Objects.isNull(getCompositeService())) {
         		setCompositeService(kurentoSession.getCompositeService());
 			}
-            majorShareHubPort = new HubPort.Builder(getMajorShareComposite()).build();
-            log.info("Pub EP create majorShareHubPort.");
-            majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+			if (Objects.isNull(this.getMajorShareHubPort())) {
+				createMajorShareHubPort(getMajorShareComposite());
+			}
         }
 	}
 
@@ -763,7 +763,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	public HubPort createMajorShareHubPort(Composite composite){
 		majorShareHubPort = new HubPort.Builder(composite).build();
-		log.info("Pub EP create majorShareHubPort.");
+		log.info("{} Pub EP create majorShareHubPort.", this.getStreamId());
 		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
 
 		return majorShareHubPort;

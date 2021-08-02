@@ -22,13 +22,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
-import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.MediaOptions;
 import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.UseTime;
 import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.endpoint.*;
 import io.openvidu.server.kurento.kms.EndpointLoadManager;
@@ -393,6 +393,7 @@ public class KurentoParticipant extends Participant {
 
 
 		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(subscriberStreamId);
+		UseTime.point("分发/级联 before");
 		if (subscriber.getEndpoint() == null && !Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
 			subscriber = getNewOrExistingSubscriber(subscriberStreamId);
 			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
@@ -418,10 +419,13 @@ public class KurentoParticipant extends Participant {
 				}
 			}
 		}
+		UseTime.point("分发/级联 after");
 
 		try {
 			CountDownLatch subscriberLatch = new CountDownLatch(1);
+			UseTime.point("createEndpoint start");
 			SdpEndpoint oldMediaEndpoint = subscriber.createEndpoint(subscriberLatch);
+			UseTime.point("createEndpoint mid");
 			try {
 				if (!subscriberLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
 					throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
@@ -436,6 +440,7 @@ public class KurentoParticipant extends Participant {
 						this.getUuid(), subscriberStreamId);
 				return null;
 			}
+			UseTime.point("createEndpoint end");
 			if (subscriber.getEndpoint() == null) {
 				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create subscriber endpoint");
 			}
@@ -460,19 +465,15 @@ public class KurentoParticipant extends Participant {
             log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
                     publishStreamId, this.session.getSessionId());
 
-			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(this.getParticipantPublicId())) {
-				endpointConfig.getCdr().recordNewSubscriber(this, this.session.getSessionId(),
-						subscriberStreamId, sender.getParticipantPublicId(), subscriber.createdAt());
-			}
 
-			if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU) &&
-                    Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-				if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
-					subscriber.subscribeAudio(this.getPublisher());
-				} else {
-					subscriber.subscribeAudio(null);
-				}
-			}
+//			if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU) &&
+//					Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
+//				if (!OpenViduRole.NON_PUBLISH_ROLES.contains(getRole())) {
+//					subscriber.subscribeAudio(this.getPublisher());
+//				} else {
+//					subscriber.subscribeAudio(null);
+//				}
+//			}
 
 			return sdpAnswer;
 		} catch (KurentoServerException e) {
@@ -530,10 +531,6 @@ public class KurentoParticipant extends Participant {
 		}
 		this.subscribers.clear();
 		releaseAllPublisherEndpoint(reason, kmsDisconnectionTime);
-		if (session.isShare(this.getUuid()) &&
-				!Objects.isNull(session.getCompositeService().getShareStreamId())) {
-			session.getCompositeService().setShareStreamId(null);
-		}
 	}
 
 	/**

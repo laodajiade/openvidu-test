@@ -46,7 +46,6 @@ public class CompositeService {
 
     private final String mixStreamId;
 
-    private String shareStreamId;
 
     @Getter
     private JsonArray layoutCoordinates = new JsonArray();
@@ -66,7 +65,7 @@ public class CompositeService {
 
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
-        this.mixStreamId = session.getSessionId() + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase() + "_MIX";
+        this.mixStreamId = session.getSessionId() + "_MIX_" + RandomStringUtils.randomAlphabetic(6).toUpperCase();
         compositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("composite-thread-" + session.getSessionId() + "-%d")
                 .setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
@@ -187,13 +186,6 @@ public class CompositeService {
         return mixStreamId;
     }
 
-    public String getShareStreamId() {
-        return shareStreamId;
-    }
-
-    public void setShareStreamId(String shareStreamId) {
-        this.shareStreamId = shareStreamId;
-    }
 
     public MediaPipeline getPipeline() {
         return pipeline;
@@ -223,17 +215,18 @@ public class CompositeService {
             }
 
             if (isLayoutChange(newPoint, true)) {
+                log.info("The layout of {} has changed", session.getSessionId());
                 if (newPoint.size() > 0) {
                     try {
                         session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                                 session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
+                        if (isLayoutChange(newPoint, false)) {
+                            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+                        }
 
                         this.lastLayoutModeType = this.layoutModeType;
                         this.lastLayoutMode = this.layoutMode;
                         this.sourcesPublisher = newPoint;
-                        if (isLayoutChange(newPoint, false)) {
-                            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
-                        }
                     } catch (Exception e) {
                         log.error("Send Composite Layout Exception:", e);
                     }
@@ -369,7 +362,9 @@ public class CompositeService {
      */
     private void getCompositeElements(PublisherEndpoint publisher) {
         HubPort hubPort;
-        if (publisher != null) {
+
+        if (publisher != null && !publisherIsConnected(publisher.getStreamId())) {
+            log.info("222222222222222222222222222 {}", publisher.getStreamId());
             if (Objects.isNull(hubPort = publisher.getMajorShareHubPort())) {
                 hubPort = publisher.createMajorShareHubPort(this.composite);
             }
@@ -377,6 +372,15 @@ public class CompositeService {
                 publisher.getEndpoint().connect(hubPort);
             }
         }
+    }
+
+    private boolean publisherIsConnected(String streamId) {
+        for (CompositeObjectWrapper compositeObjectWrapper : sourcesPublisher) {
+            if (compositeObjectWrapper.streamId.equals(streamId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Request<JsonObject> composeLayoutRequest(String pipelineId, String sessionId, List<CompositeObjectWrapper> objects, LayoutModeEnum layoutMode) {
@@ -496,6 +500,7 @@ public class CompositeService {
         String username;
         int order;
         StreamType streamType;
+        String streamId;
         PublisherEndpoint endpoint;
 
         public CompositeObjectWrapper(Participant participant, StreamType streamType, PublisherEndpoint endpoint) {
@@ -504,6 +509,9 @@ public class CompositeService {
             this.order = participant.getOrder();
             this.streamType = streamType;
             this.endpoint = endpoint;
+            if (endpoint != null) {
+                this.streamId = endpoint.getStreamId();
+            }
         }
 
         @Override
