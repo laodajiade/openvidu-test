@@ -154,7 +154,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     role = OpenViduRole.MODERATOR;
                 }
 
-                if (!rpcConnection.isReconnected() && StreamType.MAJOR.equals(streamType) &&
+                if (!rpcConnection.isReconnected() &&
                         SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
                     if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
                         log.error("disable participant active join room:{}", sessionId);

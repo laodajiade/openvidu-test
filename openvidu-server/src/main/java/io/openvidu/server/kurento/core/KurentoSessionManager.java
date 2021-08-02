@@ -570,9 +570,10 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.USER_NOT_STREAMING_ERROR_CODE,
                         "User '" + senderParticipant.getUuid() + " not streaming media in session '" + session.getSessionId() + "'");
             }
-
+            UseTime.point("sdpAnswer before");
             sdpAnswer = kParticipant.receiveMediaFrom((KurentoParticipant) senderParticipant, streamMode, sdpOffer,
                     streamType, publishStreamId, resultObj);
+            UseTime.point("sdpAnswer after");
             if (sdpAnswer == null) {
                 throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
                         "Unable to generate SDP answer when subscribing '" + participant.getUuid()

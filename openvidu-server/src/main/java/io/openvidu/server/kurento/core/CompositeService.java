@@ -66,7 +66,7 @@ public class CompositeService {
 
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
-        this.mixStreamId = session.getSessionId() + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase() + "_MIX";
+        this.mixStreamId = session.getSessionId() + "_MIX_" + RandomStringUtils.randomAlphabetic(6).toUpperCase();
         compositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("composite-thread-" + session.getSessionId() + "-%d")
                 .setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
@@ -222,7 +222,7 @@ public class CompositeService {
                 newPoint = normalLayout();
             }
 
-            if (isLayoutChange(newPoint, true)) {
+            if (isLayoutChange(newPoint, true) || true) {
                 if (newPoint.size() > 0) {
                     try {
                         session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),

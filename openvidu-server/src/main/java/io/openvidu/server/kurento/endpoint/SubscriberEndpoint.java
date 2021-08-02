@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.config.OpenviduConfig;
+import io.openvidu.server.core.UseTime;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import org.kurento.client.Continuation;
@@ -57,14 +58,18 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) ?
 				getCompositeService().getMixStreamId() : publisher.getOwner().getUuid());
 
+		UseTime.point("processOffer start");
 		String sdpAnswer = processOffer(sdpOffer);
+		UseTime.point("processOffer end");
 		// gatherCandidates();
+		UseTime.point("connect start");
 		if (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
 			log.info("666666666666666666666  {} {}", this.getStreamId(),this.getEndpoint().toString());
 			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint());
 		} else {
 			publisher.connect(this.getEndpoint());
 		}
+		UseTime.point("connect end");
 
 		setConnectedToPublisher(true);
 		setPublisher(publisher);
