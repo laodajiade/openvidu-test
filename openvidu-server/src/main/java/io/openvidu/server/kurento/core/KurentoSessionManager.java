@@ -358,7 +358,6 @@ public class KurentoSessionManager extends SessionManager {
         // change composite and sharing publisher share status
         if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
             session.getCompositeService().setExistSharing(false);
-            session.getCompositeService().setShareStreamId(null);
         }
     }
 
@@ -884,7 +883,6 @@ public class KurentoSessionManager extends SessionManager {
                 if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
                     KurentoSession kurentoSession = (KurentoSession) session;
                     kurentoSession.getCompositeService().setExistSharing(false);
-                    kurentoSession.getCompositeService().setShareStreamId(null);
                 }
             }
 

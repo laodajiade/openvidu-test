@@ -46,7 +46,6 @@ public class CompositeService {
 
     private final String mixStreamId;
 
-    private String shareStreamId;
 
     @Getter
     private JsonArray layoutCoordinates = new JsonArray();
@@ -187,13 +186,6 @@ public class CompositeService {
         return mixStreamId;
     }
 
-    public String getShareStreamId() {
-        return shareStreamId;
-    }
-
-    public void setShareStreamId(String shareStreamId) {
-        this.shareStreamId = shareStreamId;
-    }
 
     public MediaPipeline getPipeline() {
         return pipeline;
@@ -370,7 +362,9 @@ public class CompositeService {
      */
     private void getCompositeElements(PublisherEndpoint publisher) {
         HubPort hubPort;
-        if (publisher != null) {
+
+        if (publisher != null && !publisherIsConnected(publisher.getStreamId())) {
+            log.info("222222222222222222222222222 {}", publisher.getStreamId());
             if (Objects.isNull(hubPort = publisher.getMajorShareHubPort())) {
                 hubPort = publisher.createMajorShareHubPort(this.composite);
             }
@@ -378,6 +372,15 @@ public class CompositeService {
                 publisher.getEndpoint().connect(hubPort);
             }
         }
+    }
+
+    private boolean publisherIsConnected(String streamId) {
+        for (CompositeObjectWrapper compositeObjectWrapper : sourcesPublisher) {
+            if (compositeObjectWrapper.streamId.equals(streamId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Request<JsonObject> composeLayoutRequest(String pipelineId, String sessionId, List<CompositeObjectWrapper> objects, LayoutModeEnum layoutMode) {
@@ -497,6 +500,7 @@ public class CompositeService {
         String username;
         int order;
         StreamType streamType;
+        String streamId;
         PublisherEndpoint endpoint;
 
         public CompositeObjectWrapper(Participant participant, StreamType streamType, PublisherEndpoint endpoint) {
@@ -505,6 +509,9 @@ public class CompositeService {
             this.order = participant.getOrder();
             this.streamType = streamType;
             this.endpoint = endpoint;
+            if (endpoint != null) {
+                this.streamId = endpoint.getStreamId();
+            }
         }
 
         @Override

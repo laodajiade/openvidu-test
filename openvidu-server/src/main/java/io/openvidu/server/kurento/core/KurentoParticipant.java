@@ -531,10 +531,6 @@ public class KurentoParticipant extends Participant {
 		}
 		this.subscribers.clear();
 		releaseAllPublisherEndpoint(reason, kmsDisconnectionTime);
-		if (session.isShare(this.getUuid()) &&
-				!Objects.isNull(session.getCompositeService().getShareStreamId())) {
-			session.getCompositeService().setShareStreamId(null);
-		}
 	}
 
 	/**
