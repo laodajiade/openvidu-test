@@ -303,9 +303,9 @@ public class KurentoSessionManager extends SessionManager {
 //            }
 //        }
 
-        if (session.isShare(participant.getUuid())) {
-            changeSharingStatusInConference(session, participant);
-        }
+//        if (session.isShare(participant.getUuid())) {
+//            changeSharingStatusInConference(session, participant);
+//        }
 
         // Close Session if no more participants
         Set<Participant> remainingParticipants = null;
@@ -353,13 +353,13 @@ public class KurentoSessionManager extends SessionManager {
 
     }
 
-    @Override
-    public void changeSharingStatusInConference(KurentoSession session, Participant participant) {
-        // change composite and sharing publisher share status
-        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            session.getCompositeService().setExistSharing(false);
-        }
-    }
+//    @Override
+//    public void changeSharingStatusInConference(KurentoSession session, Participant participant) {
+//        // change composite and sharing publisher share status
+//        if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU)) {
+//            session.getCompositeService().setExistSharing(false);
+//        }
+//    }
 
     @Override
     public RpcConnection accessOut(RpcConnection rpcConnection) {
@@ -430,10 +430,10 @@ public class KurentoSessionManager extends SessionManager {
         }
 
         kSession.registerPublisher();
-        if (Objects.equals(StreamType.SHARING, streamType)
-                && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
-            kSession.getCompositeService().setExistSharing(true);
-        }
+//        if (Objects.equals(StreamType.SHARING, streamType)
+//                && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
+//            kSession.getCompositeService().setExistSharing(true);
+//        }
 
         if (sdpAnswer != null) {
             sessionEventsHandler.onPublishMedia(participant, publishingEndpoint.getEndpointName(),
@@ -870,21 +870,21 @@ public class KurentoSessionManager extends SessionManager {
             }
             // check if exists SHARING
             Participant sharePart;
-            if (session.isShare(evictParticipant.getUuid())) {
-                //todo 2.0 不再需要发停止通知
-//                JsonObject params = new JsonObject();
-//                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-//                        sharePart.getParticipantPublicId());
+//            if (session.isShare(evictParticipant.getUuid())) {
 //
-//                // send stop SHARING
-//                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-//                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
-                // change session share status
-                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                    KurentoSession kurentoSession = (KurentoSession) session;
-                    kurentoSession.getCompositeService().setExistSharing(false);
-                }
-            }
+////                JsonObject params = new JsonObject();
+////                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
+////                        sharePart.getParticipantPublicId());
+////
+////                // send stop SHARING
+////                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
+////                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
+//                // change session share status
+//                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+//                    KurentoSession kurentoSession = (KurentoSession) session;
+//                    kurentoSession.getCompositeService().setExistSharing(false);
+//                }
+//            }
 
             // change the layout if mode is MCU
             if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {

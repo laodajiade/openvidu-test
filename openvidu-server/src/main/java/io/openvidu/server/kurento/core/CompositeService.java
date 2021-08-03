@@ -287,7 +287,11 @@ public class CompositeService {
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            getCompositeElements(part, source, StreamType.MAJOR);
+            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+                getCompositeElements(part, source, StreamType.MINOR);
+            } else {
+                getCompositeElements(part, source, StreamType.MAJOR);
+            }
             otherPartSize++;
         }
     }
@@ -311,7 +315,11 @@ public class CompositeService {
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            getCompositeElements(part, source, StreamType.MAJOR);
+            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+                getCompositeElements(part, source, StreamType.MINOR);
+            } else {
+                getCompositeElements(part, source, StreamType.MAJOR);
+            }
             otherPartSize++;
         }
     }
@@ -327,8 +335,13 @@ public class CompositeService {
                 .collect(Collectors.toList());
 
         List<CompositeObjectWrapper> source = new ArrayList<>(parts.size());
+        StreamType priorityStreamType = parts.size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
         for (Participant part : parts) {
-            getCompositeElements(part, source, StreamType.MAJOR);
+            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+                getCompositeElements(part, source, priorityStreamType);
+            } else {
+                getCompositeElements(part, source, StreamType.MAJOR);
+            }
         }
 
 
@@ -469,7 +482,7 @@ public class CompositeService {
     /**
      * 前后布局对比
      *
-     * @param streamChange 是否对比streamId的变化
+     * @param streamChange 是否对比streamId的变化,客户端不需要知道流变化
      * @return 有变化返回true
      */
     private boolean isLayoutChange(List<CompositeObjectWrapper> newObjects, boolean streamChange) {

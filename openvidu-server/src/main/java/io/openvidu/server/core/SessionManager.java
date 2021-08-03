@@ -122,7 +122,7 @@ public abstract class SessionManager {
     public abstract boolean leaveRoomSimple(Participant participant, Integer transactionId, EndReason reason,
                                             boolean closeWebSocket);
 
-    public abstract void changeSharingStatusInConference(KurentoSession session, Participant participant);
+    // public abstract void changeSharingStatusInConference(KurentoSession session, Participant participant);
 
     public abstract RpcConnection accessOut(RpcConnection rpcConnection);
 
