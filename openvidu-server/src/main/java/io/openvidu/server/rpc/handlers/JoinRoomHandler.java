@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.broker.ToOpenviduElement;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.dao.FixedRoomMapper;
@@ -40,6 +41,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
     @Autowired
     private FixedRoomMapper fixedRoomMapper;
+
+    @Autowired
+    private RtcUserClient rtcUserClient;
 
     @Value("${joinroom.rate.limiter:30}")
     public void setRateLimiter(double rate) {
@@ -414,6 +418,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 rpcConnection.setSessionId(sessionId);
+                rtcUserClient.updateRpcConnection(rpcConnection); //强制同步一次数据
                 UseTime.point("join room p1");
                 try {
                     if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
