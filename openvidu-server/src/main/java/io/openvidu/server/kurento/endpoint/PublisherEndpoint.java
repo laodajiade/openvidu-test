@@ -773,6 +773,13 @@ public class PublisherEndpoint extends MediaEndpoint {
 		return majorShareHubPort;
 	}
 
+	public void releaseMajorShareHubPort() {
+		if (majorShareHubPort != null) {
+			majorShareHubPort.release();
+		}
+		majorShareHubPort = null;
+	}
+
 	public HubPort getRecordHubPort() {
 		return recordHubPort;
 	}

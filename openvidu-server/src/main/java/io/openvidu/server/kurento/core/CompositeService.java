@@ -554,7 +554,7 @@ public class CompositeService {
 
             smartReconnect(newPoint, source);
 
-            source.endpoint.getMajorShareHubPort().release();
+            source.endpoint.releaseMajorShareHubPort();
         }
     }
 
