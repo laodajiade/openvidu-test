@@ -64,8 +64,8 @@ public class SubscriberEndpoint extends MediaEndpoint {
 		// gatherCandidates();
 		UseTime.point("connect start");
 		if (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-			log.info("666666666666666666666  {} {}", this.getStreamId(),this.getEndpoint().toString());
-			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint());
+			getCompositeService().sinkConnect(this);
+			//internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint());
 		} else {
 			publisher.connect(this.getEndpoint());
 		}

@@ -10,11 +10,11 @@ import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
+import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.utils.SafeSleep;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.kurento.client.EventListener;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
@@ -39,10 +39,7 @@ public class CompositeService {
     private HubPort hubPortOut = null;
     private ListenerSubscription hubPortOutSubscription = null;
 
-
     private final ThreadPoolExecutor compositeThreadPoolExes;
-
-    private boolean existSharing;
 
     private final String mixStreamId;
 
@@ -108,7 +105,7 @@ public class CompositeService {
 
     private void createHubPortOut() {
         hubPortOut = new HubPort.Builder(composite).build();
-        this.hubPortOut.setMinOutputBitrate(2000000);
+        this.hubPortOut.setMinOutputBitrate(1000000);
         this.hubPortOut.setMaxOutputBitrate(2000000);
         hubPortOutSubscription = registerElemErrListener(hubPortOut);
         log.info("Sub EP create hubPortOut.");
@@ -131,13 +128,13 @@ public class CompositeService {
         try {
             element.release(new Continuation<Void>() {
                 @Override
-                public void onSuccess(Void result) throws Exception {
+                public void onSuccess(Void result) {
                     log.debug("Released successfully media element #{} ",
                             eid);
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     log.warn("Could not release media element #{}",
                             eid, cause);
                 }
@@ -154,12 +151,9 @@ public class CompositeService {
     }
 
     protected ListenerSubscription registerElemErrListener(MediaElement element) {
-        return element.addErrorListener(new EventListener<ErrorEvent>() {
-            @Override
-            public void onEvent(ErrorEvent event) {
-                // owner.sendMediaError(event);
-                log.warn("ListenerSubscription error.{}", event.getDescription());
-            }
+        return element.addErrorListener(event -> {
+            // owner.sendMediaError(event);
+            log.warn("ListenerSubscription error.{}", event.getDescription());
         });
     }
 
@@ -172,14 +166,6 @@ public class CompositeService {
 
     public Composite getComposite() {
         return composite;
-    }
-
-    public boolean isExistSharing() {
-        return existSharing;
-    }
-
-    public void setExistSharing(boolean existSharing) {
-        this.existSharing = existSharing;
     }
 
     public String getMixStreamId() {
@@ -226,7 +212,9 @@ public class CompositeService {
 
                         this.lastLayoutModeType = this.layoutModeType;
                         this.lastLayoutMode = this.layoutMode;
+                        List<CompositeObjectWrapper> oldPoint = this.sourcesPublisher;
                         this.sourcesPublisher = newPoint;
+                        releaseCompositeObjectWrapper(oldPoint, newPoint);
                     } catch (Exception e) {
                         log.error("Send Composite Layout Exception:", e);
                     }
@@ -236,6 +224,15 @@ public class CompositeService {
             }
         } catch (Exception e) {
             log.error("MCU update Composite error", e);
+        }
+    }
+
+    private void releaseCompositeObjectWrapper(List<CompositeObjectWrapper> oldPoint, List<CompositeObjectWrapper> newPoint) {
+        for (CompositeObjectWrapper source : oldPoint) {
+            if (newPoint.stream().anyMatch(target -> target.uuid.equals(source.uuid) && target.streamId.equals(source.streamId))) {
+                continue;
+            }
+            source.endpoint.getMajorShareHubPort().release();
         }
     }
 
@@ -364,7 +361,6 @@ public class CompositeService {
         HubPort hubPort;
 
         if (publisher != null && !publisherIsConnected(publisher.getStreamId())) {
-            log.info("222222222222222222222222222 {}", publisher.getStreamId());
             if (Objects.isNull(hubPort = publisher.getMajorShareHubPort())) {
                 hubPort = publisher.createMajorShareHubPort(this.composite);
             }
@@ -493,6 +489,34 @@ public class CompositeService {
             }
         }
         return false;
+    }
+
+    public void sinkConnect(SubscriberEndpoint subscriberEndpoint) {
+        Participant participant = subscriberEndpoint.getOwner();
+        for (CompositeObjectWrapper compositeObjectWrapper : this.sourcesPublisher) {
+            if (compositeObjectWrapper.uuid.equals(participant.getUuid())) {
+                log.info("sink connect self publisher {} {}", participant.getUuid(), compositeObjectWrapper.streamId);
+                internalSinkConnect(compositeObjectWrapper.endpoint.getMajorShareHubPort(), subscriberEndpoint);
+                return;
+            }
+        }
+        internalSinkConnect(this.getHubPortOut(), subscriberEndpoint);
+    }
+
+    private void internalSinkConnect(final MediaElement source, final SubscriberEndpoint subscriberEndpoint) {
+        source.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
+                        source.getId(), subscriberEndpoint.getEndpoint().getId());
+            }
+
+            @Override
+            public void onError(Throwable cause) {
+                log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
+                        source.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
+            }
+        });
     }
 
     private static class CompositeObjectWrapper {
