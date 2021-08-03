@@ -14,4 +14,9 @@ public class CommonConstants {
     public static final String RECORD_STORAGE_LESS_THAN_TEN_PERCENT = "storageLessThan10Percent";
     public static final String RECORD_REBUILD_TASK = "rebuildRecordTask";
     public static final String SERVER_INTERNAL_ERROR = "serverInternalError";
+
+    /**
+     * 混流的streamId的特征
+     */
+    public static final String MIX_STREAM_ID_TRAIT = "_MIX_";
 }

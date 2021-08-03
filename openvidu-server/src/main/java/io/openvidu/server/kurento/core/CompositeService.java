@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
 import io.openvidu.server.core.Participant;
@@ -20,6 +21,7 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -59,10 +61,16 @@ public class CompositeService {
 
     private List<CompositeObjectWrapper> sourcesPublisher = new ArrayList<>();
 
+    /**
+     * 记录每个拉流ep连接的对象
+     * key:subscribeId  value=hubPort_id
+     */
+    private Map<String, String> subFromHubPort = new ConcurrentHashMap<>();
+
 
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
-        this.mixStreamId = session.getSessionId() + "_MIX_" + RandomStringUtils.randomAlphabetic(6).toUpperCase();
+        this.mixStreamId = session.getSessionId() + CommonConstants.MIX_STREAM_ID_TRAIT + RandomStringUtils.randomAlphabetic(6).toUpperCase();
         compositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("composite-thread-" + session.getSessionId() + "-%d")
                 .setDaemon(true).build(), new ThreadPoolExecutor.DiscardPolicy());
@@ -227,15 +235,6 @@ public class CompositeService {
         }
     }
 
-    private void releaseCompositeObjectWrapper(List<CompositeObjectWrapper> oldPoint, List<CompositeObjectWrapper> newPoint) {
-        for (CompositeObjectWrapper source : oldPoint) {
-            if (newPoint.stream().anyMatch(target -> target.uuid.equals(source.uuid) && target.streamId.equals(source.streamId))) {
-                continue;
-            }
-            source.endpoint.getMajorShareHubPort().release();
-        }
-    }
-
 
     private List<CompositeObjectWrapper> rostrumLayout() {
         Participant moderatorPart = session.getModeratorPart();
@@ -326,7 +325,6 @@ public class CompositeService {
 
     /**
      * 等分布局
-     * return 如果布局有变化，返回true，否则返回false
      */
     private List<CompositeObjectWrapper> normalLayout() {
         List<Participant> parts = session.getParticipants().stream()
@@ -359,7 +357,6 @@ public class CompositeService {
             publisher = kurentoParticipant.createPublisher(streamType);
             publisher.setCompositeService(this);
             publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
-            kurentoParticipant.setPublisher(streamType, publisher);
             log.info("{} {} publisher create {}", participant.getUuid(), streamType, publisher.getStreamId());
         }
 
@@ -379,6 +376,19 @@ public class CompositeService {
             }
             if (publisher.getEndpoint() != null) {
                 publisher.getEndpoint().connect(hubPort);
+
+
+                //如果是从墙下MCU上墙，则修改hubPort对象
+                if (publisher.getStreamType() == StreamType.MAJOR || publisher.getStreamType() == StreamType.MINOR) {
+                    SubscriberEndpoint mixSubscriber = publisher.getOwner().getMixSubscriber();
+                    if (mixSubscriber != null) {
+                        String hubPortId = subFromHubPort.get(mixSubscriber.getStreamId());
+                        if (Objects.equals(hubPortId, hubPortOut.getId())) {
+                            log.info("从 hubPortOut {} 订阅改为自己的hubPort {}", hubPortId, hubPort.getId());
+                            internalSinkConnect(hubPort, mixSubscriber);
+                        }
+                    }
+                }
             }
         }
     }
@@ -516,21 +526,55 @@ public class CompositeService {
         internalSinkConnect(this.getHubPortOut(), subscriberEndpoint);
     }
 
-    private void internalSinkConnect(final MediaElement source, final SubscriberEndpoint subscriberEndpoint) {
-        source.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
+    private void internalSinkConnect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
+        subFromHubPort.put(subscriberEndpoint.getStreamId(), hubPort.getId());
+        hubPort.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
             @Override
             public void onSuccess(Void result) {
                 log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        source.getId(), subscriberEndpoint.getEndpoint().getId());
+                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        source.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
+                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
             }
         });
     }
+
+    /**
+     * 释放掉已经不需要的hubPort
+     */
+    private void releaseCompositeObjectWrapper(List<CompositeObjectWrapper> oldPoint, List<CompositeObjectWrapper> newPoint) {
+        for (CompositeObjectWrapper source : oldPoint) {
+            if (newPoint.stream().anyMatch(target -> target.uuid.equals(source.uuid) && target.streamId.equals(source.streamId))) {
+                continue;
+            }
+
+            smartReconnect(newPoint, source);
+
+            source.endpoint.getMajorShareHubPort().release();
+        }
+    }
+
+    private void smartReconnect(List<CompositeObjectWrapper> newPoint, CompositeObjectWrapper source) {
+        subFromHubPort.forEach((k, v) -> {
+            if (Objects.equals(v, source.endpoint.getMajorShareHubPort().getId())) {
+                Participant owner = source.endpoint.getOwner();
+                SubscriberEndpoint subscriber = owner.getSubscriber(k);
+                if (subscriber != null) {
+                    Optional<CompositeObjectWrapper> find = newPoint.stream().filter(target -> target.uuid.equals(source.uuid)).findFirst();
+                    if (find.isPresent()) {
+                        find.ifPresent(o -> internalSinkConnect(o.endpoint.getMajorShareHubPort(), subscriber));
+                    } else {
+                        internalSinkConnect(this.hubPortOut, subscriber);
+                    }
+                }
+            }
+        });
+    }
+
 
     private static class CompositeObjectWrapper {
         String uuid;

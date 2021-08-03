@@ -909,15 +909,6 @@ public abstract class SessionManager {
         targetPart.changeHandStatus(ParticipantHandStatus.speaker);
         targetConnectionId = targetPart.getParticipantPublicId();
 
-        if (isMcu) {
-            //todo 2.0 MCU 演讲布局
-            // change conference layout
-            // conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
-            // json RPC notify KMS layout changed.
-            //conferenceSession.invokeKmsConferenceLayout();
-            getSession(targetPart.getSessionId()).getCompositeService().asyncUpdateComposite();
-            //todo 2.0 MCU 演讲布局
-        }
 
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.SET_ROLL_CALL_ROOM_ID_PARAM, conferenceSession.getSessionId());

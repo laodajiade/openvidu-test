@@ -42,7 +42,7 @@ public class UnsubscribeVideoHandler extends RpcAbstractHandler {
 
         String subscribeId = getStringOptionalParam(request, SUBSCRIBE_ID_PARAM);
         if (streamMode == StreamModeEnum.MIX_MAJOR) {
-            subscribeId = participant.getSubscribers().keySet().stream().filter(id -> id.contains("_MIX_")).findFirst().orElse(null);
+            subscribeId = participant.getMixSubscriber() == null ? "" : participant.getMixSubscriber().getStreamId();
         } else if (StringUtils.isBlank(subscribeId)) {
             String sender = getStringParam(request, SENDER_UUID_PARAM);
             StreamType streamType = StreamType.valueOf(getStringParam(request, STREAM_TYPE_PARAM));
