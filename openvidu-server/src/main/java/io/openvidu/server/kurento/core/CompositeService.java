@@ -65,7 +65,7 @@ public class CompositeService {
      * 记录每个拉流ep连接的对象
      * key:subscribeId  value=hubPort_id
      */
-    private Map<String, String> subFromHubPort = new ConcurrentHashMap<>();
+    private final Map<String, String> subFromHubPort = new ConcurrentHashMap<>();
 
 
     public CompositeService(Session session) {
