@@ -53,8 +53,8 @@ public class Participant {
 
     @Getter
     protected String deviceModel;
-    //todo 2.0 与会者的流状态需要修改
-    protected boolean streaming = false;
+    //delete 2.0 与会者的流状态需要修改
+    //protected boolean streaming = false;
     protected volatile boolean closed;
 
     private Long userId;
@@ -351,28 +351,28 @@ public class Participant {
         this.platform = platform;
     }
 
-    //todo 2.0 Deprecated
-    @Deprecated
-    public boolean isStreaming() {
-        return streaming;
-    }
+    //delete 2.0 Deprecated
+//    @Deprecated
+//    public boolean isStreaming() {
+//        return streaming;
+//    }
 
     public boolean isStreaming(StreamType streamType) {
         PublisherEndpoint publisher = this.getPublisher(streamType);
         if (publisher == null) {
             return false;
         }
-        //todo 2.0 Endpoint streaming type
-        return true;
+        return publisher.isStreaming();
     }
 
     public boolean isClosed() {
         return closed;
     }
 
-    public void setStreaming(boolean streaming) {
-        this.streaming = streaming;
-    }
+    //delete 2.0 Deprecated
+//    public void setStreaming(boolean streaming) {
+//        this.streaming = streaming;
+//    }
 
     public SubtitleConfigEnum getSubtitleConfig() {
         return subtitleConfig;
@@ -450,7 +450,6 @@ public class Participant {
         final int prime = 31;
         int result = 1;
         result = prime * result + (participantPrivateId == null ? 0 : participantPrivateId.hashCode());
-        result = prime * result + (streaming ? 1231 : 1237);
         result = prime * result + (participantPublicId == null ? 0 : participantPublicId.hashCode());
         return result;
     }
@@ -474,9 +473,6 @@ public class Participant {
         } else if (!participantPrivateId.equals(other.participantPrivateId)) {
             return false;
         }
-        if (streaming != other.streaming) {
-            return false;
-        }
         if (participantPublicId == null) {
             if (other.participantPublicId != null) {
                 return false;
@@ -497,7 +493,6 @@ public class Participant {
         if (participantPublicId != null) {
             builder.append("participantPublicId=").append(participantPublicId).append(", ");
         }
-        builder.append("streaming=").append(streaming).append("]");
         return builder.toString();
     }
 

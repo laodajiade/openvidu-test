@@ -21,6 +21,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.java.client.RecordingProperties;
 import io.openvidu.server.cdr.CallDetailRecord;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.EndpointTypeEnum;
@@ -123,7 +124,7 @@ public class ComposedRecordingService extends RecordingService {
 		this.composites.put(session.getSessionId(), compositeWrapper);
 
 		for (Participant p : session.getParticipants()) {
-			if (p.isStreaming()) {
+			if (p.isStreaming(StreamType.MAJOR)) {
 				try {
 					this.joinPublisherEndpointToComposite(session, p);
 				} catch (OpenViduException e) {

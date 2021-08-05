@@ -45,7 +45,7 @@ public class SingleStreamLivingService extends LivingService {
         storedLivers.put(session.getSessionId(), new ConcurrentHashMap<String, LiveEndpointWrapper>());
 
         for (Participant p : session.getParticipants()) {
-            if (p.isStreaming()) {
+            if (p.isStreaming(StreamType.MAJOR)) {
 
                 MediaProfileSpecType profile = null;
                 try {

@@ -1,5 +1,6 @@
 package io.openvidu.server.kurento.kms;
 
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
@@ -7,6 +8,7 @@ import io.openvidu.server.kurento.core.DeliveryKmsManager;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.endpoint.MediaChannel;
+import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.MediaPipeline;
@@ -59,8 +61,11 @@ public class EndpointLoadManager implements LoadManager {
             Set<Participant> participants = kurentoSession.getParticipants();
             for (Participant participant : participants) {
                 KurentoParticipant kp = (KurentoParticipant) participant;
-                if (kp.isPublisherStreaming()) {
-                    publisherCntMap.compute(pipelineAndKmsMap.getOrDefault(kp.getPipeline().getId(), UNKNOWN), incFunction);
+                Map<StreamType, PublisherEndpoint> publishers = kp.getPublishers();
+                for (PublisherEndpoint publisherEndpoint : publishers.values()) {
+                    if (publisherEndpoint.isStreaming()) {
+                        publisherCntMap.compute(pipelineAndKmsMap.getOrDefault(kp.getPipeline().getId(), UNKNOWN), incFunction);
+                    }
                 }
 
                 for (SubscriberEndpoint value : kp.getSubscribers().values()) {

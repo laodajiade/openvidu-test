@@ -171,9 +171,6 @@ public class RpcHandlerFactory {
     private StopPtzControlHandler stopPtzControlHandler;
 
     @Resource
-    private SwapPartWindowHandler swapPartWindowHandler;
-
-    @Resource
     private GetDepartmentTreeHandler getDepartmentTreeHandler;
 
     @Resource
@@ -390,7 +387,6 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.GET_SUB_DEVORUSER_METHOD, getSubDevOrUserHandler);
         handlersMap.put(ProtocolElements.START_PTZ_CONTROL_METHOD, startPtzControlHandler);
         handlersMap.put(ProtocolElements.STOP_PTZ_CONTROL_METHOD, stopPtzControlHandler);
-        handlersMap.put(ProtocolElements.SWAP_PART_WINDOW_METHOD, swapPartWindowHandler);
         handlersMap.put(ProtocolElements.GET_DEPARTMENT_TREE_METHOD, getDepartmentTreeHandler);
         handlersMap.put(ProtocolElements.COMMAND_UOGRADE_METHOD, commandUpgradeHandler);
         handlersMap.put(ProtocolElements.ADJUST_RESOLUTION_METHOD, adjustResolutionHandler);

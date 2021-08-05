@@ -3,6 +3,7 @@ package io.openvidu.server.core;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.extern.slf4j.Slf4j;
@@ -161,7 +162,7 @@ public class TimerManager {
                 //send notify polling check
                 JsonObject jsonCheckParam = new JsonObject();
                 jsonCheckParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM,participant.getUuid());
-                if (participant.isStreaming()) {
+                if (participant.isStreaming(StreamType.MAJOR)) {
                     setOrder(participant.getOrder());
                     jsonCheckParam.addProperty(ProtocolElements.POLLING_ISCHECK_PARAM, true);
                 } else {

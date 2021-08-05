@@ -33,6 +33,7 @@ import java.util.function.BiFunction;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import io.openvidu.server.common.enums.StreamType;
 import org.apache.commons.io.FilenameUtils;
 import org.kurento.client.ErrorEvent;
 import org.kurento.client.EventListener;
@@ -100,7 +101,7 @@ public class SingleStreamRecordingService extends RecordingService {
 		final CountDownLatch recordingStartedCountdown = new CountDownLatch(activePublishers);
 
 		for (Participant p : session.getParticipants()) {
-			if (p.isStreaming()) {
+			if (p.isStreaming(StreamType.MAJOR)) {
 
 				MediaProfileSpecType profile = null;
 				try {

@@ -76,7 +76,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	private HubPort audioHubPortOut = null;
 
-    private GenericMediaElement filter;
+	@Getter
+	private boolean streaming =false;
+
+	private GenericMediaElement filter;
 	private Map<String, Set<String>> subscribersToFilterEvents = new ConcurrentHashMap<>();
 	private Map<String, ListenerSubscription> filterListeners = new ConcurrentHashMap<>();
 
@@ -371,6 +374,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 //		gatherCandidates();
 		this.createdAt = System.currentTimeMillis();
+		this.streaming = true;
 		return sdpResponse;
 	}
 

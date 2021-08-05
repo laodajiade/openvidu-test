@@ -1096,7 +1096,7 @@ public class KurentoSessionManager extends SessionManager {
                     : moderator;
             log.debug("Request [APPLY_FILTER] over stream [{}] for reason [{}]", streamId, filterReason);
             KurentoParticipant kParticipantPublisher = (KurentoParticipant) publisher;
-            if (!publisher.isStreaming()) {
+            if (!publisher.isStreaming(StreamType.MAJOR)) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to applyFilter to user {} "
                                 + "in session {} but user is not streaming media",
@@ -1147,7 +1147,7 @@ public class KurentoSessionManager extends SessionManager {
             Participant participant = this.getParticipant(participantPrivateId);
             log.debug("Request [REMOVE_FILTER] over stream [{}] for reason [{}]", streamId, filterReason);
             KurentoParticipant kParticipant = (KurentoParticipant) participant;
-            if (!participant.isStreaming()) {
+            if (!participant.isStreaming(StreamType.MAJOR)) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to removeFilter to user {} "
                                 + "in session {} but user is not streaming media",
@@ -1191,7 +1191,7 @@ public class KurentoSessionManager extends SessionManager {
             Participant participant = this.getParticipant(participantPrivateId);
             log.debug("Request [EXEC_FILTER_MTEHOD] over stream [{}] for reason [{}]", streamId, filterReason);
             KurentoParticipant kParticipant = (KurentoParticipant) participant;
-            if (!participant.isStreaming()) {
+            if (!participant.isStreaming(StreamType.MAJOR)) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to execFilterMethod to user {} "
                                 + "in session {} but user is not streaming media",
@@ -1232,7 +1232,7 @@ public class KurentoSessionManager extends SessionManager {
             log.debug("Request [ADD_FILTER_LISTENER] over stream [{}]", streamId);
             KurentoParticipant kParticipantPublishing = (KurentoParticipant) this.getParticipant(publisherPrivateId);
             KurentoParticipant kParticipantSubscribing = (KurentoParticipant) userSubscribing;
-            if (!kParticipantPublishing.isStreaming()) {
+            if (!kParticipantPublishing.isStreaming(StreamType.MAJOR)) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to addFilterEventListener to stream {} "
                                 + "in session {} but the publisher is not streaming media",
@@ -1276,7 +1276,7 @@ public class KurentoSessionManager extends SessionManager {
             log.debug("Request [REMOVE_FILTER_LISTENER] over stream [{}]", streamId);
             Participant participantPublishing = this.getParticipant(participantPrivateId);
             KurentoParticipant kParticipantPublishing = (KurentoParticipant) participantPublishing;
-            if (!participantPublishing.isStreaming()) {
+            if (!participantPublishing.isStreaming(StreamType.MAJOR)) {
                 log.warn(
                         "PARTICIPANT {}: Requesting to removeFilterEventListener to stream {} "
                                 + "in session {} but user is not streaming media",

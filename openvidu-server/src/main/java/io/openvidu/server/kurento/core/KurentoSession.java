@@ -527,13 +527,8 @@ public class KurentoSession extends Session {
 		// Close all MediaEndpoints of participants
 		this.getParticipants().forEach(p -> {
 			KurentoParticipant kParticipant = (KurentoParticipant) p;
-			final boolean wasStreaming = kParticipant.isStreaming();
 			kParticipant.releaseAllFilters();
 			kParticipant.close(EndReason.mediaServerDisconnect, false, kmsDisconnectionTime);
-			if (wasStreaming) {
-//				kurentoSessionHandler.onUnpublishMedia(kParticipant, this.getParticipants(), null, null, null,
-//						EndReason.mediaServerDisconnect);
-			}
 		});
 
 		// Release pipeline, create a new one and prepare new PublisherEndpoints for

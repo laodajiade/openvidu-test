@@ -18,7 +18,6 @@
 package io.openvidu.server.kurento.core;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
@@ -39,7 +38,6 @@ import org.kurento.client.*;
 import org.kurento.client.internal.server.KurentoServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -163,7 +161,7 @@ public class KurentoParticipant extends Participant {
 
 		publisher.createEndpoint(publisher.getPublisherLatch());
         if (getPublisher(streamType).getEndpoint() == null) {
-            this.setStreaming(false);
+            //this.setStreaming(false);
             throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
         }
         publisher.setMediaOptions(mediaOptions);
@@ -282,10 +280,10 @@ public class KurentoParticipant extends Participant {
 		return this.publishers;
 	}
 
-	//todo 2.0 需要修改
-	public boolean isPublisherStreaming() {
-		return this.isStreaming() && publisher != null && publisher.getEndpoint() != null;
-	}
+	// delete 2.0 需要修改
+//	public boolean isPublisherStreaming() {
+//		return this.isStreaming() && publisher != null && publisher.getEndpoint() != null;
+//	}
 
 	public void setPublisher(StreamType streamType, PublisherEndpoint publisher) {
 		this.publishers.put(streamType, publisher);
@@ -314,9 +312,9 @@ public class KurentoParticipant extends Participant {
 				this.session.getSessionId(), sdpType);
 		log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpString);
 
-		String sdpResponse = this.getPublisher(streamType).publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
+		PublisherEndpoint publisher = this.getPublisher(streamType);
+		String sdpResponse = publisher.publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
 				loopbackConnectionType);
-		this.streaming = true;
 
 		// deal part default order in the conference
 		if (isMcuInclude()) {
@@ -337,8 +335,8 @@ public class KurentoParticipant extends Participant {
 			this.livingManager.startOneIndividualStreamLiving(session, null, null, this);
 		}
 
-		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), this.getPublisher(streamType).getStreamId(),
-				this.getPublisher(streamType).getMediaOptions(), this.getPublisher(streamType).createdAt());
+		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
+				publisher.getMediaOptions(), publisher.createdAt());
 
 		return sdpResponse;
 	}
@@ -740,11 +738,14 @@ public class KurentoParticipant extends Participant {
 		JsonObject json = super.toJson();
 		JsonArray publisherEnpoints = new JsonArray();
 		JsonArray mediaChannels = new JsonArray();
-		if (this.streaming && this.publisher.getEndpoint() != null) {
-			publisherEnpoints.add(toJsonFunction.apply(this.publisher));
-			if (!this.publisher.getMediaChannels().isEmpty()){
-				for (MediaChannel mediaChannel : this.publisher.getMediaChannels().values()) {
-					mediaChannels.add(mediaChannel.toJson());
+
+		for (PublisherEndpoint publisher : getPublishers().values()) {
+			if (publisher.isStreaming()) {
+				publisherEnpoints.add(toJsonFunction.apply(this.publisher));
+				if (!this.publisher.getMediaChannels().isEmpty()){
+					for (MediaChannel mediaChannel : this.publisher.getMediaChannels().values()) {
+						mediaChannels.add(mediaChannel.toJson());
+					}
 				}
 			}
 		}
@@ -779,23 +780,12 @@ public class KurentoParticipant extends Participant {
 	 * @param publicIds participants' publicId that this participant receive video from
 	 */
 	void switchVoiceModeInSession(VoiceMode operation, Set<String> publicIds) {
-		Set<Participant> participants = getSession().getParticipants();
-		if (!CollectionUtils.isEmpty(participants)) {
-			participants.forEach(participant -> {
-				String subToPartPublicId;
-				if (!Objects.equals(subToPartPublicId = participant.getParticipantPublicId(), this.getParticipantPublicId())
-						&& publicIds.contains(subToPartPublicId) && participant.isStreaming()) {
-					log.info("PARTICIPANT {}: Is now {} receiving video from {} in room {}",
-							this.getParticipantPublicId(), Objects.equals(operation, VoiceMode.on) ?
-									"stop" : "start", subToPartPublicId, this.session.getSessionId());
-					KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
-					SubscriberEndpoint subscriberEndpoint = subscribers.get(subToPartPublicId);
-					if (Objects.nonNull(subscriberEndpoint)) {
-						subscriberEndpoint.controlMediaTypeLink(MediaType.VIDEO, operation);
-					}
-				}
-			});
-		}
+		subscribers.forEach((subscribeId, subscriberEndpoint) -> {
+			log.info("PARTICIPANT {}: Is now {} receiving video from {} in room {}",
+					this.getUuid(), Objects.equals(operation, VoiceMode.on) ?
+							"stop" : "start", subscribeId, this.session.getSessionId());
+			subscriberEndpoint.controlMediaTypeLink(MediaType.VIDEO, operation);
+		});
 	}
 // delete 2.0 @Deprecated
 //	/**

@@ -477,7 +477,6 @@ public class ProtocolElements {
 
     public static final String STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_METHOD = "stopPtzControlNotify";
 
-    public static final String SWAP_PART_WINDOW_METHOD = "swapPartWindow";
     public static final String SWAP_PART_WINDOW_SOURCE_CONNECTION_ID_PAPM = "sourceConnectionId";
     public static final String SWAP_PART_WINDOW_TARGET_CONNECTION_ID_PAPM = "targetConnectionId";
 
