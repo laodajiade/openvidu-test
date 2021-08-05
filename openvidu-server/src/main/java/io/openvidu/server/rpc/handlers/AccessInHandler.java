@@ -10,6 +10,7 @@ import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.DeviceSearch;
 import io.openvidu.server.common.pojo.UserLoginHistory;
 import io.openvidu.server.core.AppVersion;
+import io.openvidu.server.core.EndReason;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DateUtil;
@@ -200,7 +201,8 @@ public class AccessInHandler extends RpcAbstractHandler {
         if (partInfo != null && !partInfo.isEmpty()) {
             // evict the previous parts in room
             sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), previousRpc.getUserUuid(),
-                    Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                    Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
+                    EndReason.forceDisconnectByServer);
         }
 
         if (Objects.nonNull(notificationService.getRpcConnection(previousRpc.getParticipantPrivateId()))) {

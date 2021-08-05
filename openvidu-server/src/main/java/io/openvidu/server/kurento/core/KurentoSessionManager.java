@@ -219,7 +219,7 @@ public class KurentoSessionManager extends SessionManager {
             // adjust order notify after onLeft
             session.dealPartOrderInSessionAfterLeaving(participant, rpcNotificationService);
             UseTime.point("ip5");
-            if (!EndReason.sessionClosedByServer.equals(reason)) {
+            if (!EndReason.sessionClosedByServer.equals(reason) && !EndReason.reconnect.equals(reason)) {
                 // If session is closed by a call to "DELETE /api/sessions" do NOT stop the
                 // recording. Will be stopped after in method
                 // "SessionManager.closeSessionAndEmptyCollections"
@@ -831,13 +831,11 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     @Override
-    public void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies) {
+    public void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies, EndReason endReason) {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
-            participantOptional.ifPresent(participant -> {
-                evictParticipant(participant, evictStrategies, EndReason.forceDisconnectByServer);
-            });
+            participantOptional.ifPresent(participant -> evictParticipant(participant, evictStrategies, endReason));
         }
     }
 
@@ -889,25 +887,6 @@ public class KurentoSessionManager extends SessionManager {
             // change the layout if mode is MCU
             if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
                 //todo 2.0 需要重做
-//                Map<String, String> layoutRelativePartIdMap = session.getLayoutRelativePartId();
-//                boolean layoutChanged = false;
-//                for (Participant part : samePrivateIdParts.values()) {
-//                    if (part.getStreamType().isStreamTypeMixInclude()) {
-//                        layoutChanged |= session.leaveRoomSetLayout(part,
-//                                !Objects.equals(layoutRelativePartIdMap.get("speakerId"), part.getParticipantPublicId())
-//                                        ? layoutRelativePartIdMap.get("speakerId") : layoutRelativePartIdMap.get("moderatorId"));
-//                    }
-//                }
-//
-//                if (layoutChanged) {
-//                    // notify kms change the layout of MCU
-//                    session.invokeKmsConferenceLayout();
-//
-//                    // notify client the change of layout
-//                    JsonObject params = session.getLayoutNotifyInfo();
-//                    participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-//                            ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY, params));
-//                }
             }
 
             // evict participants

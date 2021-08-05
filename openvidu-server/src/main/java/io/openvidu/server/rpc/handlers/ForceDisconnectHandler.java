@@ -6,6 +6,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.TerminalStatus;
+import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -48,7 +49,7 @@ public class ForceDisconnectHandler extends RpcAbstractHandler {
 
             Participant evictPart = participantOptional.get();
 
-            sessionManager.evictParticipantByUUID(evictPart.getSessionId(), evictPart.getUuid(), Collections.emptyList());
+            sessionManager.evictParticipantByUUID(evictPart.getSessionId(), evictPart.getUuid(), Collections.emptyList(), EndReason.forceDisconnectByUser);
 
             RpcConnection evictRpcConnection = notificationService.getRpcConnection(evictPart.getParticipantPrivateId());
             if (!Objects.isNull(evictRpcConnection.getSerialNumber())) {

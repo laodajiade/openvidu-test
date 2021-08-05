@@ -247,16 +247,14 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             preOrder = Integer.valueOf(partInfo.get("order").toString());
                         }
 
-                        sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
-                                Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                        sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(), Collections.emptyList(), EndReason.reconnect);
                     }
 
                     if (!partInfo.isEmpty() && Objects.nonNull(roomId) && !sessionId.equals(roomId)) {
                         log.info("参会者加入不同的会议室，踢出上个会议室,{},{},{}", roomId, rpcConnection.getUserUuid(), sessionId);
                         Session preSession = sessionManager.getSession(roomId);
                         if (Objects.nonNull(preSession)) {
-                            sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(),
-                                    Collections.singletonList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                            sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(), Collections.emptyList(), EndReason.reconnect);
                         } else {
                             JsonObject msg = new JsonObject();
                             msg.addProperty("method", ToOpenviduElement.EVICT_PARTICIPANT_BY_UUID_METHOD);

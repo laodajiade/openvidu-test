@@ -101,7 +101,8 @@ public class UserDelHandler {
                                 } else {
                                     // evict participant from conference and change the layout
                                     sessionManager.evictParticipantByUUID(session.getSessionId(), participant.getUuid(),
-                                            Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION));
+                                            Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
+                                            EndReason.forceDisconnectByServer);
                                 }
                             } else {
                                 // access out the delUserRpcConnection directly

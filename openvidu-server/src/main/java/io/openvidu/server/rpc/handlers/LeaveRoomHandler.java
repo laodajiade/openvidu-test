@@ -48,7 +48,7 @@ public class LeaveRoomHandler extends RpcAbstractHandler {
                 if (!partInfo.isEmpty()) {
                     sessionManager.evictParticipantByUUID(sessionId, rpcConnection.getUserUuid(),
                             Arrays.asList(EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION,
-                                    EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR));
+                                    EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR), EndReason.forceDisconnectByServer);
                 }
 
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());

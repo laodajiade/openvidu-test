@@ -179,7 +179,7 @@ public abstract class SessionManager {
 
     public abstract void evictParticipantByPrivateId(String sessionId, String privateId, List<EvictParticipantStrategy> evictStrategies);
 
-    public abstract void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies);
+    public abstract void evictParticipantByUUID(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies, EndReason endReason);
 
     public abstract void setLayoutAndNotifyWhenLeaveRoom(String sessionId, Participant participant, String moderatePublicId);
 
@@ -1236,7 +1236,7 @@ public abstract class SessionManager {
             //添加音频状态麦克风
             if (setAudioStatusArr.size() != 0) result.add("setAudioStatus", setAudioStatusArr);
             //关闭共享流
-            if(stopSharingParams.size()!= 0) result.add("endShareNotify",stopSharingParams);
+            if (stopSharingParams.size() != 0) result.add("endShareNotify", stopSharingParams);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.REPLACE_ROLL_CALL_NOTIFY_METHOD, result);
         }
     }
