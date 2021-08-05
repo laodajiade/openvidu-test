@@ -640,10 +640,9 @@ public class PublisherEndpoint extends MediaEndpoint {
 			internalSinkConnect(current, passThru);
 		} else if (ConferenceModeEnum.SFU == kurentoParticipant.getSession().getConferenceMode()) {	// SIP terminal && SFU
 			internalSinkConnect(current, passThru);
-			// change the link order and unify the capability(send recv) of both two points
 			internalSinkConnect(sipCompositeHubPort, current);
 		}
-		//todo 2.0 MCU 这里不确定要不要
+
 		if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
 			internalSinkConnect(current, majorShareHubPort, MediaType.VIDEO);
 			if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {

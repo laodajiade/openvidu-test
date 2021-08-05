@@ -196,9 +196,6 @@ public class KurentoSessionManager extends SessionManager {
 
             if (session.isShare(participant.getUuid())) {
                 endSharing(session, participant, participant.getUuid());
-                //todo 2.0 share mcu
-                // changeSharingStatusInConference(session, participant);
-                //todo 2.0 share mcu
             }
 
             // Close Session if no more participants
@@ -867,7 +864,6 @@ public class KurentoSessionManager extends SessionManager {
                 rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.END_ROLL_CALL_METHOD, params);
             }
             // check if exists SHARING
-            Participant sharePart;
 //            if (session.isShare(evictParticipant.getUuid())) {
 //
 ////                JsonObject params = new JsonObject();
@@ -885,9 +881,9 @@ public class KurentoSessionManager extends SessionManager {
 //            }
 
             // change the layout if mode is MCU
-            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-                //todo 2.0 需要重做
-            }
+//            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
+//
+//            }
 
             // evict participants
 //            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
@@ -1083,27 +1079,8 @@ public class KurentoSessionManager extends SessionManager {
         this.unpublishVideo(unPubPart, streamId, transactionId, reason);
 
         if (Objects.equals(kSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            String moderatorPublicId = null, speakerId = null;
-            Set<Participant> participants = session.getParticipants();
-            for (Participant participant : participants) {
-                if (Objects.equals(OpenViduRole.MODERATOR, participant.getRole())) {
-                    moderatorPublicId = participant.getParticipantPublicId();
-                }
-                if (Objects.equals(ParticipantHandStatus.speaker, participant.getHandStatus())) {
-                    speakerId = participant.getParticipantPublicId();
-                    break;
-                }
-            }
-            // change conference layout and notify kms
-            session.leaveRoomSetLayout(unPubPart, Objects.equals(speakerId, unPubPart.getParticipantPublicId())
-                    ? moderatorPublicId : speakerId);
-            session.invokeKmsConferenceLayout();
+            session.getCompositeService().asyncUpdateComposite();
         }
-        //todo 2.0 分享需要修改
-//        if (Objects.equals(StreamType.SHARING, unPubPart.getStreamType())) {
-//            changeSharingStatusInConference(kSession, unPubPart);
-//        }
-        //todo 2.0 分享需要修改
 
         return true;
     }

@@ -554,11 +554,9 @@ public class Session implements SessionInterface {
 	// delete 2.0
 //	@Deprecated
 //    public Participant getPartByPrivateIdAndStreamType(String participantPrivateId, StreamType streamType) {
-//		//todo 2.0 必须修改
 //		if (true) {
 //			throw new UnsupportedOperationException("getPartByPrivateIdAndStreamType 需要重新实现");
 //		}
-//		//todo 2.0 必须修改
 //
 //
 //
@@ -698,7 +696,7 @@ public class Session implements SessionInterface {
 		if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
 			order = 0;
 			cutInLine = true;
-		} else if (participant.getOrder() != 0) {//重连 //todo 2.0 重连不需要order变化
+		} else if (participant.getOrder() != 0) {//重连
 			order = participant.getOrder();
 			cutInLine = true;
 		}
