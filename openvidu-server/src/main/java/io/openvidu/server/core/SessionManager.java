@@ -106,8 +106,8 @@ public abstract class SessionManager {
     //protected ConcurrentMap<String, ConcurrentHashMap<String, Participant>> sessionidParticipantpublicidParticipant = new ConcurrentHashMap<>();
     //@Deprecated // delete 2.0废弃
     //protected ConcurrentMap<String, ConcurrentHashMap<String, FinalUser>> sessionidFinalUsers = new ConcurrentHashMap<>();
-    @Deprecated // todo 2.0废弃
-    protected ConcurrentMap<String, ConcurrentLinkedQueue<CDREventRecording>> sessionidAccumulatedRecordings = new ConcurrentHashMap<>();
+    //@Deprecated // delete 2.0废弃
+    //protected ConcurrentMap<String, ConcurrentLinkedQueue<CDREventRecording>> sessionidAccumulatedRecordings = new ConcurrentHashMap<>();
 
     protected ConcurrentMap<String, Boolean> insecureUsers = new ConcurrentHashMap<>();
     public ConcurrentMap<String, ConcurrentHashMap<String, Token>> sessionidTokenTokenobj = new ConcurrentHashMap<>();
@@ -370,21 +370,25 @@ public abstract class SessionManager {
         return null;
     }
 
+    // delete 2.0
 //    public Map<String, FinalUser> getFinalUsers(String sessionId) {
 //        return this.sessionidFinalUsers.get(sessionId);
 //    }
 
+    // delete 2.0
 //    public Map<String, FinalUser> removeFinalUsers(String sessionId) {
 //        return this.sessionidFinalUsers.remove(sessionId);
 //    }
 
-    public Collection<CDREventRecording> getAccumulatedRecordings(String sessionId) {
-        return this.sessionidAccumulatedRecordings.get(sessionId);
-    }
+    // delete 2.0
+//    public Collection<CDREventRecording> getAccumulatedRecordings(String sessionId) {
+//        return this.sessionidAccumulatedRecordings.get(sessionId);
+//    }
 
-    public Collection<CDREventRecording> removeAccumulatedRecordings(String sessionId) {
-        return this.sessionidAccumulatedRecordings.remove(sessionId);
-    }
+    // delete 2.0
+//    public Collection<CDREventRecording> removeAccumulatedRecordings(String sessionId) {
+//        return this.sessionidAccumulatedRecordings.remove(sessionId);
+//    }
 
     public MediaOptions generateMediaOptions(Request<JsonObject> request) {
         return null;
@@ -737,7 +741,7 @@ public abstract class SessionManager {
         // sessionidParticipantpublicidParticipant.remove(sessionId);
         // log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
         //sessionidFinalUsers.remove(sessionId);
-        sessionidAccumulatedRecordings.remove(sessionId);
+        // sessionidAccumulatedRecordings.remove(sessionId);
         sessionidTokenTokenobj.remove(sessionId);
     }
 

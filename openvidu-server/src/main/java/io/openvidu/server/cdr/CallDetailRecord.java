@@ -203,7 +203,7 @@ public class CallDetailRecord {
 		this.log(recordingStoppedEvent);
 
 		// Summary: update ended recording
-		sessionManager.getAccumulatedRecordings(recording.getSessionId()).add(recordingStoppedEvent);
+		//sessionManager.getAccumulatedRecordings(recording.getSessionId()).add(recordingStoppedEvent);
 	}
 
 	public void recordRecordingStatusChanged(Recording recording, EndReason finalReason, long timestamp,
