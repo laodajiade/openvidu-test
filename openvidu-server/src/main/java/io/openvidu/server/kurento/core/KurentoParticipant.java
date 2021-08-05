@@ -641,9 +641,9 @@ public class KurentoParticipant extends Participant {
 
 			releaseElement(getParticipantPublicId(), publisherEndpoint.getEndpoint());
 			//publisherEndpoint.closeAudioComposite();
-			if (Objects.nonNull(publisherEndpoint.getSipCompositeHubPort())) {
-				releaseElement(getParticipantPublicId(), publisherEndpoint.getSipCompositeHubPort());
-				session.asyncUpdateSipComposite();
+			if (Objects.nonNull(publisherEndpoint.getMajorShareHubPort())) {
+				releaseElement(publisherEndpoint.getStreamId(), publisherEndpoint.getMajorShareHubPort());
+				session.getCompositeService().asyncUpdateComposite();
 			}
 			this.session.deregisterPublisher();
 			//todo 2.0 part streaming status need update

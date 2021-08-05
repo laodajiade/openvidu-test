@@ -66,13 +66,13 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	private HubPort recordHubPort = null;
 	private HubPort liveHubPort = null;
-
-	private HubPort sipCompositeHubPort = null;
+	// delete 2.0
+	//private HubPort sipCompositeHubPort = null;
 
 	// Audio composite.
-	private Composite audioComposite = null;
-	private final Object audioCompositeCreateLock = new Object();
-	private final Object audioCompositeReleaseLock = new Object();
+	// private Composite audioComposite = null;
+//	private final Object audioCompositeCreateLock = new Object();
+//	private final Object audioCompositeReleaseLock = new Object();
 
 	private HubPort audioHubPortOut = null;
 
@@ -82,8 +82,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	private Map<String, MediaElement> elements = new HashMap<>();
 	private LinkedList<String> elementIds = new LinkedList<>();
-	private ConcurrentHashMap<String, String> connectToOthersHubportIns = new ConcurrentHashMap<>(50);
-	private ConcurrentHashMap<String, String> othersConToSelfHubportIns = new ConcurrentHashMap<>(50);
+//	private ConcurrentHashMap<String, String> connectToOthersHubportIns = new ConcurrentHashMap<>(50);
+//	private ConcurrentHashMap<String, String> othersConToSelfHubportIns = new ConcurrentHashMap<>(50);
 
 	private boolean connected = false;
 	private boolean isChannelPassed = false;
@@ -159,13 +159,13 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 	}
 
-	public Composite getAudioComposite() { return this.audioComposite; }
-
-	public HubPort createHubPort(Composite composite) {
-		HubPort hubPort = new HubPort.Builder(composite).build();
-		elements.put(hubPort.getId(), hubPort);
-		return hubPort;
-	}
+//	public Composite getAudioComposite() { return this.audioComposite; }
+//
+//	public HubPort createHubPort(Composite composite) {
+//		HubPort hubPort = new HubPort.Builder(composite).build();
+//		elements.put(hubPort.getId(), hubPort);
+//		return hubPort;
+//	}
 
 	public HubPort createRecordHubPort(Composite composite) {
 		recordHubPort = new HubPort.Builder(composite).build();
@@ -177,14 +177,15 @@ public class PublisherEndpoint extends MediaEndpoint {
 		return liveHubPort;
 	}
 
-	public HubPort createSipCompositeHubPort(Composite composite) {
-		sipCompositeHubPort = new HubPort.Builder(composite).build();
-		sipCompositeHubPort.setMinOutputBitrate(2000000);
-		sipCompositeHubPort.setMaxOutputBitrate(2000000);
-		log.info("create sip composite {} hubport {}", composite.getName(), sipCompositeHubPort.getId());
-		sipCompositeHubPort.setName(this.getStreamId()+"_"+"hubPort");
-		return sipCompositeHubPort;
-	}
+	// delete 2.0
+//	public HubPort createSipCompositeHubPort(Composite composite) {
+//		sipCompositeHubPort = new HubPort.Builder(composite).build();
+//		sipCompositeHubPort.setMinOutputBitrate(2000000);
+//		sipCompositeHubPort.setMaxOutputBitrate(2000000);
+//		log.info("create sip composite {} hubport {}", composite.getName(), sipCompositeHubPort.getId());
+//		sipCompositeHubPort.setName(this.getStreamId()+"_"+"hubPort");
+//		return sipCompositeHubPort;
+//	}
 
 	public void connectAudioIn(MediaElement sink) {
 //		internalSinkConnect(this.getEndpoint(), sink, MediaType.AUDIO);
@@ -194,31 +195,31 @@ public class PublisherEndpoint extends MediaEndpoint {
         internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
 	}
 
-	public void closeAudioComposite() {
-		synchronized (audioCompositeReleaseLock) {
-			if (Objects.isNull(audioComposite)) {
-				log.warn("audio composite already released.");
-				return;
-			}
-
-			// release others connect to self hub port in
-			KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
-			KurentoSession kurentoSession= kParticipant.getSession();
-			othersConToSelfHubportIns.forEach((publicId, portId) -> {
-				Participant participant = kurentoSession.getParticipantByPublicId(publicId);
-				if (!Objects.isNull(participant)) {
-					KurentoParticipant kPart = (KurentoParticipant) participant;
-					kPart.releaseAllPublisherEndpoint();
-				}
-			});
-
-			audioHubPortOut.release();
-			log.info("Release Audio Composite HubPort Out and object id:{}", audioComposite.getId());
-
-			audioComposite.release();
-			log.info("Release Audio Composite and object id:{}", audioComposite.getId());
-		}
-	}
+//	public void closeAudioComposite() {
+//		synchronized (audioCompositeReleaseLock) {
+//			if (Objects.isNull(audioComposite)) {
+//				log.warn("audio composite already released.");
+//				return;
+//			}
+//
+//			// release others connect to self hub port in
+//			KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
+//			KurentoSession kurentoSession= kParticipant.getSession();
+//			othersConToSelfHubportIns.forEach((publicId, portId) -> {
+//				Participant participant = kurentoSession.getParticipantByPublicId(publicId);
+//				if (!Objects.isNull(participant)) {
+//					KurentoParticipant kPart = (KurentoParticipant) participant;
+//					kPart.releaseAllPublisherEndpoint();
+//				}
+//			});
+//
+//			audioHubPortOut.release();
+//			log.info("Release Audio Composite HubPort Out and object id:{}", audioComposite.getId());
+//
+//			audioComposite.release();
+//			log.info("Release Audio Composite and object id:{}", audioComposite.getId());
+//		}
+//	}
 
 	/*public void innerConnectAudio() {
 		KurentoParticipant kParticipant = (KurentoParticipant) this.getOwner();
@@ -640,7 +641,6 @@ public class PublisherEndpoint extends MediaEndpoint {
 			internalSinkConnect(current, passThru);
 		} else if (ConferenceModeEnum.SFU == kurentoParticipant.getSession().getConferenceMode()) {	// SIP terminal && SFU
 			internalSinkConnect(current, passThru);
-			internalSinkConnect(sipCompositeHubPort, current);
 		}
 
 		if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
@@ -787,9 +787,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 		return liveHubPort;
 	}
 
-	public HubPort getSipCompositeHubPort() {
-		return sipCompositeHubPort;
-	}
+	// delete 2.0
+//	public HubPort getSipCompositeHubPort() {
+//		return sipCompositeHubPort;
+//	}
 
 	@Override
 	public JsonObject toJson() {

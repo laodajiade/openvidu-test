@@ -36,13 +36,6 @@ public class EventListenerImpl {
         StatusEvent statusEvent = (StatusEvent) event.getSource();
         log.info("update participant status:{}", statusEvent.toString());
         cacheManage.updatePartInfo(statusEvent.getUuid(), statusEvent.getField(), statusEvent.getUpdateStatus());
-
-        if ("handStatus".equals(statusEvent.getField()) || "shareStatus".equals(statusEvent.getField())) {
-            Session session = sessionManager.getSession(statusEvent.getSessionId());
-            if (Objects.nonNull(session) && Objects.nonNull(((KurentoSession) session).getSipComposite())) {
-                ((KurentoSession) session).asyncUpdateSipComposite();
-            }
-        }
     }
 
 }

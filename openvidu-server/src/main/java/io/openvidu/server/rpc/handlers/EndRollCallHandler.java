@@ -56,12 +56,7 @@ public class EndRollCallHandler extends RpcAbstractHandler {
 
         }
 
-        if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            // change conference layout
-            conferenceSession.replacePartOrderInConference(sourceConnectionId, targetConnectionId);
-            // json RPC notify KMS layout changed.
-            conferenceSession.invokeKmsConferenceLayout();
-        }
+
 
 /*        JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
@@ -87,6 +82,9 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         if (conferenceSession.ableToUpdateRecord()) {
             sessionManager.updateRecording(conferenceSession.getSessionId());
         }
-        ((KurentoSession) conferenceSession).asyncUpdateSipComposite();
+        if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
+            conferenceSession.getCompositeService().asyncUpdateComposite();
+        }
+
     }
 }

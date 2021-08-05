@@ -65,7 +65,7 @@ public class CompositeService {
      * 记录每个拉流ep连接的对象
      * key:subscribeId  value=hubPort_id
      */
-    private final Map<String, String> subFromHubPort = new ConcurrentHashMap<>();
+    private final Map<String, String> othersConToHubPortIns = new ConcurrentHashMap<>();
 
 
     public CompositeService(Session session) {
@@ -382,7 +382,7 @@ public class CompositeService {
                 if (publisher.getStreamType() == StreamType.MAJOR || publisher.getStreamType() == StreamType.MINOR) {
                     SubscriberEndpoint mixSubscriber = publisher.getOwner().getMixSubscriber();
                     if (mixSubscriber != null) {
-                        String hubPortId = subFromHubPort.get(mixSubscriber.getStreamId());
+                        String hubPortId = othersConToHubPortIns.get(mixSubscriber.getStreamId());
                         if (Objects.equals(hubPortId, hubPortOut.getId())) {
                             log.info("从 hubPortOut {} 订阅改为自己的hubPort {}", hubPortId, hubPort.getId());
                             internalSinkConnect(hubPort, mixSubscriber);
@@ -527,7 +527,7 @@ public class CompositeService {
     }
 
     private void internalSinkConnect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
-        subFromHubPort.put(subscriberEndpoint.getStreamId(), hubPort.getId());
+        othersConToHubPortIns.put(subscriberEndpoint.getStreamId(), hubPort.getId());
         hubPort.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -559,7 +559,7 @@ public class CompositeService {
     }
 
     private void smartReconnect(List<CompositeObjectWrapper> newPoint, CompositeObjectWrapper source) {
-        subFromHubPort.forEach((k, v) -> {
+        othersConToHubPortIns.forEach((k, v) -> {
             if (Objects.equals(v, source.endpoint.getMajorShareHubPort().getId())) {
                 Participant owner = source.endpoint.getOwner();
                 SubscriberEndpoint subscriber = owner.getSubscriber(k);
