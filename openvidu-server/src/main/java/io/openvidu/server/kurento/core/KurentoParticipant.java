@@ -62,9 +62,9 @@ public class KurentoParticipant extends Participant {
 	private final KurentoSession session;
 	private KurentoParticipantEndpointConfig endpointConfig;
 
-	//todo 2.0 Deprecated,使用publishers代替
-	@Deprecated
-	private PublisherEndpoint publisher;
+	//delete 2.0 Deprecated,使用publishers代替
+	//@Deprecated
+	//private PublisherEndpoint publisher;
 
 	private final Map<StreamType, PublisherEndpoint> publishers = new ConcurrentHashMap<>();
 	//private CountDownLatch publisherLatch = new CountDownLatch(1);
@@ -260,7 +260,7 @@ public class KurentoParticipant extends Participant {
 		return any.get();
 	}
 
-	//todo 2.0 Deprecated
+	//2.0 Deprecated
 	@Deprecated
 	public PublisherEndpoint getPublisher() {
 //		try {
@@ -273,7 +273,8 @@ public class KurentoParticipant extends Participant {
 //					"Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
 //		}
 //		return this.publisher;
-		return getPublisher(StreamType.MAJOR);
+		//return getPublisher(StreamType.MAJOR);
+		throw new UnsupportedOperationException("getPublisher() 接口在2.0版本已经废弃了");
 	}
 
 	public Map<StreamType, PublisherEndpoint> getPublishers() {
@@ -294,13 +295,14 @@ public class KurentoParticipant extends Participant {
 		return this.subscribers;
 	}
 
-	public MediaOptions getPublisherMediaOptions() {
-		return this.publisher.getMediaOptions();
-	}
-
-	public void setPublisherMediaOptions(MediaOptions mediaOptions) {
-		this.publisher.setMediaOptions(mediaOptions);
-	}
+	// delete 2.0
+//	public MediaOptions getPublisherMediaOptions() {
+//		return this.publisher.getMediaOptions();
+//	}
+	// delete 2.0
+//	public void setPublisherMediaOptions(MediaOptions mediaOptions) {
+//		this.publisher.setMediaOptions(mediaOptions);
+//	}
 
 	public KurentoSession getSession() {
 		return session;
@@ -644,9 +646,6 @@ public class KurentoParticipant extends Participant {
 				session.getCompositeService().asyncUpdateComposite();
 			}
 			this.session.deregisterPublisher();
-			//todo 2.0 part streaming status need update
-			//setStreaming(false);
-			//todo 2.0 part streaming status need update
 			this.publishers.remove(publisherEndpoint.getStreamType());
 		} else {
 			log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
@@ -703,12 +702,12 @@ public class KurentoParticipant extends Participant {
 		return this.session.getPipeline();
 	}
 
-	//todo 2.0 Deprecated
 	@Deprecated
 	@Override
 	public String getPublisherStreamId() {
 		//return publisher.getStreamId();
-		return publishers.get(StreamType.MAJOR).getStreamId();
+		// return publishers.get(StreamType.MAJOR).getStreamId();
+		throw new UnsupportedOperationException("getPublisherStreamId() 接口在2.0版本已经废弃了");
 	}
 
 	public void resetPublisherEndpoint() {
@@ -741,9 +740,9 @@ public class KurentoParticipant extends Participant {
 
 		for (PublisherEndpoint publisher : getPublishers().values()) {
 			if (publisher.isStreaming()) {
-				publisherEnpoints.add(toJsonFunction.apply(this.publisher));
-				if (!this.publisher.getMediaChannels().isEmpty()){
-					for (MediaChannel mediaChannel : this.publisher.getMediaChannels().values()) {
+				publisherEnpoints.add(toJsonFunction.apply(publisher));
+				if (!publisher.getMediaChannels().isEmpty()){
+					for (MediaChannel mediaChannel : publisher.getMediaChannels().values()) {
 						mediaChannels.add(mediaChannel.toJson());
 					}
 				}

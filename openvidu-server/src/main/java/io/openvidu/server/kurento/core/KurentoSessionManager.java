@@ -638,40 +638,41 @@ public class KurentoSessionManager extends SessionManager {
         }
     }
 
-    @Override
-    public void streamPropertyChanged(Participant participant, Integer transactionId, String streamId, String property,
-                                      JsonElement newValue, String reason) {
-        KurentoParticipant kParticipant = (KurentoParticipant) participant;
-        streamId = kParticipant.getPublisher(StreamType.MAJOR).getStreamId();
-        MediaOptions streamProperties = kParticipant.getPublisherMediaOptions();
-
-        Boolean hasAudio = streamProperties.hasAudio();
-        Boolean hasVideo = streamProperties.hasVideo();
-        Boolean audioActive = streamProperties.isAudioActive();
-        Boolean videoActive = streamProperties.isVideoActive();
-        String typeOfVideo = streamProperties.getTypeOfVideo();
-        Integer frameRate = streamProperties.getFrameRate();
-        String videoDimensions = streamProperties.getVideoDimensions();
-        KurentoFilter filter = streamProperties.getFilter();
-
-        switch (property) {
-            case "audioActive":
-                audioActive = newValue.getAsBoolean();
-                break;
-            case "videoActive":
-                videoActive = newValue.getAsBoolean();
-                break;
-            case "videoDimensions":
-                videoDimensions = newValue.getAsString();
-                break;
-        }
-
-        kParticipant.setPublisherMediaOptions(new MediaOptions(hasAudio, hasVideo, audioActive, videoActive,
-                typeOfVideo, frameRate, videoDimensions, filter));
-
-        sessionEventsHandler.onStreamPropertyChanged(participant, transactionId,
-                kParticipant.getSession().getParticipants(), streamId, property, newValue, reason);
-    }
+    //delete 2.0
+   // @Override
+//    public void streamPropertyChanged(Participant participant, Integer transactionId, String streamId, String property,
+//                                      JsonElement newValue, String reason) {
+//        KurentoParticipant kParticipant = (KurentoParticipant) participant;
+//        streamId = kParticipant.getPublisher(StreamType.MAJOR).getStreamId();
+//        //MediaOptions streamProperties = kParticipant.getPublisherMediaOptions();
+//
+////        Boolean hasAudio = streamProperties.hasAudio();
+////        Boolean hasVideo = streamProperties.hasVideo();
+////        Boolean audioActive = streamProperties.isAudioActive();
+////        Boolean videoActive = streamProperties.isVideoActive();
+////        String typeOfVideo = streamProperties.getTypeOfVideo();
+////        Integer frameRate = streamProperties.getFrameRate();
+////        String videoDimensions = streamProperties.getVideoDimensions();
+////        KurentoFilter filter = streamProperties.getFilter();
+//
+//        switch (property) {
+//            case "audioActive":
+//                audioActive = newValue.getAsBoolean();
+//                break;
+//            case "videoActive":
+//                videoActive = newValue.getAsBoolean();
+//                break;
+//            case "videoDimensions":
+//                videoDimensions = newValue.getAsString();
+//                break;
+//        }
+//
+//        kParticipant.setPublisherMediaOptions(new MediaOptions(hasAudio, hasVideo, audioActive, videoActive,
+//                typeOfVideo, frameRate, videoDimensions, filter));
+//
+//        sessionEventsHandler.onStreamPropertyChanged(participant, transactionId,
+//                kParticipant.getSession().getParticipants(), streamId, property, newValue, reason);
+//    }
 
     @Override
     public void onIceCandidate(Participant participant, String endpointName, String candidate, int sdpMLineIndex,
@@ -1251,7 +1252,7 @@ public class KurentoSessionManager extends SessionManager {
                                 + " has no filter applied in session '" + session.getSessionId() + "'");
             } else {
                 try {
-                    this.addFilterEventListenerInPublisher(kParticipantPublishing, eventType);
+                    //this.addFilterEventListenerInPublisher(kParticipantPublishing, eventType);
                     kParticipantPublishing.getPublisher(StreamType.MAJOR).addParticipantAsListenerOfFilterEvent(eventType,
                             userSubscribing.getParticipantPublicId());
                 } catch (OpenViduException e) {
@@ -1348,29 +1349,29 @@ public class KurentoSessionManager extends SessionManager {
         kParticipant.getPublisher(StreamType.MAJOR).getMediaOptions().setFilter(updatedFilter);
         return updatedFilter;
     }
-
-    private void addFilterEventListenerInPublisher(KurentoParticipant kParticipant, String eventType)
-            throws OpenViduException {
-        PublisherEndpoint pub = kParticipant.getPublisher(StreamType.MAJOR);
-        if (!pub.isListenerAddedToFilterEvent(eventType)) {
-            final String connectionId = kParticipant.getParticipantPublicId();
-            final String streamId = kParticipant.getPublisher(StreamType.MAJOR).getStreamId();
-            final String filterType = kParticipant.getPublisherMediaOptions().getFilter().getType();
-            try {
-                ListenerSubscription listener = pub.getFilter().addEventListener(eventType, event -> {
-                    sessionEventsHandler.onFilterEventDispatched(connectionId, streamId, filterType, event.getType(),
-                            event.getData(), kParticipant.getSession().getParticipants(),
-                            kParticipant.getPublisher(StreamType.MAJOR).getPartipantsListentingToFilterEvent(eventType));
-                });
-                pub.storeListener(eventType, listener);
-            } catch (Exception e) {
-                log.error("Request to addFilterEventListener to stream {} gone wrong. Error: {}", streamId,
-                        e.getMessage());
-                throw new OpenViduException(Code.FILTER_EVENT_LISTENER_NOT_FOUND,
-                        "Request to addFilterEventListener to stream " + streamId + " gone wrong: " + e.getMessage());
-            }
-        }
-    }
+//delete 2.0
+//    private void addFilterEventListenerInPublisher(KurentoParticipant kParticipant, String eventType)
+//            throws OpenViduException {
+//        PublisherEndpoint pub = kParticipant.getPublisher(StreamType.MAJOR);
+//        if (!pub.isListenerAddedToFilterEvent(eventType)) {
+//            final String connectionId = kParticipant.getParticipantPublicId();
+//            final String streamId = kParticipant.getPublisher(StreamType.MAJOR).getStreamId();
+//            final String filterType = kParticipant.getPublisherMediaOptions().getFilter().getType();
+//            try {
+//                ListenerSubscription listener = pub.getFilter().addEventListener(eventType, event -> {
+//                    sessionEventsHandler.onFilterEventDispatched(connectionId, streamId, filterType, event.getType(),
+//                            event.getData(), kParticipant.getSession().getParticipants(),
+//                            kParticipant.getPublisher(StreamType.MAJOR).getPartipantsListentingToFilterEvent(eventType));
+//                });
+//                pub.storeListener(eventType, listener);
+//            } catch (Exception e) {
+//                log.error("Request to addFilterEventListener to stream {} gone wrong. Error: {}", streamId,
+//                        e.getMessage());
+//                throw new OpenViduException(Code.FILTER_EVENT_LISTENER_NOT_FOUND,
+//                        "Request to addFilterEventListener to stream " + streamId + " gone wrong: " + e.getMessage());
+//            }
+//        }
+//    }
 
     private void removeFilterEventListenerInPublisher(KurentoParticipant kParticipant, String eventType) {
         PublisherEndpoint pub = kParticipant.getPublisher(StreamType.MAJOR);

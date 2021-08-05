@@ -91,7 +91,7 @@ public class MediaChannel {
 
         this.publisher = new PublisherEndpoint(web, publisherParticipant, endpointName, targetPipeline, StreamType.MAJOR, openviduConfig);
         this.publisher.setStreamId(publisherParticipant.getPublisher(StreamType.MAJOR).getStreamId());
-        this.publisher.setMediaOptions(publisherParticipant.getPublisherMediaOptions());
+        //this.publisher.setMediaOptions(publisherParticipant.getPublisherMediaOptions());
         this.publisher.createdAt = System.currentTimeMillis();
 
         this.subscriber = new WebRtcEndpoint.Builder(sourcePipeline).build();

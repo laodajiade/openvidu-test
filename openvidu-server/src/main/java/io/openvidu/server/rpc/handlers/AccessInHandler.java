@@ -131,7 +131,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 
             // check if single login
             if (AccessTypeEnum.terminal.equals(accessType) && Objects.nonNull(previousRpc) && !Objects.equals(previousRpc.getUdid(), udid)) {
-                log.error("SINGLE LOGIN ==> User:{} already login and pre privateId:{}. current udid:{}, previous udid:{}",
+                log.warn("SINGLE LOGIN ==> User:{} already login and pre privateId:{}. current udid:{}, previous udid:{}",
                         userInfo.get("userUuid"), previousRpc.getParticipantPrivateId(), udid, previousRpc.getUdid());
                 // check previous rpc connection ever in the room
                 evictPreLoginPart(previousRpc);

@@ -149,6 +149,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
 		}
+		this.streaming = false;
 	}
 
 	@Override

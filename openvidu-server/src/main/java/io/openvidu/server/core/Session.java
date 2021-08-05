@@ -1449,11 +1449,11 @@ public class Session implements SessionInterface {
 							&& Objects.nonNull(typeEnums) && typeEnums.length > 0 && Objects.nonNull(type = typeEnums[0])) {
 						hubPort = Objects.equals(type, EndpointTypeEnum.recording) ? kurentoParticipant.getPublisher().getRecordHubPort() : kurentoParticipant.getPublisher().getLiveHubPort();
 					}
-					temp.addProperty("object", kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU) ?
-							kurentoParticipant.getPublisher().getMajorShareHubPort().getId() : hubPort.getId());
+//					temp.addProperty("object", kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU) ?
+//							kurentoParticipant.getPublisher().getMajorShareHubPort().getId() : hubPort.getId());
 
-					temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
-					temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
+					//temp.addProperty("hasVideo", kurentoParticipant.getPublisherMediaOptions().hasVideo());
+					//temp.addProperty("onlineStatus", kurentoParticipant.getPublisherMediaOptions().hasVideo() ? "online" : "offline");
 
 					layoutInfos.add(temp);
 					index++;

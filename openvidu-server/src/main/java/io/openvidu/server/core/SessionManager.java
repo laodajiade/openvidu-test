@@ -142,8 +142,9 @@ public abstract class SessionManager {
 
     public abstract void sendMessage(Participant participant, String message, Integer transactionId);
 
-    public abstract void streamPropertyChanged(Participant participant, Integer transactionId, String streamId,
-                                               String property, JsonElement newValue, String changeReason);
+    //delete 2.0
+//    public abstract void streamPropertyChanged(Participant participant, Integer transactionId, String streamId,
+//                                               String property, JsonElement newValue, String changeReason);
 
     public abstract void onIceCandidate(Participant participant, String endpointName, String candidate,
                                         int sdpMLineIndex, String sdpMid, Integer transactionId);

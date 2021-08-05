@@ -400,7 +400,7 @@ public class Participant {
         this.voiceMode = voiceMode;
     }
 
-    //todo 2.0 Deprecated
+    //2.0 Deprecated
     @Deprecated
     public String getPublisherStreamId() {
         return null;
