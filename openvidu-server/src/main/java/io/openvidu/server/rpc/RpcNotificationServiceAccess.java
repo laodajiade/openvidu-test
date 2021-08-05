@@ -85,7 +85,7 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
                 log.error("Exception responding to participant ({}), accessCode {}", participantPrivateId, accessCode);
             }
         } catch (Exception e) {
-            log.error("Exception responding to participant ({})", participantPrivateId, e);
+            log.error("Exception responding to participant ({},{},{})", participantPrivateId, transactionId, result, e);
         }
     }
 

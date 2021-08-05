@@ -38,7 +38,7 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         Session session;
         if (Objects.isNull(session = sessionManager.getSession(getStringParam(request,
                 ProtocolElements.GET_PARTICIPANTS_ROOM_ID_PARAM)))) {
-            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(),
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), null,
                     ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
