@@ -760,17 +760,18 @@ public class KurentoParticipant extends Participant {
 		return json;
 	}
 
-	public boolean isMixIncluded() {
-		JsonArray mixArr = session.getCurrentPartInMcuLayout();
-		for (JsonElement jsonElement : mixArr) {
-			JsonObject jsonObject;
-			if ((jsonObject = jsonElement.getAsJsonObject()).has("connectionId") &&
-					getParticipantPublicId().equals(jsonObject.get("connectionId").getAsString())) {
-				return true;
-			}
-		}
-		return false;
-	}
+	// delete
+//	public boolean isMixIncluded() {
+//		JsonArray mixArr = session.getCurrentPartInMcuLayout();
+//		for (JsonElement jsonElement : mixArr) {
+//			JsonObject jsonObject;
+//			if ((jsonObject = jsonElement.getAsJsonObject()).has("connectionId") &&
+//					getParticipantPublicId().equals(jsonObject.get("connectionId").getAsString())) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	/**
 	 * Exclude MCU

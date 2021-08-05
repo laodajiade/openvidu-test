@@ -1505,29 +1505,29 @@ public class Session implements SessionInterface {
 		}
 	}
 
-	//todo 2.0 use session.getCompositeService().getLayoutCoordinates()
-	@Deprecated
-	public JsonArray getCurrentPartInMcuLayout() {
-    	JsonArray layoutInfos = new JsonArray(50);
-    	if (majorShareMixLinkedArr.size() == 0) return layoutInfos;
-
-		int index = 0;
-		int size = majorShareMixLinkedArr.size();
-		for (JsonElement jsonElement : layoutCoordinates) {
-			JsonObject result = jsonElement.getAsJsonObject().deepCopy();
-			if (index < size) {
-				JsonObject layout = majorShareMixLinkedArr.get(index).getAsJsonObject();
-				result.addProperty("connectionId", layout.get("connectionId").getAsString());
-				result.addProperty("streamType", layout.get("streamType").getAsString());
-
-				index++;
-			}
-
-			layoutInfos.add(result);
-		}
-
-		return layoutInfos;
-	}
+	//delete 2.0 use session.getCompositeService().getLayoutCoordinates()
+// 	@Deprecated
+//	public JsonArray getCurrentPartInMcuLayout() {
+//    	JsonArray layoutInfos = new JsonArray(50);
+//    	if (majorShareMixLinkedArr.size() == 0) return layoutInfos;
+//
+//		int index = 0;
+//		int size = majorShareMixLinkedArr.size();
+//		for (JsonElement jsonElement : layoutCoordinates) {
+//			JsonObject result = jsonElement.getAsJsonObject().deepCopy();
+//			if (index < size) {
+//				JsonObject layout = majorShareMixLinkedArr.get(index).getAsJsonObject();
+//				result.addProperty("connectionId", layout.get("connectionId").getAsString());
+//				result.addProperty("streamType", layout.get("streamType").getAsString());
+//
+//				index++;
+//			}
+//
+//			layoutInfos.add(result);
+//		}
+//
+//		return layoutInfos;
+//	}
 
 //	@Deprecated //delete 2.0
 //    public JsonObject getLayoutNotifyInfo() {

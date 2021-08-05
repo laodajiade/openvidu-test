@@ -185,8 +185,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                         publisher.getMediaOptions().hasAudio);
                 stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
                         publisher.getMediaOptions().hasVideo);
-                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
-                        kParticipant.isMixIncluded());
+//                stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
+//                        kParticipant.isMixIncluded());
                 stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM,
                         publisher.getMediaOptions().typeOfVideo);
                 stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMFRAMERATE_PARAM,
