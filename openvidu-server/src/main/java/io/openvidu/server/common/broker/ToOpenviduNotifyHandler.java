@@ -2,10 +2,9 @@ package io.openvidu.server.common.broker;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.enums.EvictParticipantStrategy;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.SessionManager;
@@ -17,7 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -70,8 +70,14 @@ public class ToOpenviduNotifyHandler {
                         fixedRoomExpiredHandler.processor(params);
                         break;
                     case ToOpenviduElement.EVICT_PARTICIPANT_BY_UUID_METHOD:
+                        EndReason endReason = EndReason.valueOf(params.get("endReason").getAsString());
+                        JsonArray evictStrategies = params.getAsJsonArray("evictStrategies");
+                        List<EvictParticipantStrategy> es = new ArrayList<>();
+                        for (JsonElement evictStrategy : evictStrategies) {
+                            es.add(EvictParticipantStrategy.valueOf(evictStrategy.getAsString()));
+                        }
                         sessionManager.evictParticipantByUUID(params.get("roomId").getAsString(), params.get("uuid").getAsString(),
-                                Collections.emptyList(), EndReason.reconnect);
+                                es, endReason);
                         break;
                     case ToOpenviduElement.SEBD_INVITE_NOTICE:
                         appointConferenceJobHandler.sendInviteNoticy(

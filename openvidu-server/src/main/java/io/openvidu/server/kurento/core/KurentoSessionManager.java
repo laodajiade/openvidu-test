@@ -24,6 +24,7 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.SessionProperties;
 import io.openvidu.server.common.broker.RedisPublisher;
+import io.openvidu.server.common.broker.ToOpenviduElement;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.constants.CommonConstants;
@@ -47,8 +48,6 @@ import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
-import org.kurento.client.ListenerSubscription;
-import org.kurento.client.PassThrough;
 import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
@@ -834,6 +833,36 @@ public class KurentoSessionManager extends SessionManager {
         if (Objects.nonNull(session = getSession(sessionId))) {
             Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
             participantOptional.ifPresent(participant -> evictParticipant(participant, evictStrategies, endReason));
+        }
+    }
+
+    /**
+     * 支持分布服务踢人。被踢的对象可能在另外一台服务器上，需要广播出去
+     * @param sessionId
+     * @param uuid
+     * @param evictStrategies
+     * @param endReason
+     */
+    @Override
+    public void evictParticipantByUUIDEx(String sessionId, String uuid, List<EvictParticipantStrategy> evictStrategies, EndReason endReason) {
+        Session session;
+        if (Objects.nonNull(session = getSession(sessionId))) {
+            Optional<Participant> participantOptional = session.getParticipantByUUID(uuid);
+            participantOptional.ifPresent(participant -> evictParticipant(participant, evictStrategies, endReason));
+        } else {
+            JsonObject msg = new JsonObject();
+            msg.addProperty("method", ToOpenviduElement.EVICT_PARTICIPANT_BY_UUID_METHOD);
+
+            JsonObject params = new JsonObject();
+            params.addProperty("roomId", sessionId);
+            params.addProperty("uuid", uuid);
+            JsonArray strategies = new JsonArray();
+            evictStrategies.forEach(s -> strategies.add(s.name()));
+            params.add("evictStrategies", strategies);
+            params.addProperty("endReason", endReason.name());
+            msg.add("params", params);
+
+            cacheManage.publish(BrokerChannelConstans.TO_OPENVIDU_CHANNEL, msg.toString());
         }
     }
 

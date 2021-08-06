@@ -200,8 +200,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         Map partInfo = cacheManage.getPartInfo(previousRpc.getUserUuid());
         if (partInfo != null && !partInfo.isEmpty()) {
             // evict the previous parts in room
-            sessionManager.evictParticipantByUUID(partInfo.get("roomId").toString(), previousRpc.getUserUuid(),
-                    Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
+            sessionManager.evictParticipantByUUIDEx(partInfo.get("roomId").toString(), previousRpc.getUserUuid(), Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
                     EndReason.forceDisconnectByServer);
         }
 
