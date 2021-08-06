@@ -47,7 +47,7 @@ public class UnsubscribeVideoHandler extends RpcAbstractHandler {
             String sender = getStringParam(request, SENDER_UUID_PARAM);
             StreamType streamType = StreamType.valueOf(getStringParam(request, STREAM_TYPE_PARAM));
             String trait = sender + "_" + streamType.name();
-            subscribeId = participant.getSubscribers().keySet().stream().filter(id -> id.contains(trait)).findFirst().orElse(null);
+            subscribeId = participant.getSubscribers().keySet().stream().filter(id -> id.contains(trait)).findFirst().orElse("unknown");
         }
 
         SubscriberEndpoint subscriberEndpoint = participant.getSubscribers().get(subscribeId);
