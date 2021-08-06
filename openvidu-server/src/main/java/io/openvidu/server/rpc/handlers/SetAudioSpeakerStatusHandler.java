@@ -5,7 +5,6 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantSpeakerStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
@@ -61,7 +60,7 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
 
         if (CollectionUtils.isEmpty(accountTargets)) {
             session.getParticipants().forEach(participant -> {
-                if ( !OpenViduRole.THOR.equals(participant.getRole())) {
+                if (!OpenViduRole.THOR.equals(participant.getRole())) {
                     participant.changeSpeakerStatus(ParticipantSpeakerStatus.valueOf(status));
                 }
             });
@@ -75,14 +74,9 @@ public class SetAudioSpeakerStatusHandler extends RpcAbstractHandler {
         }
 
         JsonObject notifyObj = request.getParams().deepCopy();
-        notifyObj.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_USERNAME_PARAM,session.getParticipantByUUID(sourceId).get().getUsername());
+        notifyObj.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_USERNAME_PARAM, session.getParticipantByUUID(sourceId).get().getUsername());
         Set<Participant> participants = session.getParticipants();
-        if (!CollectionUtils.isEmpty(participants)) {
-            for (Participant p: participants) {
-                    this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, notifyObj);
-            }
-        }
+        this.notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.SET_AUDIO_SPEAKER_STATUS_METHOD, notifyObj);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

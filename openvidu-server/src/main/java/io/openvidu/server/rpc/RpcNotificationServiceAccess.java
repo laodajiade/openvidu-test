@@ -274,7 +274,9 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
 
         try {
             if (!countDownLatch.await((list.size() * 2) + 100, TimeUnit.MILLISECONDS)) {
-                log.warn("{} sendBatchNotificationConcurrent timeout method={},partSize = {}", sendThreadName, method, list.size());
+                log.warn("{} sendBatchNotificationConcurrent timeout method={},partSize = {}," +
+                                "successList:{}, failList:{}, waitingSends:{}, prepares:{}", sendThreadName, method, list.size(),
+                        successList, failList, waitingSends, prepares);
             }
         } catch (InterruptedException e) {
             log.warn("{} sendBatchNotificationConcurrent error method={},partSize = {}", sendThreadName, method, list.size());

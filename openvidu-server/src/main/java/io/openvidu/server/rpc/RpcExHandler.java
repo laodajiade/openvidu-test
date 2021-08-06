@@ -92,15 +92,15 @@ public class RpcExHandler {
 //		}
 
         // 如果是会控,且终端主持人退出了会议，报错MODERATOR_NOT_FOUND
-        if (rpcConnection.getAccessType() == AccessTypeEnum.web &&
-                ProtocolElements.THOR_IF_MODERATOR_NOT_FOUND_FILTERS.contains(request.getMethod())) {
-            Participant moderatorPart = sessionManager.getModeratorPart(sessionId);
-            if (moderatorPart == null) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.MODERATOR_NOT_FOUND);
-                return;
-            }
-        }
+//        if (rpcConnection.getAccessType() == AccessTypeEnum.web &&
+//                ProtocolElements.THOR_IF_MODERATOR_NOT_FOUND_FILTERS.contains(request.getMethod())) {
+//            Participant moderatorPart = sessionManager.getModeratorPart(sessionId);
+//            if (moderatorPart == null) {
+//                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+//                        null, ErrorCodeEnum.MODERATOR_NOT_FOUND);
+//                return;
+//            }
+//        }
 
         RequestId.initId();
         Timer.Context timer = MetriceUtils.timer(request.getMethod());
@@ -115,11 +115,11 @@ public class RpcExHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, e.getRespEnum());
         } catch (Exception e) {
-            log.error(e.toString(), e);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
+            log.error("rpc request error privateId = {}, params = {}", rpcConnection.getParticipantPrivateId(), request.getParams(), e);
         } finally {
-            if (UseTime.elapse() > 500) {
+            if (UseTime.elapse() > 300) {
                 log.info("requestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());
             }
             timer.stop();
