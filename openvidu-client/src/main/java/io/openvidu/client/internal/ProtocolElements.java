@@ -60,24 +60,12 @@ public class ProtocolElements {
     public static final String JOINROOM_PEERPUBLISHID_PARAM = "publishId";
     public static final String JOINROOM_PEERSTREAMHASAUDIO_PARAM = "hasAudio";
     public static final String JOINROOM_PEERSTREAMHASVIDEO_PARAM = "hasVideo";
-    public static final String JOINROOM_PEERSTREAMMIXINCLUDED_PARAM = "mixIncluded";
-    public static final String JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM = "audioActive";
-    public static final String JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM = "videoActive";
     public static final String JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM = "typeOfVideo";
     public static final String JOINROOM_PEERSTREAMFRAMERATE_PARAM = "frameRate";
     public static final String JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM = "videoDimensions";
     public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
     public static final String JOINROOM_MICSTATUS_PARAM = "micStatus";
     public static final String JOINROOM_VIDEOSTATUS_PARAM = "videoStatus";
-    public static final String JOINROOM_PEERSHARESTATUS_PARAM = "shareStatus";
-    public static final String JOINROOM_PEERSPEAKERSTATUS_PARAM = "speakerStatus";
-    public static final String JOINROOM_PEERHANDSTATUS_PARAM = "handStatus";
-    public static final String JOINROOM_PEERAPPSHOWNAME_PARAM = "appShowName";
-    public static final String JOINROOM_PEERAPPSHOWDESC_PARAM = "appShowDesc";
-    public static final String JOINROOM_ABILITY_PARAM = "ability";
-    public static final String JOINROOM_FUNCTIONALITY_PARAM = "functionality";
-    public static final String JOINROOM_TERMINALCONFIG_PARAM = "terminalConfig";
-    public static final String JOINROOM_PEERONLINESTATUS_PARAM = "onlineStatus";
     public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
     public static final String JOINROOM_MIXFLOWS_STREAMID_PARAM = "streamId";
     public static final String JOINROOM_MIXFLOWS_STREAMMODE_PARAM = "streamMode";
@@ -103,7 +91,6 @@ public class ProtocolElements {
     public static final String PUBLISHVIDEO_FRAMERATE_PARAM = "frameRate";
     public static final String PUBLISHVIDEO_VIDEODIMENSIONS_PARAM = "videoDimensions";
     public static final String PUBLISHVIDEO_KURENTOFILTER_PARAM = "filter";
-    public static final String PUBLISHVIDEO_HAND_STATUS_PARAM = "handStatus";
     public static final String PUBLISHVIDEO_VIDEOSTATUS_PARAM = "videoStatus";
     public static final String PUBLISHVIDEO_MICSTATUS_PARAM = "micStatus";
 
@@ -130,7 +117,6 @@ public class ProtocolElements {
     public static final String STREAMPROPERTYCHANGED_REASON_PARAM = "reason";
 
     public static final String FORCEDISCONNECT_METHOD = "forceDisconnect";
-    public static final String FORCEDISCONNECT_CONNECTIONID_PARAM = "connectionId";
     public static final String FORCEDISCONNECT_UUID_PARAM = "uuid";
 
     public static final String FORCEUNPUBLISH_METHOD = "forceUnpublish";
@@ -162,11 +148,7 @@ public class ProtocolElements {
     public static final String ACCESS_IN_UDID_PARAM = "udid";
     public static final String ACCESS_IN_SERIAL_NUMBER_PARAM = "serialNumber";
     public static final String ACCESS_IN_MAC_PARAM = "mac";
-    public static final String ACCESS_IN_FORCE_LOGIN_PARAM = "forceLogin";
     public static final String ACCESS_IN_ACCESSTYPE_PARAM = "accessType";
-    public static final String ACCESS_IN_DEVICE_ID_PARAM = "deviceId";
-    public static final String ACCESS_IN_DEVICE_NAME_PARAM = "deviceName";
-    public static final String ACCESS_IN_USER_NAME_PARAM = "userName";
     public static final String ACCESS_IN_DEVICEMODEL_PARAM = "deviceModel";
     public static final String ACCESS_IN_DEVICEVERSION_PARAM = "deviceVersion";
     public static final String ACCESS_IN_ABILITY_PARAM = "ability";
@@ -176,18 +158,12 @@ public class ProtocolElements {
     public static final String ACCESS_IN_SERVERTIMESTAMP_PARAM = "serverTimestamp";
     public static final String ACCESS_IN_USERTYPE_PARAM = "userType";
     public static final String ACCESS_IN_CLIENT_TYPE = "type";
-    public static final String ACCESS_IN_REGISTRATION_ID_TYPE = "registrationId";
     public static final String ACCESS_IN_NICKNAME_PARAM = "nickName";
 
     public static final String RECONNECTPART_STOP_PUBLISH_SHARING_METHOD = "reconnectPartStopPublishSharing";
-    public static final String RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM = "connectionId";
 
     public static final String REMOTE_LOGIN_NOTIFY_METHOD = "remoteLoginNotify";
 
-    public static final String APPLY_FOR_LOGIN_METHOD = "applyForLogin";
-    public static final String APPLY_FOR_LOGIN_TOKEN_PARAM = "token";
-    public static final String APPLY_FOR_LOGIN_DEVICE_NAME_PARAM = "deviceName";
-    public static final String APPLY_FOR_LOGIN_APPLICANT_SESSION_ID_PARAM = "applicantSessionId";
 
     public static final String CONFIRM_APPLY_FOR_LOGIN_METHOD = "confirmApplyForLogin";
     public static final String CONFIRM_APPLY_FOR_LOGIN_ACCEPT_PARAM = "accept";
@@ -217,16 +193,8 @@ public class ProtocolElements {
     public static final String SETCONFERENCELAYOUT_MODE_METHOD = "setConferenceLayout";
     public static final String SETCONFERENCELAYOUT_AUTOMATICAlly_PARAM = "automatically";
     public static final String SETCONFERENCELAYOUT_MODE_PARAM = "mode";
-    public static final String SETCONFERENCELAYOUT_REPLACEINFO_PARAM = "replaceInfo";
-    public static final String SETCONFERENCELAYOUT_TARGET_PARAM = "target";
-    public static final String SETCONFERENCELAYOUT_REPLACEMENT_PARAM = "replacement";
-    public static final String SETCONFERENCELAYOUT_SHAREINCLUDE_PARAM = "shareInclude";
 
     public static final String CONFERENCE_LAYOUT_CHANGED_NOTIFY = "conferenceLayoutChanged";
-    public static final String CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM = "mode";
-    public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM = "partLinkedList";
-    public static final String CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM = "automatically";
-    public static final String CONFERENCELAYOUTCHANGED_PARTLINKEDLISTSHAREINCLUDE_PARAM = "partLinkedListShareInclude";
 
 
     public static final String ACCESS_OUT_METHOD = "accessOut";
@@ -258,7 +226,6 @@ public class ProtocolElements {
 
     public static final String GET_PARTICIPANTS_METHOD = "getParticipants";
     public static final String GET_PARTICIPANTS_ROOM_ID_PARAM = "roomId";
-    public static final String GET_PARTICIPANTS_TARGETID_PARAM = "targetId";
 
     public static final String SET_AUDIO_STATUS_METHOD = "setAudioStatus";
     public static final String SET_AUDIO_ROOM_ID_PARAM = "roomId";
@@ -270,11 +237,9 @@ public class ProtocolElements {
 
     public static final String SET_VIDEO_STATUS_METHOD = "setVideoStatus";
     public static final String SET_VIDEO_ROOM_ID_PARAM = "roomId";
-    public static final String SET_VIDEO_SOURCE_ID_PARAM = "sourceId";
     public static final String SET_VIDEO_TARGET_IDS_PARAM = "targetIds";
     public static final String SET_VIDEO_SOURCE_PARAM = "source";
     public static final String SET_VIDEO_TARGETS_PARAM = "targets";
-    public static final String SET_VIDEO_STATUS_PARAM = "status";
 
     public static final String RAISE_HAND_METHOD = "raiseHand";
     public static final String RAISE_HAND_ROOM_ID_PARAM = "roomId";
@@ -282,7 +247,6 @@ public class ProtocolElements {
 
     public static final String PUT_DOWN_HAND_METHOD = "putDownHand";
     public static final String PUT_DOWN_HAND_ROOM_ID_PARAM = "roomId";
-    public static final String PUT_DOWN_HAND_SOURCE_ID_PARAM = "sourceId";
     public static final String PUT_DOWN_HAND_TARGET_ID_PARAM = "targetId";
 
 
@@ -302,7 +266,6 @@ public class ProtocolElements {
     public static final String REPLACE_ROLL_CALL_METHOD = "replaceRollCall";
     public static final String REPLACE_ROLL_CALL_NOTIFY_METHOD = "replaceRollCallNotify";
     public static final String REPLACE_ROLL_CALL_ROOM_ID_PARAM = "roomId";
-    public static final String REPLACE_ROLL_CALL_SOURCE_ID_PARAM = "sourceId";
     public static final String REPLACE_ROLL_CALL_END_TARGET_ID_PARAM = "endTargetId";
     public static final String REPLACE_ROLL_CALL_START_TARGET_ID_PARAM = "startTargetId";
     public static final String REPLACE_ROLL_CALL_ORIGINATOR_PARAM = "originator";
@@ -311,13 +274,10 @@ public class ProtocolElements {
     public static final String CHANGE_PART_ROLE_CHANGED_TO_ON_THE_WALL_PARAM = "toOnTheWall";
     public static final String CHANGE_PART_ROLE_CHANGED_TO_DOWN_THE_WALL_PARAM = "toDownTheWall";
     public static final String CHANGE_PART_ROLE_CHANGED_CONNECTION_ID_PARAM = "connectionId";
-    public static final String CHANGE_PART_ROLE_ORIGINAL_ROLE_PARAM = "originalRole";
-    public static final String CHANGE_PART_ROLE_PRESENT_ROLE_PARAM = "presentRole";
 
 
     public static final String NOTIFY_PART_ROLE_CHANGED_METHOD = "notifyPartRoleChanged";
     public static final String PART_ORDER_OR_ROLE_CHANGE_NOTIFY_METHOD = "partOrderOrRoleChangeNotify";
-
 
 
     // 2.0 废弃 public static final String NOTIFY_PART_ROLE_CHANGED_CONNECTION_ID_PARAM = "connectionId";
@@ -328,11 +288,9 @@ public class ProtocolElements {
 
     public static final String LOCK_SESSION_METHOD = "lockSession";
     public static final String LOCK_SESSION_ROOM_ID_PARAM = "roomId";
-    public static final String LOCK_SESSION_SOURCE_ID_PARAM = "sourceId";
 
     public static final String UNLOCK_SESSION_METHOD = "unlockSession";
     public static final String UNLOCK_SESSION_ROOM_ID_PARAM = "roomId";
-    public static final String UNLOCK_SESSION_SOURCE_ID_PARAM = "sourceId";
 
     public static final String CLOSE_ROOM_METHOD = "closeRoom";
     public static final String CLOSE_ROOM_ID_PARAM = "roomId";
@@ -388,7 +346,6 @@ public class ProtocolElements {
     public static final String GET_DEVICE_VERUPGRADEAVAILABLE_PARAM = "verUpgradeAvailable";
 
     public static final String UPDATE_DEVICE_INFO_METHOD = "updateDeviceInfo";
-    public static final String UPDATE_DEVICE_ID_PARAM = "deviceId";
     public static final String UPDATE_DEVICE_NANE_PARAM = "deviceName";
 
 
@@ -400,10 +357,6 @@ public class ProtocolElements {
     public static final String SET_AUDIO_SPEAKER_USERNAME_PARAM = "username";
 
     public static final String SET_SHARE_POWER_METHOD = "setSharePower";
-    public static final String SET_SHARE_POWER_ID_PARAM = "roomId";
-    public static final String SET_SHARE_POWER_SOURCE_ID_PARAM = "sourceId";
-    public static final String SET_SHARE_POWER_TARGET_IDS_PARAM = "targetIds";
-    public static final String SET_SHARE_POWER_STATUS_PARAM = "status";
 
     public static final String SHARING_CONTROL_METHOD = "sharingControl";
     public static final String SHARING_CONTROL_ROOMID_PARAM = "roomId";
@@ -428,10 +381,6 @@ public class ProtocolElements {
 
     public static final String EVICTED_PARTICIPANT_BY_USER_ID_METHOD = "evictedParticipantByUserId";
 
-    public static final String ROOM_COUNTDOWN_METHOD = "roomCountDown";
-    public static final String ROOM_COUNTDOWN_INFO_ID_PARAM = "roomId";
-    public static final String ROOM_COUNTDOWN_TIME_PARAM = "remainTime";
-
     public static final String ROOM_DELAY_METHOD = "roomDelay";
     public static final String ROOM_DELAY_ID_PARAM = "roomId";
 
@@ -453,14 +402,10 @@ public class ProtocolElements {
     public static final String GET_SUB_DEVORUSER_METHOD = "getSubDevOrUser";
     public static final String GET_SUB_DEVORUSER_ORG_ID = "orgId";
     public static final String GET_SUB_DEVORUSER_SERIAL_NUMBER_PARAM = "serialNumber";
-    public static final String GET_SUB_DEVORUSER_DEVICE_NAME_PARAM = "deviceName";
     public static final String GET_SUB_DEVORUSER_USER_NAME_PARAM = "username";
 
     public static final String GET_SUB_DEVORUSER_ACCOUNT_PARAM = "account";
-    public static final String GET_SUB_DEVORUSER_USERID_PARAM = "userId";
     public static final String GET_SUB_DEVORUSER_DEVICESTATUS_PARAM = "deviceStatus";
-
-    public static final String GET_SUB_DEVORUSER_DEVICE_LIST_PARAM = "deviceList";
     public static final String GET_SUB_DEVORUSER_ACCOUNT_LIST_PARAM = "accountList";
 
     public static final String START_PTZ_CONTROL_METHOD = "startPtzControl";
@@ -477,15 +422,8 @@ public class ProtocolElements {
 
     public static final String STOP_PTZ_CONTROL_STOPPTZCONTROLNOTIFY_METHOD = "stopPtzControlNotify";
 
-    public static final String SWAP_PART_WINDOW_SOURCE_CONNECTION_ID_PAPM = "sourceConnectionId";
-    public static final String SWAP_PART_WINDOW_TARGET_CONNECTION_ID_PAPM = "targetConnectionId";
 
     public static final String GET_DEPARTMENT_TREE_METHOD = "getDepartmentTree";
-    public static final String GET_DEPARTMENT_TREE_CORP_NAME_PAPM = "corpName";
-    public static final String GET_DEPARTMENT_TREE_ORG_ID_PAPM = "orgId";
-    public static final String GET_DEPARTMENT_TREE_ORGANIZATION_NAME_PAPM = "organizationName";
-    public static final String GET_DEPARTMENT_TREE_ORGANIZATION_LIST_PAPM = "organizationList";
-    public static final String GET_DEPARTMENT_TREE_PARENT_ID_PAPM = "parentId";
 
     public static final String COMMAND_UOGRADE_METHOD = "commandUpgrade";
     public static final String COMMAND_UOGRADE_SERIALNUMBER_PAPM = "serialNumber";
@@ -511,22 +449,14 @@ public class ProtocolElements {
     public static final String ADJUST_RESOLUTION_NOTIFY_METHOD = "adjustResolutionNotify";
 
     public static final String GET_GROUP_LIST_METHOD = "getGroupList";
-    public static final String GET_GROUP_LIST_USERID_PARAM = "userId";
     public static final String GET_GROUP_LIST_GROUPLIST_PARAM = "list";
     public static final String GET_GROUP_LIST_GROUPID_PARAM = "groupId";
     public static final String GET_GROUP_LIST_GROUPNAME_PARAM = "groupName";
     public static final String GET_GROUP_LIST_NUMOFPEOPLE_PARAM = "numOfPeople";
 
     public static final String GET_GROUP_INFO_METHOD = "getGroupMember";
-    public static final String GET_GROUP_INFO_TOTAL = "total";
     public static final String GET_GROUP_INFO_ACCOUNT_LIST = "list";
     public static final String GET_GROUP_INFO_GROUPID_PARAM = "groupId";
-    public static final String GET_GROUP_INFO_GROUPINFO_PARAM = "groupInfo";
-    public static final String GET_GROUP_INFO_DEVIDE_NAME_PARAM = "deviceName";
-    public static final String GET_GROUP_INFO_SERIAL_NUMBER_PARAM = "serialNumber";
-    public static final String GET_GROUP_INFO_ACCOUNT_PARAM = "account";
-    public static final String GET_GROUP_INFO_USERID_PARAM = "userId";
-    public static final String GET_GROUP_INFO_DEVICE_STATUS_PARAM = "deviceStatus";
 
     public static final String MODIFY_PASSWORD_METHOD = "modifyPassword";
     public static final String ORIGINAL_PASSWORD_PARAM = "originalPassword";
@@ -568,7 +498,6 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
     public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
     public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";
-    public static final String PARTICIPANTJOINED_STREAM_TYPE_PARAM = "streamType";
 
     public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
     public static final String PARTICIPANTLEFT_NAME_PARAM = "connectionId";
@@ -590,13 +519,11 @@ public class ProtocolElements {
     public static final String PARTICIPANTPUBLISHED_CREATEDAT_PARAM = "createdAt";
     public static final String PARTICIPANTPUBLISHED_HASAUDIO_PARAM = "hasAudio";
     public static final String PARTICIPANTPUBLISHED_HASVIDEO_PARAM = "hasVideo";
-    public static final String PARTICIPANTPUBLISHED_MIXINCLUDED_PARAM = "mixIncluded";
     public static final String PARTICIPANTPUBLISHED_AUDIOACTIVE_PARAM = "audioActive";
     public static final String PARTICIPANTPUBLISHED_VIDEOACTIVE_PARAM = "videoActive";
     public static final String PARTICIPANTPUBLISHED_TYPEOFVIDEO_PARAM = "typeOfVideo";
     public static final String PARTICIPANTPUBLISHED_FRAMERATE_PARAM = "frameRate";
     public static final String PARTICIPANTPUBLISHED_VIDEODIMENSIONS_PARAM = "videoDimensions";
-    public static final String PARTICIPANTPUBLISHED_FILTER_PARAM = "filter";
     public static final String PARTICIPANTPUBLISHED_APPSHOWNAME_PARAM = "appShowName";
     public static final String PARTICIPANTPUBLISHED_APPSHOWDESC_PARAM = "appShowDesc";
 
@@ -632,8 +559,6 @@ public class ProtocolElements {
 
     public static final String RECORDINGSTOPPED_METHOD = "recordingStopped";
     public static final String RECORDINGSTOPPED_ID_PARAM = "id";
-
-    public static final String CUSTOM_NOTIFICATION = "custonNotification";
 
     public static final String RECORDER_PARTICIPANT_PUBLICID = "RECORDER";
 
@@ -705,7 +630,6 @@ public class ProtocolElements {
 
     public static final String SETSUBTITLECONFIG_METHOD = "setSubtitleConfig";
     public static final String SETSUBTITLECONFIG_ROOMID_PARAM = "roomId";
-    public static final String SETSUBTITLECONFIG_SOURCEID_PARAM = "sourceId";
     public static final String SETSUBTITLECONFIG_OPERATION_PARAM = "operation";
     public static final String SETSUBTITLECONFIG_SOURCELANGUAGE_PARAM = "sourceLanguage";
     public static final String SETSUBTITLECONFIG_EXTRAINFO_PARAM = "extraInfo";
@@ -729,7 +653,6 @@ public class ProtocolElements {
 
     public static final String SET_PART_OPER_SPEAKER_METHOD = "setPartOperSpeaker";
     public static final String SET_PART_OPER_SPEAKER_ID_PARAM = "roomId";
-    public static final String SET_PART_OPER_SPEAKER_SOURCE_PARAM = "source";
     public static final String SETPARTOPERSPEAKER_ALLOWPARTOPERSPEAKER_PARAM = "allowPartOperSpeaker";
 
     public static final String APPLY_OPEN_SPEAKER_STATUS_METHOD = "applyOpenSpeakerStatus";
@@ -807,7 +730,6 @@ public class ProtocolElements {
     public static final String GET_CONFERENCE_SCHEDULE_ADMIN_METHOD = "getConferenceScheduleAdmin";
     public static final String GET_PARTICIPATE_HISTORY_METHOD = "getParticipateHistory";
 
-    public static final String GETMEETINGSRECORDS_METHOD = "getMeetingRecords";
     public static final String GETMEETINGSRECORDS_SIZE_PARAM = "size";
     public static final String GETMEETINGSRECORDS_PAGENUM_PARAM = "pageNum";
     public static final String GETMEETINGSRECORDS_ROOMID_PARAM = "roomId";
@@ -903,7 +825,6 @@ public class ProtocolElements {
     public static final String APPLY_SHARE_NOTIFY_METHOD = "applyShareNotify";
     public static final String END_SHARE_METHOD = "endShare";
     public static final String END_SHARE_NOTIFY_METHOD = "endShareNotify";
-
 
 
     public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
