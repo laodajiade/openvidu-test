@@ -175,6 +175,9 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     public JsonArray getStreams(KurentoParticipant kParticipant) {
         JsonArray streamsArray = new JsonArray();
         for (PublisherEndpoint publisher : kParticipant.getPublishers().values()) {
+            if (!publisher.isStreaming()) {
+                continue;
+            }
             try {
                 JsonObject stream = new JsonObject();
                 stream.addProperty(ProtocolElements.JOINROOM_PEERPUBLISHID_PARAM,
