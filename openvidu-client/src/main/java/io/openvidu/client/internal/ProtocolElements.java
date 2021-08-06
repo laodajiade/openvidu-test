@@ -66,6 +66,7 @@ public class ProtocolElements {
     public static final String JOINROOM_PEERSTREAMFILTER_PARAM = "filter";
     public static final String JOINROOM_MICSTATUS_PARAM = "micStatus";
     public static final String JOINROOM_VIDEOSTATUS_PARAM = "videoStatus";
+    public static final String JOINROOM_PEERSPEAKERSTATUS_PARAM = "speakerStatus";
     public static final String JOINROOM_MIXFLOWS_PARAM = "mixFlows";
     public static final String JOINROOM_MIXFLOWS_STREAMID_PARAM = "streamId";
     public static final String JOINROOM_MIXFLOWS_STREAMMODE_PARAM = "streamMode";
