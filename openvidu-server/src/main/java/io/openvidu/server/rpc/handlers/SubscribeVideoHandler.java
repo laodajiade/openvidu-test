@@ -52,23 +52,6 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
 
         Participant senderPart;
 
-        // todo 调试代码
-        List<String> devParts = Arrays.asList("81103600038-1", "81100212770", "80103600005", "80103600006");
-        if (session.getConferenceMode() == ConferenceModeEnum.MCU && devParts.contains(participant.getUuid())) {
-            log.info("调试 {}", participant.getUuid());
-            publishId = session.getCompositeService().getMixStreamId();
-            streamMode = StreamModeEnum.MIX_MAJOR;
-        }
-//        String uuid2 = getStringParam(request, SENDER_UUID_PARAM);
-//        if (devParts.contains(participant.getUuid()) && !"81103600038".equals(uuid2)) {
-//            log.info("拦截掉其他的拉流 {}", uuid2);
-//            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-//                    null, ErrorCodeEnum.UNRECOGNIZED_API);
-//            return;
-//        }
-        // todo 调试代码
-
-
         if (streamMode == StreamModeEnum.MIX_MAJOR) {
             if (!Objects.equals(session.getCompositeService().getMixStreamId(), publishId)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

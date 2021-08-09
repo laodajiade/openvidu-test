@@ -114,4 +114,8 @@ public interface CacheManage {
     void setCropDongleInfo(String dongleInfo);
 
     DongleInfo getCropDongleInfo();
+
+    void updatePipelineLoad(String pipelineId, int load);
+
+    Integer getPipelineLoad(String pipelineId);
 }

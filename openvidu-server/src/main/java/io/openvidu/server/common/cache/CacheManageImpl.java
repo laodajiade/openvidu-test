@@ -13,6 +13,7 @@ import io.openvidu.server.common.pojo.DongleInfo;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DESUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -435,5 +436,18 @@ public class CacheManageImpl implements CacheManage {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public void updatePipelineLoad(String pipelineId, int load) {
+        String key = "pipeline:load:" + pipelineId;
+        roomStringTemplate.opsForValue().set(key, String.valueOf(load), 7, TimeUnit.DAYS);
+    }
+
+    @Override
+    public Integer getPipelineLoad(String pipelineId) {
+        String key = "pipeline:load:" + pipelineId;
+        String result = roomStringTemplate.opsForValue().get(key);
+        return NumberUtils.toInt(result, 0);
     }
 }

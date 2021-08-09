@@ -105,6 +105,7 @@ public class Session implements SessionInterface {
 	protected volatile boolean closed = false;
 	private volatile boolean locking = false;
 	protected AtomicInteger activePublishers = new AtomicInteger(0);
+	protected AtomicInteger activeSubscribers = new AtomicInteger(0);
 	public final AtomicBoolean isRecording = new AtomicBoolean(false);
 	public final AtomicBoolean recordingManuallyStopped = new AtomicBoolean(false);
 
@@ -668,13 +669,36 @@ public class Session implements SessionInterface {
 		return activePublishers.get();
 	}
 
-	public void registerPublisher() {
-		this.activePublishers.incrementAndGet();
-	}
+    public void registerPublisher() {
+        this.activePublishers.incrementAndGet();
+        openviduConfig.getCacheManage().updatePipelineLoad(((KurentoSession) this).getPipeline().getId(), getLoad());
+    }
 
-	public void deregisterPublisher() {
-		this.activePublishers.decrementAndGet();
-	}
+    public void deregisterPublisher() {
+        this.activePublishers.decrementAndGet();
+        openviduConfig.getCacheManage().updatePipelineLoad(((KurentoSession) this).getPipeline().getId(), getLoad());
+    }
+
+    public void registerSubscriber() {
+        this.activeSubscribers.incrementAndGet();
+        openviduConfig.getCacheManage().updatePipelineLoad(((KurentoSession) this).getPipeline().getId(), getLoad());
+    }
+
+    public void deregisterSubscriber() {
+        this.activeSubscribers.decrementAndGet();
+        openviduConfig.getCacheManage().updatePipelineLoad(((KurentoSession) this).getPipeline().getId(), getLoad());
+    }
+
+    /**
+     * 计算KMS负载
+     */
+    private int getLoad() {
+        int baseMode = this.conferenceMode == ConferenceModeEnum.MCU ? 100 : 10;
+        int load = baseMode + this.activePublishers.get() * 2 + this.activeSubscribers.get();
+        log.info("pipeline load session {},load {},pub {},sub {},baseMode {}, pipeline {}", this.getSessionId(), load, this.activePublishers.get(),
+                this.activeSubscribers.get(), baseMode, ((KurentoSession) this).getPipeline().getId());
+        return load;
+    }
 
 	// delete 2.0
 //	public boolean needToChangePartRoleAccordingToLimit(Participant participant) {
@@ -1161,7 +1185,7 @@ public class Session implements SessionInterface {
 
         // evict the parts in session and notify KMS layout changed
         Participant moderatorPart = getModeratorPart();
-        
+
         sessionManager.unpublishStream(this, pup2SubPart.getPublisherStreamId(), moderatorPart,
                 null, EndReason.forceUnpublishByUser);
 

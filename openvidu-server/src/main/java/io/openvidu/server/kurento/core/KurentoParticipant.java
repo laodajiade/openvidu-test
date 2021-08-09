@@ -362,100 +362,102 @@ public class KurentoParticipant extends Participant {
 	 * @param returnObj 用来接收其他返回参数到上层方法
 	 * @return
 	 */
-	public String receiveMediaFrom(KurentoParticipant sender, StreamModeEnum streamMode, String sdpOffer, StreamType streamType,
-								   String publishStreamId, Map<String, Object> returnObj) {
-		String subscriberStreamId = null;
-		PublisherEndpoint senderPublisher = null;
-		if (!Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-			senderPublisher = sender.getPublisher(streamType);
-			if (senderPublisher == null) {
-				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "没有找到 senderPublisher");
-			}
-			if (!senderPublisher.getStreamId().equals(publishStreamId)) {
-				log.warn("{} 拉的{},{}的流的streamId不匹配{}!={},自动修正", this.getUuid(), sender.getUuid(),
-						streamType.name(), senderPublisher.getStreamId(), publishStreamId);
-				publishStreamId = senderPublisher.getStreamId();
-			}
-			log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getUuid(),
-					publishStreamId, this.session.getSessionId());
-			subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
-			log.info("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getUuid(),
-					subscriberStreamId);
-		} else {
-			subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
-		}
+    public String receiveMediaFrom(KurentoParticipant sender, StreamModeEnum streamMode, String sdpOffer, StreamType streamType,
+                                   String publishStreamId, Map<String, Object> returnObj) {
+        String subscriberStreamId = null;
+        PublisherEndpoint senderPublisher = null;
+        if (!Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
+            senderPublisher = sender.getPublisher(streamType);
+            if (senderPublisher == null) {
+                throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "没有找到 senderPublisher");
+            }
+            if (!senderPublisher.getStreamId().equals(publishStreamId)) {
+                log.warn("{} 拉的{},{}的流的streamId不匹配{}!={},自动修正", this.getUuid(), sender.getUuid(),
+                        streamType.name(), senderPublisher.getStreamId(), publishStreamId);
+                publishStreamId = senderPublisher.getStreamId();
+            }
+            log.info("PARTICIPANT {}: Request to receive media from {} in room {}", this.getUuid(),
+                    publishStreamId, this.session.getSessionId());
+            subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
+            log.info("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getUuid(),
+                    subscriberStreamId);
+        } else {
+            subscriberStreamId = translateSubscribeId(this.getUuid(), publishStreamId);
+        }
 
 
-		SubscriberEndpoint subscriber = getNewOrExistingSubscriber(subscriberStreamId);
-		UseTime.point("分发/级联 before");
-		if (subscriber.getEndpoint() == null && !Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-			subscriber = getNewOrExistingSubscriber(subscriberStreamId);
-			if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
-				DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
-				MediaChannel mediaChannel = senderPublisher.getMediaChannels().get(deliveryKms.getId());
-				if (mediaChannel == null) {
-					log.warn("mediaChannel not exist");
-					synchronized (this) {
-						mediaChannel = deliveryKms.dispatcher(sender, senderPublisher);
-					}
-				}
-				log.info("mediaChannel state = {}", mediaChannel.getState().name());
-				if (mediaChannel.waitToReady() && mediaChannel.getState().isAvailable()) {
-					log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getUuid(),
-							subscriberStreamId);
-					log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
-							this.getUuid(), sender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
-					senderPublisher = mediaChannel.getPublisher();
-					subscriberStreamId = this.getUuid() + "_receive_" + senderPublisher.getStreamId();
-					subscriber = getNewAndCompareSubscriber(subscriberStreamId, mediaChannel.getTargetPipeline(), subscriber);
-				} else {
-					log.info("media channel not ready:{},use master kms", mediaChannel.getState().name());
-				}
-			}
-		}
-		UseTime.point("分发/级联 after");
+        SubscriberEndpoint subscriber = getNewOrExistingSubscriber(subscriberStreamId);
+        UseTime.point("分发/级联 before");
+        if (subscriber.getEndpoint() == null && !Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
+            subscriber = getNewOrExistingSubscriber(subscriberStreamId);
+            if (!getRole().needToPublish() && !getSession().getDeliveryKmsManagers().isEmpty() && getRole() != OpenViduRole.THOR) {
+                DeliveryKmsManager deliveryKms = EndpointLoadManager.getLessDeliveryKms(getSession().getDeliveryKmsManagers());
+                MediaChannel mediaChannel = senderPublisher.getMediaChannels().get(deliveryKms.getId());
+                if (mediaChannel == null) {
+                    log.warn("mediaChannel not exist");
+                    synchronized (this) {
+                        mediaChannel = deliveryKms.dispatcher(sender, senderPublisher);
+                    }
+                }
+                log.info("mediaChannel state = {}", mediaChannel.getState().name());
+                if (mediaChannel.waitToReady() && mediaChannel.getState().isAvailable()) {
+                    log.debug("PARTICIPANT {}: Creating a subscriber endpoint to user {}", this.getUuid(),
+                            subscriberStreamId);
+                    log.info("uuid({}) 订阅 分发的uuid({}) targetPipeline {}  mediaChannel.publisher={}",
+                            this.getUuid(), sender.getUuid(), mediaChannel.getTargetPipeline(), mediaChannel.getPublisher().getEndpoint().getId());
+                    senderPublisher = mediaChannel.getPublisher();
+                    subscriberStreamId = this.getUuid() + "_receive_" + senderPublisher.getStreamId();
+                    subscriber = getNewAndCompareSubscriber(subscriberStreamId, mediaChannel.getTargetPipeline(), subscriber);
+                } else {
+                    log.info("media channel not ready:{},use master kms", mediaChannel.getState().name());
+                }
+            }
+        }
 
-		try {
-			CountDownLatch subscriberLatch = new CountDownLatch(1);
-			UseTime.point("createEndpoint start");
-			SdpEndpoint oldMediaEndpoint = subscriber.createEndpoint(subscriberLatch);
-			UseTime.point("createEndpoint mid");
-			try {
-				if (!subscriberLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
-					throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
-							"Timeout reached when creating subscriber endpoint");
-				}
-			} catch (InterruptedException e) {
-				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
-						"Interrupted when creating subscriber endpoint: " + e.getMessage());
-			}
-			if (oldMediaEndpoint != null) {
-				log.warn("PARTICIPANT {}: Two threads are trying to create at " + "the same time a subscriber endpoint for user {}",
-						this.getUuid(), subscriberStreamId);
-				return null;
-			}
-			UseTime.point("createEndpoint end");
-			if (subscriber.getEndpoint() == null) {
-				throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create subscriber endpoint");
-			}
+        UseTime.point("分发/级联 after");
+
+        try {
+            CountDownLatch subscriberLatch = new CountDownLatch(1);
+            UseTime.point("createEndpoint start");
+            SdpEndpoint oldMediaEndpoint = subscriber.createEndpoint(subscriberLatch);
+            UseTime.point("createEndpoint mid");
+            try {
+                if (!subscriberLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+                    throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+                            "Timeout reached when creating subscriber endpoint");
+                }
+            } catch (InterruptedException e) {
+                throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+                        "Interrupted when creating subscriber endpoint: " + e.getMessage());
+            }
+            if (oldMediaEndpoint != null) {
+                log.warn("PARTICIPANT {}: Two threads are trying to create at " + "the same time a subscriber endpoint for user {}",
+                        this.getUuid(), subscriberStreamId);
+                return null;
+            }
+            UseTime.point("createEndpoint end");
+            if (subscriber.getEndpoint() == null) {
+                throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create subscriber endpoint");
+            }
 
 
-			subscriber.setEndpointName(subscriberStreamId);
-			subscriber.getEndpoint().setName(subscriberStreamId);
-			subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + sender.getUuid() +
-					"_" + streamType + "_cid_" + RandomStringUtils.randomAlphabetic(6) + "_stream_" + subscriber.getStreamId());
-					//"_" + streamType + "_stream_" + subscriber.getStreamId());
-			subscriber.setStreamId(subscriberStreamId);
-			returnObj.put("subscribeId", subscriberStreamId);
-			endpointConfig.addEndpointListeners(subscriber, "subscriber");
-		} catch (OpenViduException e) {
+            subscriber.setEndpointName(subscriberStreamId);
+            subscriber.getEndpoint().setName(subscriberStreamId);
+            subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, getParticipantName() + "_sub_" + sender.getUuid() +
+                    "_" + streamType + "_cid_" + RandomStringUtils.randomAlphabetic(6) + "_stream_" + subscriber.getStreamId());
+            //"_" + streamType + "_stream_" + subscriber.getStreamId());
+            subscriber.setStreamId(subscriberStreamId);
+            returnObj.put("subscribeId", subscriberStreamId);
+            endpointConfig.addEndpointListeners(subscriber, "subscriber");
+        } catch (OpenViduException e) {
             this.subscribers.remove(publishStreamId);
-			throw e;
-		}
+            throw e;
+        }
+        this.session.registerSubscriber();
 
         log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), publishStreamId);
-		try {
-			String sdpAnswer = subscriber.subscribeVideo(sdpOffer, senderPublisher, streamMode);
+        try {
+            String sdpAnswer = subscriber.subscribeVideo(sdpOffer, senderPublisher, streamMode);
             log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
                     publishStreamId, this.session.getSessionId());
 
@@ -469,20 +471,20 @@ public class KurentoParticipant extends Participant {
 //				}
 //			}
 
-			return sdpAnswer;
-		} catch (KurentoServerException e) {
-			// TODO Check object status when KurentoClient sets this info in the object
-			if (e.getCode() == 40101) {
-				log.warn("Publisher endpoint was already released when trying "
-						+ "to connect a subscriber endpoint to it", e);
-			} else {
-				log.error("Exception connecting subscriber endpoint " + "to publisher endpoint", e);
-			}
-			this.subscribers.remove(subscriberStreamId);
-			releaseSubscriberEndpoint(senderPublisher.getStreamId(), subscriber, null);
-		}
-		return null;
-	}
+            return sdpAnswer;
+        } catch (KurentoServerException e) {
+            // TODO Check object status when KurentoClient sets this info in the object
+            if (e.getCode() == 40101) {
+                log.warn("Publisher endpoint was already released when trying "
+                        + "to connect a subscriber endpoint to it", e);
+            } else {
+                log.error("Exception connecting subscriber endpoint " + "to publisher endpoint", e);
+            }
+            this.subscribers.remove(subscriberStreamId);
+            releaseSubscriberEndpoint(senderPublisher.getStreamId(), subscriber, null);
+        }
+        return null;
+    }
 
     public String translateSubscribeId(String receiveUuid, String publishStreamId) {
         return receiveUuid + "_receive_" + publishStreamId;
@@ -661,6 +663,7 @@ public class KurentoParticipant extends Participant {
 			}
 
 			releaseElement(subscribeId, subscriber.getEndpoint());
+            this.session.deregisterSubscriber();
 			endpointConfig.getCdr().stopSubscriber(this.getParticipantPublicId(), subscribeId,
 					subscriber.getStreamId(), reason);
 		} else {

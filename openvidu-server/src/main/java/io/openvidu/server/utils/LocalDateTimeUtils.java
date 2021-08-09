@@ -6,6 +6,8 @@ import java.util.Date;
 
 public class LocalDateTimeUtils {
 
+    private static LocalTime MAX = LocalTime.MAX.minusNanos(999_999_999);
+
     /**
      * 当月的第一天
      */
@@ -33,6 +35,20 @@ public class LocalDateTimeUtils {
      */
     public static LocalDateTime minTimeOfDay(LocalDateTime localDateTime) {
         return LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MIN);
+    }
+
+    /**
+     * 一天的23:59:59 000点
+     */
+    public static LocalDateTime maxTimeOfDay(LocalDateTime localDateTime) {
+        return maxTimeOfDay(localDateTime.toLocalDate());
+    }
+
+    /**
+     * 一天的23:59:59 000点
+     */
+    public static LocalDateTime maxTimeOfDay(LocalDate localDate) {
+        return LocalDateTime.of(localDate, MAX);
     }
 
     /**
