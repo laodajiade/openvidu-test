@@ -18,13 +18,11 @@
 package io.openvidu.server.core;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
-import io.openvidu.server.cdr.CDREventRecording;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
@@ -54,7 +52,6 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -690,6 +687,7 @@ public abstract class SessionManager {
 
         // set session status: closing
         session.setClosing(true);
+        cacheManage.delPipelineLoad(((KurentoSession) session).getPipeline().getId());
         boolean sessionClosedByLastParticipant = false;
         if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
             // stop recording

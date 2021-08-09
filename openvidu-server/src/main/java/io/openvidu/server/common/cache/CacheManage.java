@@ -118,4 +118,6 @@ public interface CacheManage {
     void updatePipelineLoad(String pipelineId, int load);
 
     Integer getPipelineLoad(String pipelineId);
+
+    void delPipelineLoad(String pipelineId);
 }

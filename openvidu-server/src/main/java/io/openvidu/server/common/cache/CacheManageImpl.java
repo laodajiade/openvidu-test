@@ -450,4 +450,10 @@ public class CacheManageImpl implements CacheManage {
         String result = roomStringTemplate.opsForValue().get(key);
         return NumberUtils.toInt(result, 0);
     }
+
+    @Override
+    public void delPipelineLoad(String pipelineId) {
+        String key = "pipeline:load:" + pipelineId;
+        roomStringTemplate.delete(key);
+    }
 }
