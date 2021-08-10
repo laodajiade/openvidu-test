@@ -698,8 +698,7 @@ public class KurentoSessionManager extends SessionManager {
     public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
         KurentoSession session = (KurentoSession) sessions.get(sessionId);
         if (session != null) {
-            throw new OpenViduException(Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE,
-                    "Session '" + session.getSessionId() + "' already exists");
+            throw new BizException(ErrorCodeEnum.CONFERENCE_ALREADY_EXIST, "Session '" + session.getSessionId() + "' already exists");
         }
 
         Session sessionNotActive = new Session(sessionId,
