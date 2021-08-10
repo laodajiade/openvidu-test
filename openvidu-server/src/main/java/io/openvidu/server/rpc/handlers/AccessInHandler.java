@@ -204,9 +204,9 @@ public class AccessInHandler extends RpcAbstractHandler {
                     EndReason.forceDisconnectByServer);
         }
 
-        if (Objects.nonNull(notificationService.getRpcConnection(previousRpc.getParticipantPrivateId()))) {
-            notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
-        }
+//        if (Objects.nonNull(notificationService.getRpcConnection(previousRpc.getParticipantPrivateId()))) {
+//            notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+//        }
     }
 
     private void checkDeviceInfoAndUpdate(Device device, String deviceVersion, String ability, String functionality,
