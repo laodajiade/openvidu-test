@@ -1,8 +1,10 @@
 package io.openvidu.server.kurento.kms;
 
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.kurento.core.DeliveryKmsManager;
+import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.MediaPipeline;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -234,7 +234,7 @@ public class KurentoSession extends Session {
 
 			// Also disassociate the KurentoSession from the Kms
 			kms.removeKurentoSession(this.sessionId);
-
+			openviduConfig.getCacheManage().delPipelineLoad(pipeline == null ? "" : pipeline.getId());
 			this.closed = true;
 			return true;
 		} else {

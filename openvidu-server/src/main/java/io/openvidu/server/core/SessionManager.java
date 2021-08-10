@@ -687,7 +687,6 @@ public abstract class SessionManager {
 
         // set session status: closing
         session.setClosing(true);
-        cacheManage.delPipelineLoad(((KurentoSession) session).getPipeline().getId());
         boolean sessionClosedByLastParticipant = false;
         if (openviduConfig.isRecordingModuleEnabled() && session.isRecording.get()) {
             // stop recording
