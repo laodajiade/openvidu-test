@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.redis.RecordingRedisPublisher;
-import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
@@ -176,7 +175,11 @@ public class RecorderService {
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            passThruList.add(constructPartRecordInfo(part, source, StreamType.MAJOR, order++));
+            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+                passThruList.add(constructPartRecordInfo(part, source, StreamType.MINOR, order++));
+            } else {
+                passThruList.add(constructPartRecordInfo(part, source, StreamType.MAJOR, order++));
+            }
             otherPartSize++;
         }
 
@@ -204,7 +207,11 @@ public class RecorderService {
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
             }
-            passThruList.add(constructPartRecordInfo(part, source, StreamType.MAJOR, order++));
+            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+                passThruList.add(constructPartRecordInfo(part, source, StreamType.MINOR, order++));
+            } else {
+                passThruList.add(constructPartRecordInfo(part, source, StreamType.MAJOR, order++));
+            }
             otherPartSize++;
         }
         this.passThruList = passThruList;
@@ -222,8 +229,13 @@ public class RecorderService {
         int order = 0;
         List<CompositeObjectWrapper> source = new ArrayList<>(parts.size());
         JsonArray passThruList = new JsonArray();
+
         for (Participant part : parts) {
-            passThruList.add(constructPartRecordInfo(part, source, StreamType.MINOR, order++));
+            StreamType streamType = StreamType.MAJOR;
+            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+                streamType = parts.size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
+            }
+            passThruList.add(constructPartRecordInfo(part, source, streamType, order++));
         }
         this.sourcesPublisher = source;
         this.passThruList = passThruList;
