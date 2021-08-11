@@ -15,7 +15,6 @@ import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author geedow
@@ -267,24 +265,16 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
                 //判断发起会议时是否超出企业人数上限
-                // todo 这里需要考虑分布式能力，从数据库中获取参会者
                 if (!Objects.isNull(session)) {
                     String project = session.getConference().getProject();
-                    Collection<Session> sessions = sessionManager.getSessions();
-                    if (Objects.nonNull(sessions)) {
-                        AtomicInteger limitCapacity = new AtomicInteger();
-                        sessions.forEach(e -> {
-                            if (project.equals(e.getConference().getProject())) {
-                                limitCapacity.addAndGet(e.getPartSize());
-                            }
-                        });
-                        //query sd_corporation info
-                        Corporation corporation = corporationMapper.selectByCorpProject(project);
-                        if (Objects.nonNull(corporation.getCapacity()) && limitCapacity.get() > corporation.getCapacity() - 1) {
-                            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                                    null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                            return;
-                        }
+
+                    //query sd_corporation info
+                    int joinNum = conferencePartHistoryMapper.countProcessPartHistory(project);
+                    Corporation corporation = corporationMapper.selectByCorpProject(project);
+                    if (Objects.nonNull(corporation.getCapacity()) && joinNum > corporation.getCapacity() - 1) {
+                        notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                                null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+                        return;
                     }
                 }
                 //判断通话时长是否不足
