@@ -410,14 +410,16 @@ public class CompositeService {
         params.addProperty("sessionId", sessionId);
 
         // construct composite layout info
-        JsonArray layoutInfos = new JsonArray(3);
-        JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutModeType, layoutMode);
+        JsonArray layoutInfos = new JsonArray(layoutMode.getMode());
+        JsonArray showLayout = new JsonArray(layoutMode.getMode());
+        JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutModeType, layoutMode, true);
 
         AtomicInteger index = new AtomicInteger(0);
         layoutCoordinates.forEach(coordinates -> {
+            JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
             if (index.get() < layoutMode.getMode()) {
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
-                JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
+
                 PublisherEndpoint publisherEndpoint = compositeObject.endpoint;
                 if (publisherEndpoint != null) {
                     elementsLayout.addProperty("streamId", publisherEndpoint.getStreamId());
@@ -429,14 +431,17 @@ public class CompositeService {
                 elementsLayout.addProperty("uuid", compositeObject.uuid);
                 elementsLayout.addProperty("username", compositeObject.username);
                 elementsLayout.addProperty("streamType", compositeObject.streamType.name());
-                //elementsLayout.addProperty("streamType", "streamType");
                 elementsLayout.addProperty("connectionId", "connectionId");
                 elementsLayout.addProperty("onlineStatus", "online");
                 elementsLayout.addProperty("hasVideo", true);
-                //elementsLayout.addProperty("streaming", publisherEndpoint != null);
+                elementsLayout.addProperty("streaming", publisherEndpoint.isStreaming());
                 index.incrementAndGet();
                 layoutInfos.add(elementsLayout);
+            } else {
+                // 补足无画面布局
+                elementsLayout.addProperty("uuid", "");
             }
+            showLayout.add(elementsLayout);
         });
 
         JsonObject operationParams = new JsonObject();
@@ -445,8 +450,8 @@ public class CompositeService {
         kmsRequest.setMethod("invoke");
         kmsRequest.setParams(params);
         log.info("send mcu composite setLayout params:{}", params);
-        this.layoutMode = layoutMode;
-        setLayoutCoordinates(layoutInfos);
+        this.layoutMode = LayoutInitHandler.ceil(layoutModeType, layoutMode);
+        setLayoutCoordinates(showLayout);
         return kmsRequest;
     }
 

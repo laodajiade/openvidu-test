@@ -345,20 +345,11 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                             role.name(), location, platform, rpcConnection.getDeviceModel(), rpcConnection.getAbility(), rpcConnection.getFunctionality());
                 }
 
-                String sessionTraceId;
-                if (!Objects.isNull(sessionManager.getSession(sessionId))) {
-                    sessionTraceId = sessionManager.getSession(sessionId).getTraceId();
-                } else {
-                    sessionTraceId = RandomStringUtils.randomAlphabetic(6);
-                }
-
                 Long userId = rpcConnection.getUserId();
                 String serialNumber = rpcConnection.getSerialNumber();
-                String participantName = "sid_" + sessionTraceId + "_" + sessionId +
-                        "_" + rpcConnection.getUserUuid() + "_" + streamType.name();
                 participant.setPreset(preset);
                 participant.setJoinType(ParticipantJoinType.valueOf(joinType));
-                participant.setParticipantName(participantName);
+                participant.setParticipantName(rpcConnection.getUsername());
                 participant.setAbility(rpcConnection.getAbility());
                 participant.setFunctionality(rpcConnection.getFunctionality());
                 participant.setUserType(rpcConnection.getUserType());
@@ -416,7 +407,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         session.getJoinOrLeaveReentrantLock().unlock();
                     }
                 }
-                sessionManager.getSession(sessionId).setTraceId(sessionTraceId);
                 UseTime.point("join room p2");
             } while (false);
 

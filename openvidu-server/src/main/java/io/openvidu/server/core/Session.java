@@ -36,6 +36,7 @@ import io.openvidu.server.kurento.core.*;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.utils.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +75,6 @@ public class Session implements SessionInterface {
     protected final ConcurrentMap<String, Participant> participantList = new ConcurrentHashMap<>();
 
 	protected String sessionId;
-	protected String traceId;
 	protected String ruid;
 	protected SessionProperties sessionProperties;
 	protected Long startTime;
@@ -210,9 +210,13 @@ public class Session implements SessionInterface {
 		this.ruid = ruid;
 	}
 
-	public String getTraceId() { return traceId; }
+	public String getTraceId() {
+		if (StringUtils.isEmpty(ruid)) {
+			return null;
+		}
+		return ruid.substring(ruid.length() - 8);
+	}
 
-	public void setTraceId(String traceId) { this.traceId = traceId; }
 
 	public boolean isAutomatically() {
         return automatically;

@@ -107,6 +107,51 @@ public class LayoutInitHandler {
         return getLayoutByMode(LayoutModeTypeEnum.NORMAL, layoutModeEnum);
     }
 
+    public static JsonArray getLayoutByMode(LayoutModeTypeEnum type, LayoutModeEnum layoutModeEnum, boolean ceil) {
+        if (ceil) {
+            layoutModeEnum = ceil(type, layoutModeEnum);
+        }
+        return getLayoutByMode(type, layoutModeEnum);
+    }
+
+    public static LayoutModeEnum ceil(LayoutModeTypeEnum type, LayoutModeEnum layoutModeEnum) {
+        switch (type) {
+            case NORMAL:
+                if (layoutModeEnum.getMode() <= 2) {
+                    return layoutModeEnum;
+                } else if (layoutModeEnum.getMode() <= 4) {
+                    return LayoutModeEnum.FOUR;
+                } else if (layoutModeEnum.getMode() <= 6) {
+                    return LayoutModeEnum.SIX;
+                } else if (layoutModeEnum.getMode() <= 9) {
+                    return LayoutModeEnum.NINE;
+                } else {
+                    return LayoutModeEnum.SIXTEEN;
+                }
+            case ROSTRUM:
+                if (layoutModeEnum.getMode() <= 1) {
+                    return layoutModeEnum;
+                } else {
+                    return LayoutModeEnum.SIXTEEN;
+                }
+            case ROSTRUM_T200:
+                if (layoutModeEnum.getMode() <= 1) {
+                    return layoutModeEnum;
+                } else {
+                    return LayoutModeEnum.SIX;
+                }
+            case ROSTRUM_T200_TWO:
+                if (layoutModeEnum.getMode() <= 1) {
+                    return layoutModeEnum;
+                } else {
+                    return LayoutModeEnum.SEVEN;
+                }
+            default:
+                log.error("LayoutModeTypeEnum not found {},exit", type.name());
+                throw new IllegalArgumentException("LayoutModeTypeEnum not found " + type.name());
+        }
+    }
+
     public static JsonArray getLayoutByMode(LayoutModeTypeEnum type, LayoutModeEnum layoutModeEnum) {
         switch (type) {
             case NORMAL:
