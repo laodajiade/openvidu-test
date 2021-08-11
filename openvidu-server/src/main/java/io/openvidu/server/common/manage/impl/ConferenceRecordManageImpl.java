@@ -292,4 +292,9 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
     public ConferenceRecord getByRuIdRecordStatus(String ruId) {
         return conferenceRecordMapper.getByRuIdRecordStatus(ruId);
     }
+
+    @Override
+    public int getRecordNumByProject(String project) {
+        return conferenceRecordMapper.countRecordNumByProject(project);
+    }
 }

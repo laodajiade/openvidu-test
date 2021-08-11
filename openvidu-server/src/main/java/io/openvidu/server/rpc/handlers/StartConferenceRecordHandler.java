@@ -1,11 +1,12 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
-import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.constants.CommonConstants;
-import io.openvidu.server.common.dao.FixedRoomMapper;
-import io.openvidu.server.common.enums.*;
+import io.openvidu.server.common.enums.ConferenceRecordStatusEnum;
+import io.openvidu.server.common.enums.ConferenceStatus;
+import io.openvidu.server.common.enums.DeployTypeEnum;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -43,13 +43,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.START_CONF_RECORD_ROOMID_PARAM);
         boolean forceRec = getBooleanOptionalParam(request, "force");
-
-        //todo 2.0 分布式支持
-        if (envConfig.deployType != DeployTypeEnum.SASS && ArtisanEnum.RECORDING_NUM.getValue().equals(recordingNum.get())) {
-            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.OTHER_RECORDING_LATER_RETRY);
-            return;
-        }
 
         Session session;
         if (Objects.isNull(session = sessionManager.getSession(roomId))) {
@@ -119,7 +112,9 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
             } else {
                 recordService = false;
             }
-            if (recordingNum.get() > dongleInfo.getRecordingLicense()) {
+
+            int recordingNum = conferenceRecordManage.getRecordNumByProject(corporation.getProject());
+            if (recordingNum > dongleInfo.getRecordingLicense()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.RECORDING_SERVER_UPPER_LIMIT);
                 return;
@@ -222,9 +217,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
                     // notify.addProperty("reason", "serverInternalError");
                     notify.addProperty("reason", CommonConstants.SERVER_INTERNAL_ERROR);
                     notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.STOP_CONF_RECORD_METHOD, notify);
-                }
-                if (ConferenceRecordStatusEnum.PROCESS.getStatus().equals(recordStatus.getStatus())) {
-                    recordingNum.incrementAndGet();
                 }
             } catch (Exception e) {
                 log.info("asyncCheckRecordStatus error ", e);

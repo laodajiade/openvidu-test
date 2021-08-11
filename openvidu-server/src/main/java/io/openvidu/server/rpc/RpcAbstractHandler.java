@@ -150,8 +150,6 @@ public abstract class RpcAbstractHandler {
 
     protected BigDecimal bigDecimalMB = new BigDecimal(1024 * 1024);
 
-    protected static AtomicInteger recordingNum = new AtomicInteger(0);
-
     protected void addInviteCompensation(String account, JsonElement jsonElement, String expireTime) {
         inviteCompensationManage.activateInviteCompensation(account, jsonElement, Long.valueOf(expireTime));
     }

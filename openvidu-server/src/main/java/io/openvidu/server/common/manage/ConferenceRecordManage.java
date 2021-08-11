@@ -43,8 +43,14 @@ public interface ConferenceRecordManage {
 
     /**
      * 根据ruId 查询录制状态
+     *
      * @param ruId
      * @return
      */
     ConferenceRecord getByRuIdRecordStatus(String ruId);
+
+    /**
+     * 查询企业的录制路数
+     */
+    int getRecordNumByProject(String project);
 }

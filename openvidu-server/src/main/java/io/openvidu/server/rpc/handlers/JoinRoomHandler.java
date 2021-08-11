@@ -268,7 +268,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
                 //判断发起会议时是否超出企业人数上限
                 // todo 这里需要考虑分布式能力，从数据库中获取参会者
-                if (StreamType.MAJOR.equals(streamType) && !Objects.isNull(session)) {
+                if (!Objects.isNull(session)) {
                     String project = session.getConference().getProject();
                     Collection<Session> sessions = sessionManager.getSessions();
                     if (Objects.nonNull(sessions)) {

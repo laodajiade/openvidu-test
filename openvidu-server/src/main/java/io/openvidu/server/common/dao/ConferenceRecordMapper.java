@@ -1,6 +1,8 @@
 package io.openvidu.server.common.dao;
 
 import io.openvidu.server.common.pojo.ConferenceRecord;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -39,4 +41,7 @@ public interface ConferenceRecordMapper {
      * @return
      */
     ConferenceRecord getByRuIdRecordStatus(String ruId);
+
+    @Select("select count(*) from sd_conference_record a ,sd_conference b where a.ruid= b.ruid and a.status != 2 and b.status != 2 and b.project=#{project}")
+    int countRecordNumByProject(@Param("project") String project);
 }
