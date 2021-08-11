@@ -132,7 +132,7 @@ public class LayoutInitHandler {
                 if (layoutModeEnum.getMode() <= 1) {
                     return layoutModeEnum;
                 } else {
-                    return LayoutModeEnum.SIXTEEN;
+                    return LayoutModeEnum.FOUR;
                 }
             case ROSTRUM_T200:
                 if (layoutModeEnum.getMode() <= 1) {

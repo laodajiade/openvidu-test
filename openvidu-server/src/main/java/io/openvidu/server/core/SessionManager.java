@@ -1071,9 +1071,11 @@ public abstract class SessionManager {
             result.addProperty("shareId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
 
-
+            log.info("111111111111111111111111111111");
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
+            log.info("2222222222222222222222222 {}", session.getConferenceMode());
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                log.info("333333333333333333");
                 session.getCompositeService().asyncUpdateComposite();
             }
         }
