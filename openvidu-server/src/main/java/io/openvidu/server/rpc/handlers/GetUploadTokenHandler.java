@@ -33,11 +33,7 @@ public class GetUploadTokenHandler extends RpcAbstractHandler {
         // resp
         JsonObject respObj = new JsonObject();
         respObj.addProperty("uploadToken", uploadToken);
-        String uploadUrl = openviduConfig.getDevUploadUrl();
-        if (uploadUrl.startsWith("https:")) {
-            uploadUrl = uploadUrl.substring(10).substring(uploadUrl.substring(10).indexOf("/"));
-        }
-        respObj.addProperty("uploadUrl", uploadUrl);
+        respObj.addProperty("uploadUrl", openviduConfig.getDevUploadUrl());
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respObj);
     }
 
