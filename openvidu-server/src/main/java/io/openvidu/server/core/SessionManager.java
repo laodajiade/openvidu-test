@@ -616,7 +616,6 @@ public abstract class SessionManager {
         String sessionId = session.getSessionId();
         // set session status: closing
         session.setClosing(true);
-        session.getParticipants();
 
 //		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
 //			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;

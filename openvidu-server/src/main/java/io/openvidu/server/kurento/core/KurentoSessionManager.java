@@ -45,6 +45,7 @@ import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
@@ -473,7 +474,6 @@ public class KurentoSessionManager extends SessionManager {
 
             Set<Participant> participants = session.getParticipants();
             sessionEventsHandler.onUnpublishMedia(participant, participants, publisherEndpoint, transactionId, null, reason);
-
         } catch (OpenViduException e) {
             log.warn("PARTICIPANT {}: Error unpublishing media", participant.getParticipantPublicId(), e);
             sessionEventsHandler.onUnpublishMedia(participant, new HashSet<>(Arrays.asList(participant)), null,

@@ -33,6 +33,7 @@ import io.openvidu.server.kurento.endpoint.*;
 import io.openvidu.server.kurento.kms.EndpointLoadManager;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
+import io.openvidu.server.service.SessionEventRecord;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
 import org.kurento.client.internal.server.KurentoServerException;
@@ -337,8 +338,9 @@ public class KurentoParticipant extends Participant {
             this.livingManager.startOneIndividualStreamLiving(session, null, null, this);
         }
 
-        endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
-                publisher.getMediaOptions(), publisher.createdAt());
+//		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
+//				publisher.getMediaOptions(), publisher.createdAt());
+        SessionEventRecord.newPublisher(this, session, publisher.getStreamId());
 
         return sdpResponse;
     }
@@ -451,14 +453,15 @@ public class KurentoParticipant extends Participant {
             this.subscribers.remove(publishStreamId);
             throw e;
         }
-        this.session.registerSubscriber();
+
 
         log.debug("PARTICIPANT {}: Created subscriber endpoint for user {}", this.getParticipantPublicId(), publishStreamId);
         try {
             String sdpAnswer = subscriber.subscribeVideo(sdpOffer, senderPublisher, streamMode);
             log.info("PARTICIPANT {}: Is now receiving video from {} in room {}", this.getParticipantPublicId(),
                     publishStreamId, this.session.getSessionId());
-
+            this.session.registerSubscriber();
+            SessionEventRecord.newSubscriber(this, session, subscriberStreamId);
 
 //			if (Objects.equals(session.getConferenceMode(), ConferenceModeEnum.MCU) &&
 //					Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
@@ -648,6 +651,7 @@ public class KurentoParticipant extends Participant {
             }
             this.session.deregisterPublisher();
             this.publishers.remove(publisherEndpoint.getStreamType());
+            SessionEventRecord.stopPublisher(publisherEndpoint.getOwner(), session, publisherEndpoint.getStreamId(), reason);
         } else {
             log.warn("PARTICIPANT {}: Trying to release publisher endpoint but is null", getParticipantPublicId());
         }
@@ -665,6 +669,7 @@ public class KurentoParticipant extends Participant {
             this.session.deregisterSubscriber();
             endpointConfig.getCdr().stopSubscriber(this.getParticipantPublicId(), subscribeId,
                     subscriber.getStreamId(), reason);
+            SessionEventRecord.stopSubscriber(this, session, subscribeId, reason);
         } else {
             log.warn("PARTICIPANT {}: Trying to release subscriber endpoint for '{}' but is null",
                     this.getParticipantPublicId(), subscribeId);
