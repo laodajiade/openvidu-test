@@ -1584,6 +1584,7 @@ public class KurentoSessionManager extends SessionManager {
     @Override
     public void handleRecordErrorEvent(Object msg) {
         String ruid;
+        log.info("recording-error {}", msg);
         JsonObject jsonObject = new Gson().fromJson(String.valueOf(msg), JsonObject.class);
         if (jsonObject.has("method") && jsonObject.has("params")
                 && Objects.nonNull(ruid = jsonObject.get("params").getAsJsonObject().get("ruid").getAsString())) {

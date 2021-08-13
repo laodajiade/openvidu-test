@@ -252,8 +252,8 @@ public class RecorderService {
 
     private JsonObject constructPartRecordInfo(Participant part, List<CompositeObjectWrapper> source, StreamType streamType, int order) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
-        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
-                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
+        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{}, streamType:{}, record info.",
+                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(),streamType);
 
         PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(streamType);
         // 如果子流是空的，则转主流在尝试一次
