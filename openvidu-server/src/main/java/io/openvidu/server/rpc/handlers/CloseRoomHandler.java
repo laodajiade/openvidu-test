@@ -40,7 +40,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
-        if (!session.getConference().getModeratorUuid().equals(rpcConnection.getUserUuid())) {
+        if (!session.getConference().getModeratorUuid().equals(rpcConnection.getUserUuid()) && rpcConnection.getAccessType() != AccessTypeEnum.web) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
