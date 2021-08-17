@@ -611,7 +611,7 @@ public abstract class SessionManager {
         }
     }
 
-    public void closeRoom(RpcConnection rpcConnection, Session session) {
+    public void closeRoom(Session session) {
         UseTime.point("closeRoom p1");
         String sessionId = session.getSessionId();
         // set session status: closing
@@ -656,7 +656,6 @@ public abstract class SessionManager {
         this.closeSession(sessionId, EndReason.closeSessionByModerator);
         point.updateTime();
         UseTime.point("closeRoom p5");
-        rpcConnection.setReconnected(false);
     }
 
     /**

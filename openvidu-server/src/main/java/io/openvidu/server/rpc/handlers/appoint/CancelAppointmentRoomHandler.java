@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.manage.AppointConferenceManage;
@@ -88,7 +87,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         Session session = sessionManager.getSession(appointConference.getRoomId());
         if (session != null && session.getConference().getRuid().equals(ruid)) {
             log.info("close session with cancel appointment conference ,roomId = {} and ruid = {}", appointConference.getRoomId(), appointConference.getRuid());
-            sessionManager.closeRoom(rpcConnection, session);
+            sessionManager.closeRoom(session);
         }
 
         return RespResult.ok(new JsonObject());
@@ -122,7 +121,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             Session session = sessionManager.getSession(conference.getRoomId());
             if (session != null && session.getConference().getRuid().equals(ruid)) {
                 log.info("close session with cancel general conference ,roomId = {} and ruid = {}", conference.getRoomId(), conference.getRuid());
-                sessionManager.closeRoom(rpcConnection, session);
+                sessionManager.closeRoom(session);
                 return RespResult.ok(new JsonObject());
             }
         }

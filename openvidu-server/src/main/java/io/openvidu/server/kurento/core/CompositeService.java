@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.layout.LayoutInitHandler;
@@ -298,18 +299,33 @@ public class CompositeService {
     private void getRostrumElement(List<Participant> parts, List<CompositeObjectWrapper> source) {
         Participant speaker = session.getSpeakerPart().orElse(null);
         Participant sharing = session.getSharingPart().orElse(null);
+        int otherPartSize = 0;
+        if (sharing != null) {
+            getCompositeElements(sharing, source, StreamType.SHARING);
+            otherPartSize++;
+        }
         if (speaker != null) {
             getCompositeElements(speaker, source, StreamType.MAJOR);
-        } else if (sharing != null) {
-            getCompositeElements(sharing, source, StreamType.SHARING);
-        } else {
+            otherPartSize++;
+        }
+        if (otherPartSize == 0) {
             log.error("speaker and sharing part not found");
             throw new IllegalStateException("speaker and sharing part not found");
         }
 
-        int otherPartSize = 0;
+        //当有共享，无发言时，大画面显示共享，其他小画面按照参会者列表顺序排列。共享人顺序变为order1.
+        if (parts.size() > 1 && sharing != null && speaker == null) {
+            if (parts.get(0).getRole() == OpenViduRole.MODERATOR && sharing.getRole() != OpenViduRole.MODERATOR) {
+                parts.remove(sharing);
+                parts.add(1, sharing);
+            } else if (parts.get(0).getRole() != OpenViduRole.MODERATOR) {
+                parts.remove(sharing);
+                parts.add(0, sharing);
+            }
+        }
+
         int i = 0;
-        while (otherPartSize < 3 && i < parts.size()) {
+        while (otherPartSize < 4 && i < parts.size()) {
             Participant part = parts.get(i++);
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
@@ -415,10 +431,10 @@ public class CompositeService {
         JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutModeType, layoutMode, true);
 
         AtomicInteger index = new AtomicInteger(0);
-        log.info("55555555555555 {} {}",layoutCoordinates.size(),layoutMode.getMode());
+        log.info("55555555555555 {} {}", layoutCoordinates.size(), layoutMode.getMode());
         layoutCoordinates.forEach(coordinates -> {
             JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
-            log.info("66666666666666666 {} {} {}",index.get(),layoutMode.getMode(),objects.size());
+            log.info("66666666666666666 {} {} {}", index.get(), layoutMode.getMode(), objects.size());
             if (index.get() < layoutMode.getMode()) {
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
 
