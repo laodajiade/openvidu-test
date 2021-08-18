@@ -1136,6 +1136,10 @@ public abstract class SessionManager {
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().asyncUpdateComposite();
             }
+
+            if (session.getIsRecording()) {
+                this.updateRecording(session.getSessionId());
+            }
         }
     }
 

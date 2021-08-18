@@ -1,7 +1,6 @@
 package io.openvidu.server.kurento.core;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
@@ -21,9 +20,6 @@ import java.util.stream.Collectors;
 public class RecorderService {
 
     private final KurentoSession session;
-
-    @Getter
-    private JsonArray layoutCoordinates = new JsonArray();
 
     @Getter
     private LayoutModeEnum layoutMode = LayoutModeEnum.ONE;
@@ -240,30 +236,18 @@ public class RecorderService {
         this.passThruList = passThruList;
     }
 
-    private void setLayoutCoordinates(JsonArray layoutInfos) {
-        JsonArray jsonElements = layoutInfos.deepCopy();
-        for (JsonElement jsonElement : jsonElements) {
-            JsonObject jo = jsonElement.getAsJsonObject();
-            jo.remove("object");
-        }
-        this.layoutCoordinates = jsonElements;
-    }
-
     private JsonObject constructPartRecordInfo(Participant part, List<CompositeObjectWrapper> source, StreamType streamType, int order) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
         log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{}, streamType:{}, record info.",
                 part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(), streamType);
 
         PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(streamType);
-        // 如果子流是空的，则转主流在尝试一次
-        if (publisherEndpoint == null && streamType == StreamType.MINOR) {
-            streamType = StreamType.MAJOR;
-            publisherEndpoint = kurentoParticipant.getPublisher(streamType);
-        }
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
+            log.info("{} {}`s publisher is null, create it", part.getUuid(), streamType);
             publisherEndpoint = kurentoParticipant.createPublisher(streamType);
             publisherEndpoint.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             kurentoParticipant.setPublisher(streamType, publisherEndpoint);
+            log.info("{} {} publisher create {}", part.getUuid(), streamType, publisherEndpoint.getStreamId());
         }
         JsonObject jsonObject = new JsonObject();
         if (Objects.nonNull(publisherEndpoint.getPassThru())) {
