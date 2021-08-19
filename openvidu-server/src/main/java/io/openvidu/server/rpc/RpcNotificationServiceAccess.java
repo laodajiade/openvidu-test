@@ -304,6 +304,11 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
     }
 
     @Override
+    public List<RpcConnection> getRpcConnectionByUuids(String... uuids) {
+        return this.rpcConnections.getByUuids(uuids);
+    }
+
+    @Override
     public Collection<RpcConnection> getRpcConnections() {
         return this.rpcConnections.values();
     }

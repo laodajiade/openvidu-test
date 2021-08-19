@@ -431,10 +431,8 @@ public class CompositeService {
         JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutModeType, layoutMode, true);
 
         AtomicInteger index = new AtomicInteger(0);
-        log.info("55555555555555 {} {}", layoutCoordinates.size(), layoutMode.getMode());
         layoutCoordinates.forEach(coordinates -> {
             JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
-            log.info("66666666666666666 {} {} {}", index.get(), layoutMode.getMode(), objects.size());
             if (index.get() < layoutMode.getMode()) {
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
 

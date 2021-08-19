@@ -119,15 +119,25 @@ public class AccessInHandler extends RpcAbstractHandler {
                 deviceName = device.getDeviceName();
             }
 
+
             // find account already login before
-            RpcConnection previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)
-                        && Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
-                    log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
-                    return true;
-                }
-                return false;
-            }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
+//            RpcConnection previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
+//                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)
+//                        && Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
+//                    log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
+//                    return true;
+//                }
+//                return false;
+//            }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
+            RpcConnection previousRpc = notificationService.getRpcConnectionByUuids(uuid).stream()
+                    .filter(s -> {
+                        if (!s.getParticipantPrivateId().equals(rpcConnection.getParticipantPrivateId())
+                                && Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
+                            log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
+                            return true;
+                        }
+                        return false;
+                    }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
 
             // check if single login
             if (AccessTypeEnum.terminal.equals(accessType) && Objects.nonNull(previousRpc) && !Objects.equals(previousRpc.getUdid(), udid)) {
