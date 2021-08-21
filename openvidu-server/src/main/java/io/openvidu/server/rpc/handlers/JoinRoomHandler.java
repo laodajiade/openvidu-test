@@ -13,6 +13,7 @@ import io.openvidu.server.common.pojo.vo.CallHistoryVo;
 import io.openvidu.server.core.*;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.GeoLocation;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -385,12 +386,13 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 rtcUserClient.updateRpcConnection(rpcConnection); //强制同步一次数据
                 UseTime.point("join room p1");
                 try {
-                    if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(2L, TimeUnit.SECONDS)) {
+                    if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(1L, TimeUnit.SECONDS)) {
                         UseTime.point("join room p1.1");
                         sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());
+                        SessionEventRecord.joinRoom(session, participant, rpcConnection.isReconnected());
                     } else {
                         log.warn("{} join room timeout", rpcConnection.getUserUuid());
-                        errCode = ErrorCodeEnum.JOIN_ROOM_TIMEOUT;
+                        errCode = ErrorCodeEnum.RATE_LIMITER;
                     }
                 } finally {
                     if (session != null) {

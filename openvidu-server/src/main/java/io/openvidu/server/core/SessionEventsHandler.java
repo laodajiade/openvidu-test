@@ -250,6 +250,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("sharingUuid", session.getSharingPart().isPresent() ? session.getSharingPart().get().getUuid() : "");
 		roomInfoJson.addProperty("speakerUuid", session.getSpeakerPart().isPresent() ? session.getSpeakerPart().get().getUuid() : "");
 		roomInfoJson.addProperty("isRecording", session.getIsRecording());
+		roomInfoJson.addProperty("quietStatusInRoom", session.getPresetInfo().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
 		}

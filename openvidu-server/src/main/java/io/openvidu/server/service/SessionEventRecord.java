@@ -69,6 +69,21 @@ public class SessionEventRecord {
         }
     }
 
+
+    /**
+     * SESSION-EVENT {timestamp} {leaveRoom} {sessionId}({ruid[-8:]}) {part_uuid} {reconnected}
+     */
+    public static void joinRoom(Session session, Participant participant, boolean reconnected) {
+        if (session == null || participant == null) {
+            return;
+        }
+        if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {} {} {}({}) {} {}",
+                    System.currentTimeMillis(), "joinRoom", session.getSessionId(), subRuid(session.getRuid()),
+                    participant.getUuid(), reconnected);
+        }
+    }
+
     /**
      * SESSION-EVENT {timestamp} {leaveRoom} {sessionId}({ruid[-8:]}) {part_uuid} {reason}
      */
@@ -78,7 +93,7 @@ public class SessionEventRecord {
         }
         if (log.isInfoEnabled()) {
             log.info("SESSION-EVENT {} {} {}({}) {} {}",
-                    System.currentTimeMillis(), "stopPublishVideo", session.getSessionId(), subRuid(session.getRuid()),
+                    System.currentTimeMillis(), "leaveRoom", session.getSessionId(), subRuid(session.getRuid()),
                     participant.getUuid(), reason);
         }
     }
