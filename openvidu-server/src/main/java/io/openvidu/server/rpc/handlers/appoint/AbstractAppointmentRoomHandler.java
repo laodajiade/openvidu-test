@@ -128,8 +128,8 @@ public abstract class AbstractAppointmentRoomHandler<T> extends ExRpcAbstractHan
         String userName = Objects.isNull(creator) ? "已注销"
                 : StringUtils.isEmpty(creator.getUsername()) ? creator.getDeviceName() : creator.getUsername();
         jsonObject.addProperty(ProtocolElements.CREATEAPPOINTMENTROOM_CREATOR_PARAM, userName);
-        notificationService.getRpcConnections().forEach(rpcConnection1 -> {
-            if (uuidSet.contains(rpcConnection1.getUserUuid()) && !(Objects.equals(rpcConnection1.getUserId(), vo.getUserId()) && vo.getAccessType() == AccessTypeEnum.terminal)) {
+        notificationService.getRpcConnectionByUuids(uuidSet).forEach(rpcConnection1 -> {
+            if (!(Objects.equals(rpcConnection1.getUserId(), vo.getUserId()) && vo.getAccessType() == AccessTypeEnum.terminal)) {
                 notificationService.sendNotification(rpcConnection1.getParticipantPrivateId(), ProtocolElements.APPOINTMENT_CONFERENCE_CREATED_METHOD, jsonObject);
             }
         });

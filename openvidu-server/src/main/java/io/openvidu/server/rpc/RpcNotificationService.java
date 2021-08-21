@@ -78,6 +78,8 @@ public interface RpcNotificationService {
 
     List<RpcConnection> getRpcConnectionByUuids(String... uuids);
 
+    List<RpcConnection> getRpcConnectionByUuids(Collection<String> uuids);
+
     Collection<RpcConnection> getRpcConnections();
 
     void sendRespWithConnTransaction(Transaction t, Integer requestId, ErrorCodeEnum errorCode);

@@ -37,7 +37,7 @@ public class RpcConnectionMap implements IRpcConnection {
     }
 
     @Override
-    public List<RpcConnection> getByUuids(String... uuids) {
+    public List<RpcConnection> getByUuids(Collection<String>  uuids) {
         return null;
     }
 

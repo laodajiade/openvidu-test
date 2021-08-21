@@ -15,7 +15,7 @@ public interface IRpcConnection {
 
     int size();
 
-    List<RpcConnection> getByUuids(String... uuids);
+    List<RpcConnection> getByUuids(Collection<String>  uuids);
 
     Collection<RpcConnection> values();
 }

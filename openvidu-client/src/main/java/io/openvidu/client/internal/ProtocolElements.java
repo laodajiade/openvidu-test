@@ -478,6 +478,8 @@ public class ProtocolElements {
     public static final String SET_IM_MODE_METHOD = "setImMode";
     public static final String NOTIFY_SET_IM_MODE_METHOD = "notifySetImMode";
 
+    public static final String ECHO_METHOD = "echo";
+
     // ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
     public static final String PARTICIPANTJOINED_METHOD = "participantJoined";

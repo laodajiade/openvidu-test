@@ -40,8 +40,8 @@ public class RemoteRpcConnection implements IRpcConnection {
     }
 
     @Override
-    public List<RpcConnection> getByUuids(String... uuids) {
-        return rtcUserClient.getByUuids(Arrays.asList(uuids));
+    public List<RpcConnection> getByUuids(Collection<String> uuids) {
+        return rtcUserClient.getByUuids(uuids);
     }
 
     @Override
