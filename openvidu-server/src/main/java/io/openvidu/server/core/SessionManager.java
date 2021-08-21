@@ -1143,13 +1143,13 @@ public abstract class SessionManager {
         }
     }
 
-    public void endSpeaker(Session session, Participant sharingPart, String originatorUuid) {
+    public void endSpeaker(Session session, Participant speaker, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
             session.setSpeakerPart(null);
 
             JsonObject result = new JsonObject();
             result.addProperty("roomId", session.getSessionId());
-            result.addProperty("targetId", sharingPart.getUuid());
+            result.addProperty("targetId", speaker.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, result);
 

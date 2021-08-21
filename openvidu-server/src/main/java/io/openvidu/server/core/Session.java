@@ -1178,7 +1178,7 @@ public class Session implements SessionInterface {
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId().toString());
             participants.forEach(part -> {
                     sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.END_ROLL_CALL_METHOD, params);
+                            ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, params);
             });
             pup2SubPart.changeHandStatus(ParticipantHandStatus.endSpeaker);
         }
@@ -1198,9 +1198,6 @@ public class Session implements SessionInterface {
             sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
                     null, EndReason.forceUnpublishByUser);
             sendStopShareNotify = true;
-//			stopShareParams.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-//					StreamType.SHARING.equals(otherPart.getStreamType()) ?
-//							otherPart.getParticipantPublicId() : pup2SubPart.getParticipantPublicId());
         }
 
         // send conferenceLayoutChanged notify

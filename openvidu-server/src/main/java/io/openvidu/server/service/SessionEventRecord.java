@@ -3,6 +3,7 @@ package io.openvidu.server.service;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.kurento.core.KurentoSession;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -68,6 +69,20 @@ public class SessionEventRecord {
         }
     }
 
+    /**
+     * SESSION-EVENT {timestamp} {leaveRoom} {sessionId}({ruid[-8:]}) {part_uuid} {reason}
+     */
+    public static void leaveRoom(KurentoSession session, Participant participant, EndReason reason) {
+        if (session == null || participant == null) {
+            return;
+        }
+        if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {} {} {}({}) {} {}",
+                    System.currentTimeMillis(), "stopPublishVideo", session.getSessionId(), subRuid(session.getRuid()),
+                    participant.getUuid(), reason);
+        }
+    }
+
 
     private static String subRuid(String ruid) {
         if (ruid == null || ruid.length() == 0) {
@@ -78,4 +93,5 @@ public class SessionEventRecord {
         }
         return ruid.substring(ruid.length() - 6);
     }
+
 }
