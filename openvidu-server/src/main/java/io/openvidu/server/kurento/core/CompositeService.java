@@ -13,6 +13,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.SafeSleep;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,7 @@ public class CompositeService {
                     return;
                 }
 
+                SessionEventRecord.startMcu(session);
                 this.pipeline = session.getPipeline();
                 log.info("SESSION {}: Creating Composite", session.getSessionId());
                 composite = new Composite.Builder(this.pipeline).build();
@@ -106,6 +108,7 @@ public class CompositeService {
                 log.warn("MCU composite already released.");
                 return;
             }
+            SessionEventRecord.endMcu(session);
             composite.release();
             composite = null;
             log.warn("Release MCU composite");

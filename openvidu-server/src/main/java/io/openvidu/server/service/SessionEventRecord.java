@@ -98,6 +98,32 @@ public class SessionEventRecord {
         }
     }
 
+    /**
+     * SESSION-EVENT {timestamp} {startMcu} {sessionId}({ruid[-8:]}) partSize:{}
+     */
+    public static void startMcu(KurentoSession session) {
+        if (session == null) {
+            return;
+        }
+        if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {} {} {}({}) partSize:{}",
+                    System.currentTimeMillis(), "startMcu", session.getSessionId(), subRuid(session.getRuid()),
+                    session.getPartSize());
+        }
+    }
+
+    /**
+     * SESSION-EVENT {timestamp} {endMcu} {sessionId}({ruid[-8:]})
+     */
+    public static void endMcu(KurentoSession session) {
+        if (session == null) {
+            return;
+        }
+        if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {} {} {}({})",
+                    System.currentTimeMillis(), "endMcu", session.getSessionId(), subRuid(session.getRuid()));
+        }
+    }
 
     private static String subRuid(String ruid) {
         if (ruid == null || ruid.length() == 0) {
