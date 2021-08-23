@@ -50,7 +50,7 @@ public interface FixedRoomMapper {
     FixedRoom selectByRoomId(String roomId);
 
 
-    @Select("select * from sd_fixed_room where short_id = #{shortId} and corp_id = #{corpId}")
+    @Select("select * from sd_fixed_room where short_id = #{shortId} and corp_id = #{corpId} and deleted = 0")
     @ResultMap("BaseResultMap")
     FixedRoom selectByShortId(@Param("shortId") String shortId, @Param("corpId")long corpId);
 
