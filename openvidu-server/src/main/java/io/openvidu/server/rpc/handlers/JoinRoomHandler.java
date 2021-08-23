@@ -424,10 +424,12 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
             }
         } catch (Exception e) {
-            log.error("joinRoom error ", e);
+            log.error("joinRoom error {}, {}",request.getParams(), rpcConnection.toString(), e);
             if (isModerator(role)) {
                 sessionManager.cleanCacheCollections(sessionId);
             }
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
         }
         UseTime.point("join room end");
     }
