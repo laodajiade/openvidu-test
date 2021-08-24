@@ -40,7 +40,6 @@ import org.kurento.client.internal.server.KurentoServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -230,15 +229,15 @@ public class KurentoParticipant extends Participant {
             log.warn(" getPublisher publisherEndpoint is null {} {}", this.getUuid(), streamType);
             return null;
         }
-        try {
-            if (!publisherEndpoint.getPublisherLatch().await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
-                throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
-                        "Timeout reached while waiting for publisher endpoint to be ready");
-            }
-        } catch (InterruptedException e) {
-            throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
-                    "Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
-        }
+//        try {
+//            if (!publisherEndpoint.getPublisherLatch().await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
+//                throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+//                        publisherEndpoint.getEndpointName() + " " + streamType + " Timeout reached while waiting for publisher  endpoint to be ready");
+//            }
+//        } catch (InterruptedException e) {
+//            throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE,
+//                    "Interrupted while waiting for publisher endpoint to be ready: " + e.getMessage());
+//        }
         return publisherEndpoint;
     }
 
@@ -645,8 +644,8 @@ public class KurentoParticipant extends Participant {
 
             releaseElement(getParticipantPublicId(), publisherEndpoint.getEndpoint());
             //publisherEndpoint.closeAudioComposite();
-            if (Objects.nonNull(publisherEndpoint.getMajorShareHubPort())) {
-                releaseElement(publisherEndpoint.getStreamId(), publisherEndpoint.getMajorShareHubPort());
+            if (Objects.nonNull(publisherEndpoint.getPubHubPort())) {
+                releaseElement(publisherEndpoint.getStreamId(), publisherEndpoint.getPubHubPort());
                 session.getCompositeService().asyncUpdateComposite();
             }
             this.session.deregisterPublisher();

@@ -27,9 +27,9 @@ import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.MediaOptions;
-import io.openvidu.server.core.Participant;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.JsonUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -61,7 +61,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	private PassThrough passThru = null;
 	private ListenerSubscription passThruSubscription = null;
 
-	private HubPort majorShareHubPort = null;
+	private HubPort pubHubPort = null;
 	private ListenerSubscription majorShareHubPortSubscription = null;
 
 	private HubPort recordHubPort = null;
@@ -135,7 +135,7 @@ public class PublisherEndpoint extends MediaEndpoint {
         	if (Objects.isNull(getCompositeService())) {
         		setCompositeService(kurentoSession.getCompositeService());
 			}
-			if (Objects.isNull(this.getMajorShareHubPort())) {
+			if (Objects.isNull(this.getPubHubPort())) {
 				createMajorShareHubPort(getMajorShareComposite());
 			}
         }
@@ -145,7 +145,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	public synchronized void unregisterErrorListeners() {
 		super.unregisterErrorListeners();
 		unregisterElementErrListener(passThru, passThruSubscription);
-		unregisterElementErrListener(majorShareHubPort, majorShareHubPortSubscription);
+		unregisterElementErrListener(pubHubPort, majorShareHubPortSubscription);
 		for (String elemId : elementIds) {
 			unregisterElementErrListener(elements.get(elemId), elementsErrorSubscriptions.remove(elemId));
 		}
@@ -196,7 +196,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 	}
 
 	public void connectAudioOut(MediaElement sink) {
-        internalSinkConnect(majorShareHubPort, sink, MediaType.AUDIO);
+        internalSinkConnect(pubHubPort, sink, MediaType.AUDIO);
 	}
 
 //	public void closeAudioComposite() {
@@ -274,8 +274,8 @@ public class PublisherEndpoint extends MediaEndpoint {
 		if (passThru != null) {
 			elements.put(passThru.getId(), passThru);
 		}
-		if (majorShareHubPort != null) {
-			elements.put(majorShareHubPort.getId(), majorShareHubPort);
+		if (pubHubPort != null) {
+			elements.put(pubHubPort.getId(), pubHubPort);
 		}
 		if (audioHubPortOut != null) {
 			elements.put(audioHubPortOut.getId(), audioHubPortOut);
@@ -405,12 +405,12 @@ public class PublisherEndpoint extends MediaEndpoint {
 
 	public synchronized void disconnectFrom(MediaElement sink) {
 		internalSinkDisconnect(passThru, sink);
-		internalSinkDisconnect(majorShareHubPort, sink);
+		internalSinkDisconnect(pubHubPort, sink);
 	}
 
 	public synchronized void disconnectFrom(MediaElement sink, MediaType type) {
 		internalSinkDisconnect(passThru, sink, type);
-		internalSinkDisconnect(majorShareHubPort, sink, type);
+		internalSinkDisconnect(pubHubPort, sink, type);
 	}
 
 	public synchronized void sfuDisconnectFrom(MediaElement sink, MediaType type) {
@@ -474,7 +474,7 @@ public class PublisherEndpoint extends MediaEndpoint {
 				internalSinkConnect(this.getEndpoint(), shaper, type);
 			}
 			internalSinkConnect(shaper, passThru, type);
-			internalSinkConnect(shaper, majorShareHubPort, type);
+			internalSinkConnect(shaper, pubHubPort, type);
 		}
 		elementIds.addFirst(id);
 		elements.put(id, shaper);
@@ -649,10 +649,10 @@ public class PublisherEndpoint extends MediaEndpoint {
 		}
 
 		if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-			internalSinkConnect(current, majorShareHubPort, MediaType.VIDEO);
+			internalSinkConnect(current, pubHubPort, MediaType.VIDEO);
 			if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {
 				// change the link order and unify the capability(send recv) of both two points
-				internalSinkConnect(majorShareHubPort, current, MediaType.VIDEO);
+				internalSinkConnect(pubHubPort, current, MediaType.VIDEO);
 			}
 		}
 
@@ -765,23 +765,24 @@ public class PublisherEndpoint extends MediaEndpoint {
 //		return majorHubPort;
 //	}
 
-	public HubPort createMajorShareHubPort(Composite composite){
-		majorShareHubPort = new HubPort.Builder(composite).build();
-		log.info("{} Pub EP create majorShareHubPort.", this.getStreamId());
-		majorShareHubPortSubscription = registerElemErrListener(majorShareHubPort);
+    public HubPort createMajorShareHubPort(Composite composite) {
+        pubHubPort = new HubPort.Builder(composite).build();
+        this.pubHubPort.setName(this.getStreamId() + "_pub_hubPort");
+        SessionEventRecord.other(this.getOwner().getSessionId(), "createPubHubPort", pubHubPort.getName());
+        log.info("{} Pub EP create majorShareHubPort. {}", this.streamId, pubHubPort.getName());
+        majorShareHubPortSubscription = registerElemErrListener(pubHubPort);
+        return pubHubPort;
+    }
 
-		return majorShareHubPort;
-	}
-
-	public HubPort getMajorShareHubPort() {
-		return majorShareHubPort;
+	public HubPort getPubHubPort() {
+		return pubHubPort;
 	}
 
 	public void releaseMajorShareHubPort() {
-		if (majorShareHubPort != null) {
-			majorShareHubPort.release();
+		if (pubHubPort != null) {
+			pubHubPort.release();
 		}
-		majorShareHubPort = null;
+		pubHubPort = null;
 	}
 
 	public HubPort getRecordHubPort() {

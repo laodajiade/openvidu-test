@@ -141,7 +141,7 @@ public class CompositeWrapper {
 	public void connectPublisherEndpoint(PublisherEndpoint endpoint, EndpointTypeEnum typeEnum) throws OpenViduException {
 		HubPort hubPort;
 		if (session.getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-			hubPort = endpoint.getMajorShareHubPort();
+			hubPort = endpoint.getPubHubPort();
 		} else {
 			if (Objects.equals(typeEnum, EndpointTypeEnum.recording)) {
 				hubPort = endpoint.createRecordHubPort(composite);
