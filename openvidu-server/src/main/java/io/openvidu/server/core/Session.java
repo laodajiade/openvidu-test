@@ -36,7 +36,6 @@ import io.openvidu.server.kurento.core.*;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcNotificationService;
-import io.openvidu.server.utils.StringUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -1017,7 +1016,7 @@ public class Session implements SessionInterface {
 		}
 
         // 关闭发言
-		if(isSpeake(participant.getUuid())){
+		if(isSpeaker(participant.getUuid())){
 			sessionManager.endSpeaker(this, participant, operatorPart.getUuid());
 		}
     }
@@ -1179,7 +1178,7 @@ public class Session implements SessionInterface {
             params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, pup2SubPart.getUserId().toString());
             participants.forEach(part -> {
                     sessionManager.notificationService.sendNotification(part.getParticipantPrivateId(),
-                            ProtocolElements.END_ROLL_CALL_METHOD, params);
+                            ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, params);
             });
             pup2SubPart.changeHandStatus(ParticipantHandStatus.endSpeaker);
         }
@@ -1199,9 +1198,6 @@ public class Session implements SessionInterface {
             sessionManager.unpublishStream(this, otherPart.getPublisherStreamId(), moderatorPart,
                     null, EndReason.forceUnpublishByUser);
             sendStopShareNotify = true;
-//			stopShareParams.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-//					StreamType.SHARING.equals(otherPart.getStreamType()) ?
-//							otherPart.getParticipantPublicId() : pup2SubPart.getParticipantPublicId());
         }
 
         // send conferenceLayoutChanged notify
@@ -1386,7 +1382,7 @@ public class Session implements SessionInterface {
 			switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
 		}
 
-		if (isSpeake(participant.getUuid()) || isShare(participant.getUuid())) {
+		if (isSpeaker(participant.getUuid()) || isShare(participant.getUuid())) {
 			reorder(moderatePublicId);
 		}
 
@@ -1631,7 +1627,7 @@ public class Session implements SessionInterface {
 	/**
 	 * 检查是否是发言者
 	**/
-	public  boolean isSpeake(String uuid){
+	public  boolean isSpeaker(String uuid){
 		return this.speakerPart != null && this.speakerPart.getUuid().equals(uuid);
 	}
 }

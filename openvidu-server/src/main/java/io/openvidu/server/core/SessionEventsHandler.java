@@ -106,6 +106,13 @@ public class SessionEventsHandler {
 		UseTime.point("join room p5");
 		participantJoined(participant, existingParticipants);
 		UseTime.point("join room p6");
+
+		// MCU start
+		if (session.getConferenceMode() == ConferenceModeEnum.SFU && session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
+			log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
+			session.getCompositeService().createComposite();
+		}
+
 //		for (Participant existingParticipant : existingParticipants) {
 //			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
 //				continue;
@@ -243,6 +250,7 @@ public class SessionEventsHandler {
 		roomInfoJson.addProperty("sharingUuid", session.getSharingPart().isPresent() ? session.getSharingPart().get().getUuid() : "");
 		roomInfoJson.addProperty("speakerUuid", session.getSpeakerPart().isPresent() ? session.getSpeakerPart().get().getUuid() : "");
 		roomInfoJson.addProperty("isRecording", session.getIsRecording());
+		roomInfoJson.addProperty("quietStatusInRoom", session.getPresetInfo().getQuietStatusInRoom().name());
         if (!session.isAutomatically()) {
 			roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
 		}
@@ -269,13 +277,8 @@ public class SessionEventsHandler {
 		new Thread(() -> deliveryOnParticipantJoined(session)).start();
 
 		// 是否开启MCU和MCU布局切换
-		if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
-			if (participant.getRole().needToPublish()) {
-				session.getCompositeService().asyncUpdateComposite();
-			}
-		} else if (session.getPresetInfo().getMcuThreshold() < session.getPartSize()) {
-			log.info("session {} ConferenceModeEnum change {} -> {}", sessionId, session.getConferenceMode().name(), ConferenceModeEnum.MCU.name());
-			session.getCompositeService().createComposite();
+		if (session.getConferenceMode() == ConferenceModeEnum.MCU && participant.getRole().needToPublish()) {
+			session.getCompositeService().asyncUpdateComposite();
 		}
 
 	}

@@ -115,9 +115,9 @@ public class RpcExHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, e.getRespEnum());
         } catch (Exception e) {
+            log.error("rpc request error privateId = {}, params = {}", rpcConnection.getParticipantPrivateId(), request.getParams(), e);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
-            log.error("rpc request error privateId = {}, params = {}", rpcConnection.getParticipantPrivateId(), request.getParams(), e);
         } finally {
             if (UseTime.elapse() > 300) {
                 log.info("requestId:{} ,method:{} elapse time:{} ,detail:{}", RequestId.getId(), request.getMethod(), UseTime.elapse(), UseTime.endAndPrint());

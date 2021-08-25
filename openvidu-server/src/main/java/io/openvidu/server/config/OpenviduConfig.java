@@ -174,7 +174,7 @@ public class OpenviduConfig {
 //	private int sfuPublisherSizeLimit;
 
 	@Getter
-	@Value("${room.config.smartMicOnThreshold:7}")
+	@Value("${room.config.smartMicOnThreshold:6}")
 	private int smartMicOnThreshold;
 
 	@Getter

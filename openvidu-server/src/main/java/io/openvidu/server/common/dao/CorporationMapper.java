@@ -27,6 +27,8 @@ public interface CorporationMapper {
 
     int updateByPrimaryKey(Corporation record);
 
+    int updateOtherByPrimaryKey(Corporation record);
+
     List<Corporation> listCorpExpire();
 
     List<Corporation> listByCorpRecordExpireDay(@Param("expire") String expire);

@@ -2,21 +2,16 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.AccessTypeEnum;
-import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.core.*;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author geedow
@@ -40,7 +35,7 @@ public class CloseRoomHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
             return;
         }
-        if (!session.getConference().getModeratorUuid().equals(rpcConnection.getUserUuid())) {
+        if (!session.getConference().getModeratorUuid().equals(rpcConnection.getUserUuid()) && rpcConnection.getAccessType() != AccessTypeEnum.web) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.PERMISSION_LIMITED);
             return;
@@ -60,7 +55,8 @@ public class CloseRoomHandler extends RpcAbstractHandler {
 //            return;
 //        }
 
-        sessionManager.closeRoom(rpcConnection, session);
+        sessionManager.closeRoom(session);
+        rpcConnection.setReconnected(false);
 
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }

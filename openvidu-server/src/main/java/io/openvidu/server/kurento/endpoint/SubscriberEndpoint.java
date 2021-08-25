@@ -25,10 +25,9 @@ import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.core.UseTime;
 import io.openvidu.server.kurento.core.CompositeService;
 import io.openvidu.server.kurento.core.KurentoParticipant;
-import org.kurento.client.Continuation;
-import org.kurento.client.MediaElement;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.MediaType;
+import lombok.Getter;
+import lombok.Setter;
+import org.kurento.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +46,14 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	private AtomicBoolean connectedToPublisher = new AtomicBoolean(false);
 
 	private PublisherEndpoint publisher = null;
+
+	@Getter
+    @Setter
+    private HubPort mixHubPort = null;
+
+    @Getter
+    @Setter
+    private HubPort pubHubPort = null;
 
 	public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
 							  CompositeService compositeService, OpenviduConfig openviduConfig) {
@@ -153,6 +160,8 @@ public class SubscriberEndpoint extends MediaEndpoint {
 	}
 
 	public synchronized void controlMediaTypeLink(MediaType mediaType, VoiceMode voiceMode) {
+		//todo MCU切换语音模式
+		//getCompositeService().getHubPortOut(this);
 		switch (voiceMode) {
 			case on:
 				publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);

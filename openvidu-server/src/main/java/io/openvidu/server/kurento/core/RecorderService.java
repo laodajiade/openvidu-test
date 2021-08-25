@@ -1,8 +1,8 @@
 package io.openvidu.server.kurento.core;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.core.Participant;
@@ -21,13 +21,6 @@ public class RecorderService {
 
     private final KurentoSession session;
 
-    private final Object createLock = new Object();
-
-    private boolean existSharing;
-
-    @Getter
-    private JsonArray layoutCoordinates = new JsonArray();
-
     @Getter
     private LayoutModeEnum layoutMode = LayoutModeEnum.ONE;
 
@@ -35,7 +28,7 @@ public class RecorderService {
 
     private List<CompositeObjectWrapper> sourcesPublisher = new ArrayList<>();
 
-    private RecordingRedisPublisher recordingRedisPublisher;
+    private final RecordingRedisPublisher recordingRedisPublisher;
 
     private JsonArray passThruList = new JsonArray();
 
@@ -138,15 +131,6 @@ public class RecorderService {
         }
         this.sourcesPublisher = source;
         log.info("recorder size {}", sourcesPublisher.size());
-//        if (sourcesPublisher.size() > 0) {
-//            try {
-//                session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
-//                        session.getSessionId(), source, LayoutModeEnum.getLayoutMode(mcuNum)));
-//                SafeSleep.sleepMilliSeconds(300);
-//            } catch (Exception e) {
-//                log.error("Send Composite Layout Exception:", e);
-//            }
-//        }
     }
 
 
@@ -191,18 +175,30 @@ public class RecorderService {
         Participant sharing = session.getSharingPart().orElse(null);
         JsonArray passThruList = new JsonArray();
         int order = 0;
+        if (sharing != null) {
+            passThruList.add(constructPartRecordInfo(sharing, source, StreamType.SHARING, order++));
+        }
         if (speaker != null) {
             passThruList.add(constructPartRecordInfo(speaker, source, StreamType.MAJOR, order++));
-        } else if (sharing != null) {
-            passThruList.add(constructPartRecordInfo(sharing, source, StreamType.SHARING, order++));
-        } else {
+        }
+        if (order == 0) {
             log.error("speaker and sharing part not found");
             throw new IllegalStateException("speaker and sharing part not found");
         }
 
-        int otherPartSize = 0;
+        //当有共享，无发言时，大画面显示共享，其他小画面按照参会者列表顺序排列。共享人顺序变为order1.
+        if (parts.size() > 1 && sharing != null && speaker == null) {
+            if (parts.get(0).getRole() == OpenViduRole.MODERATOR && sharing.getRole() != OpenViduRole.MODERATOR) {
+                parts.remove(sharing);
+                parts.add(1, sharing);
+            } else if (parts.get(0).getRole() != OpenViduRole.MODERATOR) {
+                parts.remove(sharing);
+                parts.add(0, sharing);
+            }
+        }
+
         int i = 0;
-        while (otherPartSize < 3 && i < parts.size()) {
+        while (order < 4 && i < parts.size()) {
             Participant part = parts.get(i++);
             if (speaker != null && part.getUuid().equals(speaker.getUuid())) {
                 continue;
@@ -212,7 +208,6 @@ public class RecorderService {
             } else {
                 passThruList.add(constructPartRecordInfo(part, source, StreamType.MAJOR, order++));
             }
-            otherPartSize++;
         }
         this.passThruList = passThruList;
     }
@@ -241,30 +236,18 @@ public class RecorderService {
         this.passThruList = passThruList;
     }
 
-    private void setLayoutCoordinates(JsonArray layoutInfos) {
-        JsonArray jsonElements = layoutInfos.deepCopy();
-        for (JsonElement jsonElement : jsonElements) {
-            JsonObject jo = jsonElement.getAsJsonObject();
-            jo.remove("object");
-        }
-        this.layoutCoordinates = jsonElements;
-    }
-
     private JsonObject constructPartRecordInfo(Participant part, List<CompositeObjectWrapper> source, StreamType streamType, int order) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) part;
-        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{},record info.",
-                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name());
+        log.info("record construct participant:{}, uuid:{}, osd:{}, order:{}, role:{}, handStatus:{}, streamType:{}, record info.",
+                part.getParticipantPublicId(), part.getUuid(), part.getUsername(), order, part.getRole().name(), part.getHandStatus().name(), streamType);
 
         PublisherEndpoint publisherEndpoint = kurentoParticipant.getPublisher(streamType);
-        // 如果子流是空的，则转主流在尝试一次
-        if (publisherEndpoint == null && streamType == StreamType.MINOR) {
-            streamType = StreamType.MAJOR;
-            publisherEndpoint = kurentoParticipant.getPublisher(streamType);
-        }
         if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
+            log.info("{} {}`s publisher is null, create it", part.getUuid(), streamType);
             publisherEndpoint = kurentoParticipant.createPublisher(streamType);
             publisherEndpoint.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             kurentoParticipant.setPublisher(streamType, publisherEndpoint);
+            log.info("{} {} publisher create {}", part.getUuid(), streamType, publisherEndpoint.getStreamId());
         }
         JsonObject jsonObject = new JsonObject();
         if (Objects.nonNull(publisherEndpoint.getPassThru())) {

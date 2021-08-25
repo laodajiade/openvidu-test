@@ -45,6 +45,7 @@ import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.JsonUtils;
 import org.kurento.client.GenericMediaElement;
 import org.kurento.client.IceCandidate;
@@ -187,6 +188,7 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
                         + "' is trying to leave from session '" + sessionId + "' but it is closing");
             }
+            SessionEventRecord.leaveRoom(session, participant, reason);
             UseTime.point("ip2");
             session.leaveRoom(participant, reason);
             UseTime.point("ip3");
@@ -195,6 +197,9 @@ public class KurentoSessionManager extends SessionManager {
 
             if (session.isShare(participant.getUuid())) {
                 endSharing(session, participant, participant.getUuid());
+            }
+            if (session.isSpeaker(participant.getUuid())) {
+                endSpeaker(session, participant, participant.getUuid());
             }
 
             // Close Session if no more participants
@@ -473,7 +478,6 @@ public class KurentoSessionManager extends SessionManager {
 
             Set<Participant> participants = session.getParticipants();
             sessionEventsHandler.onUnpublishMedia(participant, participants, publisherEndpoint, transactionId, null, reason);
-
         } catch (OpenViduException e) {
             log.warn("PARTICIPANT {}: Error unpublishing media", participant.getParticipantPublicId(), e);
             sessionEventsHandler.onUnpublishMedia(participant, new HashSet<>(Arrays.asList(participant)), null,
@@ -638,7 +642,7 @@ public class KurentoSessionManager extends SessionManager {
     }
 
     //delete 2.0
-   // @Override
+    // @Override
 //    public void streamPropertyChanged(Participant participant, Integer transactionId, String streamId, String property,
 //                                      JsonElement newValue, String reason) {
 //        KurentoParticipant kParticipant = (KurentoParticipant) participant;
@@ -837,6 +841,7 @@ public class KurentoSessionManager extends SessionManager {
 
     /**
      * 支持分布服务踢人。被踢的对象可能在另外一台服务器上，需要广播出去
+     *
      * @param sessionId
      * @param uuid
      * @param evictStrategies
@@ -887,10 +892,7 @@ public class KurentoSessionManager extends SessionManager {
         } else {
             // check if MAJOR is speaker
             if (ParticipantHandStatus.speaker.equals(evictParticipant.getHandStatus())) {
-                JsonObject params = new JsonObject();
-                params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, evictParticipant.getSessionId());
-                params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, evictParticipant.getUuid());
-                rpcNotificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.END_ROLL_CALL_METHOD, params);
+                endSpeaker(session, evictParticipant, evictParticipant.getUuid());
             }
             // check if exists SHARING
 //            if (session.isShare(evictParticipant.getUuid())) {
@@ -1584,6 +1586,7 @@ public class KurentoSessionManager extends SessionManager {
     @Override
     public void handleRecordErrorEvent(Object msg) {
         String ruid;
+        log.info("recording-error {}", msg);
         JsonObject jsonObject = new Gson().fromJson(String.valueOf(msg), JsonObject.class);
         if (jsonObject.has("method") && jsonObject.has("params")
                 && Objects.nonNull(ruid = jsonObject.get("params").getAsJsonObject().get("ruid").getAsString())) {

@@ -4,6 +4,7 @@ import io.openvidu.server.client.RtcUserClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,6 +37,11 @@ public class RemoteRpcConnection implements IRpcConnection {
     @Override
     public int size() {
         return rtcUserClient.size();
+    }
+
+    @Override
+    public List<RpcConnection> getByUuids(Collection<String> uuids) {
+        return rtcUserClient.getByUuids(uuids);
     }
 
     @Override

@@ -611,12 +611,11 @@ public abstract class SessionManager {
         }
     }
 
-    public void closeRoom(RpcConnection rpcConnection, Session session) {
+    public void closeRoom(Session session) {
         UseTime.point("closeRoom p1");
         String sessionId = session.getSessionId();
         // set session status: closing
         session.setClosing(true);
-        session.getParticipants();
 
 //		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
 //			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
@@ -657,7 +656,6 @@ public abstract class SessionManager {
         this.closeSession(sessionId, EndReason.closeSessionByModerator);
         point.updateTime();
         UseTime.point("closeRoom p5");
-        rpcConnection.setReconnected(false);
     }
 
     /**
@@ -1071,11 +1069,8 @@ public abstract class SessionManager {
             result.addProperty("shareId", sharingPart.getUuid());
             result.addProperty("originator", originatorUuid);
 
-            log.info("111111111111111111111111111111");
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
-            log.info("2222222222222222222222222 {}", session.getConferenceMode());
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
-                log.info("333333333333333333");
                 session.getCompositeService().asyncUpdateComposite();
             }
         }
@@ -1141,16 +1136,20 @@ public abstract class SessionManager {
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().asyncUpdateComposite();
             }
+
+            if (session.getIsRecording()) {
+                this.updateRecording(session.getSessionId());
+            }
         }
     }
 
-    public void endSpeaker(Session session, Participant sharingPart, String originatorUuid) {
+    public void endSpeaker(Session session, Participant speaker, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
             session.setSpeakerPart(null);
 
             JsonObject result = new JsonObject();
             result.addProperty("roomId", session.getSessionId());
-            result.addProperty("targetId", sharingPart.getUuid());
+            result.addProperty("targetId", speaker.getUuid());
             result.addProperty("originator", originatorUuid);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, result);
 
