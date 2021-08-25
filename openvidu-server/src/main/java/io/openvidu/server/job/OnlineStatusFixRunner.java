@@ -3,6 +3,8 @@ package io.openvidu.server.job;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.enums.DeviceStatus;
+import io.openvidu.server.rpc.RpcConnection;
+import io.openvidu.server.rpc.RpcNotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -11,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,6 +28,10 @@ public class OnlineStatusFixRunner implements ApplicationRunner {
 
     @Resource(name = "tokenStringTemplate")
     private StringRedisTemplate tokenStringTemplate;
+
+    @Autowired
+    RpcNotificationService notificationService;
+
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -47,7 +54,10 @@ public class OnlineStatusFixRunner implements ApplicationRunner {
                 if (info != null && info.containsKey("status")) {
                     String status = info.get("status").toString();
                     if (!Objects.equals(DeviceStatus.offline.name(), status)) {
-                        cacheManage.updateTokenInfo(uuid, "status", DeviceStatus.offline.name());
+                        List<RpcConnection> rpcConnections = notificationService.getRpcConnectionByUuids(uuid);
+                        if (rpcConnections.isEmpty()) {
+                            cacheManage.updateTokenInfo(uuid, "status", DeviceStatus.offline.name());
+                        }
                     }
                 }
             }
