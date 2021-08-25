@@ -232,13 +232,13 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     private class ListSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            int order = getIntParam(request, "order");
-            int reverse = getIntParam(request, "reverse");
-            int limit = getIntParam(request, "limit");
+            int order = getIntOptionalParam(request, "order",0);
+            int reverse = getIntOptionalParam(request, "reverse",1);
+            Integer limit = getIntOptionalParam(request, "limit");
             if (reverse == 1) {
-                return session.getParticipants().stream().sorted(Comparator.comparing(Participant::getOrder)).filter(p -> p.getOrder() >= order).limit(limit).sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toCollection(LinkedHashSet::new));
+                return session.getParticipants().stream().sorted(Comparator.comparing(Participant::getOrder)).filter(p -> p.getOrder() >= order).limit(StringUtils.isEmpty(limit) ? session.getParticipants().size() : limit).sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toCollection(LinkedHashSet::new));
             } else {
-                return session.getParticipants().stream().sorted(Comparator.comparing(Participant::getOrder)).filter(p -> p.getOrder() >= order).limit(limit).sorted(Comparator.comparing(Participant::getOrder).reversed()).collect(Collectors.toCollection(LinkedHashSet::new));
+                return session.getParticipants().stream().sorted(Comparator.comparing(Participant::getOrder)).filter(p -> p.getOrder() >= order).limit(StringUtils.isEmpty(limit) ? session.getParticipants().size() : limit).sorted(Comparator.comparing(Participant::getOrder).reversed()).collect(Collectors.toCollection(LinkedHashSet::new));
             }
         }
     }
