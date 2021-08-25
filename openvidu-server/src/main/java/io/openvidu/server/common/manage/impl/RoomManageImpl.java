@@ -8,15 +8,9 @@ import io.openvidu.server.common.dao.CorpMcuConfigMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.manage.UserManage;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferencePartHistory;
-import io.openvidu.server.common.pojo.CorpMcuConfig;
-import io.openvidu.server.common.pojo.Corporation;
-import io.openvidu.server.common.pojo.User;
-import io.openvidu.server.common.pojo.UserCorpInfo;
+import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.utils.StringUtil;
@@ -166,6 +160,8 @@ public class RoomManageImpl implements RoomManage {
             roomInfo.put("conferenceSubject", conference.getConferenceSubject());
             roomInfo.put("creatorId", conference.getUserId());
             roomInfo.put("instanceId", instanceId);
+            roomInfo.put("roomSubject", conference.getConferenceSubject());
+            roomInfo.put("moderatorUuid", conference.getModeratorUuid());
 
             cacheManage.saveRoomInfo(conference.getRoomId(), roomInfo);
         }

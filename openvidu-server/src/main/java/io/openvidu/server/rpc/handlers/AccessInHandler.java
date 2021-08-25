@@ -3,6 +3,7 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.constants.CommonConstants;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.pojo.Corporation;
@@ -18,6 +19,7 @@ import io.openvidu.server.utils.StringUtil;
 import io.openvidu.server.utils.ValidPeriodHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -40,6 +42,9 @@ public class AccessInHandler extends RpcAbstractHandler {
     private long reqExpiredDuration;
 
     private static final String DEFAULT_DEVICE_VERSION = "1350";
+
+    @Autowired
+    private RtcUserClient rtcUserClient;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -197,6 +202,7 @@ public class AccessInHandler extends RpcAbstractHandler {
             object.addProperty("validPeriod", ValidPeriodHelper.getBetween(corporation.getExpireDate()));
         }
         rpcConnection.setLoginTime(System.currentTimeMillis());
+        rtcUserClient.updateRpcConnection(rpcConnection);
         // send resp
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), object);
     }

@@ -39,9 +39,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.Objects;
 
-/**
- * @author Pablo Fuente (pablofuenteperez@gmail.com)
- */
 @RestController
 @CrossOrigin
 @RequestMapping("/signal")
@@ -108,7 +105,7 @@ public class HandlerController {
             //rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
             RpcConnection rpcConnection = rtcUserClient.getRpcConnection(requestDTO.getParticipantPrivateId());
             rpcExHandler.handleRequest(rpcConnection, request);
-            rtcUserClient.updateRpcConnection(rpcConnection);
+            //rtcUserClient.updateRpcConnection(rpcConnection);
 
 /*            if (rpcConnection.getLoginTime() == null || rpcConnection.getLoginTime() == 0) {
                 return RespResult.fail(ErrorCodeEnum.FAIL);
