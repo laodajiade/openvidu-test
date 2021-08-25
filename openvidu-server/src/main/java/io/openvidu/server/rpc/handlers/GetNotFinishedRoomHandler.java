@@ -42,7 +42,7 @@ public class GetNotFinishedRoomHandler extends RpcAbstractHandler {
             if (!roomInfo.isEmpty() && Objects.isNull(session) && requestOtherServer) {
                 String instanceId = roomInfo.get("instanceId").toString();
                 String[] arr = instanceId.split(":");
-                String url = "http://" + arr[1] + ":" + arr[2] + "/inner/getNotFinishRoom?uuid=" + uuid;
+                String url = "http://" + arr[1] + ":" + arr[2] + "/inner/getNotFinishedRoom?uuid=" + uuid;
                 String result = restTemplate.getForObject(url, String.class);
                 return gson.fromJson(result, JsonObject.class);
             }
