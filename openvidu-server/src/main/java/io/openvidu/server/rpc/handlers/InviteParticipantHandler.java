@@ -12,7 +12,6 @@ import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.JpushMsgEnum;
 import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -24,7 +23,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,22 +63,13 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             }
         }
 
-        //判断发起会议时是否超出企业人数上限
-        Collection<Session> sessions = sessionManager.getSessions();
-        if (Objects.nonNull(sessions)) {
-            AtomicInteger limitCapacity = new AtomicInteger();
-            sessions.forEach(e -> {
-                if (rpcConnection.getProject().equals(e.getConference().getProject())) {
-                    limitCapacity.addAndGet(e.getPartSize());
-                }
-            });
-            //query sd_corporation info
-            Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
-            if (Objects.nonNull(corporation.getCapacity()) && targetIds.size() + limitCapacity.get() > corporation.getCapacity()) {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
-                return;
-            }
+        //query sd_corporation info
+        int joinNum = conferencePartHistoryMapper.countProcessPartHistory(rpcConnection.getProject());
+        Corporation corporation = corporationMapper.selectByCorpProject(rpcConnection.getProject());
+        if (Objects.nonNull(corporation.getCapacity()) && targetIds.size() + joinNum > corporation.getCapacity()) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
+            return;
         }
 
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
@@ -104,7 +93,9 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
         if (!CollectionUtils.isEmpty(invitees)) {
             invitees.forEach(invitee -> {
                 cacheManage.saveInviteInfo(sessionId, invitee.getUuid());
-                addInviteCompensation(invitee.getUuid(), params, expireTime);
+                JsonObject customParams = params.deepCopy();
+                customParams.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, invitee.getUuid());
+                addInviteCompensation(invitee.getUuid(), customParams, expireTime);
             });
         }
         inviteOnline(targetIds, params);
@@ -121,19 +112,15 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
 
     public void inviteOnline(List<String> targetIds, JsonObject params) {
-        Collection<RpcConnection> rpcConnections = this.notificationService.getRpcConnections();
+        List<RpcConnection> rpcConnections = this.notificationService.getRpcConnectionByUuids(targetIds);
+
         for (RpcConnection rpcConnect : rpcConnections) {
-            if (!Objects.isNull(rpcConnect.getUserUuid())) {
-                String userUuid = rpcConnect.getUserUuid();
-                if (targetIds.contains(userUuid)) {
-                    if (cacheManage.getTerminalStatus(rpcConnect.getUserUuid()).equals(TerminalStatus.meeting.name())) {
-                        continue;
-                    }
-                    params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, userUuid);
-                    this.notificationService.sendNotification(rpcConnect.getParticipantPrivateId(),
-                            ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
-                }
+            if (cacheManage.getTerminalStatus(rpcConnect.getUserUuid()).equals(TerminalStatus.meeting.name())) {
+                continue;
             }
+            params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnect.getUserUuid());
+            this.notificationService.sendNotification(rpcConnect.getParticipantPrivateId(),
+                    ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
         }
     }
 
