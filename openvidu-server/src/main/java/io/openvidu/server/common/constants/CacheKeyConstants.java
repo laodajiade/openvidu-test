@@ -61,6 +61,11 @@ public class CacheKeyConstants {
      */
     private static final String INVITE_PREFIX_KEY = "conference:invite:%s";
 
+    /**
+     * 会议重复尝试邀请用户队列缓存key前缀
+     */
+    public static final String INVITE_QUEUE_PREFIX_KEY = "hash:conference:invite:queue";
+
     public static final String CORP_REMAINDER_DURATION_PREFIX_KEY = "remainder:duration:";
     public static final String CORP_ADVANCE_DURATION_PREFIX_KEY = "advance:duration:";
     public static final String CORP_REMAINDER_DURATION_LESSTENHOUR_PREFIX_KEY = "duration:lessenhour:";

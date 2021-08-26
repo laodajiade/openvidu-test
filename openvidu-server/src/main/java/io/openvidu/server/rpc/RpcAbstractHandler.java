@@ -95,9 +95,6 @@ public abstract class RpcAbstractHandler {
     protected CorporationMapper corporationMapper;
 
     @Resource
-    protected GroupMapper groupMapper;
-
-    @Resource
     protected UserGroupMapper userGroupMapper;
 
     @Resource
@@ -114,9 +111,6 @@ public abstract class RpcAbstractHandler {
 
     @Resource
     protected DepartmentMapper departmentMapper;
-
-    @Resource
-    protected HttpUtil httpUtil;
 
     @Resource
     protected PresetMapper presetMapper;

@@ -77,6 +77,12 @@ public interface CacheManage {
 
     Map getInviteInfo(String sessionId);
 
+    Map getAllInviteQueue();
+
+    void delInviteQueue(String uuid);
+
+    void addInviteQueue(String uuid, String params);
+
     void publish(String channel, String message);
 
     void setCorpRemainDuration(String project, int remainderDuration);

@@ -126,16 +126,16 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
 
     private void sendJpushMessage(List<String> targetIds, String moderatorName, String subject, String ruid) {
         log.info("会议邀请 极光推送,ruid {},targetIds:{}", ruid, targetIds);
-        Map<String, RpcConnection> rpcMap = this.notificationService.getRpcConnections().stream().collect(Collectors.toMap(RpcConnection::getUserUuid, Function.identity()));
         targetIds.forEach(uuid -> {
             boolean send = false;
             Map userInfo = cacheManage.getUserInfoByUUID(uuid);
             if (Objects.nonNull(userInfo) && !userInfo.isEmpty()) {
                 if (Objects.nonNull(userInfo.get("type")) && Objects.nonNull(userInfo.get("registrationId"))) {
                     //bug-fix:http://task.sudi.best/browse/BASE121-2631
-                    RpcConnection rpcConnection = rpcMap.get(uuid);
-                    if (Objects.isNull(rpcConnection) || !Objects.equals(TerminalStatus.meeting.name(), userInfo.get("status"))) {
+                    List<RpcConnection> rpcConnections = this.notificationService.getRpcConnectionByUuids(uuid);
+                    if (rpcConnections.isEmpty() || !Objects.equals(TerminalStatus.meeting.name(), userInfo.get("status"))) {
                         String type = userInfo.get("type").toString();
+
                         String registrationId = userInfo.get("registrationId").toString();
                         Date createDate = new Date();
                         String title = StringUtil.INVITE_CONT;

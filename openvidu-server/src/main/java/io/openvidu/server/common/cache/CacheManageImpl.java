@@ -280,6 +280,21 @@ public class CacheManageImpl implements CacheManage {
         return tokenStringTemplate.opsForHash().entries(key);
     }
 
+    @Override
+    public Map getAllInviteQueue() {
+        return tokenStringTemplate.opsForHash().entries(CacheKeyConstants.INVITE_QUEUE_PREFIX_KEY);
+    }
+
+    @Override
+    public void delInviteQueue(String uuid) {
+        tokenStringTemplate.opsForHash().delete(CacheKeyConstants.INVITE_QUEUE_PREFIX_KEY, uuid);
+    }
+
+    @Override
+    public void addInviteQueue(String uuid, String params) {
+        tokenStringTemplate.opsForHash().put(CacheKeyConstants.INVITE_QUEUE_PREFIX_KEY, uuid, params);
+    }
+
 
     @Override
     public void publish(String channel, String message) {
