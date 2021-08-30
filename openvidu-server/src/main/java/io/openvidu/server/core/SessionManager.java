@@ -939,51 +939,52 @@ public abstract class SessionManager {
         }
     }
 
-    public void setSpeaker(Session session, Participant speakPart, String originatorUuid) {
+    public void setSpeaker(Session session, Participant speaker, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
 
+            speaker.changeHandStatus(ParticipantHandStatus.speaker);
             boolean sendChangeRole;
-            OpenViduRole oldRole = speakPart.getRole();
-            if (sendChangeRole = (speakPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1)) {
-                speakPart.changePartRole(OpenViduRole.PUBLISHER);
+            OpenViduRole oldRole = speaker.getRole();
+            if (sendChangeRole = (speaker.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1)) {
+                speaker.changePartRole(OpenViduRole.PUBLISHER);
             }
 
-            session.setSpeakerPart(speakPart);
+            session.setSpeakerPart(speaker);
             JsonObject result = new JsonObject();
             JsonArray roleChange = new JsonArray();
             JsonArray setAudioSpeakerStatusArr = new JsonArray();
             JsonArray setAudioStatusArr = new JsonArray();
 
             result.addProperty("roomId", session.getSessionId());
-            result.addProperty("targetId", speakPart.getUuid());
+            result.addProperty("targetId", speaker.getUuid());
             result.addProperty("originator", originatorUuid);
             //是否发生过角色变更
             if (sendChangeRole) {
                 JsonObject roleChangeObj = new JsonObject();
-                roleChangeObj.addProperty("uuid", speakPart.getUuid());
+                roleChangeObj.addProperty("uuid", speaker.getUuid());
                 roleChangeObj.addProperty("originalRole", oldRole.name());
                 roleChangeObj.addProperty("presentRole", OpenViduRole.PUBLISHER.name());
                 roleChange.add(roleChangeObj);
             }
 
-            if (ParticipantSpeakerStatus.off.equals(speakPart.getSpeakerStatus())) {
-                speakPart.setSpeakerStatus(ParticipantSpeakerStatus.on);
+            if (ParticipantSpeakerStatus.off.equals(speaker.getSpeakerStatus())) {
+                speaker.changeSpeakerStatus(ParticipantSpeakerStatus.on);
 
                 JsonObject setAudioSpeakerStatus = new JsonObject();
                 setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM, session.getSessionId());
                 setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM, originatorUuid);
                 setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM, ParticipantSpeakerStatus.on.name());
-                setAudioSpeakerStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, speakPart.getUuid());
+                setAudioSpeakerStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, speaker.getUuid());
                 setAudioSpeakerStatusArr.add(setAudioSpeakerStatus);
             }
-            if (ParticipantMicStatus.off.equals(speakPart.getMicStatus())) {
-                speakPart.setMicStatus(ParticipantMicStatus.on);
+            if (ParticipantMicStatus.off.equals(speaker.getMicStatus())) {
+                speaker.changeMicStatus(ParticipantMicStatus.on);
 
                 JsonObject setAudioStatus = new JsonObject();
                 setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, session.getSessionId());
                 setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, originatorUuid);
                 setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, ParticipantMicStatus.on.name());
-                setAudioStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, speakPart.getUuid());
+                setAudioStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, speaker.getUuid());
                 setAudioStatusArr.add(setAudioStatus);
             }
             if (roleChange.size() != 0) result.add("roleChange", roleChange);
@@ -1025,6 +1026,9 @@ public abstract class SessionManager {
 
     public void endSpeaker(Session session, Participant speaker, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
+            if (!session.getSpeakerPart().isPresent() || !session.getSpeakerPart().get().getUuid().equals(speaker.getUuid())) {
+                return;
+            }
             session.setSpeakerPart(null);
 
             JsonObject result = new JsonObject();
@@ -1040,7 +1044,7 @@ public abstract class SessionManager {
 
                 JsonArray audioParamsArr = new JsonArray();
                 if (micStatusChange = ParticipantMicStatus.on.equals(speaker.getMicStatus())) {
-                    speaker.setMicStatus(ParticipantMicStatus.off);
+                    speaker.changeMicStatus(ParticipantMicStatus.off);
 
                     JsonObject audioParams = new JsonObject();
                     audioParams.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, session.getSessionId());
@@ -1059,6 +1063,8 @@ public abstract class SessionManager {
                 }
             }
             session.setSpeakerPart(null);
+            speaker.changeHandStatus(ParticipantHandStatus.endSpeaker);
+
             result.addProperty("roomId", session.getSessionId());
             result.addProperty("targetId", speaker.getUuid());
             result.addProperty("originator", originatorUuid);
@@ -1074,76 +1080,70 @@ public abstract class SessionManager {
     }
 
     public void replaceSpeaker(Session session, Participant endPart, Participant startPart, String originatorUuid) {
-        Set<Participant> participants = session.getParticipants();
-        JsonObject result = new JsonObject();
-        JsonArray roleChangeArr = new JsonArray();
-        JsonObject setAudioSpeakerStatus = new JsonObject();
-        JsonArray setAudioStatusArr = new JsonArray();
-        JsonObject stopSharingParams = new JsonObject();
-        session.setSpeakerPart(startPart);
-        participants.forEach(participant -> {
-            if (endPart.getUuid().equals(participant.getUuid())) {
-                participant.changeHandStatus(ParticipantHandStatus.down);
-            }
-            if (startPart.getUuid().equals(participant.getUuid())) {
-                participant.changeHandStatus(ParticipantHandStatus.speaker);
-            }
-        });
-
-        if (startPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
-            startPart.setRole(OpenViduRole.PUBLISHER);
-            JsonArray startPartRoleChange = session.getPartRoleChangedNotifyParamArr(startPart,
-                    OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER);
-            roleChangeArr.addAll(startPartRoleChange);
-        }
-        if (endPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
-            endPart.setRole(OpenViduRole.SUBSCRIBER);
-            JsonArray endPartRoleChange = session.getPartRoleChangedNotifyParamArr(startPart,
-                    OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
-            roleChangeArr.addAll(endPartRoleChange);
-        }
-
-        if (ParticipantSpeakerStatus.off.equals(startPart.getSpeakerStatus())) {
-            setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM, session.getSessionId());
-            setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM, originatorUuid);
-            setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM, "on");
-            setAudioSpeakerStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, startPart.getUuid());
-        }
-
-        if (ParticipantMicStatus.off.equals(startPart.getMicStatus())) {
-            JsonObject setAudioStatus = new JsonObject();
-            setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, session.getSessionId());
-            setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, originatorUuid);
-            setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, "on");
-            setAudioStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, startPart.getUuid());
-            setAudioStatusArr.add(setAudioStatus);
-        }
-
-        if (ParticipantMicStatus.on.equals(endPart.getMicStatus())) {
-            JsonObject setAudioStatus = new JsonObject();
-            endPart.setMicStatus(ParticipantMicStatus.off);
-            setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, session.getSessionId());
-            setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM, endPart.getUuid());
-            setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, "off");
-            setAudioStatus.addProperty(ProtocolElements.SET_VIDEO_TARGET_IDS_PARAM, endPart.getUuid());
-            setAudioStatusArr.add(setAudioStatus);
-        }
-
-        //判断是否存在共享
-        Participant sharePart = session.getSharingPart().orElse(null);
-
-        if (Objects.nonNull(sharePart)) {
-            leaveRoom(sharePart, null, EndReason.sessionClosedByServer, false);
-            stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_ROOMID_PARAM, session.getSessionId());
-            stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_SOURCEID_PARAM, "");
-            stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_TARGETID_PARAM, sharePart.getUuid());
-            stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_OPERATION_PARAM, ParticipantShareStatus.off.name());
-//                stopSharingParams.addProperty(ProtocolElements.SHARING_CONTROL_MODE_PARAM, 0);
-        }
-
-
         synchronized (session.getSharingOrSpeakerLock()) {
+            JsonObject result = new JsonObject();
+            JsonArray roleChangeArr = new JsonArray();
+            JsonObject setAudioSpeakerStatus = new JsonObject();
+            JsonArray setAudioStatusArr = new JsonArray();
+            JsonObject stopSharingParams = new JsonObject();
             session.setSpeakerPart(startPart);
+
+
+            if (startPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
+                startPart.setRole(OpenViduRole.PUBLISHER);
+                JsonArray startPartRoleChange = session.getPartRoleChangedNotifyParamArr(startPart,
+                        OpenViduRole.SUBSCRIBER, OpenViduRole.PUBLISHER);
+                roleChangeArr.addAll(startPartRoleChange);
+            }
+            if (endPart.getOrder() > session.getPresetInfo().getSfuPublisherThreshold() - 1) {
+                endPart.setRole(OpenViduRole.SUBSCRIBER);
+                JsonArray endPartRoleChange = session.getPartRoleChangedNotifyParamArr(endPart,
+                        OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
+                roleChangeArr.addAll(endPartRoleChange);
+            }
+
+
+
+            if (ParticipantSpeakerStatus.off.equals(startPart.getSpeakerStatus())) {
+                startPart.changeSpeakerStatus(ParticipantSpeakerStatus.on);
+
+                setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_ID_PARAM, session.getSessionId());
+                setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_SOURCE_ID_PARAM, originatorUuid);
+                setAudioSpeakerStatus.addProperty(ProtocolElements.SET_AUDIO_SPEAKER_STATUS_PARAM, ParticipantSpeakerStatus.on.name());
+                setAudioSpeakerStatus.addProperty(ProtocolElements.SET_ROLL_CALL_TARGET_ID_PARAM, startPart.getUuid());
+            }
+
+            if (ParticipantMicStatus.off.equals(startPart.getMicStatus())) {
+                startPart.changeMicStatus(ParticipantMicStatus.on);
+
+                JsonObject setAudioStatus = new JsonObject();
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, session.getSessionId());
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM, originatorUuid);
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, ParticipantMicStatus.on.name());
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM, startPart.getUuid());
+                setAudioStatusArr.add(setAudioStatus);
+            }
+
+            if (ParticipantMicStatus.on.equals(endPart.getMicStatus())) {
+                endPart.changeMicStatus(ParticipantMicStatus.off);
+
+                JsonObject setAudioStatus = new JsonObject();
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_ROOM_ID_PARAM, session.getSessionId());
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_SOURCE_PARAM, endPart.getUuid());
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_STATUS_PARAM, ParticipantMicStatus.off.name());
+                setAudioStatus.addProperty(ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM, endPart.getUuid());
+                setAudioStatusArr.add(setAudioStatus);
+            }
+
+            // 如果分享的也是发言者，需要结束分享
+            if (session.getSharingPart().isPresent() && session.getSharingPart().get().getUuid().equals(endPart.getUuid())) {
+                endSharing(session, endPart, originatorUuid);
+            }
+
+            session.setSpeakerPart(startPart);
+            endPart.changeHandStatus(ParticipantHandStatus.down);
+            startPart.changeHandStatus(ParticipantHandStatus.speaker);
+
             result.addProperty(ProtocolElements.REPLACE_ROLL_CALL_ROOM_ID_PARAM, session.getSessionId());
             result.addProperty(ProtocolElements.REPLACE_ROLL_CALL_END_TARGET_ID_PARAM, endPart.getUuid());
             result.addProperty(ProtocolElements.REPLACE_ROLL_CALL_START_TARGET_ID_PARAM, startPart.getUuid());
@@ -1157,6 +1157,13 @@ public abstract class SessionManager {
             //关闭共享流
             if (stopSharingParams.size() != 0) result.add("endShareNotify", stopSharingParams);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.REPLACE_ROLL_CALL_NOTIFY_METHOD, result);
+        }
+
+        if (session.ableToUpdateRecord()) {
+            updateRecording(session.getSessionId());
+        }
+        if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+            session.getCompositeService().asyncUpdateComposite();
         }
     }
 
