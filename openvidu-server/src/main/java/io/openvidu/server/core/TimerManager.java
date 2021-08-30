@@ -178,7 +178,7 @@ public class TimerManager {
                 if (notifyIndex > participants.size() - 1) {
                     notifyIndex = 0;
                 }
-                log.info("dealPollingCheck roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getParticipantPublicId(), notifyIndex);
+                log.info("dealPollingCheck roomId:{} advance notify next part:{} polling to the index:{}", session.getSessionId(), participants.get(notifyIndex).getUuid(), notifyIndex);
                 JsonObject nextNotifyParam = new JsonObject();
                 nextNotifyParam.addProperty(ProtocolElements.POLLING_CONNECTIONID_PARAM, participants.get(notifyIndex).getUuid());
                 session.getParticipants().forEach(part -> notificationService.sendNotification(part.getParticipantPrivateId(),
