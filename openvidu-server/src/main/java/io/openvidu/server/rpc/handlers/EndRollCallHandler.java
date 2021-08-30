@@ -2,8 +2,7 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ConferenceModeEnum;
-import io.openvidu.server.common.enums.ParticipantHandStatus;
+import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -11,8 +10,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
 
 /**
  * @author geedow
@@ -27,52 +25,13 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
 
         Session conferenceSession = sessionManager.getSession(sessionId);
-        Set<Participant> participants = conferenceSession.getParticipants();
-        Participant moderatorPart = conferenceSession.getParticipantByUUID(originator).orElseGet(null);
-        Participant part = null;
-        for (Participant participant : participants) {
-            if (targetId.equals(participant.getUuid())) {
-                participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
-                part = participant;
-                break;
-            }
+        Optional<Participant> originatorPart = conferenceSession.getParticipantByUUID(originator);
+        Optional<Participant> targetPart = conferenceSession.getParticipantByUUID(targetId);
+        if (!targetPart.isPresent() || !originatorPart.isPresent()) {
+            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject(), ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
+            return;
         }
-
-        if (part != null) {
-            //when the part on wall,change role to SUBSCRIBER
-            //下墙处理音频及共享通知
-            sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
-        }
-
-
-
-/*        JsonObject params = new JsonObject();
-        params.addProperty(ProtocolElements.END_ROLL_CALL_ROOM_ID_PARAM, sessionId);
-        params.addProperty(ProtocolElements.END_ROLL_CALL_SOURCE_ID_PARAM, sourceId);
-        params.addProperty(ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM, targetId);*/
-
-        // broadcast the changes of layout
-/*        participants.forEach(participant -> {
-            if (!Objects.equals(StreamType.MAJOR, participant.getStreamType())) {
-                return;
-            }
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.END_ROLL_CALL_METHOD, params);
-            if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-                // broadcast the changes of layout
-                this.notificationService.sendNotification(participant.getParticipantPrivateId(), ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY,
-                        conferenceSession.getLayoutNotifyInfo());
-            }
-        });*/
-//        sessionManager.endSpeaker(conferenceSession, targetPart, originator);
+        sessionManager.endSpeaker(conferenceSession, targetPart.get(), originator);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-
-        // update recording
-        if (conferenceSession.ableToUpdateRecord()) {
-            sessionManager.updateRecording(conferenceSession.getSessionId());
-        }
-        if (Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            conferenceSession.getCompositeService().asyncUpdateComposite();
-        }
-
     }
 }
