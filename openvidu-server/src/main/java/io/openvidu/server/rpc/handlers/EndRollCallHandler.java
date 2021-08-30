@@ -2,12 +2,10 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
@@ -28,32 +26,22 @@ public class EndRollCallHandler extends RpcAbstractHandler {
         String originator = getStringParam(request, ProtocolElements.END_ROLL_CALL_ORIGINATOR_ID_PARAM);
         String targetId = getStringParam(request, ProtocolElements.END_ROLL_CALL_TARGET_ID_PARAM);
 
-        String sourceConnectionId = null;
-        String targetConnectionId = null;
         Session conferenceSession = sessionManager.getSession(sessionId);
         Set<Participant> participants = conferenceSession.getParticipants();
-        Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElseGet(null);
         Participant moderatorPart = conferenceSession.getParticipantByUUID(originator).orElseGet(null);
         Participant part = null;
         for (Participant participant : participants) {
             if (targetId.equals(participant.getUuid())) {
                 participant.changeHandStatus(ParticipantHandStatus.endSpeaker);
-                targetConnectionId = participant.getParticipantPublicId();
                 part = participant;
-            }
-
-            if (originator.equals(participant.getUuid()) && !Objects.equals(OpenViduRole.THOR, participant.getRole())) {
-                sourceConnectionId = participant.getParticipantPublicId();
+                break;
             }
         }
 
         if (part != null) {
             //when the part on wall,change role to SUBSCRIBER
-
-                //下墙处理音频及共享通知
-                sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
-
-
+            //下墙处理音频及共享通知
+            sessionManager.setMicStatusAndDealExistsSharing(part, moderatorPart, sessionId);
         }
 
 
