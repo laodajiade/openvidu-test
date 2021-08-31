@@ -652,7 +652,7 @@ public class ProtocolElements {
     public static final String SWITCHVOICEMODE_METHOD = "switchVoiceMode";
     public static final String SWITCHVOICEMODE_OPERATION_PARAM = "operation";
     public static final String SWITCHVOICEMODE_NOTIFY_METHOD = "switchVoiceModeNotify";
-    public static final String SWITCHVOICEMODE_SENDERCONNECTIONID_PARAM = "senderConnectionId";
+    public static final String SWITCH_VOICE_MODE_UUID_PARAM = "uuid";
 
     public static final String SET_PART_OPER_SPEAKER_METHOD = "setPartOperSpeaker";
     public static final String SET_PART_OPER_SPEAKER_ID_PARAM = "roomId";

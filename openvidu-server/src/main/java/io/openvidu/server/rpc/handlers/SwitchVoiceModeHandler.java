@@ -1,18 +1,14 @@
 package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
-import io.openvidu.client.OpenViduException;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * @author chosongi
@@ -37,9 +33,7 @@ public class SwitchVoiceModeHandler extends RpcAbstractHandler {
 
         // send notify
         JsonObject notifyObj = request.getParams().deepCopy();
-        notifyObj.addProperty(ProtocolElements.SWITCHVOICEMODE_SENDERCONNECTIONID_PARAM, participant.getParticipantPublicId());
-        sessionManager.getSession(rpcConnection.getSessionId()).getParticipants().forEach(part -> {
-            notificationService.sendNotification(part.getParticipantPrivateId(), ProtocolElements.SWITCHVOICEMODE_NOTIFY_METHOD, notifyObj);
-        });
+        notifyObj.addProperty(ProtocolElements.SWITCH_VOICE_MODE_UUID_PARAM, participant.getUuid());
+        notificationService.sendBatchNotificationConcurrent(sessionManager.getSession(rpcConnection.getSessionId()).getParticipants(), ProtocolElements.SWITCHVOICEMODE_NOTIFY_METHOD, notifyObj);
     }
 }

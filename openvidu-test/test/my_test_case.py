@@ -134,4 +134,13 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(participant_published[0]['params']['streams'][0]['publishId'], stream_id,
                          'participantPublished 错误')
 
+    def subscribe_video(self, client, uuid, stream_type, publish_id):
+        re = client.subscribe_video(uuid, stream_type, publish_id)
+        self.assertEqual(re[0], 0, '拉流错误' + publish_id)
+        stream_id = re[1]['subscribeId']  # 获取到stream_id
+        self.assertIsNotNone(stream_id, ' 拉流没有subscribeId')
+        self.assertIsNotNone(re[1]['sdpAnswer'], '推流没有 sdpAnswer')
+        time.sleep(1)
+        return stream_id
+
     ######################### stream #########################

@@ -94,7 +94,6 @@ class SdClient:
     def logout(self):
         self.wsClient.close()
 
-
     def listen_notify(self, method, func, *args):
         self.wsClient.notify_listen_funcs[method] = func
         self.wsClient.notify_listen_args[method] = args
@@ -239,6 +238,23 @@ class SdClient:
                     result.append(j)
             except Exception as e:
                 logger.error('search_notify_list error message ' + msg, e)
+        return result
+
+    def find_any_notify(self, method, timeout=2000):
+        """ 搜索缓存中的通知,返回匹配method的json """
+        result = {}
+        beginMs = int(SDUtil.GetUtcMs())
+        while int(SDUtil.GetUtcMs()) - beginMs < timeout:
+            list = self.get_notify_list()
+            for msg in list:
+                try:
+                    j = json.loads(msg)
+                    if j['method'] == method:
+                        return j
+                except Exception as e:
+                    logger.error('find_any_notify error message ' + msg, e)
+                    return result
+            time.sleep(0.05)
         return result
 
     def has_notify(self, method):

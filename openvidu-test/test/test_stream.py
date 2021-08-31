@@ -1,17 +1,15 @@
-import json
 import sys
 import time
 
 import unittest2
 from loguru import logger
-from test.service.services import MeetingService
 
 import test
+from test.service.services import MeetingService
 
 
 class TestStream(test.MyTestCase):
     """ 推拉流测试 """
-
 
     def test_multiple_room(self):
         """ 创建多个会议，每个会议都推流，测试kms的负载均衡策略 """
@@ -140,7 +138,7 @@ class TestStream(test.MyTestCase):
     def test_pause_and_resume(self):
         """ 测试暂停拉流和恢复拉流 """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
-        result = self.publish_and_subcribe()
+        result = self.publish_and_subscribe()
         part_client = result['part_client']
         subscribe_id = result['subscribe_id']
         params = {}
@@ -158,7 +156,7 @@ class TestStream(test.MyTestCase):
     def test_share(self):
         """ 推送分享流，非分享者不能推分享流 """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
-        result = self.publish_and_subcribe()
+        result = self.publish_and_subscribe()
         part_client = result['part_client']
         subscribe_id = result['subscribe_id']
 
@@ -172,42 +170,54 @@ class TestStream(test.MyTestCase):
         re = part_client.publish_video('SHARING')
         self.assertEqual(re[0], 0, '推送分享流失败' + str(re))
 
+    def test_switch_voice_mode(self):
+        """ 切换语音模式
+        测试目的：切换语音模式不报错
+        测试过程: 1、创建会议，入会2人
+                2、主持人推流，与会者拉流
+                3、与会者切换语音模式
+                4、与会者切回视频模式
+        结果期望： 与会者切换语音模式 不报错
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        result = self.publish_and_subscribe()
+        logger.info('step 3')
+        part_client = result['part_client']
+        re = part_client.request('switchVoiceMode', {"operation": "on"})
+        self.assertEqual(re[0], 0, '切换语音模式失败')
+
+        moderator_client = result['moderator_client']
+        notify = moderator_client.find_any_notify('switchVoiceModeNotify')
+        self.assertEqual(notify['params']['operation'], 'on')
+        self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
+
+        moderator_client.clear_notify()
+        re = part_client.request('switchVoiceMode', {"operation": "off"})
+        self.assertEqual(re[0], 0, '切换语音模式失败')
+        notify = moderator_client.find_any_notify('switchVoiceModeNotify')
+        self.assertEqual(notify['params']['operation'], 'off')
+        self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
 
     ############################################################
-
-
-    def subscribe_video(self, client, uuid, stream_type, publish_id):
-        re = client.subscribe_video(uuid, stream_type, publish_id)
-        self.assertEqual(re[0], 0, '拉流错误' + publish_id)
-        stream_id = re[1]['subscribeId']  # 获取到stream_id
-        self.assertIsNotNone(stream_id, ' 拉流没有subscribeId')
-        self.assertIsNotNone(re[1]['sdpAnswer'], '推流没有 sdpAnswer')
-        time.sleep(1)
-        # self.valid_publish_video(client, stream_id)
-        return stream_id
-
-
 
     def on_ice_candidate(self, client, stream_id):
         re = client.on_ice_candidate(stream_id)
         self.assertEqual(re[0], 0)
 
-    def publish_and_subcribe(self):
-        """ 创建会议, 主持人推主流，与会者1拉主流 """
+    def publish_and_subscribe(self):
+        """
+        创建会议, 主持人推主流，与会者1拉主流
+        """
         result = {}
         # 主持人入会
         moderator = self.users[0]
-        moderator_client = self.loginAndAccessIn(moderator['phone'], moderator['pwd'])
-        re = self.createRandomRoom(moderator_client)
-        room_id = re[1]['roomId']
-        self.joinRoom(moderator_client, room_id)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(moderator)
         moderator_client.ms = MeetingService(moderator_client, room_id)
         moderator_client.collecting_notify()
 
         # 主持人入会
         part = self.users[1]
-        part_client = self.loginAndAccessIn(part['phone'], part['pwd'])
-        self.joinRoom(part_client, room_id)
+        part_client, re = self.loginAndAccessInAndJoin(part, room_id)
         part_client.ms = MeetingService(part_client, room_id)
         part_client.collecting_notify()
 
