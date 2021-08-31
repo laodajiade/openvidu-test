@@ -41,13 +41,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
  */
 public class SubscriberEndpoint extends MediaEndpoint {
-	private final static Logger log = LoggerFactory.getLogger(SubscriberEndpoint.class);
+    private final static Logger log = LoggerFactory.getLogger(SubscriberEndpoint.class);
 
-	private AtomicBoolean connectedToPublisher = new AtomicBoolean(false);
+    private AtomicBoolean connectedToPublisher = new AtomicBoolean(false);
 
-	private PublisherEndpoint publisher = null;
+    private PublisherEndpoint publisher = null;
 
-	@Getter
+    @Getter
     @Setter
     private HubPort mixHubPort = null;
 
@@ -55,120 +55,131 @@ public class SubscriberEndpoint extends MediaEndpoint {
     @Setter
     private HubPort pubHubPort = null;
 
-	public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
-							  CompositeService compositeService, OpenviduConfig openviduConfig) {
-		super(web, owner, endpointName, pipeline, openviduConfig, log);
-		this.setCompositeService(compositeService);
-	}
+    public SubscriberEndpoint(boolean web, KurentoParticipant owner, String endpointName, MediaPipeline pipeline,
+                              CompositeService compositeService, OpenviduConfig openviduConfig) {
+        super(web, owner, endpointName, pipeline, openviduConfig, log);
+        this.setCompositeService(compositeService);
+    }
 
-	public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
-		registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) ?
-				getCompositeService().getMixStreamId() : publisher.getOwner().getUuid());
+    public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {
+        registerOnIceCandidateEventListener(Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode) ?
+                getCompositeService().getMixStreamId() : publisher.getOwner().getUuid());
 
-		UseTime.point("processOffer start");
-		String sdpAnswer = processOffer(sdpOffer);
-		UseTime.point("processOffer end");
-		// gatherCandidates();
-		UseTime.point("connect start");
-		if (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
-			getCompositeService().sinkConnect(this);
-			//internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint());
-		} else {
-			publisher.connect(this.getEndpoint());
-		}
-		UseTime.point("connect end");
+        UseTime.point("processOffer start");
+        String sdpAnswer = processOffer(sdpOffer);
+        UseTime.point("processOffer end");
+        // gatherCandidates();
+        UseTime.point("connect start");
+        if (Objects.equals(StreamModeEnum.MIX_MAJOR, streamMode)) {
+            getCompositeService().sinkConnect(this);
+            //internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint());
+        } else {
+            publisher.connect(this.getEndpoint());
+        }
+        UseTime.point("connect end");
 
-		setConnectedToPublisher(true);
-		setPublisher(publisher);
-		this.createdAt = System.currentTimeMillis();
-		return sdpAnswer;
-	}
+        setConnectedToPublisher(true);
+        setPublisher(publisher);
+        this.createdAt = System.currentTimeMillis();
+        return sdpAnswer;
+    }
 
-	public synchronized String subscribeAudio(PublisherEndpoint publisher) {
-		if (Objects.isNull(publisher)) {
-			log.info("web subscribe all audio mix output. but it is not input.");
-			internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint(), MediaType.AUDIO);
-		} else {
-			publisher.connectAudioOut(this.getEndpoint());
-		}
+    public synchronized String subscribeAudio(PublisherEndpoint publisher) {
+        if (Objects.isNull(publisher)) {
+            log.info("web subscribe all audio mix output. but it is not input.");
+            internalSinkConnect(getCompositeService().getHubPortOut(), this.getEndpoint(), MediaType.AUDIO);
+        } else {
+            publisher.connectAudioOut(this.getEndpoint());
+        }
 
-		return "";
-	}
+        return "";
+    }
 
-	private void internalSinkConnect(final MediaElement source, final MediaElement sink) {
-		source.connect(sink, new Continuation<Void>() {
-			//source.connect(sink, mediaType, new Continuation<Void>() {
-			@Override
-			public void onSuccess(Void result) throws Exception {
-				log.info("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
-						source.getId(), sink.getId());
-			}
+    private void internalSinkConnect(final MediaElement source, final MediaElement sink) {
+        source.connect(sink, new Continuation<Void>() {
+            //source.connect(sink, mediaType, new Continuation<Void>() {
+            @Override
+            public void onSuccess(Void result) throws Exception {
+                log.info("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
+                        source.getId(), sink.getId());
+            }
 
-			@Override
-			public void onError(Throwable cause) throws Exception {
-				log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
-						source.getId(), sink.getId(), cause);
-			}
-		});
-	}
+            @Override
+            public void onError(Throwable cause) throws Exception {
+                log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
+                        source.getId(), sink.getId(), cause);
+            }
+        });
+    }
 
-	private void internalSinkConnect(final MediaElement source, final MediaElement sink, MediaType mediaType) {
-		source.connect(sink, mediaType, new Continuation<Void>() {
-		//source.connect(sink, mediaType, new Continuation<Void>() {
-			@Override
-			public void onSuccess(Void result) throws Exception {
-				log.debug("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
-						source.getId(), sink.getId());
-			}
+    private void internalSinkConnect(final MediaElement source, final MediaElement sink, MediaType mediaType) {
+        source.connect(sink, mediaType, new Continuation<Void>() {
+            //source.connect(sink, mediaType, new Continuation<Void>() {
+            @Override
+            public void onSuccess(Void result) throws Exception {
+                log.debug("SUB_EP {}: Elements have been connected (source {} -> sink {})", getEndpointName(),
+                        source.getId(), sink.getId());
+            }
 
-			@Override
-			public void onError(Throwable cause) throws Exception {
-				log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
-						source.getId(), sink.getId(), cause);
-			}
-		});
-	}
+            @Override
+            public void onError(Throwable cause) throws Exception {
+                log.warn("SUB_EP {}: Failed to connect media elements (source {} -> sink {})", getEndpointName(),
+                        source.getId(), sink.getId(), cause);
+            }
+        });
+    }
 
-	public void setConnectedToPublisher(boolean connectedToPublisher) {
-		this.connectedToPublisher.set(connectedToPublisher);
-	}
+    public void setConnectedToPublisher(boolean connectedToPublisher) {
+        this.connectedToPublisher.set(connectedToPublisher);
+    }
 
-	public void setPublisher(PublisherEndpoint publisher) {
-		this.publisher = publisher;
-	}
+    public void setPublisher(PublisherEndpoint publisher) {
+        this.publisher = publisher;
+    }
 
-	@Override
-	public JsonObject toJson() {
-		JsonObject json = super.toJson();
-		try {
-			json.addProperty("pipeline", this.getPipeline().getId());
-			json.addProperty("streamId", this.publisher.getStreamId());
-		} catch (NullPointerException ex) {
-			json.addProperty("streamId", "NOT_FOUND");
-		}
-		return json;
-	}
+    @Override
+    public JsonObject toJson() {
+        JsonObject json = super.toJson();
+        try {
+            json.addProperty("pipeline", this.getPipeline().getId());
+            json.addProperty("streamId", this.publisher.getStreamId());
+        } catch (NullPointerException ex) {
+            json.addProperty("streamId", "NOT_FOUND");
+        }
+        return json;
+    }
 
-	@Override
-	public JsonObject withStatsToJson() {
-		JsonObject json = super.withStatsToJson();
-		JsonObject toJson = this.toJson();
-		for (Entry<String, JsonElement> entry : toJson.entrySet()) {
-			json.add(entry.getKey(), entry.getValue());
-		}
-		return json;
-	}
+    @Override
+    public JsonObject withStatsToJson() {
+        JsonObject json = super.withStatsToJson();
+        JsonObject toJson = this.toJson();
+        for (Entry<String, JsonElement> entry : toJson.entrySet()) {
+            json.add(entry.getKey(), entry.getValue());
+        }
+        return json;
+    }
 
-	public synchronized void controlMediaTypeLink(MediaType mediaType, VoiceMode voiceMode) {
-		//todo MCU切换语音模式
-		//getCompositeService().getHubPortOut(this);
-		switch (voiceMode) {
-			case on:
-				publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
-				break;
-			case off:
-				publisher.connect(this.getEndpoint(), mediaType);
-				break;
-		}
-	}
+    public synchronized void controlMediaTypeLink(MediaType mediaType, VoiceMode voiceMode) {
+        if (publisher == null && this.getMixHubPort() != null) {//MCU
+            switch (voiceMode) {
+                case on:
+                    this.getMixHubPort().disconnect(this.getEndpoint(), mediaType);
+                    break;
+                case off:
+                    this.getMixHubPort().connect(this.getEndpoint(), mediaType);
+                    break;
+            }
+        } else {//SFU
+            switch (voiceMode) {
+                case on:
+                    publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
+                    break;
+                case off:
+                    publisher.connect(this.getEndpoint(), mediaType);
+                    break;
+            }
+        }
+
+
+    }
 }

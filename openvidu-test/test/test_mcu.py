@@ -11,7 +11,6 @@ from test.service.services import MeetingService
 class TestMCU(test.MyTestCase):
     """ MCU用例 """
 
-
     def test_mcu_simple(self):
         """ 创建会议, 主持人入会，强制开启MCU，第二人入会
             期望：第二个人入会将使用mcu模式
@@ -450,6 +449,42 @@ class TestMCU(test.MyTestCase):
         self.subscribe_mcu_stream(part_client, mix_stream_id)
         time.sleep(2)
 
+    def test_mcu_switch_voice_mode(self):
+        """ 测试MCU模式下切换语音模式
+        测试目的：切换语音模式不报错
+        测试过程: 1、创建会议，开启MCU，入会与会者
+                2、主持人推流，与会者拉流
+                3、与会者切换语音模式
+                4、与会者切回视频模式
+        结果期望： 与会者切换语音模式 不报错
+        """
+        # 主持人入会
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        logger.info("step 1")
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        self.set_mcu_mode(moderator_client)
+        time.sleep(2)
+
+        part_client, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        mix_stream_id = re[1]['roomInfo']['mixFlows'][0]['streamId']
+        self.publish_video(part_client, "MAJOR")
+        time.sleep(2)
+
+        moderator_client.collecting_notify()
+        self.subscribe_mcu_stream(part_client, mix_stream_id)
+        re = part_client.request('switchVoiceMode', {"operation": "on"})
+        self.assertEqual(re[0], 0)
+        notify = moderator_client.find_any_notify('switchVoiceModeNotify')
+        self.assertEqual(notify['params']['operation'], 'on')
+        self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
+
+        moderator_client.clear_notify()
+        re = part_client.request('switchVoiceMode', {"operation": "off"})
+        self.assertEqual(re[0], 0, '切换语音模式失败')
+        notify = moderator_client.find_any_notify('switchVoiceModeNotify')
+        self.assertEqual(notify['params']['operation'], 'off')
+        self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
+
     ############################################################
 
     def subscribe_mcu_stream(self, client, publish_id):
@@ -481,7 +516,7 @@ class TestMCU(test.MyTestCase):
         logger.info('强制开启MCU')
         time.sleep(1)
 
-    def publish_and_subcribe(self):
+    def publish_and_subscribe(self):
         """ 创建会议, 主持人推主流，与会者1拉主流 """
         result = {}
         # 主持人入会

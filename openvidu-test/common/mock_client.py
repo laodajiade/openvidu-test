@@ -220,6 +220,7 @@ class SdClient:
         """ 调用这个接口后，开始主动将平台的通知收集起来 """
         if self.wsClient is not None:
             self.wsClient.isCollecting = True
+            self.clear_notify()
 
     def get_notify_list(self):
         """ 读取缓存的通知 """

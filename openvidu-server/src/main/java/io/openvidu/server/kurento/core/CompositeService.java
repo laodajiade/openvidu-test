@@ -566,8 +566,10 @@ public class CompositeService {
     private void internalSinkConnect(final HubPort videoHubPort, final HubPort audioHubPort, final SubscriberEndpoint subscriberEndpoint) {
         internalSinkDisconnect(videoHubPort, subscriberEndpoint, MediaType.AUDIO);
         internalSinkConnect(videoHubPort, subscriberEndpoint, MediaType.VIDEO);
+        subscriberEndpoint.setMixHubPort(videoHubPort);
 
         internalSinkConnect(audioHubPort, subscriberEndpoint, MediaType.AUDIO);
+        subscriberEndpoint.setPubHubPort(audioHubPort);
     }
 
     private void internalSinkConnect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
