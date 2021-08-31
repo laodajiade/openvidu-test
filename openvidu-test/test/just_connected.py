@@ -12,11 +12,6 @@ class TestStringMethods(test.MyTestCase):
 
 
 
-    def tearDown(self):
-        """ 自动释放资源 """
-        time.sleep(1)
-        for client in self.clients:
-            client.safeOut()
 
     def test_create_and_join(self):
         """  """

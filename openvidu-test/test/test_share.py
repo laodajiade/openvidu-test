@@ -1,15 +1,15 @@
-import json
 import sys
 import time
-from loguru import logger
+
 import unittest2
+from loguru import logger
 
 import test
+from test.service.services import MeetingService
 
 
 class TestShare(test.MyTestCase):
     """ 分享相关 """
-
 
     def test_share(self):
         """ 创建随机会议，入会2人，然后分享 """
@@ -66,6 +66,68 @@ class TestShare(test.MyTestCase):
 
         time.sleep(1)
         self.assertTrue(moderator_client.has_notify('endShareNotify'), ' 没有收到离会endShareNotify的通知')
+
+    def test_share_order(self):
+        """ 测试分享后order变化
+            期望：分享者顺序变为order1
+         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator = self.users[0]
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(moderator)
+
+        part_client1, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        part_client2, re = self.loginAndAccessInAndJoin(self.users[2], room_id)
+
+        time.sleep(1)
+        moderator_client.collecting_notify()
+        re = part_client2.request('applyShare', {'targetId': part_client2.uuid})
+        self.assertEqual(re[0], 0, '申请共享失败 ' + str(re))
+        notify = moderator_client.find_any_notify("partOrderOrRoleChangeNotify")
+        for obj in notify['params']['updateParticipantsOrder']:
+            if obj['uuid'] == part_client2.uuid:
+                self.assertEqual(obj['order'], 1, '分享者的order不是1')
+
+    def test_share_order_no_moderator(self):
+        """ 测试在没有主持人情况下分享后order变化
+            期望：分享者顺序变为order0
+         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator = self.users[0]
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(moderator)
+
+        part_client1, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        part_client2, re = self.loginAndAccessInAndJoin(self.users[2], room_id)
+        moderator_client.leave_room(room_id)  # 主持人离会
+
+        time.sleep(1)
+        part_client1.collecting_notify()
+        re = part_client2.request('applyShare', {'targetId': part_client2.uuid})
+        self.assertEqual(re[0], 0, '申请共享失败 ' + str(re))
+        notify = part_client1.find_any_notify("partOrderOrRoleChangeNotify")
+        for obj in notify['params']['updateParticipantsOrder']:
+            if obj['uuid'] == part_client2.uuid:
+                self.assertEqual(obj['order'], 0, '分享者的order不是1')
+
+    def test_speaker_sharing_order(self):
+        """ 发言者分享不改变order
+            期望：发言者分享不改变order
+         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator = self.users[0]
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(moderator)
+
+        part_client1, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        part_client2, re = self.loginAndAccessInAndJoin(self.users[2], room_id)
+        moderator_client.ms = MeetingService(moderator_client, room_id)
+        moderator_client.ms.set_roll_call(part_client2.uuid)  # 给予发言
+
+        time.sleep(1)
+        moderator_client.collecting_notify()
+        re = part_client2.request('applyShare', {'targetId': part_client2.uuid})
+        self.assertEqual(re[0], 0, '申请共享失败 ' + str(re))
+        notifies = moderator_client.search_notify_list("partOrderOrRoleChangeNotify")
+        self.assertEqual(len(notifies), 0, '收到了partOrderOrRoleChangeNotify，错误')
+
 
 if __name__ == '__main__':
     unittest2.main()

@@ -24,7 +24,6 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.constants.CacheKeyConstants;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.*;
@@ -35,7 +34,6 @@ import io.openvidu.server.coturn.CoturnCredentialsService;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
-import io.openvidu.server.living.Living;
 import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
@@ -910,19 +908,6 @@ public abstract class SessionManager {
         session.setStartLivingTime(startLivingTime);
     }
 
-    public String getLivingUrl(Session session) {
-        if (Objects.isNull(session)) return null;
-        Living living = livingManager.getLiving(session.getSessionId());
-        return Objects.isNull(living) ? null : living.getUrl();
-    }
-
-    public boolean joinRoomDuplicately(String uuid) {
-		/*Session session;
-		return StreamType.MAJOR.equals(streamType) && Objects.nonNull(session = getSession(sessionId))
-				&& Objects.nonNull(session.getParticipantByUUID(userUuid));*/
-        return cacheManage.existsConferenceRelativeInfo(CacheKeyConstants.getParticipantKey(uuid));
-    }
-
     public void setSharing(Session session, Participant sharingPart, String originatorUuid) {
         synchronized (session.getSharingOrSpeakerLock()) {
             sharingPart.setShareStatus(ParticipantShareStatus.on);
@@ -933,8 +918,47 @@ public abstract class SessionManager {
             result.addProperty("originator", originatorUuid);
 
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_SHARE_NOTIFY_METHOD, result);
+
+
+            //changeOrder
+            if (!session.isSpeaker(sharingPart.getUuid())) {
+                Map<String, Integer> orderMap = new HashMap<>();
+                if (session.getModeratorPart() == null) {
+                    orderMap.put(sharingPart.getUuid(), 0);
+                } else {
+                    orderMap.put(sharingPart.getUuid(), 1);
+                }
+                session.dealPartOrderAfterRoleChanged(orderMap, this, session.getParticipantByUUID(originatorUuid).get());
+            }
+
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().asyncUpdateComposite();
+            }
+        }
+    }
+
+    public void endSharing(Session session, Participant sharingPart, String originatorUuid) {
+        synchronized (session.getSharingOrSpeakerLock()) {
+            sharingPart.setShareStatus(ParticipantShareStatus.off);
+            session.setSharingPart(null);
+
+            JsonObject result = new JsonObject();
+            result.addProperty("roomId", session.getSessionId());
+            result.addProperty("shareId", sharingPart.getUuid());
+            result.addProperty("originator", originatorUuid);
+            notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_SHARE_NOTIFY_METHOD, result);
+
+            PublisherEndpoint sharingEp;
+            if (!Objects.isNull(sharingEp = sharingPart.getPublisher(StreamType.SHARING))) {
+                this.unpublishVideo(sharingPart, sharingEp.getStreamId(), null, EndReason.forceUnpublishByUser);
+            }
+
+            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().asyncUpdateComposite();
+            }
+
+            if (session.getIsRecording()) {
+                this.updateRecording(session.getSessionId());
             }
         }
     }
@@ -994,32 +1018,6 @@ public abstract class SessionManager {
 
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().asyncUpdateComposite();
-            }
-        }
-    }
-
-    public void endSharing(Session session, Participant sharingPart, String originatorUuid) {
-        synchronized (session.getSharingOrSpeakerLock()) {
-            sharingPart.setShareStatus(ParticipantShareStatus.off);
-            session.setSharingPart(null);
-
-            JsonObject result = new JsonObject();
-            result.addProperty("roomId", session.getSessionId());
-            result.addProperty("shareId", sharingPart.getUuid());
-            result.addProperty("originator", originatorUuid);
-            notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_SHARE_NOTIFY_METHOD, result);
-
-            PublisherEndpoint sharingEp;
-            if (!Objects.isNull(sharingEp = sharingPart.getPublisher(StreamType.SHARING))) {
-                this.unpublishVideo(sharingPart, sharingEp.getStreamId(), null, EndReason.forceUnpublishByUser);
-            }
-
-            if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
-                session.getCompositeService().asyncUpdateComposite();
-            }
-
-            if (session.getIsRecording()) {
-                this.updateRecording(session.getSessionId());
             }
         }
     }
@@ -1101,7 +1099,6 @@ public abstract class SessionManager {
                         OpenViduRole.PUBLISHER, OpenViduRole.SUBSCRIBER);
                 roleChangeArr.addAll(endPartRoleChange);
             }
-
 
 
             if (ParticipantSpeakerStatus.off.equals(startPart.getSpeakerStatus())) {

@@ -638,7 +638,7 @@ public class Session implements SessionInterface {
 
 	public Participant getModeratorPart() {
 		checkClosed();
-		return this.participantList.values().stream().filter(p -> p.getRole() == OpenViduRole.MODERATOR).findFirst().orElseGet(null);
+		return this.participantList.values().stream().filter(p -> p.getRole() == OpenViduRole.MODERATOR).findFirst().orElse(null);
 	}
 
 	// delete 2.0
@@ -899,12 +899,10 @@ public class Session implements SessionInterface {
 
 	public ErrorCodeEnum dealPartOrderAfterRoleChanged(Map<String, Integer> partOrderMap, SessionManager sessionManager,Participant operatorPart) {
 		ErrorCodeEnum errorCodeEnum = ErrorCodeEnum.SUCCESS;
-		int lineOrder = getPresetInfo().getSfuPublisherThreshold() - 1;
 		RpcNotificationService notificationService = sessionManager.notificationService;
 
 		Set<Participant> sub2PubPartSet = new HashSet<>();
 		Set<Participant> pub2SubPartSet = new HashSet<>();
-		boolean executeFlag = false;
 
 		synchronized (partOrderAdjustLock) {
 			for (Map.Entry<String, Integer> map : partOrderMap.entrySet()) {
