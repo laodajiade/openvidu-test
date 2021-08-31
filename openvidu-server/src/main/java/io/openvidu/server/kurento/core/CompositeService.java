@@ -577,13 +577,13 @@ public class CompositeService {
             @Override
             public void onSuccess(Void result) {
                 log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId());
+                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
+                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
             }
         });
     }
@@ -593,13 +593,13 @@ public class CompositeService {
             @Override
             public void onSuccess(Void result) {
                 log.info("MCU subscribe {} {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(), mediaType.name(),
-                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId());
+                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {} {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(), mediaType.name(),
-                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
+                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
             }
         });
     }
@@ -608,33 +608,33 @@ public class CompositeService {
         source.disconnect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
             @Override
             public void onSuccess(Void result) throws Exception {
-                log.debug("EP {}: Elements have been disconnected (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
-                        source.getId(), subscriberEndpoint.getEndpoint().getId());
+                log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
+                        source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
             }
 
             @Override
             public void onError(Throwable cause) throws Exception {
-                log.warn("EP {}: Failed to disconnect media elements (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
-                        source.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
+                log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
+                        source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
             }
         });
     }
 
-    private void internalSinkDisconnect(final MediaElement source, final SubscriberEndpoint subscriberEndpoint, final MediaType type) {
+    private void internalSinkDisconnect(final HubPort source, final SubscriberEndpoint subscriberEndpoint, final MediaType type) {
         if (type == null) {
             internalSinkDisconnect(source, subscriberEndpoint);
         } else {
             source.disconnect(subscriberEndpoint.getEndpoint(), type, new Continuation<Void>() {
                 @Override
                 public void onSuccess(Void result) throws Exception {
-                    log.info("EP {}: {} media elements have been disconnected (source {} -> sink {})",
-                            subscriberEndpoint.getEndpointName(), type, source.getId(), subscriberEndpoint.getEndpoint().getId());
+                    log.info("MCU subscribe {}: {} media elements have been disconnected (source {} -> sink {})",
+                            subscriberEndpoint.getEndpointName(), type, source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
                 }
 
                 @Override
                 public void onError(Throwable cause) throws Exception {
-                    log.info("EP {}: Failed to disconnect {} media elements (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
-                            type, source.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
+                    log.info("MCU subscribe {}: Failed to disconnect {} media elements (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
+                            type, source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
                 }
             });
         }

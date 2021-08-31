@@ -309,8 +309,6 @@ class TestJoinRoom(test.MyTestCase):
                 step5:掉线的会被踢出会议，所以第4人入会看不到言者和分享
         """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
-        if sys.modules.get('fast_test'):
-            return self.skip('跳过耗时用例')
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         moderator_client.ms = MeetingService(moderator_client, room_id)
 
