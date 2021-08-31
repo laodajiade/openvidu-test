@@ -119,7 +119,7 @@ public class CompositeService {
         this.hubPortOut.setMinOutputBitrate(1000000);
         this.hubPortOut.setMaxOutputBitrate(2000000);
         hubPortOutSubscription = registerElemErrListener(hubPortOut);
-        this.hubPortOut.setName(this.session.getSessionId() + "_mix_hubPort_" + this.session.getRuid().substring(session.getRuid().length() - 6));
+        this.hubPortOut.addTag("debug_name", this.session.getSessionId() + "_mix_hubPort_" + this.session.getRuid().substring(session.getRuid().length() - 6));
         log.info("Sub EP create hubPortOut. {}", this.hubPortOut.getName());
         SessionEventRecord.other(session, "createHubPortOut", " hubPortOutId:" + this.hubPortOut.getId());
     }
