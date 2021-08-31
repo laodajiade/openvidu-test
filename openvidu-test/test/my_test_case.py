@@ -3,6 +3,7 @@ import json
 import os
 import time
 import unittest
+import sys
 
 
 from loguru import logger
@@ -29,6 +30,7 @@ class MyTestCase(unittest.TestCase):
         self.fixed_rooms = conf_json['fixed_rooms']
         # 耗时用例是否测试，本地快速跑通用例时可以跳过，在测试环境最好全用例测试
         self.fast = conf_json['fast']
+        sys.modules['fast_test'] = self.fast
 
     def tearDown(self):
         """ 自动释放资源 """

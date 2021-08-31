@@ -54,6 +54,7 @@ class TestInvite(test.MyTestCase):
         for notify in notifies:
             self.assertEqual(notify['params']['targetId'], part_client2.uuid, '被邀请人的uuid不正确')
 
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时用例')
     def test_invite_ring(self):
         """测试被邀请的人响应ring后是否还会推送invite通知
         描述：测试被邀请人响应ring

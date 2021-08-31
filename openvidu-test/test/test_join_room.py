@@ -211,6 +211,7 @@ class TestJoinRoom(test.MyTestCase):
             time.sleep(0.1)
         self.leaveRoom(moderator_client, room_id)
 
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时用例')
     def test_reconnect(self):
         """重连入会
        描述：重连测试
@@ -291,6 +292,9 @@ class TestJoinRoom(test.MyTestCase):
         self.finish = True
         time.sleep(2)
 
+    cond = sys.modules.get('fast_test')
+
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时用例')
     def test_force_disconnected(self):
         """测试强制掉线
         描述：测试强制掉线
@@ -305,6 +309,8 @@ class TestJoinRoom(test.MyTestCase):
                 step5:掉线的会被踢出会议，所以第4人入会看不到言者和分享
         """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        if sys.modules.get('fast_test'):
+            return self.skip('跳过耗时用例')
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         moderator_client.ms = MeetingService(moderator_client, room_id)
 
