@@ -22,7 +22,8 @@ nbactions.xml
 */.classpath
 */.settings/*
 */.tscache/*
-
+/openvidu-test/demo/
 /.idea/
 openvidu-parent.iml
 /logs/
+
