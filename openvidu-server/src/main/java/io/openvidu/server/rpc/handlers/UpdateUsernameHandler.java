@@ -2,14 +2,15 @@ package io.openvidu.server.rpc.handlers;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.common.pojo.Device;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.common.pojo.UserDevice;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -22,6 +23,9 @@ import java.util.Map;
 @Slf4j
 @Service
 public class UpdateUsernameHandler extends RpcAbstractHandler {
+
+    @Autowired
+    private RtcUserClient rtcUserClient;
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
@@ -58,7 +62,7 @@ public class UpdateUsernameHandler extends RpcAbstractHandler {
             update.setId(rpcConnection.getUserId());
             update.setUsername(username);
             rpcConnection.setUsername(username);
-
+            rtcUserClient.updateRpcConnection(rpcConnection);
             userManage.updateUserInfo(update);
         } catch (Exception e) {
             log.info("update name error id {},name {},error info", rpcConnection.getUserId(), username, e);

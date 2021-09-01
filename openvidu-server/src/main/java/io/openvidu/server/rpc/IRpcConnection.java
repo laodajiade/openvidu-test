@@ -18,4 +18,5 @@ public interface IRpcConnection {
     List<RpcConnection> getByUuids(Collection<String>  uuids);
 
     Collection<RpcConnection> values();
+
 }

@@ -85,6 +85,10 @@ public class ToOpenviduNotifyHandler {
                                 params.get("ruid").getAsString()
                         );
                         break;
+                    case ToOpenviduElement.UPDATE_DEVICE_INFO:
+                        System.out.println("进入监听" + ToOpenviduElement.UPDATE_DEVICE_INFO);
+                        sessionManager.updateDeviceInfo(params.get("id").getAsString(),params.get("devNum").getAsString(),params.get("devName").getAsString());
+                        break;
                 }
             } catch (Exception e) {
                 log.error("ToOpenviduNotifyHandler error", e);
@@ -92,7 +96,6 @@ public class ToOpenviduNotifyHandler {
         });
 
     }
-
 
 
 }
