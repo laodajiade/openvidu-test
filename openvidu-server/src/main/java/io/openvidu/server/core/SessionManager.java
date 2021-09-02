@@ -23,6 +23,7 @@ import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
+import io.openvidu.server.client.RtcUserClient;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
@@ -92,6 +93,9 @@ public abstract class SessionManager {
 
     @Resource
     protected TimerManager timerManager;
+
+    @Resource
+    protected RtcUserClient rtcUserClient;
 
     public FormatChecker formatChecker = new FormatChecker();
 
@@ -606,6 +610,15 @@ public abstract class SessionManager {
             } catch (Exception e) {
                 log.warn("Error closing session '{}'", sessionId, e);
             }
+        }
+    }
+
+    public void updateDeviceInfo(String id,String devNum,String devName) {
+        Optional<RpcConnection> first = notificationService.getRpcConnections().stream().filter(x -> Objects.equals(x.getSerialNumber(), devNum)).findFirst();
+        if(first.isPresent()){
+            RpcConnection rpcConnection = first.get();
+            rpcConnection.setUsername(devName);
+            rtcUserClient.updateRpcConnection(rpcConnection);
         }
     }
 
