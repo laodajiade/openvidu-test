@@ -10,6 +10,7 @@ import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.job.AppointConferenceJobHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.rpc.handlers.UpdateUsernameHandler;
 import io.openvidu.server.rpc.handlers.UrgedPeopleToEndHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,10 @@ public class ToOpenviduNotifyHandler {
     @Resource
     private SessionManager sessionManager;
 
-    private
+    @Resource
+    private UpdateUsernameHandler updateUsernameHandler;
 
-    ExecutorService executorService = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("ToOpenviduNotifyHandler-thread-%d").setDaemon(true).build());
+    private ExecutorService executorService = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("ToOpenviduNotifyHandler-thread-%d").setDaemon(true).build());
 
     void notify(String message) {
         log.info("channel:to:openvidu recv {}", message);
@@ -87,7 +89,7 @@ public class ToOpenviduNotifyHandler {
                         break;
                     case ToOpenviduElement.UPDATE_DEVICE_INFO:
                         System.out.println("进入监听" + ToOpenviduElement.UPDATE_DEVICE_INFO);
-                        sessionManager.updateDeviceInfo(params.get("id").getAsString(),params.get("devNum").getAsString(),params.get("devName").getAsString());
+                        updateUsernameHandler.updateDeviceInfo(params.get("id").getAsString(), params.get("devNum").getAsString(), params.get("devName").getAsString());
                         break;
                 }
             } catch (Exception e) {

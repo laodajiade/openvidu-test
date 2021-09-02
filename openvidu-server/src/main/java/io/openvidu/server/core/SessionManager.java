@@ -613,14 +613,6 @@ public abstract class SessionManager {
         }
     }
 
-    public void updateDeviceInfo(String id,String devNum,String devName) {
-        Optional<RpcConnection> first = notificationService.getRpcConnections().stream().filter(x -> Objects.equals(x.getSerialNumber(), devNum)).findFirst();
-        if(first.isPresent()){
-            RpcConnection rpcConnection = first.get();
-            rpcConnection.setUsername(devName);
-            rtcUserClient.updateRpcConnection(rpcConnection);
-        }
-    }
 
     public void closeRoom(Session session) {
         UseTime.point("closeRoom p1");

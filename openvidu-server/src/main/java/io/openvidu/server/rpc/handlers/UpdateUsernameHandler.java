@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author chosongi
@@ -69,5 +71,14 @@ public class UpdateUsernameHandler extends RpcAbstractHandler {
         }
 
         notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
+    }
+
+    public void updateDeviceInfo(String id, String devNum, String devName) {
+        Optional<RpcConnection> first = notificationService.getRpcConnections().stream().filter(x -> Objects.equals(x.getSerialNumber(), devNum)).findFirst();
+        if (first.isPresent()) {
+            RpcConnection rpcConnection = first.get();
+            rpcConnection.setUsername(devName);
+            rtcUserClient.updateRpcConnection(rpcConnection);
+        }
     }
 }
