@@ -11,7 +11,7 @@ class TestLogin(test.MyTestCase):
         """ getToken """
         client = SdClient(self.users[0]['phone'], self.users[0]['pwd'], self.server_url)
         self.assertEqual(client.login(), self.users[0]['uuid'])
-        # self.assertTrue(False)
+        self.assertTrue(False)
 
     def test_accessIn(self):
         """ accessIn """

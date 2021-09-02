@@ -3,11 +3,8 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantVideoStatus;
-import io.openvidu.server.common.enums.StreamType;
-import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -15,7 +12,6 @@ import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,32 +28,26 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         String sessionId = getStringParam(request, ProtocolElements.SET_VIDEO_ROOM_ID_PARAM);
         String status = getStringParam(request, ProtocolElements.SET_AUDIO_STATUS_PARAM);
         ParticipantVideoStatus videoStatus = ParticipantVideoStatus.valueOf(status);
-        String sourceId = getStringOptionalParam(request, ProtocolElements.SET_AUDIO_SOURCE_ID_PARAM);
         List<String> targetIds = getStringListParam(request, ProtocolElements.SET_AUDIO_TARGET_IDS_PARAM);
         // add params for tourist
         String source = getStringOptionalParam(request, ProtocolElements.SET_VIDEO_SOURCE_PARAM);
         List<String> accountTargets = getStringListParam(request, ProtocolElements.SET_VIDEO_TARGETS_PARAM);
 
         // SUBSCRIBER part role can not operate audio status
-        Participant sourcePart;
+
         Session session = sessionManager.getSession(sessionId);
-        if (!StringUtils.isEmpty(source)) {
-            sourcePart = session.getParticipantByUUID(source).get();
-        } else {
-            sourcePart = session.getParticipantByUserId(Long.valueOf(sourceId));
-        }
-        if (Objects.isNull(sourcePart)) {
+
+        if (session.getParticipantByUUID(source).isPresent()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;
         }
 
         JsonArray tsArray = new JsonArray();
-        if (!Objects.isNull(targetIds) && !targetIds.isEmpty()) {
+        if (!targetIds.isEmpty()) {
             targetIds.forEach(t -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(t, s.getUserId().toString())
-                                && !OpenViduRole.THOR.equals(s.getRole())).findFirst().orElse(null);
+                        .filter(s -> Objects.equals(t, s.getUserId().toString())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
                     tsArray.add(t);
@@ -66,11 +56,10 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
         }
 
         JsonArray accountArr = new JsonArray();
-        if (!Objects.isNull(accountTargets) && !accountTargets.isEmpty()) {
+        if (!accountTargets.isEmpty()) {
             accountTargets.forEach(account -> {
                 KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
-                        .filter(s -> Objects.equals(account, s.getUuid())
-                                && !OpenViduRole.THOR.equals(s.getRole())).findFirst().orElse(null);
+                        .filter(s -> Objects.equals(account, s.getUuid())).findFirst().orElse(null);
                 if (Objects.nonNull(part)) {
                     part.changeVideoStatus(videoStatus);
                     accountArr.add(account);

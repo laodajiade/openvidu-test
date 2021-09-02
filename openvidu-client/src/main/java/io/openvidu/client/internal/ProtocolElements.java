@@ -484,6 +484,7 @@ public class ProtocolElements {
 
     public static final String PARTICIPANTJOINED_METHOD = "participantJoined";
     public static final String PARTICIPANTJOINED_USER_PARAM = "id";
+    public static final String PARTICIPANTJOINED_UUID_PARAM = "uuid";
     public static final String PARTICIPANTJOINED_CREATEDAT_PARAM = "createdAt";
     public static final String PARTICIPANTJOINED_METADATA_PARAM = "metadata";
     public static final String PARTICIPANTJOINED_MIC_STATUS_PARAM = "micStatusInRoom";

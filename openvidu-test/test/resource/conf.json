@@ -1,5 +1,5 @@
 {
-  "use_evn": "evn_200",
+  "use_evn": "evn_206",
   "evn_50": {
     "fast": true,
     "server_url": "https://172.25.12.50:443",

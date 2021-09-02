@@ -300,23 +300,23 @@ public class SessionEventsHandler {
 
 
 	private void participantJoined(Participant participant, Set<Participant> existingParticipants) {
-		JsonObject notifParams = new JsonObject();
+		JsonObject notifiedParams = new JsonObject();
 		if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
 			// Metadata associated to new participant
 			RpcConnection rpcConnection = rpcNotificationService.getRpcConnection(participant.getParticipantPrivateId());
 			if (rpcConnection == null) {
 				log.info(participant.getParticipantPrivateId());
 			}
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
-			//notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_STREAM_TYPE_PARAM, participant.getStreamType().name());
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
-			notifParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
-			notifParams.addProperty("order", participant.getOrder());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_UUID_PARAM, participant.getUuid());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_METADATA_PARAM, participant.getFullMetadata());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
+			notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
+			notifiedParams.addProperty("order", participant.getOrder());
 			if (!Objects.isNull(rpcConnection.getTerminalConfig()))
-				notifParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, new Gson().fromJson(rpcConnection.getTerminalConfig(), JsonObject.class));
+				notifiedParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, new Gson().fromJson(rpcConnection.getTerminalConfig(), JsonObject.class));
 		}
 
 		List<String> notifyList = new ArrayList<>();
@@ -336,7 +336,7 @@ public class SessionEventsHandler {
 
 		if (!notifyList.isEmpty()) {
 			rpcNotificationService.sendBatchNotification(notifyList,
-					ProtocolElements.PARTICIPANTJOINED_METHOD, notifParams);
+					ProtocolElements.PARTICIPANTJOINED_METHOD, notifiedParams);
 		}
 	}
 

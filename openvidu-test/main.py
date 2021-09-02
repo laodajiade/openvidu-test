@@ -12,8 +12,8 @@ def all_test(path):
     t1 = time.time()
     logger.info("******************** all_test ********************")
     loader = unittest.TestLoader()
-    suite = loader.discover(os.getcwd() + '/test')
-    # suite = loader.discover(os.getcwd(), pattern='test_login.py')
+    # suite = loader.discover(os.getcwd() + '/test')
+    suite = loader.discover(os.getcwd(), pattern='test_login.py')
 
     time_postfix = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     file_name = path + 'test_report_' + time_postfix + '.html'
@@ -24,7 +24,10 @@ def all_test(path):
             description='信令2.0自测冒烟用例'
         )
         re = runner.run(suite)
-        logger.info(re)
+        logger.info(re.success_count)
+        logger.info(re.failure_count)
+        logger.info(re.error_count)
+        logger.info(re.skip_count)
     t2 = time.time()
     logger.info("******************** all_test ********************")
     logger.info(f'ran in {round(t2 - t1, 2)}s')
