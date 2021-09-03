@@ -10,7 +10,7 @@ public class RequestDTO extends BasicDTO {
 
     private Integer id;
 
-    private String jsonprc;
+    private String jsonrpc;
 
     private String method;
 
@@ -35,12 +35,12 @@ public class RequestDTO extends BasicDTO {
         this.id = id;
     }
 
-    public String getJsonprc() {
-        return jsonprc;
+    public String getJsonrpc() {
+        return jsonrpc;
     }
 
-    public void setJsonprc(String jsonprc) {
-        this.jsonprc = jsonprc;
+    public void setJsonrpcc(String jsonrpc) {
+        this.jsonrpc = jsonrpc;
     }
 
     public String getMethod() {

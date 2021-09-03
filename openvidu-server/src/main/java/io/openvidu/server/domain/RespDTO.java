@@ -10,7 +10,7 @@ public class RespDTO {
 
     private Integer id;
 
-    private String jsonprc = DEFAULT_JSON_RPC_VERSION;
+    private String jsonrpc = DEFAULT_JSON_RPC_VERSION;
 
     private Object result;
 
@@ -22,11 +22,11 @@ public class RespDTO {
 
     private String participantPrivateId;
 
-    public String getJsonprc() {
-        return jsonprc = DEFAULT_JSON_RPC_VERSION;
+    public String getJsonrpc() {
+        return jsonrpc = DEFAULT_JSON_RPC_VERSION;
     }
 
-    public void setJsonprc(String jsonprc) {
-        this.jsonprc = DEFAULT_JSON_RPC_VERSION;
+    public void setJsonrpc(String jsonrpc) {
+        this.jsonrpc = DEFAULT_JSON_RPC_VERSION;
     }
 }
