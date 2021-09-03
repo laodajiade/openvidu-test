@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.RoleManage;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.User;
@@ -19,7 +18,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -47,12 +45,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
 
         List<Conference> list = roomManage.getAllRoomsOfCorp(search);
         if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(conference -> {
-                JsonObject jsonObject;
-                if (Objects.nonNull(jsonObject = constructConfInfoBydatabsa(conference))) {
-                    jsonArray.add(jsonObject);
-                }
-            });
+            list.forEach(conference -> jsonArray.add(constructConfInfoBydatabsa(conference)));
         }
 
         respObj.add("roomList", jsonArray);
@@ -60,8 +53,7 @@ public class GetAllRoomsOfCorpHandler extends RpcAbstractHandler {
     }
 
     private JsonObject constructConfInfoBydatabsa(Conference conference) {
-        JsonObject jsonObject = null;
-        jsonObject = new JsonObject();
+        JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("roomId", conference.getRoomId());
         jsonObject.addProperty("ruid", conference.getRuid());
         jsonObject.addProperty("password", conference.getPassword());

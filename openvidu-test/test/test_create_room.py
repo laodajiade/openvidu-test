@@ -26,6 +26,17 @@ class TestCreateRoom(test.MyTestCase):
         re = client.close_room(self.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
 
+    def test_create_personal_twice(self):
+        """ 创建个人会议室2次 """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        user = self.users[0]
+        client = self.loginAndAccessIn(user['phone'], user['pwd'])
+        self.createPersonalRoom(client)
+        time.sleep(0.5)
+        self.createPersonalRoom(client)
+        re = client.close_room(self.room_id)
+        self.assertEqual(re[0], 0, msg=re[1])
+
     def test_create_random(self):
         """ 创建个人会议，不入会,1秒后关闭会议 """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
@@ -126,10 +137,8 @@ class TestCreateRoom(test.MyTestCase):
             re = self.joinRoom(part_client, room_id)
             part_size = i + 1
             if part_size <= self.smart_mic_on_threshold:
-                print(re[1]['roomInfo']['micStatusInRoom'])
                 self.assertEqual(re[1]['roomInfo']['micStatusInRoom'], 'on', str(i) + '麦克风状态错误')
             else:
-                print(re[1]['roomInfo']['micStatusInRoom'])
                 self.assertEqual(re[1]['roomInfo']['micStatusInRoom'], 'off', str(i) + '麦克风状态错误')
 
     def test_create_2(self):

@@ -136,7 +136,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                             null, ErrorCodeEnum.ROOM_IS_IN_USE);
                     return;
                 }
-            } else if (!StringUtils.isEmpty(ruid)) { // 如果是预约会议已开始则假装创建成功
+            } else if (!StringUtils.isEmpty(ruid) || roomIdType == RoomIdTypeEnums.personal) { // 如果是预约会议已开始或个人会议室则假装创建成功
                 JsonObject respJson = new JsonObject();
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, processConference.get().getRuid());
