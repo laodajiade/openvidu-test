@@ -565,7 +565,7 @@ public abstract class SessionManager {
 
     //	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
     public Participant newRecorderParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata,
-                                              String role, String streamType) {
+                                              String role) {
         Participant p = new Participant(userId, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
                 sessionId, OpenViduRole.parseRole(role), clientMetadata, null, null, null, null, null, null);
         return p;

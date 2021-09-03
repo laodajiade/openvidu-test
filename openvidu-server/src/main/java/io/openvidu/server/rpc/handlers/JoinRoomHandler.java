@@ -52,9 +52,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
-        StreamType streamType = StreamType.valueOf(getStringParam(request, ProtocolElements.JOINROOM_STREAM_TYPE_PARAM));
         //rate limited
-        if (streamType == StreamType.MAJOR && !rateLimiter.tryAcquire()) {
+        if (!rateLimiter.tryAcquire()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.RATE_LIMITER);
             return;
@@ -166,7 +165,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 //record joinRoom account
                 JSONObject jsonObject = JSONObject.parseObject(clientMetadata);
-                if (Objects.equals(StreamType.MAJOR, streamType) && !OpenViduRole.MODERATOR_ROLES.contains(role)) {
+                if (!OpenViduRole.MODERATOR_ROLES.contains(role)) {
                     CallHistoryVo callHistoryVo = callHistoryMapper.getCallHistoryByCondition(ruid, jsonObject.getString("account"));
                     if (Objects.isNull(callHistoryVo) && StringUtils.isEmpty(nickName)) {
                         List<CallHistory> addList = new ArrayList<>();
@@ -183,7 +182,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 // verify conference password
-                if (StreamType.MAJOR.equals(streamType) && !Objects.equals(joinType, ParticipantJoinType.invited.name())
+                if (!Objects.equals(joinType, ParticipantJoinType.invited.name())
                         && !StringUtils.isEmpty(conference.get(0).getPassword()) && !Objects.equals(conference.get(0).getPassword(), password)
                         && StringUtils.isEmpty(moderatorPassword) && OpenViduRole.MODERATOR != role) {
                     log.error("invalid room password:{}", password);
@@ -201,7 +200,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // remove previous participant if reconnect
                 int preOrder = 0;
-                if (StreamType.MAJOR.equals(streamType) && AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
+                if (AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     String roomId = Objects.isNull(!partInfo.isEmpty() ? partInfo.get("roomId") : null) ? null : partInfo.get("roomId").toString();
                     if (!partInfo.isEmpty() && Objects.nonNull(session) && sessionId.equals(roomId)) {
@@ -259,7 +258,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 // verify room capacity limit.
                 if (!Objects.isNull(session) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
                     Set<Participant> majorParts = session.getParticipants();
-                    if (StreamType.MAJOR.equals(streamType) && majorParts.size() > preset.getRoomCapacity() - 1) {
+                    if (majorParts.size() > preset.getRoomCapacity() - 1) {
                         log.error("verify room:{} capacity:{} cur capacity:{}", sessionId, preset.getRoomCapacity(), majorParts.size());
                         errCode = ErrorCodeEnum.ROOM_CAPACITY_PERSONAL_LIMITED;
                         break;
@@ -310,7 +309,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     Participant thorPart = session.getParticipants().stream().filter(part -> Objects.equals(OpenViduRole.THOR,
                             part.getRole())).findFirst().orElse(null);
                     if (!Objects.isNull(thorPart) && thorPart.getUuid().equals(clientMetadataObj.get("account").getAsString()) &&
-                            !Objects.equals(OpenViduRole.THOR, role) && streamType.equals(StreamType.MAJOR)) {
+                            !Objects.equals(OpenViduRole.THOR, role)) {
                         role = OpenViduRole.MODERATOR;
                         clientMetadataObj.addProperty("role", OpenViduRole.MODERATOR.name());
                         log.info("change participant role cause web THOR invite the same userId:{}", rpcConnection.getUserId());
@@ -329,7 +328,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 Participant participant;
                 if (generateRecorderParticipant) {
-                    participant = sessionManager.newRecorderParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata, role.name(), streamType.name());
+                    participant = sessionManager.newRecorderParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata, role.name());
                 } else {
                     GeoLocation location = null;
                     participant = sessionManager.newParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata,
