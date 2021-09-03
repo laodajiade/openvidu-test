@@ -64,7 +64,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         OpenViduRole role = OpenViduRole.valueOf(getStringParam(request, ProtocolElements.JOINROOM_ROLE_PARAM));
 
 
-        String secret = getStringParam(request, ProtocolElements.JOINROOM_SECRET_PARAM);
         String platform = getStringParam(request, ProtocolElements.JOINROOM_PLATFORM_PARAM);
         String password = getStringOptionalParam(request, ProtocolElements.JOINROOM_PASSWORD_PARAM);
         String moderatorPassword = getStringOptionalParam(request, ProtocolElements.JOINROOM_MODERATORPASSWORD_PARAM);
@@ -289,12 +288,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 }
 
                 boolean generateRecorderParticipant = false;
-                if (openviduConfig.isOpenViduSecret(secret)) {
-                    sessionManager.newInsecureParticipant(participantPrivatetId);
-                    if (recorder) {
-                        generateRecorderParticipant = true;
-                    }
-                }
 
                 if (!sessionManager.formatChecker.isServerMetadataFormatCorrect(clientMetadata)) {
                     log.error("Metadata format set in client-side is incorrect");
