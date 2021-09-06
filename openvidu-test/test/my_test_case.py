@@ -27,6 +27,7 @@ class MyTestCase(unittest.TestCase):
                 conf_json[k] = v
         self.server_url = conf_json['server_url']
         self.users = conf_json['users']
+        self.sips = conf_json['SIP']
         self.fixed_rooms = conf_json['fixed_rooms']
         # 耗时用例是否测试，本地快速跑通用例时可以跳过，在测试环境最好全用例测试
         self.fast = conf_json['fast']

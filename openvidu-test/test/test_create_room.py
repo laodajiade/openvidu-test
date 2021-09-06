@@ -181,6 +181,7 @@ class TestCreateRoom(test.MyTestCase):
         re = part_client.joinRoom(room_id)
         self.assertEqual(re[0], 13001, ' error 除主持人外，其他参会者无法通过ID加入此会议。')  # 会议不存在
 
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时超过60s的用例')
     def test_moderate_disconnected(self):
         """测试主持人掉线会议存在被关闭情况
         描述：测试主持人掉线

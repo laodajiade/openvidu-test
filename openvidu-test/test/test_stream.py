@@ -209,7 +209,7 @@ class TestStream(test.MyTestCase):
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
 
-        sip_client = self.sipLoginAndAccessIn('81103600039', '123456')
+        sip_client = self.sipLoginAndAccessIn(self.sips[0]['account'], self.sips[0]['pwd'])
         self.joinRoom(sip_client, room_id)
         self.publish_video(sip_client, 'MAJOR')
 

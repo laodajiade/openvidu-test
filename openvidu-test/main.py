@@ -12,8 +12,8 @@ def all_test(path):
     t1 = time.time()
     logger.info("******************** all_test ********************")
     loader = unittest.TestLoader()
-    # suite = loader.discover(os.getcwd() + '/test')
-    suite = loader.discover(os.getcwd(), pattern='test_login.py')
+    suite = loader.discover(os.getcwd() + '/test')
+    # suite = loader.discover(os.getcwd(), pattern='test_login.py')
 
     time_postfix = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     file_name = path + 'test_report_' + time_postfix + '.html'
@@ -39,7 +39,7 @@ def main():
     s=skip  1=T 是否跳过耗时的用例，默认跳过
     -d, --directory  目录
      """
-    sys.modules['fast_test'] = False
+    sys.modules['fast_test'] = True
     shortargs = 'n:b:c:s:'
     opts, args = getopt.getopt(sys.argv[1:], shortargs)
     print(opts)
