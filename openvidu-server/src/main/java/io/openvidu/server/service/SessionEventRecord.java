@@ -21,105 +21,103 @@ public class SessionEventRecord {
     private static final Map<String, String> sessionRuid = new ConcurrentHashMap<>();
 
     /**
-     * SESSION-EVENT {timestamp} {publishVideo} {sessionId}({ruid[-8:]}) {part_uuid} {streamId}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {publishVideo} {timestamp} {part_uuid} {streamId}
      */
     public static void newPublisher(Participant participant, Session session, String streamId) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {}", System.currentTimeMillis()
-                    , "publishVideo", session.getSessionId(), subRuid(session),
-                    participant.getUuid(), streamId);
+            log.info("SESSION-EVENT {}({}) {} {} {} {}", session.getSessionId(), subRuid(session), "publishVideo",
+                    System.currentTimeMillis(), participant.getUuid(), streamId);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {stopPublishVideo} {sessionId}({ruid[-8:]}) {part_uuid} {streamId} {reason}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {stopPublishVideo} {timestamp} {part_uuid} {streamId} {reason}
      */
     public static void stopPublisher(Participant participant, Session session, String streamId, EndReason reason) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {} {}",
-                    System.currentTimeMillis(), "stopPublishVideo", session.getSessionId(), subRuid(session),
-                    participant.getUuid(), streamId, reason);
+            log.info("SESSION-EVENT {}({}) {} {} {} {} {}", session.getSessionId(), subRuid(session), "stopPublishVideo",
+                    System.currentTimeMillis(), participant.getUuid(), streamId, reason);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {subscribeVideo} {sessionId}({ruid[-8:]}) {part_uuid} {streamId}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {subscribeVideo} {timestamp} {part_uuid} {streamId}
      */
     public static void newSubscriber(Participant participant, Session session, String streamId) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {}",
-                    System.currentTimeMillis(), "subscribeVideo", session.getSessionId(), subRuid(session),
+            log.info("SESSION-EVENT {}({}) {} {} {} {}",
+                    session.getSessionId(), subRuid(session), "subscribeVideo", System.currentTimeMillis(),
                     participant.getUuid(), streamId);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {cancelSubscribeVideo} {sessionId}({ruid[-8:]}) {part_uuid} {streamId}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {cancelSubscribeVideo} {timestamp} {part_uuid} {streamId}
      */
     public static void stopSubscriber(Participant participant, Session session, String streamId, EndReason reason) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {} {}",
-                    System.currentTimeMillis(), "stopSubscribeVideo", session.getSessionId(), subRuid(session),
+            log.info("SESSION-EVENT {}({}) {} {} {} {} {}",
+                    session.getSessionId(), subRuid(session), "stopSubscribeVideo", System.currentTimeMillis(),
                     participant.getUuid(), streamId, reason);
         }
     }
 
 
     /**
-     * SESSION-EVENT {timestamp} {createRoom} {sessionId}({ruid[-8:]})
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {createRoom} {timestamp}
      */
     public static void createRoom(Session session) {
         if (session == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({})",
-                    System.currentTimeMillis(), "createRoom", session.getSessionId(), subRuid(session));
+            log.info("SESSION-EVENT {}({}) {} {}",
+                    session.getSessionId(), subRuid(session), "createRoom", System.currentTimeMillis());
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {joinRoom} {sessionId}({ruid[-8:]}) {part_uuid} {role} {reconnected}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {joinRoom} {timestamp} {part_uuid} {role} {reconnected}
      */
     public static void joinRoom(Session session, Participant participant, boolean reconnected) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {} {}",
-                    System.currentTimeMillis(), "joinRoom", session.getSessionId(), subRuid(session),
+            log.info("SESSION-EVENT {}({}) {} {} {} {} {}",
+                    session.getSessionId(), subRuid(session), "joinRoom", System.currentTimeMillis(),
                     participant.getUuid(), participant.getRole(), reconnected);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {leaveRoom} {sessionId}({ruid[-8:]}) {part_uuid} {reason}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {leaveRoom} {timestamp} {part_uuid} {reason}
      */
     public static void leaveRoom(KurentoSession session, Participant participant, EndReason reason) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {}",
-                    System.currentTimeMillis(), "leaveRoom", session.getSessionId(), subRuid(session),
+            log.info("SESSION-EVENT {}({}) {} {} {} {}",
+                    session.getSessionId(), subRuid(session), "leaveRoom", System.currentTimeMillis(),
                     participant.getUuid(), reason);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {startMcu} {sessionId}({ruid[-8:]}) partSize:{} partSize
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {startMcu} {timestamp} partSize:{} partSize
      */
     public static void startMcu(KurentoSession session, Composite composite, HubPort hubPortOut) {
         if (session == null) {
@@ -129,21 +127,21 @@ public class SessionEventRecord {
         if (log.isInfoEnabled()) {
             String extra = MessageFormat.format("partSize:{0} compositeId:{1}  hubPortOut:{2}", session.getPartSize(),
                     composite.getId(), hubPortOut.getId());
-            log.info("SESSION-EVENT {} {} {}({}) {}",
-                    System.currentTimeMillis(), "startMcu", session.getSessionId(), subRuid(session), extra);
+            log.info("SESSION-EVENT {}({}) {} {} {}",
+                    session.getSessionId(), subRuid(session), "startMcu", System.currentTimeMillis(), extra);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {endMcu} {sessionId}({ruid[-8:]})
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {endMcu} {timestamp}
      */
     public static void endMcu(KurentoSession session) {
         if (session == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({})",
-                    System.currentTimeMillis(), "endMcu", session.getSessionId(), subRuid(session));
+            log.info("SESSION-EVENT {}({}) {} {}",
+                    session.getSessionId(), subRuid(session), "endMcu", System.currentTimeMillis());
         }
     }
 
@@ -161,15 +159,15 @@ public class SessionEventRecord {
     }
 
     /**
-     * SESSION-EVENT {timestamp} {method} {sessionId}({ruid[-8:]}) {msg}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {method} {timestamp} {msg}
      */
     public static void other(KurentoSession session, String method, String msg) {
         if (session == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {}",
-                    System.currentTimeMillis(), method, session.getSessionId(), subRuid(session), msg);
+            log.info("SESSION-EVENT {}({}) {} {} {}",
+                    session.getSessionId(), subRuid(session), method, System.currentTimeMillis(), msg);
         }
     }
 
@@ -182,13 +180,13 @@ public class SessionEventRecord {
         }
 
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {}",
+            log.info("SESSION-EVENT {}({}) {} {} {}",
                     System.currentTimeMillis(), method, sessionId, sessionRuid.get(sessionId), msg);
         }
     }
 
     /**
-     * SESSION-EVENT {timestamp} {method} {sessionId}({ruid[-8:]}) {args}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {method} {timestamp} {args}
      */
     public static void other(String sessionId, String method, String... args) {
         if (sessionId == null) {
@@ -197,8 +195,8 @@ public class SessionEventRecord {
 
         if (log.isInfoEnabled()) {
             String msg = String.join(", ", args);
-            log.info("SESSION-EVENT {} {} {}({}) {}",
-                    System.currentTimeMillis(), method, sessionId, sessionRuid.get(sessionId), msg);
+            log.info("SESSION-EVENT {}({}) {} {} {}",
+                    sessionId, sessionRuid.get(sessionId), method, System.currentTimeMillis(), msg);
         }
     }
 }
