@@ -263,7 +263,9 @@
   <update id="updateByRuid" parameterType="io.openvidu.server.common.pojo.ConferenceRecord">
     update sd_conference_record
     set status = #{status,jdbcType=TINYINT},
-    total_duration = #{totalDuration,jdbcType=INTEGER},
+    <if test="totalDuration != null">
+       total_duration = #{totalDuration,jdbcType=INTEGER},
+    </if>
     record_count = record_count + 1
     where ruid = #{ruid,jdbcType=VARCHAR}
   </update>

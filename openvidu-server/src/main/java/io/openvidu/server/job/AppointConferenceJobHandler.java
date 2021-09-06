@@ -20,6 +20,7 @@ import io.openvidu.server.common.manage.AppointParticipantManage;
 import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
+import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.core.*;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -84,6 +85,12 @@ public class AppointConferenceJobHandler {
 
     @Value("${eureka.instance.instance-id}")
     private String instanceId;
+
+    @Resource
+    private RecordingRedisPublisher recordingRedisPublisher;
+
+    @Resource
+    private ConferenceRecordMapper conferenceRecordMapper;
 
     //@Scheduled(cron = "0/5 * * * * ?")
     @XxlJob("appointmentJobHandler")
@@ -261,7 +268,7 @@ public class AppointConferenceJobHandler {
                 SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
                         appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
 
-                if (Objects.nonNull(corporation.getMcuThreshold())&& Objects.nonNull(corporation.getSfuPublisherThreshold())) {
+                if (Objects.nonNull(corporation.getMcuThreshold()) && Objects.nonNull(corporation.getSfuPublisherThreshold())) {
                     preset.setMcuThreshold(corporation.getMcuThreshold());
                     preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
                 }
@@ -448,6 +455,20 @@ public class AppointConferenceJobHandler {
         conference.setEndTime(new Date());
         conference.setStatus(2);
         conferenceMapper.updateByPrimaryKey(conference);
+
+        // 停止可能存在的共享 {"method":"stopRecording","params":{"ruid":"70fe4167-42be-4b7f-9eba-d4496b7722dc","outPutMode":"COMPOSED"}}
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("method", "stopRecording");
+        JsonObject params = new JsonObject();
+        params.addProperty("outPutMode", "COMPOSED");
+        params.addProperty("ruid", conference.getRuid());
+        jsonObject.add("params", params);
+        recordingRedisPublisher.sendRecordingTask(jsonObject.toString());
+
+        ConferenceRecord update = new ConferenceRecord();
+        update.setRuid(conference.getRuid());
+        update.setStatus(ConferenceRecordStatusEnum.FINISH.getStatus());
+        conferenceRecordMapper.updateByRuid(update);
     }
 
     /**
