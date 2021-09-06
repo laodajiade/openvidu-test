@@ -78,16 +78,29 @@ public class SessionEventRecord {
 
 
     /**
-     * SESSION-EVENT {timestamp} {leaveRoom} {sessionId}({ruid[-8:]}) {part_uuid} {reconnected}
+     * SESSION-EVENT {timestamp} {createRoom} {sessionId}({ruid[-8:]})
+     */
+    public static void createRoom(Session session) {
+        if (session == null) {
+            return;
+        }
+        if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {} {} {}({})",
+                    System.currentTimeMillis(), "createRoom", session.getSessionId(), subRuid(session));
+        }
+    }
+
+    /**
+     * SESSION-EVENT {timestamp} {joinRoom} {sessionId}({ruid[-8:]}) {part_uuid} {role} {reconnected}
      */
     public static void joinRoom(Session session, Participant participant, boolean reconnected) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {} {} {}({}) {} {}",
+            log.info("SESSION-EVENT {} {} {}({}) {} {} {}",
                     System.currentTimeMillis(), "joinRoom", session.getSessionId(), subRuid(session),
-                    participant.getUuid(), reconnected);
+                    participant.getUuid(), participant.getRole(), reconnected);
         }
     }
 
@@ -169,6 +182,21 @@ public class SessionEventRecord {
         }
 
         if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {} {} {}({}) {}",
+                    System.currentTimeMillis(), method, sessionId, sessionRuid.get(sessionId), msg);
+        }
+    }
+
+    /**
+     * SESSION-EVENT {timestamp} {method} {sessionId}({ruid[-8:]}) {args}
+     */
+    public static void other(String sessionId, String method, String... args) {
+        if (sessionId == null) {
+            return;
+        }
+
+        if (log.isInfoEnabled()) {
+            String msg = String.join(", ", args);
             log.info("SESSION-EVENT {} {} {}({}) {}",
                     System.currentTimeMillis(), method, sessionId, sessionRuid.get(sessionId), msg);
         }

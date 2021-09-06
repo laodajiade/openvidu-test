@@ -649,7 +649,7 @@ public class PublisherEndpoint extends MediaEndpoint {
         }
 
         if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-            internalSinkConnect(current, pubHubPort, MediaType.VIDEO);
+            internalSinkConnect(current, createMajorShareHubPort(this.getMajorShareComposite()), MediaType.VIDEO);
             if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {
                 // change the link order and unify the capability(send recv) of both two points
                 internalSinkConnect(pubHubPort, current, MediaType.VIDEO);
@@ -765,10 +765,13 @@ public class PublisherEndpoint extends MediaEndpoint {
 //		return majorHubPort;
 //	}
 
-    public HubPort createMajorShareHubPort(Composite composite) {
+    public synchronized HubPort createMajorShareHubPort(Composite composite) {
+        if (this.pubHubPort != null) {
+            return this.pubHubPort;
+        }
         pubHubPort = new HubPort.Builder(composite).build();
         this.pubHubPort.addTag("debug_name", this.getStreamId() + "_pub_hubPort");
-        SessionEventRecord.other(this.getOwner().getSessionId(), "createPubHubPort", pubHubPort.getName());
+        SessionEventRecord.other(this.getOwner().getSessionId(), "createPubHubPort", this.getStreamId(), pubHubPort.getName());
         log.info("{} Pub EP create majorShareHubPort. {}", this.streamId, pubHubPort.getName());
         majorShareHubPortSubscription = registerElemErrListener(pubHubPort);
         return pubHubPort;

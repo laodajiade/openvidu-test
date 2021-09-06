@@ -93,6 +93,16 @@ class MyTestCase(unittest.TestCase):
         self.clients.append(client)
         return client
 
+    def sipLoginAndAccessIn(self, account, pwd, **kwargs):
+        client = SdClient(account, pwd, self.server_url)
+        kwargs['type'] = 'S'
+        kwargs['deviceModel'] = 'deviceModel'
+        kwargs['accessType'] = 'terminal'
+        re = client.loginAndAccessIn(**kwargs)
+        self.assertEqual(re[0], 0)
+        self.clients.append(client)
+        return client
+
     def loginAndAccessInAndCreateAndJoin(self, user):
         moderator = user
         moderator_client = self.loginAndAccessIn(moderator['phone'], moderator['pwd'])

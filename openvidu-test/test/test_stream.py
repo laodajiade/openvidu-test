@@ -198,6 +198,21 @@ class TestStream(test.MyTestCase):
         self.assertEqual(notify['params']['operation'], 'off')
         self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
 
+    def test_sip_publish(self):
+        """ SIP推流测试
+        测试目的：SIP推流测试
+        测试过程: 1、创建会议，主持人
+                2、sip入会
+                3、sip推流
+        结果期望： SIP入会后自动开启MCU，SIP推拉流不出错
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+
+        sip_client = self.sipLoginAndAccessIn('81103600039', '123456')
+        self.joinRoom(sip_client, room_id)
+        self.publish_video(sip_client, 'MAJOR')
+
     ############################################################
 
     def on_ice_candidate(self, client, stream_id):

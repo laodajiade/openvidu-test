@@ -15,6 +15,7 @@ import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.service.CorpInfoService;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.RandomRoomIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -220,6 +221,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                     session.setEndTime(appt.getEndTime().getTime());
                 }
                 inviteCountDownLatch.countDown();
+                SessionEventRecord.createRoom(session);
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
             } else {
                 log.warn("conference:{} already exist.", sessionId);
