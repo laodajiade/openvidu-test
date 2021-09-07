@@ -46,11 +46,11 @@ class TestInvite(test.MyTestCase):
         self.assertEqual(re[0], 0, '邀请失败')
         time.sleep(10)  # 期间会收到多次邀请
         notifies = part_client1.search_notify_list('inviteParticipant')
-        self.assertTrue(len(notifies) > 1, '只收到0/1次邀请')
+        self.assertTrue(len(notifies) > 1, '应至少需要2次邀请')
         for notify in notifies:
             self.assertEqual(notify['params']['targetId'], part_client1.uuid, '被邀请人的uuid不正确')
         notifies = part_client2.search_notify_list('inviteParticipant')
-        self.assertTrue(len(notifies) > 1, '只收到0/1次邀请')
+        self.assertTrue(len(notifies) > 1, '应至少需要2次邀请')
         for notify in notifies:
             self.assertEqual(notify['params']['targetId'], part_client2.uuid, '被邀请人的uuid不正确')
 

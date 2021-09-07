@@ -27,6 +27,10 @@ public enum EndReason {
      */
     reconnect,
     closeSessionByModerator,
+    /**
+     * 结束发言
+     */
+    endRollCall,
     participantReplaceLeft, livingStoppedByServer, serviceExpired, callDurationUsedUp, fixedRoomServiceExpired
 
 }

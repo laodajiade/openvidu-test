@@ -32,6 +32,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
@@ -1057,8 +1058,12 @@ public abstract class SessionManager {
                     audioParamsArr.add(audioParams);
                 }
                 // 如果分享的也是发言者，需要结束分享
-                if (session.getSharingPart().isPresent() && session.getSharingPart().get().getUuid().equals(speaker.getUuid())) {
+                if (session.isShare(speaker.getUuid())) {
                     endSharing(session, speaker, originatorUuid);
+                }
+                KurentoParticipant kPart = (KurentoParticipant) speaker;
+                for (PublisherEndpoint endpoint : kPart.getPublishers().values()) {
+                    this.unpublishVideo(kPart, endpoint.getStreamId(), null, EndReason.endRollCall);
                 }
 
                 if (micStatusChange) {
@@ -1137,10 +1142,6 @@ public abstract class SessionManager {
                 setAudioStatusArr.add(setAudioStatus);
             }
 
-            // 如果分享的也是发言者，需要结束分享
-            if (session.getSharingPart().isPresent() && session.getSharingPart().get().getUuid().equals(endPart.getUuid())) {
-                endSharing(session, endPart, originatorUuid);
-            }
 
             session.setSpeakerPart(startPart);
             endPart.changeHandStatus(ParticipantHandStatus.down);
@@ -1160,6 +1161,18 @@ public abstract class SessionManager {
             if (stopSharingParams.size() != 0) result.add("endShareNotify", stopSharingParams);
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.REPLACE_ROLL_CALL_NOTIFY_METHOD, result);
         }
+
+        if (!endPart.getRole().needToPublish()) {
+            // 如果分享的也是发言者，需要结束分享
+            if (session.isShare(endPart.getUuid())) {
+                endSharing(session, endPart, originatorUuid);
+            }
+            KurentoParticipant kPart = (KurentoParticipant) endPart;
+            for (PublisherEndpoint endpoint : kPart.getPublishers().values()) {
+                this.unpublishVideo(kPart, endpoint.getStreamId(), null, EndReason.endRollCall);
+            }
+        }
+
 
         if (session.ableToUpdateRecord()) {
             updateRecording(session.getSessionId());
