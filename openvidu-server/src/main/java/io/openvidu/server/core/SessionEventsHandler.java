@@ -40,6 +40,7 @@ import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.service.SessionEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,102 +114,6 @@ public class SessionEventsHandler {
 			session.getCompositeService().createComposite();
 		}
 
-//		for (Participant existingParticipant : existingParticipants) {
-//			if (Objects.equals(existingParticipant.getParticipantPublicId(), participant.getParticipantPublicId())) {
-//				continue;
-//			}
-//			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(participant.getParticipantPublicId())) {
-//				if (Objects.equals(OpenViduRole.THOR, existingParticipant.getRole())) {
-//					continue;
-//				}
-//			}
-//
-//			JsonObject participantJson = new JsonObject();
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERID_PARAM,
-//					existingParticipant.getParticipantPublicId());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_MICSTATUS_PARAM,
-//					existingParticipant.getMicStatus().name());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM,
-//					existingParticipant.getVideoStatus().name());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
-//					existingParticipant.getCreatedAt());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSHARESTATUS_PARAM,
-//					existingParticipant.getShareStatus().name());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERSPEAKERSTATUS_PARAM,
-//					existingParticipant.getSpeakerStatus().name());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERHANDSTATUS_PARAM,
-//					existingParticipant.getHandStatus().name());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWNAME_PARAM,
-//					existingParticipant.getAppShowName());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_PEERAPPSHOWDESC_PARAM,
-//					existingParticipant.getAppShowDesc());
-//			participantJson.addProperty(ProtocolElements.JOINROOM_STREAM_TYPE_PARAM,
-//					existingParticipant.getStreamType().name());
-//			RpcConnection rpc = rpcNotificationService.getRpcConnection(existingParticipant.getParticipantPrivateId());
-//			if (Objects.isNull(rpc)) {
-//				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM,
-//						UserOnlineStatusEnum.offline.name());
-//			} else {
-//				String status = UserOnlineStatusEnum.online.name();
-//				participantJson.addProperty(ProtocolElements.JOINROOM_PEERONLINESTATUS_PARAM, status);
-//                participantJson.addProperty(ProtocolElements.JOINROOM_ABILITY_PARAM, rpc.getAbility());
-//                participantJson.addProperty(ProtocolElements.JOINROOM_FUNCTIONALITY_PARAM, rpc.getFunctionality());
-//				if (!Objects.isNull(rpc.getTerminalConfig())) {
-//					participantJson.add(ProtocolElements.JOINROOM_TERMINALCONFIG_PARAM, new Gson().fromJson(rpc.getTerminalConfig(), JsonObject.class));
-//				}
-//				participantJson.addProperty("deviceVersion", rpc.getDeviceVersion());
-//            }
-//            participantJson.addProperty("isVoiceMode", existingParticipant.getVoiceMode().equals(VoiceMode.on));
-//			participantJson.addProperty("order",existingParticipant.getOrder());
-//			participantJson.addProperty("pushStreamStatus",existingParticipant.getPushStreamStatus().name());
-//
-//
-//			// Metadata associated to each existing participant
-//			participantJson.addProperty(ProtocolElements.JOINROOM_METADATA_PARAM,
-//					existingParticipant.getFullMetadata());
-//
-//			if (existingParticipant.isStreaming()) {
-//				try {
-//					KurentoParticipant kParticipant = (KurentoParticipant) existingParticipant;
-//
-//					JsonObject stream = new JsonObject();
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMID_PARAM,
-//							existingParticipant.getPublisherStreamId());
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERCREATEDAT_PARAM,
-//							kParticipant.getPublisher().createdAt());
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASAUDIO_PARAM,
-//							kParticipant.getPublisherMediaOptions().hasAudio);
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMHASVIDEO_PARAM,
-//							kParticipant.getPublisherMediaOptions().hasVideo);
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMMIXINCLUDED_PARAM,
-//							kParticipant.isMixIncluded());
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEOACTIVE_PARAM, ParticipantVideoStatus.on.equals(kParticipant.getVideoStatus()));
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMAUDIOACTIVE_PARAM, ParticipantMicStatus.on.equals(kParticipant.getMicStatus()));
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMTYPEOFVIDEO_PARAM,
-//							kParticipant.getPublisherMediaOptions().typeOfVideo);
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMFRAMERATE_PARAM,
-//							kParticipant.getPublisherMediaOptions().frameRate);
-//					stream.addProperty(ProtocolElements.JOINROOM_PEERSTREAMVIDEODIMENSIONS_PARAM,
-//							kParticipant.getPublisherMediaOptions().videoDimensions);
-//					JsonElement filter = kParticipant.getPublisherMediaOptions().getFilter() != null
-//							? kParticipant.getPublisherMediaOptions().getFilter().toJson()
-//							: new JsonObject();
-//					stream.add(ProtocolElements.JOINROOM_PEERSTREAMFILTER_PARAM, filter);
-//
-//					JsonArray streamsArray = new JsonArray();
-//					streamsArray.add(stream);
-//					participantJson.add(ProtocolElements.JOINROOM_PEERSTREAMS_PARAM, streamsArray);
-//				} catch (Exception e) {
-//					log.error("get participant {} stream info error", existingParticipant.getUuid(), e);
-//				}
-//			}
-//
-//			// Avoid emitting 'connectionCreated' event of existing RECORDER participant in
-//			// openvidu-browser in newly joined participants
-//			if (!ProtocolElements.RECORDER_PARTICIPANT_PUBLICID.equals(existingParticipant.getParticipantPublicId())) {
-//				resultArray.add(participantJson);
-//			}
-//		}
 		notifyUpdateOrder(participant, session);
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_USER_PARAM, participant.getParticipantPublicId());
 		roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_CREATEDAT_PARAM, participant.getCreatedAt());

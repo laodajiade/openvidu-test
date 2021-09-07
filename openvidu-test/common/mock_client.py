@@ -255,7 +255,7 @@ class SdClient:
                 except Exception as e:
                     logger.error('find_any_notify error message ' + msg, e)
                     return result
-            time.sleep(0.05)
+            time.sleep(0.01)
         return result
 
     def has_notify(self, method):
@@ -274,7 +274,7 @@ class SdClient:
             result = self.has_notify(method)
             if result:
                 return result
-            time.sleep(0.05)
+            time.sleep(0.01)
         return False
 
     def clear_notify(self):

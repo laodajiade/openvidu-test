@@ -1,9 +1,9 @@
-import json
 import sys
 import time
 
 import unittest2
 from loguru import logger
+
 import test
 from test.service.services import MeetingService
 
@@ -104,6 +104,45 @@ class TestOrder(test.MyTestCase):
         # expect = [{'uuid': target_id, 'order': source_order}, {'uuid': source_id, 'order': target_order}]
         # self.assertListEqual(notify['params']['updateParticipantsOrder'], expect, ' 不对 ' + str(notify))
         self.assertTrue(moderator_client.has_notify('setAudioStatus'), ' 没有收到 setAudioStatus 通知')
+
+    def test_force_disconnect_part(self):
+        """ 测试主持人踢人，然后重新入会,重复10次
+        测试目的：主持人踢人，然后重新入会order可能会冲突
+        测试过程: 1、主持人入会，入会至少2与会者
+                2、然后踢掉第一个与会者
+                3、被踢的与会者入会
+        结果期望：order正常
+        """
+        logger.info('测试主持人重连入会')
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        moderator_client.collecting_notify()
+        part_client1, re = self.loginAndAccessInAndJoin(self.users[4], room_id)
+        part_client2, re = self.loginAndAccessInAndJoin(self.users[5], room_id)
+        part_client2.collecting_notify()
+        notify = moderator_client.find_any_notify('partOrderOrRoleChangeNotify')
+        self.check_order_list(notify)
+
+        # 踢人，加入会议，重复10次
+        for i in range(0, 10):
+            part_client2.clear_notify()
+            moderator_client.request("forceDisconnect", {'uuid': part_client1.uuid})
+            notify = part_client2.find_any_notify('partOrderOrRoleChangeNotify')
+            self.check_order_list(notify)
+
+            part_client2.clear_notify()
+            moderator_client.request("forceDisconnect", {'uuid': moderator_client.uuid})
+            notify = part_client2.find_any_notify('partOrderOrRoleChangeNotify')
+            self.check_order_list(notify)
+
+            part_client2.clear_notify()
+            moderator_client, re = self.loginAndAccessInAndJoin(self.users[0], room_id)
+            notify = part_client2.find_any_notify('partOrderOrRoleChangeNotify')
+            self.check_order_list(notify)
+
+            part_client2.clear_notify()
+            part_client1, re = self.loginAndAccessInAndJoin(self.users[4], room_id)
+            notify = part_client2.find_any_notify('partOrderOrRoleChangeNotify')
+            self.check_order_list(notify)
 
 
 if __name__ == '__main__':

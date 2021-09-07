@@ -416,7 +416,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
             }
         } catch (Exception e) {
-            log.error("joinRoom error {}, {}",request.getParams(), rpcConnection.toString(), e);
+            log.error("joinRoom error {}, {}", request.getParams(), rpcConnection.toString(), e);
             if (isModerator(role)) {
                 sessionManager.cleanCacheCollections(sessionId);
             }

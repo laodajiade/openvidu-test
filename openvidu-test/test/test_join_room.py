@@ -292,8 +292,6 @@ class TestJoinRoom(test.MyTestCase):
         self.finish = True
         time.sleep(2)
 
-    cond = sys.modules.get('fast_test')
-
     @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时用例')
     def test_force_disconnected(self):
         """测试强制掉线
@@ -369,6 +367,8 @@ class TestJoinRoom(test.MyTestCase):
                         else:
                             self.assertEqual(part['role'], 'SUBSCRIBER', '角色不对' + str(part))
                 self.assertTrue(flag, '没有找到 order ' + str(i) + ' 的与会者')
+
+
 
 
 if __name__ == '__main__':

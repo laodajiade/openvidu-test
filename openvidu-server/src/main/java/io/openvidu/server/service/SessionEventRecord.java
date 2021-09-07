@@ -1,5 +1,6 @@
 package io.openvidu.server.service;
 
+import com.alibaba.fastjson.JSONObject;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
@@ -89,16 +90,22 @@ public class SessionEventRecord {
     }
 
     /**
-     * SESSION-EVENT {sessionId}({ruid[-8:]}) {joinRoom} {timestamp} {part_uuid} {role} {reconnected}
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {joinRoom} {timestamp} {part_uuid} {json_msg} {reconnected}
      */
     public static void joinRoom(Session session, Participant participant, boolean reconnected) {
         if (session == null || participant == null) {
             return;
         }
         if (log.isInfoEnabled()) {
+            JSONObject json = new JSONObject();
+            json.put("role", participant.getRole());
+            json.put("order", participant.getOrder());
+            json.put("micStatus", participant.getMicStatus());
+            json.put("videoStatus", participant.getVideoStatus());
+
             log.info("SESSION-EVENT {}({}) {} {} {} {} {}",
                     session.getSessionId(), subRuid(session), "joinRoom", System.currentTimeMillis(),
-                    participant.getUuid(), participant.getRole(), reconnected);
+                    participant.getUuid(), json.toString(), reconnected);
         }
     }
 
