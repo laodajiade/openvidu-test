@@ -37,7 +37,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
 
         Session session = sessionManager.getSession(sessionId);
 
-        if (session.getParticipantByUUID(source).isPresent()) {
+        if (!session.getParticipantByUUID(source).isPresent()) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.INVALID_METHOD_CALL);
             return;
@@ -67,10 +67,7 @@ public class SetVideoStatusHandler extends RpcAbstractHandler {
             });
         }
 
-        sessionManager.getParticipants(sessionId).forEach(participant -> {
-            this.notificationService.sendNotification(participant.getParticipantPrivateId(),
-                    ProtocolElements.SET_VIDEO_STATUS_METHOD, request.getParams());
-        });
+        this.notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.SET_VIDEO_STATUS_METHOD, request.getParams());
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }

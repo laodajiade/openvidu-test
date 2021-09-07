@@ -267,6 +267,16 @@ class SdClient:
                 return True
         return False
 
+    def has_notify_sync(self, method, timeout=2):
+        """ 搜索缓存中的通知,是否包该改通知,同步一直简单到有结果或超时 """
+        beginMs = int(SDUtil.GetUtcMs())
+        while int(SDUtil.GetUtcMs()) - beginMs < timeout:
+            result = self.has_notify(method)
+            if result:
+                return result
+            time.sleep(0.05)
+        return False
+
     def clear_notify(self):
         self.wsClient.notify_list = []
 

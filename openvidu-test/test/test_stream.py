@@ -198,7 +198,7 @@ class TestStream(test.MyTestCase):
         self.assertEqual(notify['params']['operation'], 'off')
         self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
 
-    def test_sip_publish(self):
+    def a_test_sip_publish(self):
         """ SIP推流测试
         测试目的：SIP推流测试
         测试过程: 1、创建会议，主持人

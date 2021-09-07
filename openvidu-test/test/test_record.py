@@ -11,7 +11,7 @@ class TestRecord(test.MyTestCase):
     """ 录制相关 """
 
     def test_record(self):
-        """ 创建随机会议, 主持人推流，开始录制，7秒后结束录制 """
+        """ 创建个人会议, 主持人推流，开始录制，7秒后结束录制 """
         logger.info('创建随机会议, 主持人推流，开始录制，7秒后结束录制')
         if True:
             # 暂时不测试
@@ -19,7 +19,7 @@ class TestRecord(test.MyTestCase):
         # 主持人入会
         moderator = self.users[0]
         moderator_client = self.loginAndAccessIn(moderator['phone'], moderator['pwd'])
-        re = self.createRandomRoom(moderator_client)
+        re = self.createPersonalRoom(moderator_client)
         room_id = re[1]['roomId']
         self.joinRoom(moderator_client, room_id)
 

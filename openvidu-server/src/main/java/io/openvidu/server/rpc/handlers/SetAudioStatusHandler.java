@@ -6,7 +6,6 @@ import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantMicStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.KurentoParticipant;
@@ -43,7 +42,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         Participant sourcePart;
         Session session = sessionManager.getSession(sessionId);
         if (!StringUtils.isEmpty(source)) {
-            sourcePart = session.getParticipantByUUID(source).get();
+            sourcePart = session.getParticipantByUUID(source).orElse(null);
         } else {
             sourcePart = session.getParticipantByUserId(Long.valueOf(sourceId));
         }
@@ -54,7 +53,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
         }
 
         JsonArray accountArr = new JsonArray();
-        if (!Objects.isNull(accountTargets) && !accountTargets.isEmpty()) {
+        if (!accountTargets.isEmpty()) {
             if (ParticipantMicStatus.on.equals(micStatus)) {
                 accountTargets.forEach(account -> {
                     KurentoParticipant part = (KurentoParticipant) sessionManager.getParticipants(sessionId).stream()
@@ -68,7 +67,7 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
                 });
             } else {
                 accountTargets.forEach(account -> {
-                    KurentoParticipant part = (KurentoParticipant) sessionManager.getSession(sessionId).getParticipantByUUID(account).get();
+                    KurentoParticipant part = (KurentoParticipant) sessionManager.getSession(sessionId).getParticipantByUUID(account).orElse(null);
                     if (Objects.nonNull(part)) {
                         part.changeMicStatus(micStatus);
                         accountArr.add(account);
@@ -92,13 +91,8 @@ public class SetAudioStatusHandler extends RpcAbstractHandler {
             }
         }
 
-        Set<Participant> participants = sessionManager.getParticipants(sessionId);
-        if (!CollectionUtils.isEmpty(participants)) {
-            for (Participant p: participants) {
-                    this.notificationService.sendNotification(p.getParticipantPrivateId(),
-                            ProtocolElements.SET_AUDIO_STATUS_METHOD, request.getParams());
-            }
-        }
+        this.notificationService.sendBatchNotificationConcurrent(sessionManager.getParticipants(sessionId),
+                ProtocolElements.SET_AUDIO_STATUS_METHOD, request.getParams());
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
     }
 }
