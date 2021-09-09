@@ -368,7 +368,19 @@ class TestJoinRoom(test.MyTestCase):
                             self.assertEqual(part['role'], 'SUBSCRIBER', '角色不对' + str(part))
                 self.assertTrue(flag, '没有找到 order ' + str(i) + ' 的与会者')
 
-
+    def test_join_room_15_role(self):
+        """ 入会15人，验证入会墙上和墙下的角色正确
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        for i in range(1, 15):
+            client, re = self.loginAndAccessInAndJoin(self.users[i], room_id)
+            order = re[1]['roomInfo']['order']
+            sfuPublisherThreshold = re[1]['roomInfo']['sfuPublisherThreshold']
+            if order < sfuPublisherThreshold:
+                self.assertTrue('PUBLISHER' in re[1]['roomInfo']['metadata'])
+            else:
+                self.assertTrue('SUBSCRIBE' in re[1]['roomInfo']['metadata'])
 
 
 if __name__ == '__main__':

@@ -134,11 +134,11 @@ public class KurentoSessionManager extends SessionManager {
             participant.setRoomSubject(preset.getRoomSubject());
 
             // change the part role according to the sfu limit
-            if (ConferenceModeEnum.SFU.equals(kSession.getConferenceMode())
-                    && participant.getOrder() > kSession.getPresetInfo().getSfuPublisherThreshold() - 1
-                    && !participant.getRole().equals(OpenViduRole.MODERATOR) && !OpenViduRole.ONLY_SHARE.equals(participant.getRole())) {
+            if (participant.getOrder() > kSession.getPresetInfo().getSfuPublisherThreshold() - 1
+                    && !participant.getRole().equals(OpenViduRole.MODERATOR)) {
                 participant.changePartRole(OpenViduRole.SUBSCRIBER);
             }
+
             // deal the default subtitle config
             participant.setSubtitleConfig(kSession.getSubtitleConfig());
             UseTime.point("join 1");
