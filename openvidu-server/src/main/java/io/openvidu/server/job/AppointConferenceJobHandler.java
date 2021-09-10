@@ -284,7 +284,7 @@ public class AppointConferenceJobHandler {
                 conferenceMapper.insertSelective(conference);
                 Session session = sessionManager.createSession(conference.getRoomId(), conference);
                 session.setEndTime(appointConference.getEndTime().getTime());
-
+                session.setPresetInfo(preset);
                 appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid());
             } else {
                 log.info("conferenceBeginJobHandler in use:{}", JSON.toJSONString(appointConference));

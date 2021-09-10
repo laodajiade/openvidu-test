@@ -748,13 +748,7 @@ public abstract class SessionManager {
     }
 
     public void cleanCacheCollections(String sessionId) {
-        if (sessionidConferenceInfo.containsKey(sessionId)) {
-            sessionidConferenceInfo.remove(sessionId);
-        }
-
-//		if (sessionidPreset.containsKey(sessionId)) {
-//			sessionidPreset.remove(sessionId);
-//		}
+        sessionidConferenceInfo.remove(sessionId);
     }
 
     public void updateConferenceInfo(String sessionId) {
