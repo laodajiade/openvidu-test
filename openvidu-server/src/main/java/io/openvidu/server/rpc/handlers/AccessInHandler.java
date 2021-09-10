@@ -125,16 +125,6 @@ public class AccessInHandler extends RpcAbstractHandler {
                 deviceName = device.getDeviceName();
             }
 
-
-            // find account already login before
-//            RpcConnection previousRpc = notificationService.getRpcConnections().stream().filter(s -> {
-//                if (!Objects.equals(rpcConnection, s) && Objects.equals(s.getUserUuid(), uuid)
-//                        && Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
-//                    log.info("find same login user:{}, previous connection id:{}", s.getUserUuid(), s.getParticipantPrivateId());
-//                    return true;
-//                }
-//                return false;
-//            }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
             List<RpcConnection> previousRpcs = notificationService.getRpcConnectionByUuids(uuid).stream()
                     .filter(s -> {
                         if (!s.getParticipantPrivateId().equals(rpcConnection.getParticipantPrivateId())
@@ -154,6 +144,7 @@ public class AccessInHandler extends RpcAbstractHandler {
                         // check previous rpc connection ever in the room
                         evictPreLoginPart(previousRpc);
                     } else {
+                        notificationService.sendNotification(previousRpc.getParticipantPrivateId(), ProtocolElements.REMOTE_LOGIN_NOTIFY_METHOD, new JsonObject());
                         notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
                     }
                 }
@@ -227,10 +218,6 @@ public class AccessInHandler extends RpcAbstractHandler {
             sessionManager.evictParticipantByUUIDEx(partInfo.getOrDefault("roomId", "1").toString(), previousRpc.getUserUuid(), Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
                     EndReason.forceDisconnectByServer);
         }
-
-//        if (Objects.nonNull(notificationService.getRpcConnection(previousRpc.getParticipantPrivateId()))) {
-//            notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
-//        }
     }
 
     private void checkDeviceInfoAndUpdate(Device device, String deviceVersion, String ability, String functionality,

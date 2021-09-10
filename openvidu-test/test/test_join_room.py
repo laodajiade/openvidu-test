@@ -233,8 +233,7 @@ class TestJoinRoom(test.MyTestCase):
             last_udid = 'udid_qweqwe' + str(i)
             part_client_reconnect = self.loginAndAccessIn2(self.users[1], udid=last_udid)
             self.joinRoom(part_client_reconnect, room_id, isReconnected=True)
-            time.sleep(2)
-            evicted_notify = part_client_pre.search_notify_list('participantEvicted')[0]
+            evicted_notify = part_client_pre.find_any_notify('participantEvicted')
             self.assertEqual(evicted_notify['params']['reason'], 'forceDisconnectByServer', '踢人原因不正确')
             self.assertEqual(evicted_notify['params']['uuid'], part_client_pre.uuid, '被踢的uuid不对')
             self.assertTrue(part_client_pre.is_close(), '前一个客户端因被强制关闭链接')
@@ -245,11 +244,8 @@ class TestJoinRoom(test.MyTestCase):
             logger.info(f'{self.users[1]["uuid"]} 相同udid重连')
             part_client_reconnect = self.loginAndAccessIn2(self.users[1], udid=last_udid)
             self.joinRoom(part_client_reconnect, room_id, isReconnected=True)
-            time.sleep(2)
-            evicted_notify = part_client_pre.search_notify_list('participantEvicted')[0]
-            self.assertEqual(evicted_notify['params']['reason'], 'reconnect', '踢人原因不正确')
-            self.assertEqual(evicted_notify['params']['uuid'], part_client_pre.uuid, '被踢的uuid不对')
-            self.assertFalse(part_client_pre.is_close(), '不强制关闭链接')
+            self.assertIsNotNone(part_client_pre.has_notify_sync('remoteLoginNotify'))
+            self.assertTrue(part_client_pre.is_close(), '不强制关闭链接')
 
     def test_reconnect_moderator(self):
         """测试主持人重连入会

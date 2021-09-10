@@ -96,7 +96,7 @@ public class PublisherEndpoint extends MediaEndpoint {
     private PushStreamStatusEnum pushStreamStatus = PushStreamStatusEnum.on;
 
     @Getter
-    private CountDownLatch publisherLatch = new CountDownLatch(1);
+    private CountDownLatch publisherLatch = new CountDownLatch(0);
 
     @Getter
     private final StreamType streamType;
@@ -751,6 +751,11 @@ public class PublisherEndpoint extends MediaEndpoint {
                 }
             });
         }
+    }
+
+    public CountDownLatch createPublisherLatch() {
+        this.publisherLatch = new CountDownLatch(1);
+        return getPublisherLatch();
     }
 
     public MediaOptions getMediaOptions() {

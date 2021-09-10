@@ -158,8 +158,7 @@ public class KurentoParticipant extends Participant {
 
         PublisherEndpoint publisher;
         publisher = createPublisher(streamType);
-
-        publisher.createEndpoint(publisher.getPublisherLatch());
+        publisher.createEndpoint(publisher.createPublisherLatch());
         if (getPublisher(streamType).getEndpoint() == null) {
             //this.setStreaming(false);
             throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
