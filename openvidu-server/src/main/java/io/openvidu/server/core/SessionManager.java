@@ -32,6 +32,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.kurento.core.KurentoTokenOptions;
@@ -560,7 +561,7 @@ public abstract class SessionManager {
 
             return p;
         } else {
-            throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, sessionId);
+            throw new BizException(ErrorCodeEnum.CONFERENCE_NOT_EXIST);
         }
     }
 
