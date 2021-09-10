@@ -26,9 +26,10 @@ import org.springframework.util.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author geedow
@@ -134,7 +135,7 @@ public class AccessInHandler extends RpcAbstractHandler {
 //                }
 //                return false;
 //            }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
-            RpcConnection previousRpc = notificationService.getRpcConnectionByUuids(uuid).stream()
+            List<RpcConnection> previousRpcs = notificationService.getRpcConnectionByUuids(uuid).stream()
                     .filter(s -> {
                         if (!s.getParticipantPrivateId().equals(rpcConnection.getParticipantPrivateId())
                                 && Objects.equals(AccessTypeEnum.terminal, s.getAccessType())) {
@@ -142,15 +143,22 @@ public class AccessInHandler extends RpcAbstractHandler {
                             return true;
                         }
                         return false;
-                    }).max(Comparator.comparing(RpcConnection::getCreateTime)).orElse(null);
+                    }).collect(Collectors.toList());
 
-            // check if single login
-            if (AccessTypeEnum.terminal.equals(accessType) && Objects.nonNull(previousRpc) && !Objects.equals(previousRpc.getUdid(), udid)) {
-                log.warn("SINGLE LOGIN ==> User:{} already login and pre privateId:{}. current udid:{}, previous udid:{}",
-                        userInfo.get("userUuid"), previousRpc.getParticipantPrivateId(), udid, previousRpc.getUdid());
-                // check previous rpc connection ever in the room
-                evictPreLoginPart(previousRpc);
+            for (RpcConnection previousRpc : previousRpcs) {
+                // check if single login
+                if (AccessTypeEnum.terminal.equals(accessType)) {
+                    if (!Objects.equals(previousRpc.getUdid(), udid)) {
+                        log.warn("SINGLE LOGIN ==> User:{} already login and pre privateId:{}. current udid:{}, previous udid:{}",
+                                userInfo.get("userUuid"), previousRpc.getParticipantPrivateId(), udid, previousRpc.getUdid());
+                        // check previous rpc connection ever in the room
+                        evictPreLoginPart(previousRpc);
+                    } else {
+                        notificationService.closeRpcSession(previousRpc.getParticipantPrivateId());
+                    }
+                }
             }
+
 
         } while (false);
 
@@ -216,7 +224,7 @@ public class AccessInHandler extends RpcAbstractHandler {
         Map partInfo = cacheManage.getPartInfo(previousRpc.getUserUuid());
         if (partInfo != null && !partInfo.isEmpty()) {
             // evict the previous parts in room
-            sessionManager.evictParticipantByUUIDEx(partInfo.getOrDefault("roomId","1").toString(), previousRpc.getUserUuid(), Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
+            sessionManager.evictParticipantByUUIDEx(partInfo.getOrDefault("roomId", "1").toString(), previousRpc.getUserUuid(), Arrays.asList(EvictParticipantStrategy.CLOSE_ROOM_WHEN_EVICT_MODERATOR, EvictParticipantStrategy.CLOSE_WEBSOCKET_CONNECTION),
                     EndReason.forceDisconnectByServer);
         }
 
