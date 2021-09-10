@@ -56,4 +56,39 @@ public class TestController {
         return jsonObject;
     }
 
+
+    @ApiOperation("查询每个企业墙上人数临界值")
+    @GetMapping("/queryCorpPublisherThreshold")
+    private JSONObject queryCorpPublisherThreshold(@RequestParam(value = "企业名称", defaultValue = "", required = false) String corpName) {
+        List<Corporation> corporations = corporationMapper.selectAllCorp();
+        JSONObject jsonObject = new JSONObject();
+        for (Corporation corporation : corporations) {
+            if (StringUtils.isBlank(corpName)) {
+                jsonObject.put(corporation.getCorpName(), corporation.getSfuPublisherThreshold());
+            }
+            if (corporation.getCorpName().contains(corpName)) {
+                jsonObject.put(corporation.getCorpName(), corporation.getSfuPublisherThreshold());
+            }
+        }
+        return jsonObject;
+    }
+
+    @ApiOperation("直接修改企业的墙上人数临界值")
+    @GetMapping("/updateCorpPublisherThreshold")
+    private JSONObject updateCorpPublisherThreshold(@RequestParam("企业名称") String corpName, @RequestParam("publisherThreshold") Integer publisherThreshold) {
+        List<Corporation> corporations = corporationMapper.selectAllCorp();
+        JSONObject jsonObject = new JSONObject();
+        for (Corporation corporation : corporations) {
+            if (corporation.getCorpName().equals(corpName)) {
+                corporation.setSfuPublisherThreshold(publisherThreshold);
+                corporationMapper.updateOtherByPrimaryKey(corporation);
+                jsonObject.put(corporation.getCorpName(), corporation.getSfuPublisherThreshold());
+                return jsonObject;
+            }
+        }
+
+
+        jsonObject.put("错误", "企业名称不存在");
+        return jsonObject;
+    }
 }
