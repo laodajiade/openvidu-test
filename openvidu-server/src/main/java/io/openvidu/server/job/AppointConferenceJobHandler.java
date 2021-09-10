@@ -23,6 +23,7 @@ import io.openvidu.server.common.pojo.dto.UserDeviceDeptInfo;
 import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.core.*;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
+import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.rpc.handlers.appoint.CreateAppointmentRoomHandler;
 import io.openvidu.server.service.AppointJobService;
@@ -484,7 +485,6 @@ public class AppointConferenceJobHandler {
         // 获取主持人信息
         UserDeviceDeptInfo moderator = userMapper.queryUserInfoByUserId(conference.getUserId());
 
-
         JsonObject params = new JsonObject();
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_EXPIRETIME_PARAM, String.valueOf(System.currentTimeMillis() + 60000));
         params.addProperty(ProtocolElements.INVITE_PARTICIPANT_ID_PARAM, conference.getRoomId());
@@ -496,6 +496,20 @@ public class AppointConferenceJobHandler {
         if (!StringUtils.isEmpty(conference.getPassword())) {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_PASSWORD_PARAM, conference.getPassword());
         }
+
+        List<RpcConnection> rpcConnections = notificationService.getRpcConnectionByUuids(uuidSet);
+        rpcConnections.stream().filter(rpcConnection -> Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.terminal))
+                .forEach(rpcConnection -> {
+                    if (TerminalStatus.online.name().equals(cacheManage.getTerminalStatus(rpcConnection.getUserUuid()))) {
+                        log.info("conferenceBeginJobHandler inviteParticipant uuid={}", rpcConnection.getUserUuid());
+                        params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserUuid());
+                        notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
+                        cacheManage.saveInviteInfo(conference.getRoomId(), rpcConnection.getUserUuid());
+                    } else {
+                        log.info("conferenceBeginJobHandler no inviteParticipant uuid={},online status = {}", rpcConnection.getUserUuid(), cacheManage.getTerminalStatus(rpcConnection.getUserUuid()));
+                    }
+                });
+
         // 邀请通知
         notificationService.getRpcConnections()
                 .stream()
@@ -503,10 +517,7 @@ public class AppointConferenceJobHandler {
                         && Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.terminal)
                         && TerminalStatus.online.name().equals(cacheManage.getTerminalStatus(rpcConnection.getUserUuid())))
                 .forEach(rpcConnection -> {
-                    log.info("conferenceBeginJobHandler inviteParticipant uuid={}", rpcConnection.getUserUuid());
-                    params.addProperty(ProtocolElements.INVITE_PARTICIPANT_TARGET_ID_PARAM, rpcConnection.getUserUuid());
-                    notificationService.sendNotification(rpcConnection.getParticipantPrivateId(), ProtocolElements.INVITE_PARTICIPANT_METHOD, params);
-                    cacheManage.saveInviteInfo(conference.getRoomId(), rpcConnection.getUserUuid());
+
                 });
     }
 

@@ -601,8 +601,8 @@ public abstract class SessionManager {
     @PreDestroy
     public void close() {
         log.info("Closing all sessions and update user/device online status");
-        notificationService.getRpcConnections().forEach(rpcConnection ->
-                cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline));
+//        notificationService.getRpcConnections().forEach(rpcConnection ->
+//                cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline));
         for (String sessionId : sessions.keySet()) {
             try {
                 // stop the record task
