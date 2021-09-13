@@ -163,7 +163,11 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 Conference conference = new Conference();
                 // if create appointment conference
                 if (!StringUtils.isEmpty(ruid) && ruid.startsWith("appt-") && appt != null) {
-                    appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid);
+                    Date date = new Date();
+                    Calendar instance = Calendar.getInstance();
+                    instance.setTime(date);
+                    instance.add(Calendar.MINUTE,appt.getDuration());
+                    appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid,date,instance.getTime());
 
                     conference.setRuid(ruid);
                     roomSubject = appt.getConferenceSubject();

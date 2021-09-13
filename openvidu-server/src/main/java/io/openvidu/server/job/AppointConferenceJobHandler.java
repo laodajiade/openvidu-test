@@ -286,7 +286,7 @@ public class AppointConferenceJobHandler {
                 Session session = sessionManager.createSession(conference.getRoomId(), conference);
                 session.setEndTime(appointConference.getEndTime().getTime());
                 session.setPresetInfo(preset);
-                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid());
+                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid(),null,null);
             } else {
                 log.info("conferenceBeginJobHandler in use:{}", JSON.toJSONString(appointConference));
                 //todo 修改定时任务在下一分钟
