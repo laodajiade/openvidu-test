@@ -170,8 +170,12 @@ public class KurentoParticipant extends Participant {
             session.getCompositeService().createComposite();
         }
 
+        if (TerminalTypeEnum.S == getTerminalType()) {
+            log.info("sip terminal:{} published {} and create sipComposite", getUuid(), publisher.getEndpointName());
+            session.getCompositeService().sipConnect(publisher);
+        }
+
         if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
-            // session.asyncUpdateSipComposite();
             log.info("session.compositeService.updateComposite()  ");
             session.getCompositeService().asyncUpdateComposite();
         }
@@ -311,33 +315,25 @@ public class KurentoParticipant extends Participant {
                                 MediaElement loopbackAlternativeSrc, MediaType loopbackConnectionType, StreamType streamType) {
         log.info("PARTICIPANT {}: Request to publish video in room {} (sdp type {})", this.getParticipantPublicId(),
                 this.session.getSessionId(), sdpType);
-        log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpString);
 
         PublisherEndpoint publisher = this.getPublisher(streamType);
         String sdpResponse = publisher.publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
                 loopbackConnectionType);
 
         // deal part default order in the conference
-        if (isMcuInclude()) {
-            this.session.dealParticipantDefaultOrder(this);
-        }
+        // todo
+//        if (isMcuInclude()) {
+//            this.session.dealParticipantDefaultOrder(this);
+//        }
 
-        log.trace("PARTICIPANT {}: Publishing Sdp ({}) is {}", this.getParticipantPublicId(), sdpType, sdpResponse);
         log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),
                 this.session.getSessionId());
-
-		/*if (this.openviduConfig.isRecordingModuleEnabled()
-				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
-			this.recordingManager.startOneIndividualStreamRecording(session, null, null, this);
-		}*/
 
         if (this.openviduConfig.isLivingModuleEnabled()
                 && this.livingManager.sessionIsBeingLived(session.getSessionId())) {
             this.livingManager.startOneIndividualStreamLiving(session, null, null, this);
         }
 
-//		endpointConfig.getCdr().recordNewPublisher(this, session.getSessionId(), publisher.getStreamId(),
-//				publisher.getMediaOptions(), publisher.createdAt());
         SessionEventRecord.newPublisher(this, session, publisher.getStreamId());
 
         return sdpResponse;
