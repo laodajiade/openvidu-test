@@ -618,6 +618,7 @@ public class CompositeService {
         }
         log.info("uuid {} down wall or leave,{} reconnect hubPort", source.uuid, mixSubscriber.getEndpointName());
         Connect.connect(hubPortOut, mixSubscriber);
+        mixSubscriber.setPubHubPort(null);
     }
 
     private static class CompositeObjectWrapper {
