@@ -410,11 +410,6 @@ public class KurentoSessionManager extends SessionManager {
 
         PublisherEndpoint publishingEndpoint = kParticipant.createPublishingEndpoint(mediaOptions, streamType);
 
-        /*
-         * for (MediaElement elem : kurentoOptions.mediaElements) {
-         * kurentoParticipant.getPublisher().apply(elem); }
-         */
-
         String sdpAnswer = kParticipant.publishToRoom(sdpType, kurentoOptions.sdpOffer, kurentoOptions.doLoopback,
                 kurentoOptions.loopbackAlternativeSrc, kurentoOptions.loopbackConnectionType, streamType);
         // http://task.sudi.best/browse/BASE121-2455 sdk要求修改一下交换地址的顺序
@@ -423,18 +418,12 @@ public class KurentoSessionManager extends SessionManager {
             OpenViduException e = new OpenViduException(Code.MEDIA_SDP_ERROR_CODE,
                     "Error generating SDP response for publishing user " + participant.getParticipantPublicId());
             log.error("PARTICIPANT {}: Error publishing media", participant.getParticipantPublicId(), e);
-//            sessionEventsHandler.onPublishMedia(participant, null, kParticipant.getPublisher().createdAt(),
-//                    kSession.getSessionId(), mediaOptions, sdpAnswer, participants, transactionId, e);
             sessionEventsHandler.onPublishMedia(participant, publishingEndpoint.getStreamId(),
                     kParticipant.getPublisher(streamType).createdAt(), sdpAnswer,
                     transactionId, null, kParticipant.getPublisher(streamType), streamType);
         }
 
         kSession.registerPublisher();
-//        if (Objects.equals(StreamType.SHARING, streamType)
-//                && ConferenceModeEnum.MCU.equals(kSession.getConferenceMode())) {
-//            kSession.getCompositeService().setExistSharing(true);
-//        }
 
         if (sdpAnswer != null) {
             sessionEventsHandler.onPublishMedia(participant, publishingEndpoint.getEndpointName(),

@@ -34,8 +34,9 @@ import java.util.stream.Collectors;
 public class CompositeService {
 
     private final KurentoSession session;
+    @Getter
     private MediaPipeline pipeline;
-
+    @Getter
     private Composite composite;
     private final Object compositeCreateLock = new Object();
     private final Object compositeReleaseLock = new Object();
@@ -205,7 +206,7 @@ public class CompositeService {
         }
         Set<Participant> participants = session.getParticipants();
         if (participants.isEmpty()) {
-            log.warn("MCU updateComposite participants is empty");
+            log.warn("MCU updateComposite but participants is empty");
             return;
         }
 
@@ -360,7 +361,7 @@ public class CompositeService {
         List<CompositeObjectWrapper> source = new ArrayList<>(parts.size());
         StreamType priorityStreamType = parts.size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
         for (Participant part : parts) {
-            if (part.getTerminalType() == TerminalTypeEnum.HDC) {
+            if (part.getTerminalType() == TerminalTypeEnum.HDC || part.getTerminalType() == TerminalTypeEnum.S) {
                 getCompositeElements(part, source, priorityStreamType);
             } else {
                 getCompositeElements(part, source, StreamType.MAJOR);
@@ -406,17 +407,17 @@ public class CompositeService {
                     if (mixSubscriber != null) {
                         if (mixSubscriber.getMixHubPort() == null) {
                             log.info("new videoHubPort {} audioHubPort {}", hubPortOut.getName(), pubHubPort.getName());
-                            internalSinkConnect(hubPortOut, pubHubPort, mixSubscriber);
+                            Connect.connect(hubPortOut, pubHubPort, mixSubscriber);
                             mixSubscriber.setMixHubPort(hubPortOut);
                             mixSubscriber.setPubHubPort(pubHubPort);
                         } else if (mixSubscriber.getPubHubPort() == null) {
                             log.info("change audioHubPort {} -> {}", hubPortOut.getName(), pubHubPort.getName());
-                            internalSinkDisconnect(hubPortOut, mixSubscriber, MediaType.AUDIO);
-                            internalSinkConnect(pubHubPort, mixSubscriber, MediaType.AUDIO);
+                            Connect.disconnect(hubPortOut, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
+                            Connect.connect(pubHubPort, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
                             mixSubscriber.setPubHubPort(pubHubPort);
                         } else if (mixSubscriber.getPubHubPort() != null && !mixSubscriber.getPubHubPort().getId().equals(pubHubPort.getId())) {
                             log.info("change pubHubPort {} -> {}", mixSubscriber.getPubHubPort().getName(), pubHubPort.getName());
-                            internalSinkConnect(pubHubPort, mixSubscriber, MediaType.AUDIO);
+                            Connect.connect(pubHubPort, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
                             mixSubscriber.setPubHubPort(pubHubPort);
                         }
                     }
@@ -551,94 +552,29 @@ public class CompositeService {
         return false;
     }
 
+    /**
+     * SIP特殊处理逻辑
+     */
+    public void sipConnect(PublisherEndpoint publisher) {
+        HubPort pubHubPort;
+        if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
+            pubHubPort = publisher.createMajorShareHubPort(this.composite);
+        }
+
+    }
+
     public void sinkConnect(SubscriberEndpoint subscriberEndpoint) {
         Participant participant = subscriberEndpoint.getOwner();
         for (CompositeObjectWrapper compositeObjectWrapper : this.sourcesPublisher) {
             if (compositeObjectWrapper.uuid.equals(participant.getUuid())) {
                 log.info("sink connect self publisher {} {}", participant.getUuid(), compositeObjectWrapper.streamId);
-                internalSinkConnect(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint);
+                Connect.connect(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint);
                 return;
             }
         }
-        internalSinkConnect(this.getHubPortOut(), subscriberEndpoint);
+        Connect.connect(this.getHubPortOut(), subscriberEndpoint);
     }
 
-    private void internalSinkConnect(final HubPort videoHubPort, final HubPort audioHubPort, final SubscriberEndpoint subscriberEndpoint) {
-        internalSinkDisconnect(videoHubPort, subscriberEndpoint, MediaType.AUDIO);
-        internalSinkConnect(videoHubPort, subscriberEndpoint, MediaType.VIDEO);
-        subscriberEndpoint.setMixHubPort(videoHubPort);
-
-        internalSinkConnect(audioHubPort, subscriberEndpoint, MediaType.AUDIO);
-        subscriberEndpoint.setPubHubPort(audioHubPort);
-    }
-
-    private void internalSinkConnect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
-        hubPort.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
-            }
-
-            @Override
-            public void onError(Throwable cause) {
-                log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
-            }
-        });
-    }
-
-    private void internalSinkConnect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint, final MediaType mediaType) {
-        hubPort.connect(subscriberEndpoint.getEndpoint(), mediaType, new Continuation<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                log.info("MCU subscribe {} {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(), mediaType.name(),
-                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
-            }
-
-            @Override
-            public void onError(Throwable cause) {
-                log.warn("MCU subscribe {} {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(), mediaType.name(),
-                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
-            }
-        });
-    }
-
-    private void internalSinkDisconnect(final MediaElement source, final SubscriberEndpoint subscriberEndpoint) {
-        source.disconnect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
-            @Override
-            public void onSuccess(Void result) throws Exception {
-                log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
-                        source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
-            }
-
-            @Override
-            public void onError(Throwable cause) throws Exception {
-                log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
-                        source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
-            }
-        });
-    }
-
-    private void internalSinkDisconnect(final HubPort source, final SubscriberEndpoint subscriberEndpoint, final MediaType type) {
-        if (type == null) {
-            internalSinkDisconnect(source, subscriberEndpoint);
-        } else {
-            source.disconnect(subscriberEndpoint.getEndpoint(), type, new Continuation<Void>() {
-                @Override
-                public void onSuccess(Void result) throws Exception {
-                    log.info("MCU subscribe {}: {} media elements have been disconnected (source {} -> sink {})",
-                            subscriberEndpoint.getEndpointName(), type, source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
-                }
-
-                @Override
-                public void onError(Throwable cause) throws Exception {
-                    log.info("MCU subscribe {}: Failed to disconnect {} media elements (source {} -> sink {})", subscriberEndpoint.getEndpointName(),
-                            type, source.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
-                }
-            });
-        }
-    }
 
     /**
      * 释放掉已经不需要的hubPort
@@ -676,27 +612,8 @@ public class CompositeService {
             return;
         }
         log.info("uuid {} down wall or leave,{} reconnect hubPort", source.uuid, mixSubscriber.getEndpointName());
-        internalSinkConnect(hubPortOut, mixSubscriber);
+        Connect.connect(hubPortOut, mixSubscriber);
     }
-
-    private void smartReconnect(List<CompositeObjectWrapper> newPoint, CompositeObjectWrapper source) {
-
-//        othersConToHubPortIns.forEach((k, v) -> {
-//            if (Objects.equals(v, source.endpoint.getPubHubPort().getId())) {
-//                Participant owner = source.endpoint.getOwner();
-//                SubscriberEndpoint subscriber = owner.getSubscriber(k);
-//                if (subscriber != null) {
-//                    Optional<CompositeObjectWrapper> find = newPoint.stream().filter(target -> target.uuid.equals(source.uuid)).findFirst();
-//                    if (find.isPresent()) {
-//                        find.ifPresent(o -> internalSinkConnect(o.endpoint.getPubHubPort(), subscriber));
-//                    } else {
-//                        internalSinkConnect(this.hubPortOut, subscriber);
-//                    }
-//                }
-//            }
-//        });
-    }
-
 
     private static class CompositeObjectWrapper {
         String uuid;
@@ -742,5 +659,98 @@ public class CompositeService {
                     ", endpoint=" + (endpoint == null ? "null" : endpoint.getStreamId()) +
                     '}';
         }
+    }
+
+    static class Connect {
+        /**
+         * SIP特殊处理逻辑
+         */
+        public void sipConnect(PublisherEndpoint publisher) {
+
+        }
+
+        private static void connect(final HubPort videoHubPort, final HubPort audioHubPort, final SubscriberEndpoint subscriberEndpoint) {
+            disconnect(videoHubPort, subscriberEndpoint.getEndpoint(), MediaType.AUDIO, subscriberEndpoint.getEndpointName());
+            connect(videoHubPort, subscriberEndpoint.getEndpoint(), MediaType.VIDEO, subscriberEndpoint.getEndpointName());
+            subscriberEndpoint.setMixHubPort(videoHubPort);
+
+            connect(audioHubPort, subscriberEndpoint.getEndpoint(), MediaType.AUDIO, subscriberEndpoint.getEndpointName());
+            subscriberEndpoint.setPubHubPort(audioHubPort);
+
+        }
+
+
+        private static void connect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
+            hubPort.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
+                            hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
+                }
+
+                @Override
+                public void onError(Throwable cause) {
+                    log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
+                            hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
+                }
+            });
+        }
+
+
+        private static void connect(final HubPort source, final MediaElement sink, final MediaType mediaType, String sinkEndpointName) {
+            source.connect(sink, mediaType, new Continuation<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    log.info("MCU subscribe {} {}: Elements have been connected (source {} -> sink {})", sinkEndpointName, mediaType.name(),
+                            source.getTag("debug_name"), sink.getId());
+                }
+
+                @Override
+                public void onError(Throwable cause) {
+                    log.warn("MCU subscribe {} {}: Failed to connect media elements (source {} -> sink {})", sinkEndpointName, mediaType.name(),
+                            source.getTag("debug_name"), sink.getId(), cause);
+                }
+            });
+        }
+
+        //**********************************************************************************
+
+        private static void disconnect(final HubPort source, final MediaElement sink, final MediaType type, String sinkEndPointName) {
+            if (type == null) {
+                Connect.disconnect(source, sink, sinkEndPointName);
+            } else {
+                source.disconnect(sink, type, new Continuation<Void>() {
+                    @Override
+                    public void onSuccess(Void result) throws Exception {
+                        log.info("MCU subscribe {}: {} media elements have been disconnected (source {} -> sink {})",
+                                sinkEndPointName, type, source.getTag("debug_name"), sink.getId());
+                    }
+
+                    @Override
+                    public void onError(Throwable cause) throws Exception {
+                        log.info("MCU subscribe {}: Failed to disconnect {} media elements (source {} -> sink {})", sinkEndPointName,
+                                type, source.getTag("debug_name"), sink.getId(), cause);
+                    }
+                });
+            }
+        }
+
+        private static void disconnect(final MediaElement source, final MediaElement sink, String sinkEndPointName) {
+            source.disconnect(sink, new Continuation<Void>() {
+                @Override
+                public void onSuccess(Void result) throws Exception {
+                    log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", sinkEndPointName,
+                            source.getTag("debug_name"), sink.getId());
+                }
+
+                @Override
+                public void onError(Throwable cause) throws Exception {
+                    log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", sinkEndPointName,
+                            source.getTag("debug_name"), sink.getId(), cause);
+                }
+            });
+        }
+
+
     }
 }

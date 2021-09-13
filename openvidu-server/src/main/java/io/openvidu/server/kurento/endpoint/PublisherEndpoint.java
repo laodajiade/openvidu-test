@@ -373,7 +373,6 @@ public class PublisherEndpoint extends MediaEndpoint {
             default:
                 throw new OpenViduException(Code.MEDIA_SDP_ERROR_CODE, "Sdp type not supported: " + sdpType);
         }
-//		gatherCandidates();
         this.createdAt = System.currentTimeMillis();
         this.streaming = true;
         return sdpResponse;

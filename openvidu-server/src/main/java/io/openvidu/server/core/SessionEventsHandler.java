@@ -216,6 +216,7 @@ public class SessionEventsHandler {
             notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
             notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
             notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
+            notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_DEVICE_MODEL_PARAM, rpcConnection.getDeviceModel());
             notifiedParams.addProperty("order", participant.getOrder());
             if (!Objects.isNull(rpcConnection.getTerminalConfig()))
                 notifiedParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, new Gson().fromJson(rpcConnection.getTerminalConfig(), JsonObject.class));

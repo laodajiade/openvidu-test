@@ -502,6 +502,7 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
     public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
     public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";
+    public static final String PARTICIPANTJOINED_DEVICE_MODEL_PARAM = "deviceModel";
 
     public static final String PARTICIPANTLEFT_METHOD = "participantLeft";
     public static final String PARTICIPANTLEFT_NAME_PARAM = "connectionId";
