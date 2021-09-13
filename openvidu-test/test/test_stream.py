@@ -69,7 +69,6 @@ class TestStream(test.MyTestCase):
                          'participantPublished 错误')
 
         re = moderator_client.ms.get_participants('all')
-        print(re)
 
         # 查看 get_participants 中的流信息
         moderator_client.ms = MeetingService(moderator_client, room_id)

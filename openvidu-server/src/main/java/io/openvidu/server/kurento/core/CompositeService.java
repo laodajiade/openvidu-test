@@ -385,7 +385,9 @@ public class CompositeService {
         }
 
         source.add(new CompositeObjectWrapper(kurentoParticipant, streamType, publisher));
-        getCompositeElements(publisher);
+        if (participant.getTerminalType() != TerminalTypeEnum.S) { //SIP在创建publisher时已经连接上了，整个生命周期都不释放。所以这里没必要进行混流
+            getCompositeElements(publisher);
+        }
     }
 
     /**
@@ -407,7 +409,7 @@ public class CompositeService {
                     if (mixSubscriber != null) {
                         if (mixSubscriber.getMixHubPort() == null) {
                             log.info("new videoHubPort {} audioHubPort {}", hubPortOut.getName(), pubHubPort.getName());
-                            Connect.connect(hubPortOut, pubHubPort, mixSubscriber);
+                            Connect.connectVideoHubAndAudioHub(hubPortOut, pubHubPort, mixSubscriber.getEndpoint(), mixSubscriber.getEndpointName());
                             mixSubscriber.setMixHubPort(hubPortOut);
                             mixSubscriber.setPubHubPort(pubHubPort);
                         } else if (mixSubscriber.getPubHubPort() == null) {
@@ -555,12 +557,13 @@ public class CompositeService {
     /**
      * SIP特殊处理逻辑
      */
-    public void sipConnect(PublisherEndpoint publisher) {
+    public void connectSip(PublisherEndpoint publisher) {
         HubPort pubHubPort;
         if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
             pubHubPort = publisher.createMajorShareHubPort(this.composite);
         }
-
+        Connect.connectVideoHubAndAudioHub(this.hubPortOut, pubHubPort, publisher.getEndpoint(), publisher.getEndpointName());
+        publisher.connect(pubHubPort);
     }
 
     public void sinkConnect(SubscriberEndpoint subscriberEndpoint) {
@@ -568,7 +571,9 @@ public class CompositeService {
         for (CompositeObjectWrapper compositeObjectWrapper : this.sourcesPublisher) {
             if (compositeObjectWrapper.uuid.equals(participant.getUuid())) {
                 log.info("sink connect self publisher {} {}", participant.getUuid(), compositeObjectWrapper.streamId);
-                Connect.connect(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint);
+                Connect.connectVideoHubAndAudioHub(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
+                subscriberEndpoint.setMixHubPort(hubPortOut);
+                subscriberEndpoint.setPubHubPort(compositeObjectWrapper.endpoint.getPubHubPort());
                 return;
             }
         }
@@ -669,14 +674,18 @@ public class CompositeService {
 
         }
 
-        private static void connect(final HubPort videoHubPort, final HubPort audioHubPort, final SubscriberEndpoint subscriberEndpoint) {
-            disconnect(videoHubPort, subscriberEndpoint.getEndpoint(), MediaType.AUDIO, subscriberEndpoint.getEndpointName());
-            connect(videoHubPort, subscriberEndpoint.getEndpoint(), MediaType.VIDEO, subscriberEndpoint.getEndpointName());
-            subscriberEndpoint.setMixHubPort(videoHubPort);
+//        private static void connectVideoHubAndAudioHub(final HubPort videoHubPort, final HubPort audioHubPort, final SubscriberEndpoint subscriberEndpoint) {
+//            connectVideoHubAndAudioHub(videoHubPort, audioHubPort, subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
+//
+//            subscriberEndpoint.setMixHubPort(videoHubPort);
+//            subscriberEndpoint.setPubHubPort(audioHubPort);
+//        }
 
-            connect(audioHubPort, subscriberEndpoint.getEndpoint(), MediaType.AUDIO, subscriberEndpoint.getEndpointName());
-            subscriberEndpoint.setPubHubPort(audioHubPort);
-
+        private static void connectVideoHubAndAudioHub(final HubPort videoHubPort, final HubPort audioHubPort,
+                                                       final MediaElement sink, String sinkEndpointName) {
+            disconnect(videoHubPort, sink, MediaType.AUDIO, sinkEndpointName);
+            connect(videoHubPort, sink, MediaType.VIDEO, sinkEndpointName);
+            connect(audioHubPort, sink, MediaType.AUDIO, sinkEndpointName);
         }
 
 
