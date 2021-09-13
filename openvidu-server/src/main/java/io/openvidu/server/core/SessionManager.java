@@ -775,7 +775,7 @@ public abstract class SessionManager {
 
     private void endApptConferenceInfo(Conference conference) {
         if (conference.getRuid().startsWith("appt-")) {
-            appointConferenceMapper.changeStatusByRuid(ConferenceStatus.FINISHED.getStatus(), conference.getRuid());
+            appointConferenceMapper.changeStatusByRuid(ConferenceStatus.FINISHED.getStatus(), conference.getRuid(),null,null);
         }
     }
 
