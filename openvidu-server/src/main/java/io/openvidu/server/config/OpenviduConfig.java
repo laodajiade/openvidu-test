@@ -344,7 +344,7 @@ public class OpenviduConfig {
 	}
 
 	public boolean isRecordingModuleEnabled() {
-		return false;
+		return this.openviduRecording;
 	}
 
 	public String getOpenViduRecordingPath() {

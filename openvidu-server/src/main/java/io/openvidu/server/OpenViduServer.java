@@ -305,7 +305,7 @@ public class OpenViduServer implements JsonRpcConfigurer {
 			OpenViduServer.wsUrl = OpenViduServer.wsUrl.substring(0, OpenViduServer.wsUrl.length() - 1);
 		}
 
-		if (this.openviduConfig.isRecordingModuleEnabled()) {
+		if (this.openviduConfig.isRecordingModuleEnabled()&& false) {
 			try {
 				this.recordingManager().initializeRecordingManager();
 			} catch (OpenViduException e) {
