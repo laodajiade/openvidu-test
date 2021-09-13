@@ -677,6 +677,7 @@ public class CompositeService {
         }
         log.info("uuid {} down wall or leave,{} reconnect hubPort", source.uuid, mixSubscriber.getEndpointName());
         internalSinkConnect(hubPortOut, mixSubscriber);
+        mixSubscriber.setPubHubPort(null);
     }
 
     private void smartReconnect(List<CompositeObjectWrapper> newPoint, CompositeObjectWrapper source) {
