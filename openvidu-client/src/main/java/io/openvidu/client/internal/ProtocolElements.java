@@ -191,6 +191,7 @@ public class ProtocolElements {
 
     public static final String SET_CONFERENCE_MODE_METHOD = "setConferenceMode";
 
+
     public static final String SETCONFERENCELAYOUT_MODE_METHOD = "setConferenceLayout";
     public static final String SETCONFERENCELAYOUT_AUTOMATICAlly_PARAM = "automatically";
     public static final String SETCONFERENCELAYOUT_MODE_PARAM = "mode";
@@ -199,6 +200,29 @@ public class ProtocolElements {
 
 
     public static final String ACCESS_OUT_METHOD = "accessOut";
+
+    public static final String SET_MUTE_ALL_METHOD = "setMuteAll";
+    public static final String SET_MUTE_ALL_NOTIFY = "setMuteAllNotify";
+    public static final String SET_MUTE_ALL_ROOMID_PARAM = "roomId";
+    public static final String SET_MUTE_ALL_ORIGINATOR_PARAM = "originator";
+    public static final String SET_MUTE_ALL_QUIETSTATUSINROOM_PARAM = "quietStatusInRoom";
+
+    public static final String SET_PARTSELF_DISMISS_MUTE_METHOD ="setPartSelfDismissMute";
+    public static final String SET_PARTSELF_DISMISS_MUTE_ROOMID_PARAM ="roomId";
+    public static final String SET_PARTSELF_DISMISS_MUTE_ORIGINATOR_PARAM="originator";
+    public static final String SET_PARTSELF_DISMISS_MUTE_ALLOWPARTDISMISSMUTE_PARAM="allowPartDismissMute";
+    public static final String SET_PARTSELF_DISMISS_MUTE_NOTIFY="setPartSelfDismissMuteNotify";
+
+
+
+    public static final String APPLY_DISMISS_MUTE_METHOD = "applyDismissMute";
+    public static final String APPLY_DISMISS_MUTE_NOTIFY = "applyDismissMuteNotify";
+    public static final String APPLY_DISMISS_MUTE_ROOMID_PARAM = "roomId";
+    public static final String APPLY_DISMISS_MUTE_ORIGINATOR_PARAM = "originator";
+
+
+
+
 
     public static final String CREATE_ROOM_METHOD = "createRoom";
     public static final String CREATE_ROOM_ID_PARAM = "roomId";
@@ -216,6 +240,7 @@ public class ProtocolElements {
     public static final String CREATE_ROOM_CONFERENCE_MODE_PARAM = "conferenceMode";
     public static final String CREATE_ROOM_RUID_PARAM = "ruid";
     public static final String CREATE_ROOM_ID_TYPE_PARAM = "roomIdType";
+
 
     public static final String SHARE_SCREEN_METHOD = "shareScreen";
     public static final String SHARE_ROOM_ID_PARAM = "roomId";
@@ -850,7 +875,7 @@ public class ProtocolElements {
             STATISTICS_DURATION_METHOD, DELETE_CONFERENCE_HISTORY_METHOD, GET_MEETING_QUALITY_METHOD, UPLOAD_MEETING_QUALITY_METHOD,
             GET_JPUSH_MESSAGE_METHOD, CLEAN_JPUSH_MESSAGE_METHOD, READ_JPUSH_MESSAGE_METHOD, GETNOTREADJPUSHMESSAGE_METHOD, SAVE_JPUSH_METHOD,
             GET_FREQUENT_CONTACTS, SET_FREQUENT_CONTACTS, GET_FIXED_ROOM_LIST_METHOD, GET_ROOM_INFO_METHOD, QUERY_OPERATION_PERMISSION,
-            URGED_PEOPLE_TO_END_METHOD, CHANGE_MEETING_ROOM_METHOD, ECHO_METHOD)
+            URGED_PEOPLE_TO_END_METHOD, CHANGE_MEETING_ROOM_METHOD, ECHO_METHOD,SET_MUTE_ALL_METHOD,APPLY_DISMISS_MUTE_METHOD,SET_PARTSELF_DISMISS_MUTE_METHOD)
     );
 
     /**

@@ -32,6 +32,10 @@ public class SessionPreset {
 
     @Getter
     @Setter
+    private SessionPresetEnum allowPartDismissMute = SessionPresetEnum.off; //允许与会者自我解除静音 默认关闭
+
+    @Getter
+    @Setter
     private SessionPresetEnum allowRecord = SessionPresetEnum.on;//允许录制
 
     @Getter

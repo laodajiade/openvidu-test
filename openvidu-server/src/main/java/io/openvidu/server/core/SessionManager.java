@@ -117,6 +117,8 @@ public abstract class SessionManager {
 
     public abstract void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId);
 
+    public abstract void setMuteAll(String sessionId,String originator, SessionPresetEnum sessionPresetEnum);
+
     public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
                                       boolean closeWebSocket);
 
@@ -775,7 +777,7 @@ public abstract class SessionManager {
 
     private void endApptConferenceInfo(Conference conference) {
         if (conference.getRuid().startsWith("appt-")) {
-            appointConferenceMapper.changeStatusByRuid(ConferenceStatus.FINISHED.getStatus(), conference.getRuid(),null,null);
+            appointConferenceMapper.changeStatusByRuid(ConferenceStatus.FINISHED.getStatus(), conference.getRuid(), null, null);
         }
     }
 

@@ -167,6 +167,32 @@ public class KurentoSessionManager extends SessionManager {
         UseTime.point("join room p4");
     }
 
+    @Override
+    public void setMuteAll(String sessionId, String originator, SessionPresetEnum sessionPresetEnum) {
+        SessionPreset preset = getPresetInfo(sessionId);
+        Session session = getSession(sessionId);
+        if (SessionPresetEnum.off.equals(sessionPresetEnum)) {
+            //设置全体静音   所有人静音
+            preset.setQuietStatusInRoom(SessionPresetEnum.off);
+            session.getMajorPartExcludeModeratorConnect().stream().forEach(participant -> {
+                //不关闭分享者 麦克风
+                if (participant.getShareStatus().equals(ParticipantShareStatus.off)) {
+                    participant.setMicStatus(ParticipantMicStatus.off);
+                }
+            });
+        } else {
+            //取消全体静音   打开墙上人员麦克风
+            session.getMajorPartExcludeModeratorConnect().stream().filter(x -> x.getOrder() <= preset.getSfuPublisherThreshold() - 1).forEach(participant -> {
+                participant.setMicStatus(ParticipantMicStatus.on);
+            });
+        }
+        JsonObject result = new JsonObject();
+        result.addProperty("roomId", sessionId);
+        result.addProperty("originator", originator);
+        result.addProperty("quietStatusInRoom", sessionPresetEnum.name());
+        rpcNotificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.SET_MUTE_ALL_NOTIFY, result);
+    }
+
     private static final Object leaveRoomLock = new Object();
 
     @Override
