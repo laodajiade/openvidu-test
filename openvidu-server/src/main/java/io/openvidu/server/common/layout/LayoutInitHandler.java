@@ -126,7 +126,7 @@ public class LayoutInitHandler {
                 } else if (layoutModeEnum.getMode() <= 9) {
                     return LayoutModeEnum.NINE;
                 } else {
-                    return LayoutModeEnum.SIXTEEN;
+                    return LayoutModeEnum.NINE;
                 }
             case ROSTRUM:
                 if (layoutModeEnum.getMode() <= 1) {
