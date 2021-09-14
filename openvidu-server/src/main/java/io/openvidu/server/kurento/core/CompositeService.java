@@ -577,7 +577,12 @@ public class CompositeService {
                 return;
             }
         }
+        connectHubPortOut(subscriberEndpoint);
+    }
+
+    public void connectHubPortOut(SubscriberEndpoint subscriberEndpoint) {
         Connect.connect(this.getHubPortOut(), subscriberEndpoint);
+        subscriberEndpoint.setPubHubPort(null);
     }
 
 
