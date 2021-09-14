@@ -19,10 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -41,6 +43,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
     @Autowired
     private RtcUserClient rtcUserClient;
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     @Value("${joinroom.rate.limiter:30}")
     public void setRateLimiter(double rate) {
@@ -327,7 +332,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     participant = sessionManager.newParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata,
                             role.name(), location, platform, rpcConnection.getDeviceModel(), rpcConnection.getAbility(), rpcConnection.getFunctionality());
                 }
-
+                participant.setApplicationContext(applicationContext);
                 Long userId = rpcConnection.getUserId();
                 String serialNumber = rpcConnection.getSerialNumber();
                 participant.setPreset(preset);
