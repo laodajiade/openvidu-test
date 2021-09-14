@@ -327,6 +327,14 @@ public class RpcHandlerFactory {
     @Resource
     private QueryOperationPermissionHandler queryOperationPermissionHandler;
     @Resource
+    private SetMuteAllHandler setMuteAllHandler;
+    @Resource
+    ApplyDismissMuteHandler applyDismissMuteHandler;
+    @Resource
+    SetPartSelfDismissMuteHandler setPartSelfDismissMute;
+
+
+    @Resource
     private Map<String, ExRpcAbstractHandler> exHandlersMap;
 
 
@@ -334,6 +342,9 @@ public class RpcHandlerFactory {
     public void init() {
         handlersMap.putAll(exHandlersMap);
 
+        handlersMap.put(ProtocolElements.APPLY_DISMISS_MUTE_METHOD, applyDismissMuteHandler);
+        handlersMap.put(ProtocolElements.SET_MUTE_ALL_METHOD, setMuteAllHandler);
+        handlersMap.put(ProtocolElements.SET_PARTSELF_DISMISS_MUTE_METHOD, setPartSelfDismissMute);
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD, accessInHandler);
         handlersMap.put(ProtocolElements.CONFIRM_APPLY_FOR_LOGIN_METHOD, confirmApplyForLoginHandler);
         handlersMap.put(ProtocolElements.ACCESS_OUT_METHOD, accessOutHandler);
