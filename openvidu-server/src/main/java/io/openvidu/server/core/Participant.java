@@ -63,7 +63,6 @@ public class Participant {
     @Setter
     private String uuid;
     @Getter
-    @Setter
     protected int order;
 
     @Getter
@@ -511,5 +510,11 @@ public class Participant {
 
     public boolean ableToUpdateRecord() {
         return getRole().needToPublish();
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+                .sessionId(sessionId).uuid(uuid).field("order").updateStatus(order).build()));
     }
 }

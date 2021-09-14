@@ -11,7 +11,7 @@ public class StatusEvent {
     private String sessionId;
     private String uuid;
     private String field;
-    private String updateStatus;
+    private Object updateStatus;
 
     @Override
     public String toString() {
