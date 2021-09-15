@@ -315,12 +315,6 @@ public class KurentoParticipant extends Participant {
         String sdpResponse = publisher.publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
                 loopbackConnectionType);
 
-        // deal part default order in the conference
-        // todo
-//        if (isMcuInclude()) {
-//            this.session.dealParticipantDefaultOrder(this);
-//        }
-
         log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),
                 this.session.getSessionId());
 
