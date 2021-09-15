@@ -468,6 +468,7 @@ public class RpcHandlerFactory {
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
+        log.info("requestMethod:{},gethandlerMap{}",requestMethod,handlersMap.get(requestMethod));
         return handlersMap.getOrDefault(requestMethod, null);
     }
 
