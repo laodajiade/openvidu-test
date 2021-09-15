@@ -44,7 +44,7 @@ public class UploadTerminalInfoHandler extends RpcAbstractHandler {
                 Set<Participant> participants = session.getParticipants();
                 notificationService.sendBatchNotification(participants, ProtocolElements.TERMINAL_INFO_MODIFIED_NOTIFY_METHOD, params);
             } else {
-                log.error("NOT FIND THE PARTICIPANT WHEN UPLOAD TERMINAL INFO.");
+                log.warn("NOT FIND THE PARTICIPANT WHEN UPLOAD TERMINAL INFO.");
             }
         } else {
             log.warn("User:{} did not join a conference session yet.", rpcConnection.getUserUuid());

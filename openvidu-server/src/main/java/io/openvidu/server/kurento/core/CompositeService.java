@@ -179,27 +179,17 @@ public class CompositeService {
         element.removeErrorListener(subscription);
     }
 
-    public Composite getComposite() {
-        return composite;
-    }
-
     public String getMixStreamId() {
         return mixStreamId;
     }
-
-
-    public MediaPipeline getPipeline() {
-        return pipeline;
-    }
-
 
     public void asyncUpdateComposite() {
         compositeThreadPoolExes.execute(this::updateComposite);
     }
 
     private void updateComposite() {
-        log.info("MCU updateComposite {}", session.getSessionId());
         SafeSleep.sleepMilliSeconds(200);
+        log.info("MCU updateComposite {}", session.getSessionId());
         if (session.isClosed() || session.isClosing()) {
             log.info("session is closed or is closing,break MCU updateComposite");
             return;
@@ -219,13 +209,13 @@ public class CompositeService {
                 newPoint = normalLayout();
             }
 
-            if (isLayoutChange(newPoint, true)) {
+            if (isLayoutChange(newPoint, true) || true) {
                 log.info("The layout of {} has changed", session.getSessionId());
                 if (newPoint.size() > 0) {
                     try {
                         session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                                 session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
-                        if (isLayoutChange(newPoint, false)) {
+                        if (isLayoutChange(newPoint, false) || true) {
                             conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
                         }
 
