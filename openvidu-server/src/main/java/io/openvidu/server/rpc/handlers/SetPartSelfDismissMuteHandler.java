@@ -62,6 +62,7 @@ public class SetPartSelfDismissMuteHandler extends RpcAbstractHandler {
             result.addProperty("originator", originator);
             result.addProperty("allowPartDismissMute", allowPartDismissMute);
             rpcNotificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.SET_PARTSELF_DISMISS_MUTE_NOTIFY, result);
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         } catch (Exception e) {
             log.error("setMuteAll error {}, {}", request.getParams(), rpcConnection.toString(), e);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
