@@ -170,11 +170,6 @@ public class KurentoParticipant extends Participant {
             session.getCompositeService().createComposite();
         }
 
-        if (TerminalTypeEnum.S == getTerminalType()) {
-            log.info("sip terminal:{} published {} connected to sip", getUuid(), publisher.getEndpointName());
-            session.getCompositeService().connectSip(publisher);
-        }
-
         if (Objects.equals(ConferenceModeEnum.MCU, session.getConferenceMode())) {
             log.info("session.compositeService.updateComposite()  ");
             session.getCompositeService().asyncUpdateComposite();
@@ -319,12 +314,6 @@ public class KurentoParticipant extends Participant {
         PublisherEndpoint publisher = this.getPublisher(streamType);
         String sdpResponse = publisher.publish(sdpType, sdpString, doLoopback, loopbackAlternativeSrc,
                 loopbackConnectionType);
-
-        // deal part default order in the conference
-        // todo
-//        if (isMcuInclude()) {
-//            this.session.dealParticipantDefaultOrder(this);
-//        }
 
         log.info("PARTICIPANT {}: Is now publishing video in room {}", this.getParticipantPublicId(),
                 this.session.getSessionId());

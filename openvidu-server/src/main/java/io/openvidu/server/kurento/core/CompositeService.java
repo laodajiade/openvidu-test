@@ -563,7 +563,7 @@ public class CompositeService {
             pubHubPort = publisher.createMajorShareHubPort(this.composite);
         }
         Connect.connectVideoHubAndAudioHub(this.hubPortOut, pubHubPort, publisher.getEndpoint(), publisher.getEndpointName());
-        publisher.connect(pubHubPort);
+
     }
 
     public void sinkConnect(SubscriberEndpoint subscriberEndpoint) {
@@ -736,13 +736,13 @@ public class CompositeService {
             } else {
                 source.disconnect(sink, type, new Continuation<Void>() {
                     @Override
-                    public void onSuccess(Void result) throws Exception {
+                    public void onSuccess(Void result) {
                         log.info("MCU subscribe {}: {} media elements have been disconnected (source {} -> sink {})",
                                 sinkEndPointName, type, source.getTag("debug_name"), sink.getId());
                     }
 
                     @Override
-                    public void onError(Throwable cause) throws Exception {
+                    public void onError(Throwable cause) {
                         log.info("MCU subscribe {}: Failed to disconnect {} media elements (source {} -> sink {})", sinkEndPointName,
                                 type, source.getTag("debug_name"), sink.getId(), cause);
                     }
@@ -753,13 +753,13 @@ public class CompositeService {
         private static void disconnect(final MediaElement source, final MediaElement sink, String sinkEndPointName) {
             source.disconnect(sink, new Continuation<Void>() {
                 @Override
-                public void onSuccess(Void result) throws Exception {
+                public void onSuccess(Void result) {
                     log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", sinkEndPointName,
                             source.getTag("debug_name"), sink.getId());
                 }
 
                 @Override
-                public void onError(Throwable cause) throws Exception {
+                public void onError(Throwable cause) {
                     log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", sinkEndPointName,
                             source.getTag("debug_name"), sink.getId(), cause);
                 }
