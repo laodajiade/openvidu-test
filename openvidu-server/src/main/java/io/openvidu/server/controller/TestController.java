@@ -29,8 +29,8 @@ public class TestController {
     @Autowired
     RestTemplate restTemplate;
 
-    @Value("${openvidu.url}")
-    private String openviduUrl;
+    @Value("${server.url}")
+    private String serverUrl;
 
     @ApiOperation("查询每个企业MCU临界值")
     @GetMapping("/queryCorpMcu")
@@ -63,9 +63,9 @@ public class TestController {
                 robotParam.put("msgtype", "text");
                 JSONObject connect = new JSONObject();
                 robotParam.put("text", connect);
-                connect.put("content", openviduUrl + " 的【" + corporation.getCorpName() + "】MCU值修改为 " + mcuThreshold);
+                connect.put("content", serverUrl + " 的【" + corporation.getCorpName() + "】MCU值修改为 " + mcuThreshold);
 
-                if (openviduUrl.contains(".200")) {
+                if (serverUrl.contains(".200")) {
                     System.out.println(restTemplate.postForObject(robot_dev, robotParam.toString(), String.class));
                 } else {
                     System.out.println(restTemplate.postForObject(robot, robotParam.toString(), String.class));
@@ -112,9 +112,9 @@ public class TestController {
                 robotParam.put("msgtype", "text");
                 JSONObject connect = new JSONObject();
                 robotParam.put("text", connect);
-                connect.put("content", openviduUrl + " 的【" + corporation.getCorpName() + "】墙上人数修改为 " + publisherThreshold);
+                connect.put("content", serverUrl + " 的【" + corporation.getCorpName() + "】墙上人数修改为 " + publisherThreshold);
 
-                if (openviduUrl.contains(".200")) {
+                if (serverUrl.contains(".200")) {
                     System.out.println(restTemplate.postForObject(robot_dev, robotParam.toString(), String.class));
                 } else {
                     System.out.println(restTemplate.postForObject(robot, robotParam.toString(), String.class));
