@@ -641,17 +641,15 @@ public class PublisherEndpoint extends MediaEndpoint {
         }
 
         KurentoParticipant kurentoParticipant = (KurentoParticipant) getOwner();
-        if (TerminalTypeEnum.S != kurentoParticipant.getTerminalType()) {
-            internalSinkConnect(current, passThru);
-        } else if (ConferenceModeEnum.SFU == kurentoParticipant.getSession().getConferenceMode()) {    // SIP terminal && SFU
-            internalSinkConnect(current, passThru);
-        }
+        internalSinkConnect(current, passThru);
 
         if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-            internalSinkConnect(current, createMajorShareHubPort(this.getMajorShareComposite()), MediaType.VIDEO);
+            internalSinkConnect(current, createMajorShareHubPort(this.getMajorShareComposite()));
             if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {
                 // change the link order and unify the capability(send recv) of both two points
-                internalSinkConnect(pubHubPort, current, MediaType.VIDEO);
+                // internalSinkConnect(pubHubPort, current, MediaType.VIDEO);
+                log.info("sip terminal:{} published {} connected to sip", this.getOwner().getUuid(), this.getEndpointName());
+                getCompositeService().connectSip(this);
             }
         }
 
