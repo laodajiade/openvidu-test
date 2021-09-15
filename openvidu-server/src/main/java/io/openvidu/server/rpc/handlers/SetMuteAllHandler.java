@@ -53,6 +53,7 @@ public class SetMuteAllHandler extends RpcAbstractHandler {
                 return;
             }
             sessionManager.setMuteAll(sessionId,originator,quietStatusInRoom.equals(SessionPresetEnum.off.name())?SessionPresetEnum.off:SessionPresetEnum.smart);
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         } catch (Exception e) {
             log.error("setMuteAll error {}, {}", request.getParams(), rpcConnection.toString(), e);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),

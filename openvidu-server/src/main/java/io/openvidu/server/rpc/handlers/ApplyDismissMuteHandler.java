@@ -65,6 +65,7 @@ public class ApplyDismissMuteHandler extends RpcAbstractHandler {
             result.addProperty("roomId", sessionId);
             result.addProperty("originator", originator);
             rpcNotificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.APPLY_DISMISS_MUTE_NOTIFY, result);
+            notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         } catch (Exception e) {
             log.error("setMuteAll error {}, {}", request.getParams(), rpcConnection.toString(), e);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
