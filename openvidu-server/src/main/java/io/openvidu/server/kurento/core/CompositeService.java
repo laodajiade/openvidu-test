@@ -557,6 +557,7 @@ public class CompositeService {
         if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
             pubHubPort = publisher.createMajorShareHubPort(this.composite);
         }
+        publisher.getEndpoint().connect(pubHubPort);
         Connect.connectVideoHubAndAudioHub(this.hubPortOut, pubHubPort, publisher.getEndpoint(), publisher.getEndpointName());
 
     }
