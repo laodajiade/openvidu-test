@@ -504,6 +504,7 @@ public class ProtocolElements {
     public static final String NOTIFY_SET_IM_MODE_METHOD = "notifySetImMode";
 
     public static final String ECHO_METHOD = "echo";
+    public static final String UPDATE_CONFERENCE_LAYOUT_METHOD = "updateConferenceLayout";
 
     // ---------------------------- SERVER RESPONSES & EVENTS -----------------
 
