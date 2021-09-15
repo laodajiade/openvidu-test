@@ -7,10 +7,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -20,6 +22,15 @@ import java.util.List;
 public class TestController {
     @Autowired
     CorporationMapper corporationMapper;
+
+    private static final String robot = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=80356c9d-697c-4787-aafa-f0f2c6061d13";
+    private static final String robot_dev = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8e67beda-cba1-475a-bdb1-541016b34a01";
+
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Value("${openvidu.url}")
+    private String openviduUrl;
 
     @ApiOperation("查询每个企业MCU临界值")
     @GetMapping("/queryCorpMcu")
@@ -47,6 +58,19 @@ public class TestController {
                 corporation.setMcuThreshold(mcuThreshold);
                 corporationMapper.updateOtherByPrimaryKey(corporation);
                 jsonObject.put(corporation.getCorpName(), corporation.getMcuThreshold());
+
+                JSONObject robotParam = new JSONObject();
+                robotParam.put("msgtype", "text");
+                JSONObject connect = new JSONObject();
+                robotParam.put("text", connect);
+                connect.put("content", openviduUrl + " 的【" + corporation.getCorpName() + "】MCU值修改为 " + mcuThreshold);
+
+                if (openviduUrl.contains(".200")) {
+                    System.out.println(restTemplate.postForObject(robot_dev, robotParam.toString(), String.class));
+                } else {
+                    System.out.println(restTemplate.postForObject(robot, robotParam.toString(), String.class));
+                }
+
                 return jsonObject;
             }
         }
@@ -83,6 +107,18 @@ public class TestController {
                 corporation.setSfuPublisherThreshold(publisherThreshold);
                 corporationMapper.updateOtherByPrimaryKey(corporation);
                 jsonObject.put(corporation.getCorpName(), corporation.getSfuPublisherThreshold());
+
+                JSONObject robotParam = new JSONObject();
+                robotParam.put("msgtype", "text");
+                JSONObject connect = new JSONObject();
+                robotParam.put("text", connect);
+                connect.put("content", openviduUrl + " 的【" + corporation.getCorpName() + "】墙上人数修改为 " + publisherThreshold);
+
+                if (openviduUrl.contains(".200")) {
+                    System.out.println(restTemplate.postForObject(robot_dev, robotParam.toString(), String.class));
+                } else {
+                    System.out.println(restTemplate.postForObject(robot, robotParam.toString(), String.class));
+                }
                 return jsonObject;
             }
         }

@@ -32,13 +32,13 @@ public class PublishVideoHandler extends RpcAbstractHandler {
         Session session = sessionManager.getSession(rpcConnection.getSessionId());
         if (session == null) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.UNRECOGNIZED_API);
+                    null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
             return;
         }
         Optional<Participant> participantOptional = session.getParticipantByUUID(rpcConnection.getUserUuid());
         if (!participantOptional.isPresent()) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.UNRECOGNIZED_API);
+                    null, ErrorCodeEnum.PARTICIPANT_NOT_FOUND);
             return;
         }
 
