@@ -154,7 +154,7 @@ public class SessionEventsHandler {
         roomInfoJson.addProperty("speakerUuid", session.getSpeakerPart().isPresent() ? session.getSpeakerPart().get().getUuid() : "");
         roomInfoJson.addProperty("isRecording", session.getIsRecording());
         roomInfoJson.addProperty("quietStatusInRoom", session.getPresetInfo().getQuietStatusInRoom().name());
-        roomInfoJson.addProperty("allowPartDismissMute",participant.getPreset().getAllowPartDismissMute().name());
+        roomInfoJson.addProperty("allowPartDismissMute", participant.getPreset().getAllowPartDismissMute().name());
         if (!session.isAutomatically()) {
             roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
         }
@@ -217,7 +217,8 @@ public class SessionEventsHandler {
             notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_IS_RECONNECTED_PARAM, rpcConnection.isReconnected());
             notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ABILITY_PARAM, rpcConnection.getAbility());
             notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_FUNCTIONALITY_PARAM, rpcConnection.getFunctionality());
-            notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_DEVICE_MODEL_PARAM, rpcConnection.getDeviceModel());
+            notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_TERMINAL_TYPE_PARAM, rpcConnection.getTerminalType().name());
+            notifiedParams.addProperty(ProtocolElements.PARTICIPANTJOINED_ROLE_PARAM, participant.getRole().name());
             notifiedParams.addProperty("order", participant.getOrder());
             if (!Objects.isNull(rpcConnection.getTerminalConfig()))
                 notifiedParams.add(ProtocolElements.PARTICIPANTJOINED_TERMINALCONFIG_PARAM, new Gson().fromJson(rpcConnection.getTerminalConfig(), JsonObject.class));

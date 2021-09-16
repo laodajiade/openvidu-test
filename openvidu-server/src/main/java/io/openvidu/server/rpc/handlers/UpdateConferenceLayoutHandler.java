@@ -1,5 +1,6 @@
 package io.openvidu.server.rpc.handlers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -24,7 +25,8 @@ public class UpdateConferenceLayoutHandler extends ExRpcAbstractHandler<JsonObje
         String roomId = BindValidate.notEmptyAndGet(params, "roomId");
         LayoutModeTypeEnum layoutModeType = BindValidate.notEmptyAndGet(params, "layoutModeType", LayoutModeTypeEnum.class);
         long timestamp = BindValidate.notEmptyAndGet(params, "timestamp", Long.class);
-        LayoutModeEnum mode = BindValidate.notEmptyAndGet(params, "mode", LayoutModeEnum.class);
+        JsonArray layout = BindValidate.notEmptyAndGet(params, "layout", JsonArray.class);
+        LayoutModeEnum mode = LayoutModeEnum.getLayoutMode(BindValidate.notEmptyAndGet(params, "mode", Integer.class));
 
         Participant participant = sanityCheckOfSession(rpcConnection);
         Session session = sessionManager.getSession(roomId);
@@ -32,6 +34,8 @@ public class UpdateConferenceLayoutHandler extends ExRpcAbstractHandler<JsonObje
         if (participant.getRole() != OpenViduRole.MODERATOR) {
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
+
+        session.getModeratorLayoutInfo().updateLayout(timestamp, mode, layoutModeType, layout, participant);
 
         return RespResult.ok();
     }

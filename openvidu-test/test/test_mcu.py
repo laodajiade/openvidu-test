@@ -6,6 +6,7 @@ from loguru import logger
 
 import test
 from test.service.services import MeetingService
+from datetime import datetime
 
 
 class TestMCU(test.MyTestCase):
@@ -484,6 +485,34 @@ class TestMCU(test.MyTestCase):
         notify = moderator_client.find_any_notify('switchVoiceModeNotify')
         self.assertEqual(notify['params']['operation'], 'off')
         self.assertEqual(notify['params']['uuid'], part_client.uuid, 'uuid错误')
+
+    def test_update_conference_layout(self):
+        """ 主持人修改MCU布局
+        测试目的：主持人修改MCU布局
+        测试过程:1、主持人入会，切换MCU模式
+        2、与会者入会
+        3、主持人上报2人布局
+        4、主持人上报1人布局
+        结果期望：回调的布局和主持人上报的一样
+        """
+        # 主持人入会
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        self.set_mcu_mode(moderator_client)
+        time.sleep(2)
+        part_client, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+
+        logger.info('step 3')
+
+        layout = []
+        layout.append({'uuid': moderator_client.uuid, 'streamType': 'MAJOR'})
+        layout.append({'uuid': part_client.uuid, 'streamType': 'MAJOR'})
+        params = {'mode': 2, 'layoutModeType': 'NORMAL', 'roomId': room_id, 'timestamp': datetime.now().timestamp(),
+                  'layout': layout}
+
+        re = moderator_client.request('updateConferenceLayout', params)
+        self.assertEqual(re[0], 0)
+        logger.info('step 4')
 
     ############################################################
 

@@ -36,7 +36,8 @@ public class GetRoomLayoutHandler extends RpcAbstractHandler {
             return;
         }
         LayoutModeEnum layoutModeEnum = conferenceSession.getLayoutMode();
-        JsonArray layoutInfo = conferenceSession.getLayoutInfo();
+        //JsonArray layoutInfo = conferenceSession.getLayoutInfo();
+        JsonArray layoutInfo = new JsonArray();
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_MODE_PARAM, layoutModeEnum.getMode());
         jsonObject.addProperty(ProtocolElements.GETROOMLAYOUT_TYPE_PARAM, conferenceSession.getLayoutChangeTypeEnum().name());
