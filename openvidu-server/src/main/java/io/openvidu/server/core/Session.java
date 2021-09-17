@@ -85,7 +85,9 @@ public class Session implements SessionInterface {
     protected LayoutModeTypeEnum layoutModeTypeEnum = LayoutModeTypeEnum.NORMAL;
     protected JsonArray layoutCoordinates = LayoutInitHandler.getLayoutByMode(layoutModeTypeEnum, LayoutModeEnum.ONE);
     protected LayoutChangeTypeEnum layoutChangeTypeEnum;
-    protected JsonArray layoutInfo = new JsonArray(1);
+    //protected JsonArray layoutInfo2 = new JsonArray(1);
+    @Getter
+    protected ModeratorLayoutInfo moderatorLayoutInfo;
     protected int moderatorIndex = -1;
     protected int delayConfCnt;
     protected int delayTimeUnit = 20 * 60;    // default 20min
@@ -149,13 +151,11 @@ public class Session implements SessionInterface {
         this.preset = previousSession.preset;
         this.layoutMode = previousSession.getLayoutMode();
         this.layoutChangeTypeEnum = previousSession.getLayoutChangeTypeEnum();
-        this.layoutInfo = previousSession.getLayoutInfo();
         this.delayConfCnt = previousSession.delayConfCnt;
         this.subtitleConfig = previousSession.getSubtitleConfig();
         this.languages = previousSession.getLanguages();
         this.corpMcuConfig = previousSession.getCorpMcuConfig();
-
-//		this.traceId = RandomStringUtils.randomAlphabetic(6);
+        this.moderatorLayoutInfo = new ModeratorLayoutInfo(this);
     }
 
     public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
@@ -171,8 +171,7 @@ public class Session implements SessionInterface {
         this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
         this.delayConfCnt = 0;
         this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;    // default 20min
-
-//		this.traceId = RandomStringUtils.randomAlphabetic(6);
+        this.moderatorLayoutInfo = new ModeratorLayoutInfo(this);
     }
 
     public SubtitleConfigEnum getSubtitleConfig() {
@@ -355,27 +354,27 @@ public class Session implements SessionInterface {
         this.layoutChangeTypeEnum = layoutChangeTypeEnum;
     }
 
-    public JsonArray getLayoutInfo() {
-        return layoutInfo;
-    }
-
-    public void setLayoutInfo(JsonArray layoutInfo) {
-        this.layoutInfo = layoutInfo;
-    }
+//    public JsonArray getLayoutInfo() {
+//        return layoutInfo;
+//    }
+//
+//    public void setLayoutInfo(JsonArray layoutInfo) {
+//        this.layoutInfo = layoutInfo;
+//    }
 
     public int getModeratorIndex() {
         return moderatorIndex;
     }
 
-    public void setModeratorIndex(String moderatorPublicId) {
-        int length = layoutInfo.size();
-        for (int i = 0; i < length; i++) {
-            if (layoutInfo.get(i).getAsString().equals(moderatorPublicId)) {
-                this.moderatorIndex = i;
-                break;
-            }
-        }
-    }
+//    public void setModeratorIndex(String moderatorPublicId) {
+//        int length = layoutInfo.size();
+//        for (int i = 0; i < length; i++) {
+//            if (layoutInfo.get(i).getAsString().equals(moderatorPublicId)) {
+//                this.moderatorIndex = i;
+//                break;
+//            }
+//        }
+//    }
 
     public void setDelayConfCnt(int delayConfCnt) {
         this.delayConfCnt = delayConfCnt;
@@ -1512,68 +1511,35 @@ public class Session implements SessionInterface {
 
     }
 
-    public synchronized void evictReconnectOldPart(String partPublicId) {
-        if (StringUtils.isEmpty(partPublicId)) return;
-        if (Objects.equals(ConferenceModeEnum.MCU, getConferenceMode())) {
-            for (JsonElement element : majorShareMixLinkedArr) {
-                JsonObject jsonObject = element.getAsJsonObject();
-                if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
-                    majorShareMixLinkedArr.remove(element);
-                    if (automatically && !Objects.equals(LayoutModeEnum.ONE, layoutMode)
-                            && majorShareMixLinkedArr.size() < layoutMode.getMode()) {
-                        switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
-                    }
-                    break;
-                }
-            }
-
-            log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
-        } else {
-            for (JsonElement element : layoutInfo) {
-                if (Objects.equals(element.getAsString(), partPublicId)) {
-                    layoutInfo.remove(element);
-                    break;
-                }
-            }
-            if (!Objects.isNull(layoutInfo) && layoutInfo.size() > 0) {
-                setLayoutMode(LayoutModeEnum.getLayoutMode(layoutInfo.size()));
-            }
-
-            log.info("evictReconnectOldPart layoutInfo:{}", layoutInfo.toString());
-        }
-    }
-
-    //delete 2.0 use session.getCompositeService().getLayoutCoordinates()
-// 	@Deprecated
-//	public JsonArray getCurrentPartInMcuLayout() {
-//    	JsonArray layoutInfos = new JsonArray(50);
-//    	if (majorShareMixLinkedArr.size() == 0) return layoutInfos;
+//    public synchronized void evictReconnectOldPart(String partPublicId) {
+//        if (StringUtils.isEmpty(partPublicId)) return;
+//        if (Objects.equals(ConferenceModeEnum.MCU, getConferenceMode())) {
+//            for (JsonElement element : majorShareMixLinkedArr) {
+//                JsonObject jsonObject = element.getAsJsonObject();
+//                if (Objects.equals(jsonObject.get("connectionId").getAsString(), partPublicId)) {
+//                    majorShareMixLinkedArr.remove(element);
+//                    if (automatically && !Objects.equals(LayoutModeEnum.ONE, layoutMode)
+//                            && majorShareMixLinkedArr.size() < layoutMode.getMode()) {
+//                        switchLayoutMode(LayoutModeEnum.values()[layoutMode.ordinal() - 1]);
+//                    }
+//                    break;
+//                }
+//            }
 //
-//		int index = 0;
-//		int size = majorShareMixLinkedArr.size();
-//		for (JsonElement jsonElement : layoutCoordinates) {
-//			JsonObject result = jsonElement.getAsJsonObject().deepCopy();
-//			if (index < size) {
-//				JsonObject layout = majorShareMixLinkedArr.get(index).getAsJsonObject();
-//				result.addProperty("connectionId", layout.get("connectionId").getAsString());
-//				result.addProperty("streamType", layout.get("streamType").getAsString());
+//            log.info("evictReconnectOldPart majorShareMixLinkedArr:{}", majorShareMixLinkedArr.toString());
+//        } else {
+//            for (JsonElement element : layoutInfo) {
+//                if (Objects.equals(element.getAsString(), partPublicId)) {
+//                    layoutInfo.remove(element);
+//                    break;
+//                }
+//            }
+//            if (!Objects.isNull(layoutInfo) && layoutInfo.size() > 0) {
+//                setLayoutMode(LayoutModeEnum.getLayoutMode(layoutInfo.size()));
+//            }
 //
-//				index++;
-//			}
-//
-//			layoutInfos.add(result);
-//		}
-//
-//		return layoutInfos;
-//	}
-
-//	@Deprecated //delete 2.0
-//    public JsonObject getLayoutNotifyInfo() {
-//        JsonObject notifyResult = new JsonObject();
-//        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_AUTOMATICALLY_PARAM, this.isAutomatically());
-//        notifyResult.addProperty(ProtocolElements.CONFERENCELAYOUTCHANGED_NOTIFY_MODE_PARAM, this.getLayoutMode().getMode());
-//        notifyResult.add(ProtocolElements.CONFERENCELAYOUTCHANGED_PARTLINKEDLIST_PARAM, this.getCurrentPartInMcuLayout());
-//        return notifyResult;
+//            log.info("evictReconnectOldPart layoutInfo:{}", layoutInfo.toString());
+//        }
 //    }
 
     public boolean getConferenceRecordStatus() {

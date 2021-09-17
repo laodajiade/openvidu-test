@@ -7,7 +7,6 @@ import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.LayoutChangeTypeEnum;
 import io.openvidu.server.common.enums.LayoutModeEnum;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +53,7 @@ public class BroadcastMajorLayoutHandler extends RpcAbstractHandler {
 
             conferenceSession.setLayoutMode(layoutModeEnum);
             conferenceSession.setLayoutChangeTypeEnum(changeType);
-            conferenceSession.setLayoutInfo(layout);
+            //conferenceSession.setLayoutInfo(layout);
 
             // broadcast the changes of layout
             JsonObject notifyResult = new JsonObject();

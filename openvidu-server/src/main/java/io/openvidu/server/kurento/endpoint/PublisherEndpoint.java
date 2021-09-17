@@ -135,9 +135,9 @@ public class PublisherEndpoint extends MediaEndpoint {
             if (Objects.isNull(getCompositeService())) {
                 setCompositeService(kurentoSession.getCompositeService());
             }
-            if (Objects.isNull(this.getPubHubPort())) {
-                createMajorShareHubPort(getMajorShareComposite());
-            }
+//            if (Objects.isNull(this.getPubHubPort())) {
+//                createMajorShareHubPort(getMajorShareComposite());
+//            }
         }
     }
 
@@ -644,7 +644,8 @@ public class PublisherEndpoint extends MediaEndpoint {
         internalSinkConnect(current, passThru);
 
         if (kurentoParticipant.getSession().getConferenceMode().equals(ConferenceModeEnum.MCU)) {
-            internalSinkConnect(current, createMajorShareHubPort(this.getMajorShareComposite()));
+            // todo yy 注释
+            //internalSinkConnect(current, createMajorShareHubPort(this.getMajorShareComposite()));
             if (TerminalTypeEnum.S == kurentoParticipant.getTerminalType()) {
                 // change the link order and unify the capability(send recv) of both two points
                 // internalSinkConnect(pubHubPort, current, MediaType.VIDEO);

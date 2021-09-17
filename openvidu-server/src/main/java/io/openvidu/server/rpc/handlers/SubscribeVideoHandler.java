@@ -55,7 +55,7 @@ public class SubscribeVideoHandler extends RpcAbstractHandler {
         if (streamMode == StreamModeEnum.MIX_MAJOR) {
             if (!Objects.equals(session.getCompositeService().getMixStreamId(), publishId)) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.UNRECOGNIZED_API);
+                        null, ErrorCodeEnum.ENP_POINT_NAME_NOT_EXIST);
                 return;
             }
             senderPart = participant;

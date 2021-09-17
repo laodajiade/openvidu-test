@@ -629,9 +629,10 @@ public class KurentoParticipant extends Participant {
             releaseElement(getParticipantPublicId(), publisherEndpoint.getEndpoint());
             //publisherEndpoint.closeAudioComposite();
             if (Objects.nonNull(publisherEndpoint.getPubHubPort())) {
-                if (getMixSubscriber() != null) {
-                    if (getMixSubscriber().getPubHubPort().getId().equals(publisherEndpoint.getPubHubPort().getId())) {
-                        session.getCompositeService().connectHubPortOut(getMixSubscriber());
+                SubscriberEndpoint mixSubscriber = getMixSubscriber();
+                if (mixSubscriber != null) {
+                    if (!Objects.isNull(mixSubscriber.getPubHubPort()) && mixSubscriber.getPubHubPort().getId().equals(publisherEndpoint.getPubHubPort().getId())) {
+                        session.getCompositeService().connectHubPortOut(mixSubscriber);
                     }
                 }
                 releaseElement(publisherEndpoint.getStreamId(), publisherEndpoint.getPubHubPort());

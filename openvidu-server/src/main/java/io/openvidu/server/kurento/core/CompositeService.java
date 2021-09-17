@@ -209,13 +209,13 @@ public class CompositeService {
                 newPoint = normalLayout();
             }
 
-            if (isLayoutChange(newPoint, true) || true) {
+            if (isLayoutChange(newPoint, true)) {
                 log.info("The layout of {} has changed", session.getSessionId());
                 if (newPoint.size() > 0) {
                     try {
                         session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                                 session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
-                        if (isLayoutChange(newPoint, false) || true) {
+                        if (isLayoutChange(newPoint, false)) {
                             conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
                         }
 
@@ -370,27 +370,28 @@ public class CompositeService {
             log.info("{} {}`s publisher is null, create it", participant.getUuid(), streamType);
             publisher = kurentoParticipant.createPublisher(streamType);
             publisher.setCompositeService(this);
-            publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
+//            publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
             log.info("{} {} publisher create {}", participant.getUuid(), streamType, publisher.getStreamId());
         }
-
-        source.add(new CompositeObjectWrapper(kurentoParticipant, streamType, publisher));
+        CompositeObjectWrapper compositeObjectWrapper = new CompositeObjectWrapper(kurentoParticipant, streamType, publisher);
         if (participant.getTerminalType() != TerminalTypeEnum.S) { //SIP在创建publisher时已经连接上了，整个生命周期都不释放。所以这里没必要进行混流
-            getCompositeElements(publisher);
+            compositeObjectWrapper.isStreaming = getCompositeElements(publisher);
+        } else {
+            compositeObjectWrapper.isStreaming = publisher.getEndpoint() != null;
         }
+        source.add(compositeObjectWrapper);
     }
 
     /**
      *
      */
-    private void getCompositeElements(PublisherEndpoint publisher) {
+    private boolean getCompositeElements(PublisherEndpoint publisher) {
         HubPort pubHubPort;
-
-        if (publisher != null && !publisherIsConnected(publisher.getStreamId())) {
-            if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
-                pubHubPort = publisher.createMajorShareHubPort(this.composite);
-            }
-            if (publisher.getEndpoint() != null) {
+        if (publisher != null && publisher.getEndpoint() != null) {
+            if (!publisherIsConnected(publisher.getStreamId())) {
+                if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
+                    pubHubPort = publisher.createMajorShareHubPort(this.composite);
+                }
                 publisher.getEndpoint().connect(pubHubPort);
 
                 //如果是从墙下MCU上墙，则修改hubPort对象
@@ -414,13 +415,17 @@ public class CompositeService {
                         }
                     }
                 }
+                return true;
+            } else {
+                return true;
             }
         }
+        return false;
     }
 
     private boolean publisherIsConnected(String streamId) {
         for (CompositeObjectWrapper compositeObjectWrapper : sourcesPublisher) {
-            if (compositeObjectWrapper.streamId.equals(streamId)) {
+            if (compositeObjectWrapper.streamId.equals(streamId) && compositeObjectWrapper.isStreaming) {
                 return true;
             }
         }
@@ -444,12 +449,13 @@ public class CompositeService {
             JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
             if (index.get() < layoutMode.getMode()) {
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
-
+                index.incrementAndGet();
                 PublisherEndpoint publisherEndpoint = compositeObject.endpoint;
-                if (publisherEndpoint != null) {
+                if (publisherEndpoint != null && compositeObject.isStreaming) {
                     elementsLayout.addProperty("streamId", publisherEndpoint.getStreamId());
                     elementsLayout.addProperty("object", publisherEndpoint.getPubHubPort().getId());
                 } else {
+                    log.info("layoutCoordinates compositeObject.uuid {} streaming is {} ", compositeObject.uuid, compositeObject.isStreaming);
                     return;
                 }
                 elementsLayout.addProperty("order", compositeObject.order);
@@ -460,7 +466,6 @@ public class CompositeService {
                 elementsLayout.addProperty("onlineStatus", "online");
                 elementsLayout.addProperty("hasVideo", true);
                 elementsLayout.addProperty("streaming", publisherEndpoint.isStreaming());
-                index.incrementAndGet();
                 layoutInfos.add(elementsLayout);
             } else {
                 // 补足无画面布局
@@ -552,6 +557,7 @@ public class CompositeService {
         if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
             pubHubPort = publisher.createMajorShareHubPort(this.composite);
         }
+        publisher.getEndpoint().connect(pubHubPort);
         Connect.connectVideoHubAndAudioHub(this.hubPortOut, pubHubPort, publisher.getEndpoint(), publisher.getEndpointName());
 
     }
@@ -559,7 +565,7 @@ public class CompositeService {
     public void sinkConnect(SubscriberEndpoint subscriberEndpoint) {
         Participant participant = subscriberEndpoint.getOwner();
         for (CompositeObjectWrapper compositeObjectWrapper : this.sourcesPublisher) {
-            if (compositeObjectWrapper.uuid.equals(participant.getUuid())) {
+            if (compositeObjectWrapper.uuid.equals(participant.getUuid()) && compositeObjectWrapper.isStreaming) {
                 log.info("sink connect self publisher {} {}", participant.getUuid(), compositeObjectWrapper.streamId);
                 Connect.connectVideoHubAndAudioHub(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
                 subscriberEndpoint.setMixHubPort(hubPortOut);
@@ -623,6 +629,7 @@ public class CompositeService {
         StreamType streamType;
         String streamId;
         PublisherEndpoint endpoint;
+        boolean isStreaming = false;
 
         public CompositeObjectWrapper(Participant participant, StreamType streamType, PublisherEndpoint endpoint) {
             this.uuid = participant.getUuid();
@@ -648,7 +655,7 @@ public class CompositeService {
 
         @Override
         public int hashCode() {
-            return Objects.hash(uuid, username, order, streamType);
+            return Objects.hash(uuid, username, order, isStreaming, streamType);
         }
 
         @Override
@@ -657,6 +664,7 @@ public class CompositeService {
                     "uuid='" + uuid + '\'' +
                     ", username='" + username + '\'' +
                     ", streamType=" + streamType +
+                    ", isStreaming=" + isStreaming +
                     ", endpoint=" + (endpoint == null ? "null" : endpoint.getStreamId()) +
                     '}';
         }

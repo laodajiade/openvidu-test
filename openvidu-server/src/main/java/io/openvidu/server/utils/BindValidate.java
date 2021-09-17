@@ -1,5 +1,6 @@
 package io.openvidu.server.utils;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.server.exception.BindValidateException;
 import org.apache.commons.lang3.StringUtils;
@@ -68,19 +69,34 @@ public class BindValidate {
         return param.get(jsonPath).getAsString();
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T notEmptyAndGet(JsonObject param, String jsonPath, Class<T> clazz) {
         if (!param.has(jsonPath)) {
             throw new BindValidateException(jsonPath + " 不能为 empty");
         }
-        if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
-            throw new BindValidateException(jsonPath + " 不能为 empty");
-        }
-
         if (clazz == String.class) {
+            if (StringUtils.isEmpty(param.get(jsonPath).getAsString())) {
+                throw new BindValidateException(jsonPath + " 不能为 empty");
+            }
             return (T) param.get(jsonPath).getAsString();
-        }
-        if (clazz == Integer.class) {
+        } else if (clazz == Integer.class) {
             return (T) Integer.valueOf(param.get(jsonPath).getAsString());
+        } else if (clazz == Long.class) {
+            return (T) Long.valueOf(param.get(jsonPath).getAsLong());
+        } else if (clazz == Float.class) {
+            return (T) Float.valueOf(param.get(jsonPath).getAsString());
+        } else if (clazz == Double.class) {
+            return (T) Double.valueOf(param.get(jsonPath).getAsString());
+        } else if (clazz.isEnum()) {
+            T[] enumConstants = clazz.getEnumConstants();
+            for (T enumConstant : enumConstants) {
+                if (((Enum) enumConstant).name().equals(param.get(jsonPath).getAsString())) {
+                    return enumConstant;
+                }
+            }
+            throw new BindValidateException(jsonPath + " 枚举类型错误");
+        } else if (clazz == JsonArray.class) {
+            return (T) param.getAsJsonArray(jsonPath);
         }
         throw new NotSupportedException("类型不支持，还在施工");
     }
