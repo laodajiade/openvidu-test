@@ -202,63 +202,69 @@ public class CompositeService {
             log.warn("MCU updateComposite but participants is empty");
             return;
         }
-        if (moderatorLayoutInfo.isAutoMode()) {
-            updateAutoLayout();
-        } else {
-            updateModeratorLayout();
-        }
-    }
-
-    private void updateModeratorLayout() {
-        if (!moderatorLayoutInfo.isAutoMode()) {
-            log.warn("layout mode is auto layout");
-            return;
-        }
-
-        LayoutModeTypeEnum layoutModeType = moderatorLayoutInfo.getLayoutModeType();
-        if (layoutModeType == LayoutModeTypeEnum.NORMAL) {
-
-        } else {
-
-        }
-
-    }
-
-    private void updateAutoLayout() {
+        List<CompositeObjectWrapper> newPoint;
         try {
-            List<CompositeObjectWrapper> newPoint;
-            if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {
-                newPoint = rostrumLayout();
+            if (moderatorLayoutInfo.isAutoMode()) {
+                newPoint = updateAutoLayout();
             } else {
-                layoutModeType = LayoutModeTypeEnum.NORMAL;
-                newPoint = normalLayoutAuto();
-            }
-
-            if (isLayoutChange(newPoint, true)) {
-                log.info("The layout of {} has changed", session.getSessionId());
-                if (newPoint.size() > 0) {
-                    try {
-                        session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
-                                session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
-                        if (isLayoutChange(newPoint, false)) {
-                            conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
-                        }
-
-                        this.lastLayoutModeType = this.layoutModeType;
-                        this.lastLayoutMode = this.layoutMode;
-                        List<CompositeObjectWrapper> oldPoint = this.sourcesPublisher;
-                        this.sourcesPublisher = newPoint;
-                        releaseCompositeObjectWrapper(oldPoint, newPoint);
-                    } catch (Exception e) {
-                        log.error("Send Composite Layout Exception:", e);
-                    }
-                }
-            } else {
-                log.info("The layout of {} has not changed", session.getSessionId());
+                newPoint = updateModeratorLayout();
             }
         } catch (Exception e) {
             log.error("MCU update auto layout error", e);
+            return;
         }
+        if (isLayoutChange(newPoint, true)) {
+            log.info("The layout of {} has changed", session.getSessionId());
+            if (newPoint.size() > 0) {
+                try {
+                    session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
+                            session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
+                    if (isLayoutChange(newPoint, false)) {
+                        conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
+                    }
+
+                    this.lastLayoutModeType = this.layoutModeType;
+                    this.lastLayoutMode = this.layoutMode;
+                    List<CompositeObjectWrapper> oldPoint = this.sourcesPublisher;
+                    this.sourcesPublisher = newPoint;
+                    releaseCompositeObjectWrapper(oldPoint, newPoint);
+                } catch (Exception e) {
+                    log.error("Send Composite Layout Exception:", e);
+                }
+            }
+        } else {
+            log.info("The layout of {} has not changed", session.getSessionId());
+        }
+    }
+
+    private List<CompositeObjectWrapper> updateModeratorLayout() {
+        if (!moderatorLayoutInfo.isAutoMode()) {
+            log.warn("layout mode is auto layout");
+            return updateAutoLayout();
+        }
+        List<CompositeObjectWrapper> newPoint;
+        LayoutModeTypeEnum layoutModeType = moderatorLayoutInfo.getLayoutModeType();
+        if (layoutModeType == LayoutModeTypeEnum.NORMAL) {
+            this.layoutModeType = LayoutModeTypeEnum.NORMAL;
+            newPoint = normalLayoutAuto();
+        } else {
+            newPoint = new ArrayList<>();
+        }
+        return newPoint;
+    }
+
+    private List<CompositeObjectWrapper> updateAutoLayout() {
+
+        List<CompositeObjectWrapper> newPoint;
+        if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {
+            newPoint = rostrumLayout();
+        } else {
+            layoutModeType = LayoutModeTypeEnum.NORMAL;
+            newPoint = normalLayoutAuto();
+        }
+        return newPoint;
+
+
     }
 
 
@@ -395,9 +401,7 @@ public class CompositeService {
     private void getCompositeElements(Participant participant, List<CompositeObjectWrapper> source, StreamType streamType) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         PublisherEndpoint publisher = kurentoParticipant.getPublisher(streamType);
-        log.info("1111111111111111 {}", participant.getUuid());
         if (publisher == null) {
-            log.info("222222222222222222 {}", participant.getUuid());
             log.info("{} {}`s publisher is null, create it", participant.getUuid(), streamType);
             publisher = kurentoParticipant.createPublisher(streamType);
             publisher.setCompositeService(this);
@@ -411,7 +415,6 @@ public class CompositeService {
             compositeObjectWrapper.isStreaming = publisher.getEndpoint() != null;
         }
         source.add(compositeObjectWrapper);
-        log.info("444444444444444444444 {} {}", participant.getUuid(), source.size());
     }
 
     /**
@@ -480,7 +483,6 @@ public class CompositeService {
         layoutCoordinates.forEach(coordinates -> {
             JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
             if (index.get() < layoutMode.getMode()) {
-                log.info("99999999999999999 {}", index.get());
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
                 index.incrementAndGet();
                 PublisherEndpoint publisherEndpoint = compositeObject.endpoint;
