@@ -234,7 +234,7 @@ public class ProtocolElements {
     public static final String CREATE_ROOM_ROOM_CAPACITY_PARAM = "roomCapacity";
     public static final String CREATE_ROOM_DURATION_PARAM = "duration";
     public static final String CREATE_ROOM_USE_ID_PARAM = "useIdInRoom";
-    public static final String CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
+    public static final String CREATE_ROOM_ALLOWPARTDISMISSMUTE_PARAM = "allowPartDismissMute";
     public static final String CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
     public static final String CREATE_ROOM_QUIET_STATUS_PARAM = "quietStatusInRoom";
     public static final String CREATE_ROOM_CONFERENCE_MODE_PARAM = "conferenceMode";
@@ -525,7 +525,6 @@ public class ProtocolElements {
     public static final String PARTICIPANTJOINED_ABILITY_PARAM = "ability";
     public static final String PARTICIPANTJOINED_FUNCTIONALITY_PARAM = "functionality";
     public static final String PARTICIPANTJOINED_TERMINALCONFIG_PARAM = "terminalConfig";
-    public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM = "allowPartOperMic";
     public static final String PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM = "allowPartOperShare";
     public static final String PARTICIPANTJOINED_IS_RECONNECTED_PARAM = "isReconnected";
     public static final String PARTICIPANTJOINED_TERMINAL_TYPE_PARAM = "terminalType";
