@@ -13,6 +13,8 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
+import io.openvidu.server.kurento.mcu.CompositeObjectWrapper;
+import io.openvidu.server.kurento.mcu.ConnectHelper;
 import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.SafeSleep;
 import lombok.Getter;
@@ -64,6 +66,8 @@ public class CompositeService {
 
     private List<CompositeObjectWrapper> sourcesPublisher = new ArrayList<>();
 
+    private ModeratorLayoutInfo moderatorLayoutInfo;
+
     /**
      * 记录每个拉流ep连接的对象
      * key:subscribeId  value=publisher.hubPort
@@ -94,6 +98,7 @@ public class CompositeService {
                 conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_MODE_CHANGED_NOTIFY_METHOD);
                 asyncUpdateComposite();
                 SessionEventRecord.startMcu(session, composite, hubPortOut);
+                this.moderatorLayoutInfo = session.getModeratorLayoutInfo();
             }
             composite.setName(session.getSessionId());
         }
@@ -144,14 +149,12 @@ public class CompositeService {
             element.release(new Continuation<Void>() {
                 @Override
                 public void onSuccess(Void result) {
-                    log.debug("Released successfully media element #{} ",
-                            eid);
+                    log.debug("Released successfully media element #{} ", eid);
                 }
 
                 @Override
                 public void onError(Throwable cause) {
-                    log.warn("Could not release media element #{}",
-                            eid, cause);
+                    log.warn("Could not release media element #{}", eid, cause);
                 }
             });
         } catch (Exception e) {
@@ -199,14 +202,36 @@ public class CompositeService {
             log.warn("MCU updateComposite but participants is empty");
             return;
         }
+        if (moderatorLayoutInfo.isAutoMode()) {
+            updateAutoLayout();
+        } else {
+            updateModeratorLayout();
+        }
+    }
 
+    private void updateModeratorLayout() {
+        if (!moderatorLayoutInfo.isAutoMode()) {
+            log.warn("layout mode is auto layout");
+            return;
+        }
+
+        LayoutModeTypeEnum layoutModeType = moderatorLayoutInfo.getLayoutModeType();
+        if (layoutModeType == LayoutModeTypeEnum.NORMAL) {
+
+        } else {
+
+        }
+
+    }
+
+    private void updateAutoLayout() {
         try {
             List<CompositeObjectWrapper> newPoint;
             if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {
                 newPoint = rostrumLayout();
             } else {
                 layoutModeType = LayoutModeTypeEnum.NORMAL;
-                newPoint = normalLayout();
+                newPoint = normalLayoutAuto();
             }
 
             if (isLayoutChange(newPoint, true)) {
@@ -232,7 +257,7 @@ public class CompositeService {
                 log.info("The layout of {} has not changed", session.getSessionId());
             }
         } catch (Exception e) {
-            log.error("MCU update Composite error", e);
+            log.error("MCU update auto layout error", e);
         }
     }
 
@@ -342,12 +367,17 @@ public class CompositeService {
     /**
      * 等分布局
      */
-    private List<CompositeObjectWrapper> normalLayout() {
+    private List<CompositeObjectWrapper> normalLayoutAuto() {
         List<Participant> parts = session.getParticipants().stream()
                 .filter(p -> p.getOrder() < session.getPresetInfo().getSfuPublisherThreshold())
                 .sorted(Comparator.comparing(Participant::getOrder))
                 .collect(Collectors.toList());
+        List<String> collect = parts.stream().map(Participant::getUuid).collect(Collectors.toList());
+        log.info("参与布局人员：{}", collect);
+        return normalLayout(parts);
+    }
 
+    private List<CompositeObjectWrapper> normalLayout(List<Participant> parts) {
         List<CompositeObjectWrapper> source = new ArrayList<>(parts.size());
         StreamType priorityStreamType = parts.size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
         for (Participant part : parts) {
@@ -358,7 +388,6 @@ public class CompositeService {
             }
         }
 
-
         log.info("normal MCU composite number:{} and composite hub port ids:{}", source.size(), source.toString());
         return source;
     }
@@ -366,7 +395,9 @@ public class CompositeService {
     private void getCompositeElements(Participant participant, List<CompositeObjectWrapper> source, StreamType streamType) {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         PublisherEndpoint publisher = kurentoParticipant.getPublisher(streamType);
+        log.info("1111111111111111 {}", participant.getUuid());
         if (publisher == null) {
+            log.info("222222222222222222 {}", participant.getUuid());
             log.info("{} {}`s publisher is null, create it", participant.getUuid(), streamType);
             publisher = kurentoParticipant.createPublisher(streamType);
             publisher.setCompositeService(this);
@@ -380,6 +411,7 @@ public class CompositeService {
             compositeObjectWrapper.isStreaming = publisher.getEndpoint() != null;
         }
         source.add(compositeObjectWrapper);
+        log.info("444444444444444444444 {} {}", participant.getUuid(), source.size());
     }
 
     /**
@@ -400,17 +432,17 @@ public class CompositeService {
                     if (mixSubscriber != null) {
                         if (mixSubscriber.getMixHubPort() == null) {
                             log.info("new videoHubPort {} audioHubPort {}", hubPortOut.getName(), pubHubPort.getName());
-                            Connect.connectVideoHubAndAudioHub(hubPortOut, pubHubPort, mixSubscriber.getEndpoint(), mixSubscriber.getEndpointName());
+                            ConnectHelper.connectVideoHubAndAudioHub(hubPortOut, pubHubPort, mixSubscriber.getEndpoint(), mixSubscriber.getEndpointName());
                             mixSubscriber.setMixHubPort(hubPortOut);
                             mixSubscriber.setPubHubPort(pubHubPort);
                         } else if (mixSubscriber.getPubHubPort() == null) {
                             log.info("change audioHubPort {} -> {}", hubPortOut.getName(), pubHubPort.getName());
-                            Connect.disconnect(hubPortOut, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
-                            Connect.connect(pubHubPort, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
+                            ConnectHelper.disconnect(hubPortOut, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
+                            ConnectHelper.connect(pubHubPort, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
                             mixSubscriber.setPubHubPort(pubHubPort);
                         } else if (mixSubscriber.getPubHubPort() != null && !mixSubscriber.getPubHubPort().getId().equals(pubHubPort.getId())) {
                             log.info("change pubHubPort {} -> {}", mixSubscriber.getPubHubPort().getName(), pubHubPort.getName());
-                            Connect.connect(pubHubPort, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
+                            ConnectHelper.connect(pubHubPort, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
                             mixSubscriber.setPubHubPort(pubHubPort);
                         }
                     }
@@ -448,16 +480,10 @@ public class CompositeService {
         layoutCoordinates.forEach(coordinates -> {
             JsonObject elementsLayout = coordinates.getAsJsonObject().deepCopy();
             if (index.get() < layoutMode.getMode()) {
+                log.info("99999999999999999 {}", index.get());
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
                 index.incrementAndGet();
                 PublisherEndpoint publisherEndpoint = compositeObject.endpoint;
-                if (publisherEndpoint != null && compositeObject.isStreaming) {
-                    elementsLayout.addProperty("streamId", publisherEndpoint.getStreamId());
-                    elementsLayout.addProperty("object", publisherEndpoint.getPubHubPort().getId());
-                } else {
-                    log.info("layoutCoordinates compositeObject.uuid {} streaming is {} ", compositeObject.uuid, compositeObject.isStreaming);
-                    return;
-                }
                 elementsLayout.addProperty("order", compositeObject.order);
                 elementsLayout.addProperty("uuid", compositeObject.uuid);
                 elementsLayout.addProperty("username", compositeObject.username);
@@ -465,8 +491,15 @@ public class CompositeService {
                 elementsLayout.addProperty("connectionId", "connectionId");
                 elementsLayout.addProperty("onlineStatus", "online");
                 elementsLayout.addProperty("hasVideo", true);
-                elementsLayout.addProperty("streaming", publisherEndpoint.isStreaming());
-                layoutInfos.add(elementsLayout);
+
+                if (publisherEndpoint != null && compositeObject.isStreaming) {
+                    elementsLayout.addProperty("streamId", publisherEndpoint.getStreamId());
+                    elementsLayout.addProperty("object", publisherEndpoint.getPubHubPort().getId());
+                    elementsLayout.addProperty("streaming", publisherEndpoint.isStreaming());
+                    layoutInfos.add(elementsLayout);
+                } else {
+                    log.info("layoutCoordinates compositeObject.uuid {} streaming is {} ", compositeObject.uuid, compositeObject.isStreaming);
+                }
             } else {
                 // 补足无画面布局
                 elementsLayout.addProperty("uuid", "");
@@ -558,7 +591,7 @@ public class CompositeService {
             pubHubPort = publisher.createMajorShareHubPort(this.composite);
         }
         publisher.getEndpoint().connect(pubHubPort);
-        Connect.connectVideoHubAndAudioHub(this.hubPortOut, pubHubPort, publisher.getEndpoint(), publisher.getEndpointName());
+        ConnectHelper.connectVideoHubAndAudioHub(this.hubPortOut, pubHubPort, publisher.getEndpoint(), publisher.getEndpointName());
 
     }
 
@@ -567,7 +600,7 @@ public class CompositeService {
         for (CompositeObjectWrapper compositeObjectWrapper : this.sourcesPublisher) {
             if (compositeObjectWrapper.uuid.equals(participant.getUuid()) && compositeObjectWrapper.isStreaming) {
                 log.info("sink connect self publisher {} {}", participant.getUuid(), compositeObjectWrapper.streamId);
-                Connect.connectVideoHubAndAudioHub(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
+                ConnectHelper.connectVideoHubAndAudioHub(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
                 subscriberEndpoint.setMixHubPort(hubPortOut);
                 subscriberEndpoint.setPubHubPort(compositeObjectWrapper.endpoint.getPubHubPort());
                 return;
@@ -577,7 +610,7 @@ public class CompositeService {
     }
 
     public void connectHubPortOut(SubscriberEndpoint subscriberEndpoint) {
-        Connect.connect(this.getHubPortOut(), subscriberEndpoint);
+        ConnectHelper.connect(this.getHubPortOut(), subscriberEndpoint);
         subscriberEndpoint.setPubHubPort(null);
     }
 
@@ -618,152 +651,8 @@ public class CompositeService {
             return;
         }
         log.info("uuid {} down wall or leave,{} reconnect hubPort", source.uuid, mixSubscriber.getEndpointName());
-        Connect.connect(hubPortOut, mixSubscriber);
+        ConnectHelper.connect(hubPortOut, mixSubscriber);
         mixSubscriber.setPubHubPort(null);
     }
 
-    private static class CompositeObjectWrapper {
-        String uuid;
-        String username;
-        int order;
-        StreamType streamType;
-        String streamId;
-        PublisherEndpoint endpoint;
-        boolean isStreaming = false;
-
-        public CompositeObjectWrapper(Participant participant, StreamType streamType, PublisherEndpoint endpoint) {
-            this.uuid = participant.getUuid();
-            this.username = participant.getUsername();
-            this.order = participant.getOrder();
-            this.streamType = streamType;
-            this.endpoint = endpoint;
-            if (endpoint != null) {
-                this.streamId = endpoint.getStreamId();
-            }
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            CompositeObjectWrapper that = (CompositeObjectWrapper) o;
-            return order == that.order &&
-                    Objects.equals(uuid, that.uuid) &&
-                    Objects.equals(username, that.username) &&
-                    streamType == that.streamType;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(uuid, username, order, isStreaming, streamType);
-        }
-
-        @Override
-        public String toString() {
-            return "CompositeObject{" +
-                    "uuid='" + uuid + '\'' +
-                    ", username='" + username + '\'' +
-                    ", streamType=" + streamType +
-                    ", isStreaming=" + isStreaming +
-                    ", endpoint=" + (endpoint == null ? "null" : endpoint.getStreamId()) +
-                    '}';
-        }
-    }
-
-    static class Connect {
-        /**
-         * SIP特殊处理逻辑
-         */
-        public void sipConnect(PublisherEndpoint publisher) {
-
-        }
-
-//        private static void connectVideoHubAndAudioHub(final HubPort videoHubPort, final HubPort audioHubPort, final SubscriberEndpoint subscriberEndpoint) {
-//            connectVideoHubAndAudioHub(videoHubPort, audioHubPort, subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
-//
-//            subscriberEndpoint.setMixHubPort(videoHubPort);
-//            subscriberEndpoint.setPubHubPort(audioHubPort);
-//        }
-
-        private static void connectVideoHubAndAudioHub(final HubPort videoHubPort, final HubPort audioHubPort,
-                                                       final MediaElement sink, String sinkEndpointName) {
-            disconnect(videoHubPort, sink, MediaType.AUDIO, sinkEndpointName);
-            connect(videoHubPort, sink, MediaType.VIDEO, sinkEndpointName);
-            connect(audioHubPort, sink, MediaType.AUDIO, sinkEndpointName);
-        }
-
-
-        private static void connect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
-            hubPort.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                            hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
-                }
-
-                @Override
-                public void onError(Throwable cause) {
-                    log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                            hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
-                }
-            });
-        }
-
-
-        private static void connect(final HubPort source, final MediaElement sink, final MediaType mediaType, String sinkEndpointName) {
-            source.connect(sink, mediaType, new Continuation<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    log.info("MCU subscribe {} {}: Elements have been connected (source {} -> sink {})", sinkEndpointName, mediaType.name(),
-                            source.getTag("debug_name"), sink.getId());
-                }
-
-                @Override
-                public void onError(Throwable cause) {
-                    log.warn("MCU subscribe {} {}: Failed to connect media elements (source {} -> sink {})", sinkEndpointName, mediaType.name(),
-                            source.getTag("debug_name"), sink.getId(), cause);
-                }
-            });
-        }
-
-        //**********************************************************************************
-
-        private static void disconnect(final HubPort source, final MediaElement sink, final MediaType type, String sinkEndPointName) {
-            if (type == null) {
-                Connect.disconnect(source, sink, sinkEndPointName);
-            } else {
-                source.disconnect(sink, type, new Continuation<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        log.info("MCU subscribe {}: {} media elements have been disconnected (source {} -> sink {})",
-                                sinkEndPointName, type, source.getTag("debug_name"), sink.getId());
-                    }
-
-                    @Override
-                    public void onError(Throwable cause) {
-                        log.info("MCU subscribe {}: Failed to disconnect {} media elements (source {} -> sink {})", sinkEndPointName,
-                                type, source.getTag("debug_name"), sink.getId(), cause);
-                    }
-                });
-            }
-        }
-
-        private static void disconnect(final MediaElement source, final MediaElement sink, String sinkEndPointName) {
-            source.disconnect(sink, new Continuation<Void>() {
-                @Override
-                public void onSuccess(Void result) {
-                    log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", sinkEndPointName,
-                            source.getTag("debug_name"), sink.getId());
-                }
-
-                @Override
-                public void onError(Throwable cause) {
-                    log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", sinkEndPointName,
-                            source.getTag("debug_name"), sink.getId(), cause);
-                }
-            });
-        }
-
-
-    }
 }

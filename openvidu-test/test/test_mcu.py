@@ -73,6 +73,7 @@ class TestMCU(test.MyTestCase):
         notify = moderator_client.search_notify_list('partOrderOrRoleChangeNotify')[0]
         leave_uuid = clients[3].uuid  # 离会的uuid
         up_uuid = notify['params']['roleChange'][0]['uuid']  # 获取上墙的uuid
+        logger.info('上墙', up_uuid)
         notify = moderator_client.search_notify_list('conferenceLayoutChanged')[0]
         coordinates = notify['params']['layoutInfo']['linkedCoordinates']
 
