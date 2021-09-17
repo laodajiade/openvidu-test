@@ -204,12 +204,12 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 Integer roomCapacity = getIntOptionalParam(request, ProtocolElements.CREATE_ROOM_ROOM_CAPACITY_PARAM);
                 Float roomDuration = getFloatOptionalParam(request, ProtocolElements.CREATE_ROOM_DURATION_PARAM);
                 String useIdInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_USE_ID_PARAM);
-                String allowPartOperMic = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_MIC_PARAM);
+                String allowPartDismissMute = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOWPARTDISMISSMUTE_PARAM);
                 String allowPartOperShare = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_ALLOW_PART_OPER_SHARE_PARAM);
                 String quietStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM);
                 Corporation corporation = corpInfoService.selectByCorpProject(rpcConnection.getProject());
                 SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
-                        roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartOperMic, allowPartOperShare, quietStatusInRoom);
+                        roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartDismissMute, allowPartOperShare, quietStatusInRoom);
                 preset.setMcuThreshold(corporation.getMcuThreshold());
                 preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
                 if (roomIdType == RoomIdTypeEnums.fixed) {

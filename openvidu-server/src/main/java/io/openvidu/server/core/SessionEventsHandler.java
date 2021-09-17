@@ -131,7 +131,6 @@ public class SessionEventsHandler {
             roomInfoJson.add("extraInfo", session.getSubtitleExtraConfig());
         }
         roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ROOM_CREATE_AT_PARAM, session.getStartTime());
-        roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_MIC_PARAM, participant.getPreset().getAllowPartOperMic().name());
         roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_ALLOW_PART_OPER_SHARE_PARAM, participant.getPreset().getAllowPartOperShare().name());
         roomInfoJson.addProperty("allowRecord", participant.getPreset().getAllowRecord().name());
         roomInfoJson.addProperty(ProtocolElements.PARTICIPANTJOINED_APP_SHOWNAME_PARAM, participant.getAppShowName());
@@ -154,7 +153,7 @@ public class SessionEventsHandler {
         roomInfoJson.addProperty("speakerUuid", session.getSpeakerPart().isPresent() ? session.getSpeakerPart().get().getUuid() : "");
         roomInfoJson.addProperty("isRecording", session.getIsRecording());
         roomInfoJson.addProperty("quietStatusInRoom", session.getPresetInfo().getQuietStatusInRoom().name());
-        roomInfoJson.addProperty("allowPartDismissMute",participant.getPreset().getAllowPartDismissMute().name());
+        roomInfoJson.addProperty("allowPartDismissMute", participant.getPreset().getAllowPartDismissMute().name());
         if (!session.isAutomatically()) {
             roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
         }
