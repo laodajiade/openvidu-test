@@ -666,6 +666,27 @@ class TestManualLayout(test.MyTestCase):
         re = moderator_client.ms.update_conference_layout(1, 'NORMAL', layouts)
         self.assertEqual(re[0], 13017, ' 返回值不对 ')
 
+    def test_layout_switch_auto_mode(self):
+        """ 主持人离会后转自动模式
+        测试目的：测试 主持人上报布局
+        测试过程: 1、创建会议，主持人入会，强制开启mcu
+                2、主持人离会
+        结果期望： step2: 离会后，MCU的布局转自动布局
+        """
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        logger.info('强制开启MCU')
+        self.set_mcu_mode(moderator_client)
+
+        self.publish_video(moderator_client, 'MAJOR')
+        part_client, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        self.publish_video(part_client, 'MAJOR')
+
+        logger.info("step 2")
+        part_client.collecting_notify()
+        self.leaveRoom(moderator_client, room_id)
+        notify = part_client.find_any_notify('conferenceLayoutChanged')
+        self.assertEqual(notify['params']['layoutInfo']['mode'], 1)
+        self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][0]['uuid'], part_client.uuid)
 
     ###################################################################################
 

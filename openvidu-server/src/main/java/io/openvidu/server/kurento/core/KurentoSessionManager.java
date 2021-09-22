@@ -242,6 +242,12 @@ public class KurentoSessionManager extends SessionManager {
                 sessionEventsHandler.onParticipantLeft(participant, sessionId, remainingParticipants, transactionId, null,
                         reason);
             }
+
+            // 主持人离线后把布局方式改为自动模式
+            if (participant.getRole() == OpenViduRole.MODERATOR && reason != EndReason.reconnect && session.getConferenceMode() == ConferenceModeEnum.MCU) {
+                session.getCompositeService().switchAutoMode(true);
+            }
+
             UseTime.point("ip4");
             // adjust order notify after onLeft
             session.dealPartOrderInSessionAfterLeaving(participant, rpcNotificationService);
