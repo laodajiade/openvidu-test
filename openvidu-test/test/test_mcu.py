@@ -606,7 +606,66 @@ class TestManualLayout(test.MyTestCase):
         self.assertEqual(re[0], 0, '上报布局错误')
         notify = moderator_client.find_any_notify('conferenceLayoutChanged')
         self.assertEqual(notify['params']['layoutInfo']['mode'], 1, '回调的手动布局错误')
-        self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][0]['uuid'], moderator_client.uuid, '回调的手动布局错误')
+        self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][0]['uuid'], moderator_client.uuid,
+                         '回调的手动布局错误')
+
+    def test_layout_2(self):
+        """ 主持人上报2等分布局
+        测试目的：测试 主持人上报布局
+        测试过程: 1、创建会议，主持人入会，强制开启mcu
+                2、主持人推流，上报自己的布局
+                3、主持人收到布局回调
+        结果期望： step3:回调和主持人上报的一致
+        """
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        logger.info('强制开启MCU')
+        self.set_mcu_mode(moderator_client)
+
+        logger.info("step 2")
+        self.publish_video(moderator_client, 'MAJOR')
+
+        part_client, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        self.publish_video(part_client, 'MAJOR')
+
+        time.sleep(2)
+        moderator_client.ms = MeetingService(moderator_client, room_id)
+        moderator_client.collecting_notify()
+        layouts = [{'uuid': moderator_client.uuid, 'streamType': 'MAJOR'},
+                   {'uuid': part_client.uuid, 'streamType': 'MAJOR'}]
+        re = moderator_client.ms.update_conference_layout(1, 'NORMAL', layouts)
+        self.assertEqual(re[0], 0, '上报布局错误')
+        notify = moderator_client.find_any_notify('conferenceLayoutChanged')
+        self.assertEqual(notify['params']['layoutInfo']['mode'], 2, '回调的手动布局错误')
+        self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][0]['uuid'], moderator_client.uuid,
+                         '回调的手动布局错误')
+        self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][1]['uuid'], part_client.uuid,
+                         '回调的手动布局错误')
+
+    def test_layout_part_not_found(self):
+        """ 主持人上报不存在的uuid
+        测试目的：测试 主持人上报布局
+        测试过程: 1、创建会议，主持人入会，强制开启mcu
+                2、主持人推流，上报自己的布局
+        结果期望： step2: 接口应该报错13017
+        """
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        logger.info('强制开启MCU')
+        self.set_mcu_mode(moderator_client)
+
+        logger.info("step 2")
+        self.publish_video(moderator_client, 'MAJOR')
+
+        part_client, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        self.publish_video(part_client, 'MAJOR')
+
+        time.sleep(2)
+        moderator_client.ms = MeetingService(moderator_client, room_id)
+        moderator_client.collecting_notify()
+        layouts = [{'uuid': moderator_client.uuid, 'streamType': 'MAJOR'},
+                   {'uuid': self.users[5]['uuid'], 'streamType': 'MAJOR'}]
+        re = moderator_client.ms.update_conference_layout(1, 'NORMAL', layouts)
+        self.assertEqual(re[0], 13017, ' 返回值不对 ')
+
 
     ###################################################################################
 

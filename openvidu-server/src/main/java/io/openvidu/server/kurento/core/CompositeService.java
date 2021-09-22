@@ -193,7 +193,7 @@ public class CompositeService {
     }
 
     private void updateComposite() {
-        SafeSleep.sleepMilliSeconds(200);
+        SafeSleep.sleepMilliSeconds(isAutoMode() ? 200 : 0);
         log.info("MCU updateComposite {}", session.getSessionId());
         if (session.isClosed() || session.isClosing()) {
             log.info("session is closed or is closing,break MCU updateComposite");

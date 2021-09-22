@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.exception.BizException;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ public class ManualLayoutInfo {
     private TerminalTypeEnum moderatorTerminalType;
 
 
-
     public ManualLayoutInfo(Session session) {
         this.session = session;
         this.roomId = session.getSessionId();
@@ -46,25 +46,32 @@ public class ManualLayoutInfo {
 
     public void updateLayout(long timestamp, LayoutModeEnum mode, LayoutModeTypeEnum layoutModeType,
                              JsonArray layoutJsonArray, Participant moderatorPart) {
-        session.getCompositeService().switchAutoMode(false);
+
         if (timestamp < this.timestamp) {
             return;
         }
+        if (session.getConferenceMode() != ConferenceModeEnum.MCU&&session.getIsRecording()){
+            return;
+        }
+        Layout layout = new Layout();
+        for (JsonElement jsonElement : layoutJsonArray) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String uuid = jsonObject.get("uuid").getAsString();
+            if (!session.getParticipantByUUID(uuid).isPresent()) {
+                throw new BizException(ErrorCodeEnum.PARTICIPANT_NOT_FOUND, "participant " + uuid + " not found");
+            }
+            String streamType = jsonObject.get("streamType").getAsString();
+
+            layout.add(new Item(uuid, StreamType.valueOf(streamType)));
+        }
+
+        session.getCompositeService().switchAutoMode(false);
         this.timestamp = timestamp;
         this.layoutModeType = layoutModeType;
         this.mode = mode;
 
         this.moderatorDeviceModel = moderatorPart.getDeviceModel();
         this.moderatorTerminalType = moderatorPart.getTerminalType();
-
-        Layout layout = new Layout();
-        for (JsonElement jsonElement : layoutJsonArray) {
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            String uuid = jsonObject.get("uuid").getAsString();
-            String streamType = jsonObject.get("streamType").getAsString();
-
-            layout.add(new Item(uuid, StreamType.valueOf(streamType)));
-        }
 
         this.layout = layout;
         if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
