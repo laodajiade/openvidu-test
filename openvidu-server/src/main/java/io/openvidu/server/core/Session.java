@@ -87,7 +87,7 @@ public class Session implements SessionInterface {
     protected LayoutChangeTypeEnum layoutChangeTypeEnum;
     //protected JsonArray layoutInfo2 = new JsonArray(1);
     @Getter
-    protected ModeratorLayoutInfo moderatorLayoutInfo;
+    protected ManualLayoutInfo manualLayoutInfo;
     protected int moderatorIndex = -1;
     protected int delayConfCnt;
     protected int delayTimeUnit = 20 * 60;    // default 20min
@@ -155,7 +155,7 @@ public class Session implements SessionInterface {
         this.subtitleConfig = previousSession.getSubtitleConfig();
         this.languages = previousSession.getLanguages();
         this.corpMcuConfig = previousSession.getCorpMcuConfig();
-        this.moderatorLayoutInfo = new ModeratorLayoutInfo(this);
+        this.manualLayoutInfo = new ManualLayoutInfo(this);
     }
 
     public Session(String sessionId, SessionProperties sessionProperties, OpenviduConfig openviduConfig,
@@ -171,7 +171,7 @@ public class Session implements SessionInterface {
         this.layoutChangeTypeEnum = LayoutChangeTypeEnum.change;
         this.delayConfCnt = 0;
         this.delayTimeUnit = openviduConfig.getVoipDelayUnit() * 60;    // default 20min
-        this.moderatorLayoutInfo = new ModeratorLayoutInfo(this);
+        this.manualLayoutInfo = new ManualLayoutInfo(this);
     }
 
     public SubtitleConfigEnum getSubtitleConfig() {

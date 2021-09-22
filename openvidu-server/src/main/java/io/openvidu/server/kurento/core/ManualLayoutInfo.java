@@ -9,9 +9,8 @@ import io.openvidu.server.core.Session;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class ModeratorLayoutInfo {
+public class ManualLayoutInfo {
 
     private String roomId;
     @Getter
@@ -31,19 +30,15 @@ public class ModeratorLayoutInfo {
     @Getter
     private TerminalTypeEnum moderatorTerminalType;
 
-    /**
-     * 0 = 主持人模式，1 = 主动模式
-     */
-    @Getter
-    private boolean autoMode = true;
 
-    public ModeratorLayoutInfo(Session session) {
+
+    public ManualLayoutInfo(Session session) {
         this.session = session;
         this.roomId = session.getSessionId();
     }
 
     public void switchAutoMode() {
-        this.autoMode = true;
+        session.getCompositeService().switchAutoMode(false);
         timestamp = 0;
         layoutModeType = LayoutModeTypeEnum.NORMAL;
         LayoutModeEnum mode = LayoutModeEnum.ONE;
@@ -51,8 +46,7 @@ public class ModeratorLayoutInfo {
 
     public void updateLayout(long timestamp, LayoutModeEnum mode, LayoutModeTypeEnum layoutModeType,
                              JsonArray layoutJsonArray, Participant moderatorPart) {
-        this.autoMode = false;
-
+        session.getCompositeService().switchAutoMode(false);
         if (timestamp < this.timestamp) {
             return;
         }
@@ -69,7 +63,7 @@ public class ModeratorLayoutInfo {
             String uuid = jsonObject.get("uuid").getAsString();
             String streamType = jsonObject.get("streamType").getAsString();
 
-            layout.items.add(new Item(uuid, StreamType.valueOf(streamType)));
+            layout.add(new Item(uuid, StreamType.valueOf(streamType)));
         }
 
         this.layout = layout;
@@ -84,8 +78,7 @@ public class ModeratorLayoutInfo {
 
     }
 
-    static class Layout {
-        List<Item> items = new ArrayList<>();
+    static class Layout extends ArrayList<Item> {
     }
 
     static class Item {

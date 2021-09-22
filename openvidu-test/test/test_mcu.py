@@ -1,12 +1,12 @@
 import sys
 import time
+from datetime import datetime
 
 import unittest2
 from loguru import logger
 
 import test
 from test.service.services import MeetingService
-from datetime import datetime
 
 
 class TestMCU(test.MyTestCase):
@@ -577,6 +577,67 @@ class TestMCU(test.MyTestCase):
         result['publish_id'] = publish_id
         result['subscribe_id'] = subscribe_id
         return result
+
+
+class TestManualLayout(test.MyTestCase):
+    """ 主持人上报布局 """
+
+    def test_layout_1(self):
+        """ 主持人只有一人的等分布局
+        测试目的：测试 主持人上报布局
+        测试过程: 1、创建会议，主持人入会，强制开启mcu
+                2、主持人推流，上报自己的布局
+                3、主持人收到布局回调
+        结果期望： step3:回调和主持人上报的一致
+        """
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        logger.info('强制开启MCU')
+        self.set_mcu_mode(moderator_client)
+        time.sleep(3)
+
+        logger.info("step 2")
+        self.publish_video(moderator_client, 'MAJOR')
+
+        time.sleep(2)
+        moderator_client.ms = MeetingService(moderator_client, room_id)
+        moderator_client.collecting_notify()
+        layouts = [{'uuid': moderator_client.uuid, 'streamType': 'MAJOR'}]
+        re = moderator_client.ms.update_conference_layout(1, 'NORMAL', layouts)
+        self.assertEqual(re[0], 0, '上报布局错误')
+        notify = moderator_client.find_any_notify('conferenceLayoutChanged')
+        self.assertEqual(notify['params']['layoutInfo']['mode'], 1, '回调的手动布局错误')
+        self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][0]['uuid'], moderator_client.uuid, '回调的手动布局错误')
+
+    ###################################################################################
+
+    def subscribe_mcu_stream(self, client, publish_id):
+        re = client.subscribe_video(client.uuid, 'MAJOR', publish_id, stream_mode='MIX_MAJOR')
+        self.assertEqual(re[0], 0, '拉流错误' + publish_id)
+        stream_id = re[1]['subscribeId']  # 获取到stream_id
+        self.assertIsNotNone(stream_id, ' 拉流没有subscribeId')
+        self.assertIsNotNone(re[1]['sdpAnswer'], '推流没有 sdpAnswer')
+        time.sleep(1)
+        # self.valid_publish_video(client, stream_id)
+        return stream_id
+
+    def valid_publish_video(self, client, stream_id):
+        # 检查媒体下发的ice candidate
+        ice_candidate_notify = client.search_notify_list('iceCandidate')
+        for notify in ice_candidate_notify:
+            self.assertEqual(notify['params']['endpointName'], stream_id, 'iceCandidate 错误')
+
+        participant_published = client.search_notify_list('participantPublished')
+        self.assertEqual(participant_published[0]['params']['streams'][0]['publishId'], stream_id,
+                         'participantPublished 错误')
+
+    def on_ice_candidate(self, client, stream_id):
+        re = client.on_ice_candidate(stream_id)
+        self.assertEqual(re[0], 0)
+
+    def set_mcu_mode(self, client):
+        client.request('setConferenceMode', {'mode': 'mcu', 'pwd': 'sudi123', 'roomId': client.room_id})
+        logger.info('强制开启MCU')
+        time.sleep(1)
 
 
 if __name__ == '__main__':

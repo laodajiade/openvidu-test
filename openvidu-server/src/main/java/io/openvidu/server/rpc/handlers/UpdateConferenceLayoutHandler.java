@@ -35,7 +35,7 @@ public class UpdateConferenceLayoutHandler extends ExRpcAbstractHandler<JsonObje
             return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
         }
 
-        session.getModeratorLayoutInfo().updateLayout(timestamp, mode, layoutModeType, layout, participant);
+        session.getManualLayoutInfo().updateLayout(timestamp, mode, layoutModeType, layout, participant);
 
         return RespResult.ok();
     }

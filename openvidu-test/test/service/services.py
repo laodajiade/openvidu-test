@@ -98,3 +98,8 @@ class MeetingService:
         return self.client.request("replaceRollCall", {"roomId": self.room_id, "originator": self.client.uuid,
                                                        "endTargetId": end_target_uuid,
                                                        "startTargetId": start_target_uuid})
+
+    def update_conference_layout(self, mode: int, layout_mode_type, layout):
+        params = {'mode': mode, 'roomId': self.room_id, 'layoutModeType': layout_mode_type,
+                  'timestamp': int(time.time() * 1000), 'layout': layout}
+        return self.client.request('updateConferenceLayout', params)

@@ -18,6 +18,7 @@ import io.openvidu.server.kurento.mcu.ConnectHelper;
 import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.SafeSleep;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
@@ -25,7 +26,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -55,8 +55,10 @@ public class CompositeService {
     private JsonArray layoutCoordinates = new JsonArray();
 
     @Getter
+    @Setter
     private LayoutModeEnum layoutMode = LayoutModeEnum.ONE;
 
+    @Setter
     private LayoutModeTypeEnum layoutModeType = LayoutModeTypeEnum.NORMAL;
 
 
@@ -66,13 +68,13 @@ public class CompositeService {
 
     private List<CompositeObjectWrapper> sourcesPublisher = new ArrayList<>();
 
-    private ModeratorLayoutInfo moderatorLayoutInfo;
+    private ManualLayoutInfo manualLayoutInfo;
 
     /**
-     * 记录每个拉流ep连接的对象
-     * key:subscribeId  value=publisher.hubPort
+     * 0 = 主持人模式，1 = 主动模式
      */
-    private final Map<String, HubPort> subFromHubPorts = new ConcurrentHashMap<>();
+    @Getter
+    private boolean autoMode = true;
 
 
     public CompositeService(Session session) {
@@ -98,7 +100,7 @@ public class CompositeService {
                 conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_MODE_CHANGED_NOTIFY_METHOD);
                 asyncUpdateComposite();
                 SessionEventRecord.startMcu(session, composite, hubPortOut);
-                this.moderatorLayoutInfo = session.getModeratorLayoutInfo();
+                this.manualLayoutInfo = session.getManualLayoutInfo();
             }
             composite.setName(session.getSessionId());
         }
@@ -204,22 +206,22 @@ public class CompositeService {
         }
         List<CompositeObjectWrapper> newPoint;
         try {
-            if (moderatorLayoutInfo.isAutoMode()) {
+            if (this.autoMode) {
                 newPoint = updateAutoLayout();
             } else {
-                newPoint = updateModeratorLayout();
+                newPoint = new ManualLayoutService(this).updateLayout();
             }
         } catch (Exception e) {
             log.error("MCU update auto layout error", e);
             return;
         }
-        if (isLayoutChange(newPoint, true)) {
+        if (!this.autoMode || isLayoutChange(newPoint, true)) {
             log.info("The layout of {} has changed", session.getSessionId());
             if (newPoint.size() > 0) {
                 try {
                     session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                             session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
-                    if (isLayoutChange(newPoint, false)) {
+                    if (!this.autoMode || isLayoutChange(newPoint, false)) {
                         conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
                     }
 
@@ -237,21 +239,6 @@ public class CompositeService {
         }
     }
 
-    private List<CompositeObjectWrapper> updateModeratorLayout() {
-        if (!moderatorLayoutInfo.isAutoMode()) {
-            log.warn("layout mode is auto layout");
-            return updateAutoLayout();
-        }
-        List<CompositeObjectWrapper> newPoint;
-        LayoutModeTypeEnum layoutModeType = moderatorLayoutInfo.getLayoutModeType();
-        if (layoutModeType == LayoutModeTypeEnum.NORMAL) {
-            this.layoutModeType = LayoutModeTypeEnum.NORMAL;
-            newPoint = normalLayoutAuto();
-        } else {
-            newPoint = new ArrayList<>();
-        }
-        return newPoint;
-    }
 
     private List<CompositeObjectWrapper> updateAutoLayout() {
 
@@ -263,7 +250,6 @@ public class CompositeService {
             newPoint = normalLayoutAuto();
         }
         return newPoint;
-
 
     }
 
@@ -383,6 +369,7 @@ public class CompositeService {
         return normalLayout(parts);
     }
 
+
     private List<CompositeObjectWrapper> normalLayout(List<Participant> parts) {
         List<CompositeObjectWrapper> source = new ArrayList<>(parts.size());
         StreamType priorityStreamType = parts.size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
@@ -485,6 +472,12 @@ public class CompositeService {
             if (index.get() < layoutMode.getMode()) {
                 CompositeObjectWrapper compositeObject = objects.get(index.get());
                 index.incrementAndGet();
+                if (compositeObject == null) {
+                    // 补足无画面布局
+                    elementsLayout.addProperty("uuid", "");
+                    return;
+                }
+
                 PublisherEndpoint publisherEndpoint = compositeObject.endpoint;
                 elementsLayout.addProperty("order", compositeObject.order);
                 elementsLayout.addProperty("uuid", compositeObject.uuid);
@@ -643,6 +636,11 @@ public class CompositeService {
         }
     }
 
+    public void switchAutoMode(boolean autoMode) {
+        this.autoMode = autoMode;
+        SessionEventRecord.other(session, "switchAutoMode", autoMode + "");
+    }
+
     // 下墙或离会了,如果是下墙需要连接到hubPortOut
     private void smartReconnect(CompositeObjectWrapper source) {
         if (source == null) {
@@ -657,4 +655,61 @@ public class CompositeService {
         mixSubscriber.setPubHubPort(null);
     }
 
+    interface LayoutService {
+        List<CompositeObjectWrapper> updateLayout();
+    }
+
+    abstract class AbstractLayoutService implements LayoutService {
+
+    }
+
+    class ManualLayoutService extends AbstractLayoutService implements LayoutService {
+
+        CompositeService compositeService;
+
+        public ManualLayoutService(CompositeService compositeService) {
+            this.compositeService = compositeService;
+        }
+
+        @Override
+        public List<CompositeObjectWrapper> updateLayout() {
+            if (!compositeService.isAutoMode()) {
+                log.warn("layout mode is auto layout");
+                return updateAutoLayout();
+            }
+            List<CompositeObjectWrapper> newPoint;
+            LayoutModeTypeEnum layoutModeType = manualLayoutInfo.getLayoutModeType();
+            if (layoutModeType == LayoutModeTypeEnum.NORMAL) {
+                this.compositeService.setLayoutModeType(LayoutModeTypeEnum.NORMAL);
+                newPoint = updateManualLayout();
+            } else {
+                newPoint = new ArrayList<>();
+            }
+            return newPoint;
+        }
+
+        /**
+         * 等分布局
+         */
+        private List<CompositeObjectWrapper> updateManualLayout() {
+            List<CompositeObjectWrapper> source = new ArrayList<>();
+            StreamType priorityStreamType = manualLayoutInfo.getLayout().size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
+
+            for (ManualLayoutInfo.Item item : manualLayoutInfo.getLayout()) {
+                Optional<Participant> participantOptional = session.getParticipantByUUID(item.uuid);
+                if (participantOptional.isPresent()) {
+                    Participant part = participantOptional.get();
+                    if (part.getTerminalType() == TerminalTypeEnum.HDC || part.getTerminalType() == TerminalTypeEnum.S) {
+                        getCompositeElements(part, source, priorityStreamType);
+                    } else {
+                        getCompositeElements(part, source, StreamType.MAJOR);
+                    }
+                } else {
+                    source.add(null);
+                }
+            }
+            log.info("normal MCU composite number:{} and composite hub port ids:{}", source.size(), source.toString());
+            return source;
+        }
+    }
 }
