@@ -683,7 +683,12 @@ public class CompositeService {
                 this.compositeService.setLayoutModeType(LayoutModeTypeEnum.NORMAL);
                 newPoint = updateManualLayout();
             } else {
-                newPoint = new ArrayList<>();
+                if (manualLayoutInfo.getModeratorDeviceModel().equals("T200")) {
+                    this.compositeService.setLayoutModeType(LayoutModeTypeEnum.ROSTRUM_T200);
+                } else {
+                    this.compositeService.setLayoutModeType(LayoutModeTypeEnum.ROSTRUM);
+                }
+                newPoint = updateManualLayout();
             }
             return newPoint;
         }
@@ -693,18 +698,14 @@ public class CompositeService {
          */
         private List<CompositeObjectWrapper> updateManualLayout() {
             List<CompositeObjectWrapper> source = new ArrayList<>();
-            StreamType priorityStreamType = manualLayoutInfo.getLayout().size() <= 4 ? StreamType.MAJOR : StreamType.MINOR;
 
             for (ManualLayoutInfo.Item item : manualLayoutInfo.getLayout()) {
                 Optional<Participant> participantOptional = session.getParticipantByUUID(item.uuid);
                 if (participantOptional.isPresent()) {
                     Participant part = participantOptional.get();
-                    if (part.getTerminalType() == TerminalTypeEnum.HDC || part.getTerminalType() == TerminalTypeEnum.S) {
-                        getCompositeElements(part, source, priorityStreamType);
-                    } else {
-                        getCompositeElements(part, source, StreamType.MAJOR);
-                    }
+                    getCompositeElements(part, source, item.streamType);
                 } else {
+                    log.warn("uuid {} not exist", item.uuid);
                     source.add(null);
                 }
             }
