@@ -24,6 +24,20 @@ public class ConnectHelper {
         connect(audioHubPort, sink, MediaType.AUDIO, sinkEndpointName);
     }
 
+    /**
+     * 只混音频，不混视频。并且在MCU模式下
+     * @param videoHubPort
+     * @param audioHubPort
+     * @param sink
+     * @param sinkEndpointName
+     */
+    public static void connectOnlyAudio(final HubPort videoHubPort, final HubPort audioHubPort,
+                                        final MediaElement sink, String sinkEndpointName){
+        disconnect(videoHubPort, sink, MediaType.AUDIO, sinkEndpointName);
+        connect(videoHubPort, sink, MediaType.VIDEO, sinkEndpointName);
+        connect(audioHubPort, sink, MediaType.AUDIO, sinkEndpointName);
+    }
+
 
     public static void connect(final HubPort hubPort, final SubscriberEndpoint subscriberEndpoint) {
         hubPort.connect(subscriberEndpoint.getEndpoint(), new Continuation<Void>() {
@@ -85,13 +99,13 @@ public class ConnectHelper {
             @Override
             public void onSuccess(Void result) {
                 log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", sinkEndPointName,
-                        source.getTag("debug_name"), sink.getId());
+                        source.getTag("debug_name"), sink.getName());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", sinkEndPointName,
-                        source.getTag("debug_name"), sink.getId(), cause);
+                        source.getTag("debug_name"), sink.getName(), cause);
             }
         });
     }

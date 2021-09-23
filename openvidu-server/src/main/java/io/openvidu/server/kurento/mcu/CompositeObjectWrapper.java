@@ -34,6 +34,7 @@ public class CompositeObjectWrapper {
         return order == that.order &&
                 Objects.equals(uuid, that.uuid) &&
                 Objects.equals(username, that.username) &&
+                isStreaming == that.isStreaming &&
                 streamType == that.streamType;
     }
 

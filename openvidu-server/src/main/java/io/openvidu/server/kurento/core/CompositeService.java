@@ -79,6 +79,12 @@ public class CompositeService {
 
     private Thread unMcuThread;
 
+    /**
+     * 记录混合声音的 hubPort
+     * key = uuid ,value = hubPort
+     */
+    private Map<String, HubPort> mixVoiceMap = new HashMap<>();
+
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
         this.mixStreamId = session.getSessionId() + CommonConstants.MIX_STREAM_ID_TRAIT + RandomStringUtils.randomAlphabetic(6).toUpperCase();
@@ -242,6 +248,45 @@ public class CompositeService {
         } else {
             log.info("The layout of {} has not changed", session.getSessionId());
         }
+
+        mixVoice();
+
+    }
+
+    /**
+     * 混流墙上的其他人声音
+     */
+    private void mixVoice() {
+        Set<Participant> publisher = this.session.getParticipants().stream().filter(participant -> participant.getRole().needToPublish()).collect(Collectors.toSet());
+
+        for (Participant participant : publisher) {
+            if (this.sourcesPublisher.stream().anyMatch(obj -> participant.getUuid().equals(obj.uuid))) {
+                continue;
+            }
+
+            PublisherEndpoint publisherEndpoint = participant.getPublisher(StreamType.MAJOR);
+            if (publisherEndpoint == null || publisherEndpoint.getEndpoint() == null) {
+                continue;
+            }
+
+            if (publisherEndpoint.getPubHubPort() == null) {
+                publisherEndpoint.createMajorShareHubPort(this.getComposite());
+            }
+            log.info("{} mix voice {} connect {}", participant.getUuid(), publisherEndpoint.getStreamId(), publisherEndpoint.getPubHubPort().getId());
+            //publisherEndpoint.getEndpoint().getSinkConnections()
+            publisherEndpoint.getEndpoint().connect(publisherEndpoint.getPubHubPort(), MediaType.AUDIO);
+
+            SubscriberEndpoint mixSubscriber = publisherEndpoint.getOwner().getMixSubscriber();
+            if (mixSubscriber != null) {
+                if (mixSubscriber.getPubHubPort() == null) {
+                    log.info("change audioHubPort {} -> {}", hubPortOut.getName(), publisherEndpoint.getPubHubPort().getName());
+                    ConnectHelper.disconnect(hubPortOut, mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
+                    ConnectHelper.connect(publisherEndpoint.getPubHubPort(), mixSubscriber.getEndpoint(), MediaType.AUDIO, mixSubscriber.getEndpointName());
+                    mixSubscriber.setPubHubPort(publisherEndpoint.getPubHubPort());
+                }
+            }
+
+        }
     }
 
 
@@ -394,17 +439,20 @@ public class CompositeService {
         KurentoParticipant kurentoParticipant = (KurentoParticipant) participant;
         PublisherEndpoint publisher = kurentoParticipant.getPublisher(streamType);
         if (publisher == null) {
-            log.info("{} {}`s publisher is null, create it", participant.getUuid(), streamType);
+            log.info("MCU {} {}`s publisher is null, create it", participant.getUuid(), streamType);
             publisher = kurentoParticipant.createPublisher(streamType);
             publisher.setCompositeService(this);
 //            publisher.setPassThru(new PassThrough.Builder(this.session.getPipeline()).build());
-            log.info("{} {} publisher create {}", participant.getUuid(), streamType, publisher.getStreamId());
+            log.info("MCU {} {} publisher create {}", participant.getUuid(), streamType, publisher.getStreamId());
         }
         CompositeObjectWrapper compositeObjectWrapper = new CompositeObjectWrapper(kurentoParticipant, streamType, publisher);
         if (participant.getTerminalType() != TerminalTypeEnum.S) { //SIP在创建publisher时已经连接上了，整个生命周期都不释放。所以这里没必要进行混流
             compositeObjectWrapper.isStreaming = getCompositeElements(publisher);
         } else {
             compositeObjectWrapper.isStreaming = publisher.getEndpoint() != null;
+            if (!compositeObjectWrapper.isStreaming) {
+                log.info("MCU {} isStreaming is false", publisher.getStreamId());
+            }
         }
         source.add(compositeObjectWrapper);
     }
@@ -414,7 +462,7 @@ public class CompositeService {
      */
     private boolean getCompositeElements(PublisherEndpoint publisher) {
         HubPort pubHubPort;
-        if (publisher != null && publisher.getEndpoint() != null) {
+        if (publisher.getEndpoint() != null) {
             if (!publisherIsConnected(publisher.getStreamId())) {
                 if (Objects.isNull(pubHubPort = publisher.getPubHubPort())) {
                     pubHubPort = publisher.createMajorShareHubPort(this.composite);
@@ -447,6 +495,7 @@ public class CompositeService {
                 return true;
             }
         }
+        log.info("{} streaming false", publisher.getStreamId());
         return false;
     }
 
