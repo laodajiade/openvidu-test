@@ -15,6 +15,7 @@ import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.endpoint.SubscriberEndpoint;
 import io.openvidu.server.kurento.mcu.CompositeObjectWrapper;
 import io.openvidu.server.kurento.mcu.ConnectHelper;
+import io.openvidu.server.kurento.mcu.UnMcuThread;
 import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.SafeSleep;
 import lombok.Getter;
@@ -76,6 +77,7 @@ public class CompositeService {
     @Getter
     private boolean autoMode = true;
 
+    private Thread unMcuThread;
 
     public CompositeService(Session session) {
         this.session = (KurentoSession) session;
@@ -101,6 +103,8 @@ public class CompositeService {
                 asyncUpdateComposite();
                 SessionEventRecord.startMcu(session, composite, hubPortOut);
                 this.manualLayoutInfo = session.getManualLayoutInfo();
+                unMcuThread = new UnMcuThread(this, session);
+                unMcuThread.start();
             }
             composite.setName(session.getSessionId());
         }
@@ -108,9 +112,9 @@ public class CompositeService {
 
     }
 
-    void closeComposite() {
-        releaseHubPortOut();
+    public void closeComposite() {
         synchronized (compositeReleaseLock) {
+            releaseHubPortOut();
             if (Objects.isNull(composite)) {
                 log.warn("MCU composite already released.");
                 return;
@@ -118,6 +122,7 @@ public class CompositeService {
             SessionEventRecord.endMcu(session);
             composite.release();
             composite = null;
+            unMcuThread = null;
             log.warn("Release MCU composite");
         }
     }
@@ -522,7 +527,7 @@ public class CompositeService {
         this.layoutCoordinates = jsonElements;
     }
 
-    private void conferenceLayoutChangedNotify(String method) {
+    public void conferenceLayoutChangedNotify(String method) {
         JsonObject params = new JsonObject();
         params.addProperty("roomId", session.getSessionId());
         params.addProperty("conferenceMode", session.getConferenceMode().name());
@@ -533,9 +538,10 @@ public class CompositeService {
             layoutInfoObj.addProperty("mode", layoutMode.getMode());
             layoutInfoObj.add("linkedCoordinates", session.getCompositeService().getLayoutCoordinates());
             params.add("layoutInfo", layoutInfoObj);
+
+            params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, session.getCompositeService().getMixFlowArr());
         }
 
-        params.add(ProtocolElements.JOINROOM_MIXFLOWS_PARAM, session.getCompositeService().getMixFlowArr());
         session.notifyClient(session.getParticipants(), method, params);
     }
 
