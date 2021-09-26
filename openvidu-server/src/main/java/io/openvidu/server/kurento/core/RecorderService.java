@@ -47,8 +47,8 @@ public class RecorderService {
                 .rootPath(session.getOpenviduConfig().getRecordingPath())
                 .outputMode(RecordOutputMode.COMPOSED)
                 .mediaProfileSpecType(MediaProfileSpecType.valueOf(session.getOpenviduConfig().getMediaProfileSpecType())).build();
+
         if (this.constructMediaSources(recordingProperties)) {
-            // pub start recording task
             recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.startRecording.buildMqMsg(recordingProperties).toString());
         }
         session.setIsRecording(true);
@@ -256,9 +256,27 @@ public class RecorderService {
             jsonObject.addProperty("uuid", part.getUuid());
             jsonObject.addProperty("streamType", streamType.name());
             jsonObject.addProperty("osd", part.getUsername());
+            jsonObject.addProperty("micStatus", part.getMicStatus() == ParticipantMicStatus.on);
+            jsonObject.addProperty("videoStatus", part.getVideoStatus() == ParticipantVideoStatus.on);
+            jsonObject.addProperty("voiceMode", part.getVoiceMode() == VoiceMode.on);
         }
         source.add(new CompositeObjectWrapper(part, streamType, publisherEndpoint));
         return jsonObject;
+    }
+
+    public void updateParticipantStatus(String uuid, String field, String status) {
+        ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
+                .project(session.getConference().getProject())
+                .roomId(session.getSessionId())
+                .outputMode(RecordOutputMode.COMPOSED)
+                .ruid(session.getRuid())
+                .updateTime(System.currentTimeMillis())
+                .participantStatus(new JsonObject())
+                .build();
+
+        recordingProperties.getParticipantStatus().addProperty(field, "on".equals(status));
+        recordingProperties.getParticipantStatus().addProperty("uuid", uuid);
+        recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateParticipantStatus.buildMqMsg(recordingProperties).toString());
     }
 
     private static class CompositeObjectWrapper {

@@ -33,7 +33,6 @@ import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
-import io.openvidu.server.service.SessionEventRecord;
 import org.apache.commons.collections4.CollectionUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
@@ -619,10 +618,14 @@ public class KurentoSession extends Session {
         return this.compositeService;
     }
 
-    public RecorderService getRecorderService(RecordingRedisPublisher recordingRedisPublisher) {
+    public RecorderService createRecorderService(RecordingRedisPublisher recordingRedisPublisher) {
         if (recorderService == null) {
             this.recorderService = new RecorderService(this, recordingRedisPublisher);
         }
+        return recorderService;
+    }
+
+    public RecorderService getRecorderService() {
         return recorderService;
     }
 }

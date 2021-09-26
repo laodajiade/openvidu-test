@@ -395,8 +395,13 @@ public class Participant {
         return voiceMode;
     }
 
-    public void setVoiceMode(VoiceMode voiceMode) {
+    //    public void setVoiceMode(VoiceMode voiceMode) {
+//        this.voiceMode = voiceMode;
+//    }
+    public void changeVoiceMode(VoiceMode voiceMode) {
         this.voiceMode = voiceMode;
+        applicationContext.publishEvent(new ParticipantStatusChangeEvent(StatusEvent.builder()
+                .sessionId(sessionId).uuid(uuid).field("voiceMode").updateStatus(voiceMode.name()).build()));
     }
 
     //2.0 Deprecated

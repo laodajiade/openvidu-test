@@ -18,7 +18,7 @@ public class ConnectHelper {
     }
 
     public static void connectVideoHubAndAudioHub(final HubPort videoHubPort, final HubPort audioHubPort,
-                                                   final MediaElement sink, String sinkEndpointName) {
+                                                  final MediaElement sink, String sinkEndpointName) {
         disconnect(videoHubPort, sink, MediaType.AUDIO, sinkEndpointName);
         connect(videoHubPort, sink, MediaType.VIDEO, sinkEndpointName);
         connect(audioHubPort, sink, MediaType.AUDIO, sinkEndpointName);
@@ -26,13 +26,14 @@ public class ConnectHelper {
 
     /**
      * 只混音频，不混视频。并且在MCU模式下
+     *
      * @param videoHubPort
      * @param audioHubPort
      * @param sink
      * @param sinkEndpointName
      */
     public static void connectOnlyAudio(final HubPort videoHubPort, final HubPort audioHubPort,
-                                        final MediaElement sink, String sinkEndpointName){
+                                        final MediaElement sink, String sinkEndpointName) {
         disconnect(videoHubPort, sink, MediaType.AUDIO, sinkEndpointName);
         connect(videoHubPort, sink, MediaType.VIDEO, sinkEndpointName);
         connect(audioHubPort, sink, MediaType.AUDIO, sinkEndpointName);

@@ -1595,7 +1595,11 @@ public class Session implements SessionInterface {
         return null;
     }
 
-    public RecorderService getRecorderService(RecordingRedisPublisher recordingRedisPublisher) {
+    public RecorderService createRecorderService(RecordingRedisPublisher recordingRedisPublisher) {
+        return null;
+    }
+
+    public RecorderService getRecorderService() {
         return null;
     }
 

@@ -5,7 +5,7 @@ import io.openvidu.server.common.events.ParticipantStatusChangeEvent;
 import io.openvidu.server.common.events.StatusEvent;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.kurento.core.KurentoSession;
+import io.openvidu.server.kurento.core.RecorderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -13,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * @author chosongi
@@ -36,6 +35,19 @@ public class EventListenerImpl {
         StatusEvent statusEvent = (StatusEvent) event.getSource();
         log.info("update participant status:{}", statusEvent.toString());
         cacheManage.updatePartInfo(statusEvent.getUuid(), statusEvent.getField(), statusEvent.getUpdateStatus());
+
+        updateToRecord(statusEvent);
+    }
+
+    private void updateToRecord(StatusEvent statusEvent) {
+        Session session = sessionManager.getSession(statusEvent.getSessionId());
+        if (session == null || !session.getIsRecording() || session.getRecorderService() == null) {
+            return;
+        }
+        RecorderService recorderService = session.getRecorderService();
+
+        recorderService.updateParticipantStatus(statusEvent.getUuid(), statusEvent.getField(), statusEvent.getUpdateStatus().toString());
+
     }
 
 }

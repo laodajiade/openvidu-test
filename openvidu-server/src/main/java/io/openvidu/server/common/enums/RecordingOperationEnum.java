@@ -54,7 +54,25 @@ public enum RecordingOperationEnum {
 
             return wrapperMsg(params);
         }
-    };
+    },
+
+    updateParticipantStatus {
+        @Override
+        public JsonObject buildMqMsg(ConferenceRecordingProperties recordingProperties) {
+            JsonObject params = new JsonObject();
+            params.addProperty("ruid", recordingProperties.getRuid());
+            params.addProperty("outPutMode", recordingProperties.getOutputMode().name());
+            params.addProperty("roomId", recordingProperties.getRoomId());
+            params.addProperty("updateTime", recordingProperties.getUpdateTime());
+            params.add("participantStatus", recordingProperties.getParticipantStatus());
+
+            params.addProperty("serialId", RandomStringUtils.randomAlphabetic(6));
+
+            return wrapperMsg(params);
+        }
+    },
+    ;
+
 
     public abstract JsonObject buildMqMsg(ConferenceRecordingProperties recordingProperties);
 

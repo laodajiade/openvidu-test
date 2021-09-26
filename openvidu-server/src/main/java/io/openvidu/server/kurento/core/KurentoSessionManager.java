@@ -626,7 +626,7 @@ public class KurentoSessionManager extends SessionManager {
 
     @Override
     public void switchVoiceMode(Participant participant, VoiceMode operation) {
-        participant.setVoiceMode(operation);
+        participant.changeVoiceMode(operation);
         KurentoParticipant kParticipant = (KurentoParticipant) participant;
         kParticipant.switchVoiceModeInSession(operation, kParticipant.getSubscribers().keySet());
     }
@@ -1440,8 +1440,13 @@ public class KurentoSessionManager extends SessionManager {
             return;
         }
 
+        RecorderService recorderService = session.getRecorderService();
+        if (recorderService == null) {
+            recorderService = session.createRecorderService(this.recordingRedisPublisher);
+        }
+
         log.info("Start recording and sessionId is {}", sessionId);
-        session.getRecorderService(recordingRedisPublisher).startRecording();
+        recorderService.startRecording();
     }
 
     @Override
@@ -1454,7 +1459,7 @@ public class KurentoSessionManager extends SessionManager {
 
         log.info("Stop recording and sessionId is {}", sessionId);
         // pub stop recording task
-        session.getRecorderService(recordingRedisPublisher).stopRecording();
+        session.getRecorderService().stopRecording();
     }
 
     @Override
@@ -1462,7 +1467,7 @@ public class KurentoSessionManager extends SessionManager {
         Session session;
         if (Objects.nonNull(session = getSession(sessionId))) {
             log.info("Update recording and sessionId is {}", sessionId);
-            session.getRecorderService(recordingRedisPublisher).updateRecording();
+            session.getRecorderService().updateRecording();
         } else {
             log.info("Update recording but session:{} is closed.", sessionId);
         }
