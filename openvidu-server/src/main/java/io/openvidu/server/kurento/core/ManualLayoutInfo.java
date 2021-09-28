@@ -50,7 +50,7 @@ public class ManualLayoutInfo {
         if (timestamp < this.timestamp) {
             return;
         }
-        if (session.getConferenceMode() != ConferenceModeEnum.MCU&&session.getIsRecording()){
+        if (session.getConferenceMode() != ConferenceModeEnum.MCU && session.getIsRecording()) {
             return;
         }
         Layout layout = new Layout();

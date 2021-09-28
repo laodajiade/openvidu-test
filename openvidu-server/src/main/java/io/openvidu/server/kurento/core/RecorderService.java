@@ -95,6 +95,7 @@ public class RecorderService {
             mediaSourceObj.addProperty("kmsLocated", session.getKms().getIp());
             mediaSourceObj.addProperty("mediaPipelineId", session.getPipeline().getId());
             mediaSourceObj.add("passThruList", passThruList);
+            mediaSourceObj.add("mixVoiceList", mixVoice());
 
             JsonArray mediaSources = new JsonArray();
             mediaSources.add(mediaSourceObj);
@@ -106,6 +107,27 @@ public class RecorderService {
             return false;
         }
         return true;
+    }
+
+    private JsonArray mixVoice() {
+        Set<Participant> publisher = this.session.getParticipants().stream()
+                .filter(participant -> participant.getRole().needToPublish()).collect(Collectors.toSet());
+        final JsonArray result = new JsonArray();
+        for (Participant participant : publisher) {
+            if (this.sourcesPublisher.stream().anyMatch(obj -> participant.getUuid().equals(obj.uuid))) {
+                continue;
+            }
+
+            final JsonObject jsonObject = new JsonObject();
+            PublisherEndpoint publisherEndpoint = participant.getPublisher(StreamType.MAJOR);
+
+            if (Objects.isNull(publisherEndpoint) || Objects.isNull(publisherEndpoint.getPassThru())) {
+                continue;
+            }
+            jsonObject.addProperty("uuid", participant.getUuid());
+            jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
+        }
+        return result;
     }
 
     private void rostrumLayout() {
