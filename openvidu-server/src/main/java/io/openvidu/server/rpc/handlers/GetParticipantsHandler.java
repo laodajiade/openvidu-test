@@ -112,6 +112,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
                 return new PublisherSearch();
             case "raisingHands":
                 return new RaisingHandsSearch();
+            case "pattern":
+                return new Pattern();
             case "all":
                 return new AllSearch();
             default:
@@ -232,8 +234,8 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
     private class ListSearch implements Search {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
-            int order = getIntOptionalParam(request, "order",0);
-            int reverse = getIntOptionalParam(request, "reverse",1);
+            int order = getIntOptionalParam(request, "order", 0);
+            int reverse = getIntOptionalParam(request, "reverse", 1);
             Integer limit = getIntOptionalParam(request, "limit");
             if (reverse == 1) {
                 return session.getParticipants().stream().sorted(Comparator.comparing(Participant::getOrder)).filter(p -> p.getOrder() >= order).limit(StringUtils.isEmpty(limit) ? session.getParticipants().size() : limit).sorted(Comparator.comparing(Participant::getOrder)).collect(Collectors.toCollection(LinkedHashSet::new));
@@ -255,6 +257,15 @@ public class GetParticipantsHandler extends RpcAbstractHandler {
         @Override
         public Set<Participant> getParts(Session session, Request<JsonObject> request) {
             return session.getParticipants().stream().filter(p -> p.getHandStatus().equals(ParticipantHandStatus.up)).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+    }
+
+    private class Pattern implements Search {
+        @Override
+        public Set<Participant> getParts(Session session, Request<JsonObject> request) {
+            String keyword = getStringParam(request, "keyword");
+            int limit = getIntParam(request, "limit");
+            return session.getParticipants().stream().filter(p -> p.getParticipantName().contains(keyword)).sorted(Comparator.comparing(Participant::getOrder)).limit(limit).collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 
