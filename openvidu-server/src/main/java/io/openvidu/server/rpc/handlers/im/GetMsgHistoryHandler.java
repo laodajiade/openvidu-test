@@ -38,7 +38,7 @@ public class GetMsgHistoryHandler extends ExRpcAbstractHandler<GetMsgHistoryVO> 
         Page<Object> page = PageHelper.startPage(1, params.getLimit());
         Date date = params.getTime() == 0 ? null : new Date(params.getTime());
 
-        List<ImMsg> imgHistory = imMsgMapper.getImgHistory(params.getRuid(), rpcConnection.getUserId(), date, params.getId() ,params.getReverse());
+        List<ImMsg> imgHistory = imMsgMapper.getImgHistory(params.getRuid(), rpcConnection.getUserId(), date, params.getId() ,params.getReverse(),params.getKeyword());
 
         List<SendMsgNotify> resultList = imgHistory.stream().map(imMsg -> {
             SendMsgNotify sendMsgNotify = new SendMsgNotify();

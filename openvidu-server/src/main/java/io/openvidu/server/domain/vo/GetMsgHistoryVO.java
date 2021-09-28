@@ -17,4 +17,6 @@ public class GetMsgHistoryVO {
      * 1按时间正序排列，2按时间降序排列
      */
     private int reverse = 2;
+
+    private String keyword;
 }
