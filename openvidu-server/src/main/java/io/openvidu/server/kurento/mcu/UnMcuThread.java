@@ -2,6 +2,7 @@ package io.openvidu.server.kurento.mcu;
 
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
+import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.core.CompositeService;
@@ -20,11 +21,12 @@ public class UnMcuThread extends Thread {
 
     private int counter = 0;
 
-    private final int idle = 2;
+    private final int idle;
 
-    public UnMcuThread(CompositeService compositeService, Session session) {
+    public UnMcuThread(CompositeService compositeService, Session session, int idle) {
         this.compositeService = compositeService;
         this.session = session;
+        this.idle = idle;
     }
 
     @Override
@@ -64,6 +66,9 @@ public class UnMcuThread extends Thread {
                 if (mixSubscriber != null) {
                     return true;
                 }
+            }
+            if (participants.stream().anyMatch(p -> p.getTerminalType() == TerminalTypeEnum.S)) {
+                return true;
             }
             return false;
         } catch (Exception e) {

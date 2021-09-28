@@ -109,7 +109,7 @@ public class CompositeService {
                 asyncUpdateComposite();
                 SessionEventRecord.startMcu(session, composite, hubPortOut);
                 this.manualLayoutInfo = session.getManualLayoutInfo();
-                unMcuThread = new UnMcuThread(this, session);
+                unMcuThread = new UnMcuThread(this, session, 2);
                 unMcuThread.start();
             }
             composite.setName(session.getSessionId());
