@@ -2,7 +2,6 @@ package io.openvidu.server.common.manage;
 
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
-import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.CorpMcuConfig;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
 import io.openvidu.server.core.Participant;
@@ -35,4 +34,7 @@ public interface RoomManage {
     List<ConferencePartHistory> getConfRecordDetail(ConferencePartHistory search);
 
     String createShortUrl();
+
+    String createAppointConferenceShortUrl();
+
 }
