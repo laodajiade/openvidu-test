@@ -27,4 +27,6 @@ public interface AppointConferenceMapper extends MyBatisBaseDao<AppointConferenc
     void changeStatusByRuid(@Param("status") int status, @Param("ruid") String ruid, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     List<AppointConference> getMaybeEndAppointment();
+
+    AppointConference getAppointmentByShortUrl(String shortUrl);
 }

@@ -1,12 +1,12 @@
 package io.openvidu.server.common.pojo;
 
-import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
 
+import java.io.Serializable;
+import java.util.Date;
+
 /**
- * @author 
- * 预约会议表
+ * @author 预约会议表
  */
 @Data
 public class AppointConference implements Serializable {
@@ -120,5 +120,9 @@ public class AppointConference implements Serializable {
      */
     private Integer conferenceMode;
 
+    /**
+     * 短链
+     */
+    private String shortUrl;
     private static final long serialVersionUID = 1L;
 }

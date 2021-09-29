@@ -812,6 +812,7 @@ public class ProtocolElements {
 
     public static final String GET_INVITE_INFO_METHOD = "getInviteInfo";
     public static final String GET_INVITE_INFO_ROOMID_PARAM = "roomId";
+    public static final String GET_INVITE_INFO_RUID_PARAM = "ruid";
 
     public static final String GET_CALL_LIST_METHOD = "getCallList";
     public static final String GET_CALL_LIST_RUID_PARAM = "ruid";

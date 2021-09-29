@@ -2,13 +2,12 @@ package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.dao.UserMapper;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.manage.AppointConferenceManage;
+import io.openvidu.server.common.manage.RoomManage;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferenceRecord;
 import io.openvidu.server.domain.vo.AppointmentRoomVO;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.DateUtil;
@@ -16,7 +15,6 @@ import io.openvidu.server.utils.RuidHelper;
 import io.openvidu.server.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +29,9 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
 
     @Resource
     ConferenceMapper conferenceMapper;
+
+    @Resource
+    RoomManage roomManage;
 
     public void deleteByRuid(String ruid) {
         AppointConferenceExample example = new AppointConferenceExample();
@@ -123,6 +124,7 @@ public class AppointConferenceManageImpl implements AppointConferenceManage {
         ac.setPassword(params.getPassword());
         ac.setModeratorPassword(moderatorPassword);
         ac.setModeratorName(rpcConnection.getUsername());
+        ac.setShortUrl(roomManage.createAppointConferenceShortUrl());
         appointConferenceMapper.insertSelective(ac);
 
         params.setRuid(ac.getRuid());

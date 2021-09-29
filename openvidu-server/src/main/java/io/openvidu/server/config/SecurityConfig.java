@@ -77,6 +77,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication().withUser("OPENVIDUAPP").password("{noop}" + openviduConf.getOpenViduSecret())
 				.roles("ADMIN");
+//		auth.inMemoryAuthentication().withUser("admin").password("admin").roles("ADMIN");
 	}
 
 }

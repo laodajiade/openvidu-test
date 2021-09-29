@@ -19,6 +19,7 @@
         <result column="moderator_password" jdbcType="VARCHAR" property="moderatorPassword"/>
         <result column="auto_invite" jdbcType="INTEGER" property="autoInvite"/>
         <result column="project" jdbcType="VARCHAR" property="project"/>
+        <result column="short_url" jdbcType="VARCHAR" property="shortUrl"/>
         <result column="type" jdbcType="CHAR" property="type"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
@@ -88,7 +89,7 @@
     <sql id="Base_Column_List">
         id, ruid, room_id, conference_subject, conference_desc, user_id, moderator_uuid,
     moderator_name, start_time, delay_start_time, end_time, duration, room_capacity, 
-    `password`, moderator_password, auto_invite, project, `type`, create_time, update_time, 
+    `password`, moderator_password, auto_invite, project, `type`,short_url, create_time, update_time,
     `status`, conference_mode
     </sql>
     <select id="selectByExample" parameterType="io.openvidu.server.common.pojo.AppointConferenceExample"
@@ -130,7 +131,7 @@
                                            moderator_name, start_time, delay_start_time,
                                            end_time, duration, room_capacity,
                                            `password`, moderator_password, auto_invite,
-                                           project, `type`, create_time,
+                                           project, `type`,short_url, create_time,
                                            update_time, `status`, conference_mode)
         values (#{ruid,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{conferenceSubject,jdbcType=VARCHAR},
                 #{conferenceDesc,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{moderatorUuid,jdbcType=VARCHAR},
@@ -138,7 +139,7 @@
                 #{delayStartTime,jdbcType=TIMESTAMP},
                 #{endTime,jdbcType=TIMESTAMP}, #{duration,jdbcType=INTEGER}, #{roomCapacity,jdbcType=INTEGER},
                 #{password,jdbcType=VARCHAR}, #{moderatorPassword,jdbcType=VARCHAR}, #{autoInvite,jdbcType=INTEGER},
-                #{project,jdbcType=VARCHAR}, #{type,jdbcType=CHAR}, #{createTime,jdbcType=TIMESTAMP},
+                #{project,jdbcType=VARCHAR}, #{type,jdbcType=CHAR},#{shortUrl,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
                 #{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}, #{conferenceMode,jdbcType=INTEGER})
     </insert>
     <insert id="insertSelective" keyColumn="id" keyProperty="id"
@@ -195,6 +196,9 @@
             </if>
             <if test="type != null">
                 `type`,
+            </if>
+            <if test="shortUrl != null">
+                short_url,
             </if>
             <if test="createTime != null">
                 create_time,
@@ -260,6 +264,9 @@
             </if>
             <if test="type != null">
                 #{type,jdbcType=CHAR},
+            </if>
+            <if test="shortUrl != null">
+                #{shortUrl,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null">
                 #{createTime,jdbcType=TIMESTAMP},
@@ -339,6 +346,9 @@
             <if test="record.type != null">
                 `type` = #{record.type,jdbcType=CHAR},
             </if>
+            <if test="record.shortUrl != null">
+                short_url = #{record.shortUrl,jdbcType=VARCHAR},
+            </if>
             <if test="record.createTime != null">
                 create_time = #{record.createTime,jdbcType=TIMESTAMP},
             </if>
@@ -376,6 +386,7 @@
         auto_invite = #{record.autoInvite,jdbcType=INTEGER},
         project = #{record.project,jdbcType=VARCHAR},
         `type` = #{record.type,jdbcType=CHAR},
+        short_url = #{record.shortUrl,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
         update_time = #{record.updateTime,jdbcType=TIMESTAMP},
         `status` = #{record.status,jdbcType=INTEGER},
@@ -438,6 +449,9 @@
             <if test="type != null">
                 `type` = #{type,jdbcType=CHAR},
             </if>
+            <if test="shortUrl != null">
+                short_url = #{shortUrl,jdbcType=VARCHAR},
+            </if>
             <if test="createTime != null">
                 create_time = #{createTime,jdbcType=TIMESTAMP},
             </if>
@@ -472,6 +486,7 @@
             auto_invite        = #{autoInvite,jdbcType=INTEGER},
             project            = #{project,jdbcType=VARCHAR},
             `type`             = #{type,jdbcType=CHAR},
+            short_url          = #{shortUrl,jdbcType=VARCHAR},
             create_time        = #{createTime,jdbcType=TIMESTAMP},
             update_time        = #{updateTime,jdbcType=TIMESTAMP},
             `status`           = #{status,jdbcType=INTEGER},
@@ -554,6 +569,15 @@
         where now() > end_time
           and `status` != 2
     </select>
+
+    <select id="getAppointmentByShortUrl" resultMap="BaseResultMap">
+       select
+        <include refid="Base_Column_List"/>
+        from  sd_appoint_conference
+        where
+        short_url = #{shortUrl,jdbcType=VARCHAR}
+    </select>
+
     <update id="changeStatusByRuid">
         update sd_appoint_conference
         <set>

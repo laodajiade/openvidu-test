@@ -2,10 +2,7 @@ package io.openvidu.server.common.manage.impl;
 
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.cache.CacheManage;
-import io.openvidu.server.common.dao.ConferenceMapper;
-import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
-import io.openvidu.server.common.dao.CorpMcuConfigMapper;
-import io.openvidu.server.common.dao.CorporationMapper;
+import io.openvidu.server.common.dao.*;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.manage.RoomManage;
@@ -45,6 +42,9 @@ public class RoomManageImpl implements RoomManage {
 
     @Resource
     private UserManage userManage;
+
+    @Resource
+    private AppointConferenceMapper appointConferenceMapper;
 
     @Resource
     private CorporationMapper corporationMapper;
@@ -191,6 +191,16 @@ public class RoomManageImpl implements RoomManage {
         Conference conference = conferenceMapper.getConferenceByShortUrl(shortUrl);
         while (Objects.nonNull(conference)) {
             createShortUrl();
+        }
+        return shortUrl;
+    }
+
+    @Override
+    public String createAppointConferenceShortUrl() {
+        String shortUrl = StringUtil.getNonce(9);
+        AppointConference appointment = appointConferenceMapper.getAppointmentByShortUrl(shortUrl);
+        while (Objects.nonNull(appointment)){
+            createAppointConferenceShortUrl();
         }
         return shortUrl;
     }
