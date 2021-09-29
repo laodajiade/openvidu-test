@@ -12,7 +12,7 @@ class TestStringMethods(test.MyTestCase):
     def test_create_and_join(self):
         """  """
         # 与会者个数
-        part_size = 3
+        part_size = 1
         # 入会完成后等待时长 秒
         timeout = 2000
         need_moderator = False
@@ -29,7 +29,7 @@ class TestStringMethods(test.MyTestCase):
             moderator_client.ms = MeetingService(moderator_client, room_id)
 
         clients = []
-        for i in range(1, part_size):
+        for i in range(1, part_size+1):
             part_user = self.users[i]
             part_client = self.loginAndAccessIn(part_user['phone'], part_user['pwd'])
             clients.append(part_client)

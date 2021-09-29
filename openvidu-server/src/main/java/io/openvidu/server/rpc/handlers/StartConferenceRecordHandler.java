@@ -205,7 +205,7 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
     private void asyncCheckRecordStatus(String roomId, Session session, Participant participant) {
         new Thread(() -> {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(5000);
                 //查询录制状态是否在录制中  如果状态==0  通知客户端录制失败重新录制
                 ConferenceRecord recordStatus = conferenceRecordManage.getByRuIdRecordStatus(session.getRuid());
                 if (ConferenceRecordStatusEnum.WAIT.getStatus().equals(recordStatus.getStatus())) {

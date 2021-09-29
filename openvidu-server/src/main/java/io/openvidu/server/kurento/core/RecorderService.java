@@ -95,7 +95,7 @@ public class RecorderService {
             mediaSourceObj.addProperty("kmsLocated", session.getKms().getIp());
             mediaSourceObj.addProperty("mediaPipelineId", session.getPipeline().getId());
             mediaSourceObj.add("passThruList", passThruList);
-            mediaSourceObj.add("mixVoiceList", mixVoice());
+            mediaSourceObj.add("speechPassThruList", mixVoice());
 
             JsonArray mediaSources = new JsonArray();
             mediaSources.add(mediaSourceObj);
@@ -126,6 +126,7 @@ public class RecorderService {
             }
             jsonObject.addProperty("uuid", participant.getUuid());
             jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
+            result.add(jsonObject);
         }
         return result;
     }
