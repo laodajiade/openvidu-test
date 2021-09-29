@@ -728,7 +728,7 @@ public class CompositeService {
 
         @Override
         public List<CompositeObjectWrapper> updateLayout() {
-            if (!compositeService.isAutoMode()) {
+            if (compositeService.isAutoMode()) {
                 log.warn("layout mode is auto layout");
                 return updateAutoLayout();
             }
