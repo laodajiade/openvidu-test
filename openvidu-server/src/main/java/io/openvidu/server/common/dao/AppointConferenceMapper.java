@@ -20,6 +20,8 @@ public interface AppointConferenceMapper extends MyBatisBaseDao<AppointConferenc
 
     List<AppointConference> getConflictAppointConferenceList(AppointConference condition);
 
+    List<AppointConference> pendingAndStartfiexdRoomSchedule(@Param("roomId") String roomId);
+
     List<AppointConference> pendingAboutAppointment(AppointConferenceDTO appointConference);
 
     List<AppointConference> pendingAboutAppointmentAdmin(AppointConferenceDTO appointConference);

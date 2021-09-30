@@ -553,6 +553,16 @@
         </if>
         order by start_time asc
     </select>
+    
+    <select id="pendingAndStartfiexdRoomSchedule" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sd_appoint_conference a where a.`status`!=2
+        and
+        room_id = #{roomId,jdbcType=VARCHAR}
+        order by start_time asc
+    </select>
+    
 
     <select id="getConflictAppointConferenceList" resultMap="BaseResultMap">
         select id from sd_appoint_conference
