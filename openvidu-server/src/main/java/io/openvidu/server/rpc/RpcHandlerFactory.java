@@ -333,6 +333,9 @@ public class RpcHandlerFactory {
     @Resource
     SetPartSelfDismissMuteHandler setPartSelfDismissMute;
 
+    @Resource
+    GetFixedConferenceScheduleHandler getFixedConferenceScheduleHandler;
+
 
     @Resource
     private Map<String, ExRpcAbstractHandler> exHandlersMap;
@@ -343,6 +346,7 @@ public class RpcHandlerFactory {
         handlersMap.putAll(exHandlersMap);
 
         handlersMap.put(ProtocolElements.APPLY_DISMISS_MUTE_METHOD, applyDismissMuteHandler);
+        handlersMap.put(ProtocolElements.GET_FIXED_CONFERENCE_SCHEDULE_METHOD, getFixedConferenceScheduleHandler);
         handlersMap.put(ProtocolElements.SET_MUTE_ALL_METHOD, setMuteAllHandler);
         handlersMap.put(ProtocolElements.SET_PARTSELF_DISMISS_MUTE_METHOD, setPartSelfDismissMute);
         handlersMap.put(ProtocolElements.ACCESS_IN_METHOD, accessInHandler);
@@ -468,7 +472,7 @@ public class RpcHandlerFactory {
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
-        log.info("requestMethod:{},gethandlerMap{}",requestMethod,handlersMap.get(requestMethod));
+        log.info("requestMethod:{},gethandlerMap{}", requestMethod, handlersMap.get(requestMethod));
         return handlersMap.getOrDefault(requestMethod, null);
     }
 
