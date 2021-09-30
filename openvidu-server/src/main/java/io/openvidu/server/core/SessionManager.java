@@ -117,7 +117,7 @@ public abstract class SessionManager {
 
     public abstract void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId);
 
-    public abstract void setMuteAll(String sessionId,String originator, SessionPresetEnum sessionPresetEnum);
+    public abstract void setMuteAll(String sessionId, String originator, SessionPresetEnum sessionPresetEnum);
 
     public abstract boolean leaveRoom(Participant participant, Integer transactionId, EndReason reason,
                                       boolean closeWebSocket);
@@ -1022,6 +1022,14 @@ public abstract class SessionManager {
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().asyncUpdateComposite();
             }
+
+            // update recording
+            if (session.ableToUpdateRecord()) {
+                updateRecording(session.getSessionId());
+
+                session.getRecorderService().updateParticipantStatus(speaker.getUuid(), "isSpeaker",
+                        session.isSpeaker(speaker.getUuid()));
+            }
         }
     }
 
@@ -1076,6 +1084,8 @@ public abstract class SessionManager {
             notificationService.sendBatchNotificationConcurrent(session.getParticipants(), ProtocolElements.END_ROLL_CALL_NOTIFY_METHOD, result);
 
             if (session.ableToUpdateRecord()) {
+                session.getRecorderService().updateParticipantStatus(speaker.getUuid(), "isSpeaker",
+                        session.isSpeaker(speaker.getUuid()));
                 updateRecording(session.getSessionId());
             }
             if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
@@ -1172,7 +1182,13 @@ public abstract class SessionManager {
 
 
         if (session.ableToUpdateRecord()) {
+            session.getRecorderService().updateParticipantStatus(endPart.getUuid(), "isSpeaker",
+                    session.isSpeaker(endPart.getUuid()));
+
             updateRecording(session.getSessionId());
+
+            session.getRecorderService().updateParticipantStatus(startPart.getUuid(), "isSpeaker",
+                    session.isSpeaker(startPart.getUuid()));
         }
         if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
             session.getCompositeService().asyncUpdateComposite();

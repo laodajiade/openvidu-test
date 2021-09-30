@@ -20,7 +20,7 @@ public enum RecordingOperationEnum {
             params.addProperty("updateTime", recordingProperties.getUpdateTime());
             params.addProperty("rootPath", recordingProperties.getRootPath());
             params.addProperty("layoutMode", recordingProperties.getLayoutMode());
-            params.addProperty("layoutModeType", recordingProperties.getLayoutModeTypeEnum().name());
+            params.addProperty("layoutModeType", recordingProperties.getLayoutModeType().name());
             params.addProperty("outPutMode", recordingProperties.getOutputMode().name());
             params.addProperty("mediaProfileSpecType", recordingProperties.getMediaProfileSpecType().name());
             params.addProperty("serialId", RandomStringUtils.randomAlphabetic(6));
@@ -48,7 +48,7 @@ public enum RecordingOperationEnum {
             params.addProperty("ruid", recordingProperties.getRuid());
             params.addProperty("outPutMode", recordingProperties.getOutputMode().name());
             params.addProperty("layoutMode", recordingProperties.getLayoutMode());
-            params.addProperty("layoutModeType", recordingProperties.getLayoutModeTypeEnum().name());
+            params.addProperty("layoutModeType", recordingProperties.getLayoutModeType().name());
             params.add("mediaSources", recordingProperties.getMediaSources());
             params.addProperty("serialId", RandomStringUtils.randomAlphabetic(6));
 

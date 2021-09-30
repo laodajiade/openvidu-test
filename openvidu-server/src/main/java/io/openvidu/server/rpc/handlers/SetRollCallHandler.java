@@ -45,47 +45,12 @@ public class SetRollCallHandler extends RpcAbstractHandler {
             return;
         }
 
-
-        // check if target participant is SUBSCRIBER
-/*        if (OpenViduRole.SUBSCRIBER.equals(targetPart.getRole())
-                && Objects.equals(conferenceSession.getConferenceMode(), ConferenceModeEnum.MCU)) {
-            ErrorCodeEnum errorCodeEnum;
-
-            // check if the size of major part is over 12
-            if (conferenceSession.getPartSize() > conferenceSession.getPresetInfo().getMcuThreshold()) {
-                errorCodeEnum = conferenceSession.evictPartInCompositeWhenSubToPublish(targetPart, sessionManager);
-            } else {
-                // invalid rpc call when size of major part is not up to 12
-                log.error("Invalid rpc call when size of major part is:{} in session:{} is not up to {}",
-                        conferenceSession.getPartSize(), sessionId, conferenceSession.getPresetInfo().getMcuThreshold());
-                errorCodeEnum = ErrorCodeEnum.SERVER_INTERNAL_ERROR;
-            }
-
-            if (Objects.equals(ErrorCodeEnum.SUCCESS, errorCodeEnum)) {
-                notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-
-                cacheManage.recordSubscriberSetRollCall(conferenceSession.getSessionId(), conferenceSession.getStartTime(), targetPart.getUuid());
-            } else {
-                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, errorCodeEnum);
-            }
-            return;
-        }
-       if (targetPart.getHandStatus() == ParticipantHandStatus.down) {
-            this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                    null, ErrorCodeEnum.PARTICIPANT_DOWN_HAND_NOW);
-            return;
-        }*/
         ErrorCodeEnum errorCode = sessionManager.setRollCallInSession(conferenceSession, targetPart, originatorOp.get());
         //发言
         if (ErrorCodeEnum.SET_ROLL_CALL_SAME_PART.equals(errorCode)) {
             this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SET_ROLL_CALL_SAME_PART);
             return;
-        }
-        // update recording
-        if (conferenceSession.ableToUpdateRecord()) {
-            sessionManager.updateRecording(conferenceSession.getSessionId());
         }
         if (sessionManager.getSession(sessionId).getConferenceMode() == ConferenceModeEnum.MCU) {
             sessionManager.getSession(sessionId).getCompositeService().asyncUpdateComposite();
