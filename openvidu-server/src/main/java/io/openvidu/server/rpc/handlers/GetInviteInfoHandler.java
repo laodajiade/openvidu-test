@@ -34,7 +34,7 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
     @Override
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.GET_INVITE_INFO_ROOMID_PARAM);
-        String ruid = getStringParam(request, ProtocolElements.GET_INVITE_INFO_RUID_PARAM);
+        String ruid = getStringOptionalParam(request, ProtocolElements.GET_INVITE_INFO_RUID_PARAM);
         Session session = sessionManager.getSession(roomId);
         // 如果ruid为空则复制会议邀请信息   否则复制预约会议邀请信息
         if (StringUtils.isEmpty(ruid)) {
