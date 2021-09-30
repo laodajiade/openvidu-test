@@ -65,7 +65,6 @@ public class ManualLayoutInfo {
             layout.add(new Item(uuid, StreamType.valueOf(streamType)));
         }
 
-        session.getCompositeService().switchAutoMode(false);
         this.timestamp = timestamp;
         this.layoutModeType = layoutModeType;
         this.mode = mode;
@@ -75,11 +74,12 @@ public class ManualLayoutInfo {
 
         this.layout = layout;
         if (session.getConferenceMode() == ConferenceModeEnum.MCU) {
+            session.getCompositeService().switchAutoMode(false);
             session.getCompositeService().asyncUpdateComposite();
         }
         if (session.getIsRecording()) {
-            //todo 2.0.1 yy 录制更新布局
-            //session.getRecorderService().asyncUpdateComposite();
+            session.getRecorderService().switchAutoMode(false);
+            session.getRecorderService().updateRecording();
         }
 
 

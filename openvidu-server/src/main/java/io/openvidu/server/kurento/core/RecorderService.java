@@ -32,9 +32,18 @@ public class RecorderService {
 
     private JsonArray passThruList = new JsonArray();
 
+    private ManualLayoutInfo manualLayoutInfo;
+    @Getter
+    private boolean autoMode = true;
+
+    public void switchAutoMode(boolean autoMode) {
+        this.autoMode = autoMode;
+    }
+
     public RecorderService(Session session, RecordingRedisPublisher recordingRedisPublisher) {
         this.session = (KurentoSession) session;
         this.recordingRedisPublisher = recordingRedisPublisher;
+        this.manualLayoutInfo = session.getManualLayoutInfo();
     }
 
     public void startRecording() {
@@ -83,7 +92,9 @@ public class RecorderService {
         }
 
         try {
-            if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {
+            if (!this.autoMode) {
+                updateManualLayout();
+            } else if (session.getSharingPart().isPresent() || session.getSpeakerPart().isPresent()) {
                 rostrumLayout();
             } else {
                 layoutModeType = LayoutModeTypeEnum.NORMAL;
@@ -107,6 +118,26 @@ public class RecorderService {
             return false;
         }
         return true;
+    }
+
+    private void updateManualLayout() {
+        List<CompositeObjectWrapper> source = new ArrayList<>();
+        JsonArray passThruList = new JsonArray();
+        int order = 0;
+        for (ManualLayoutInfo.Item item : manualLayoutInfo.getLayout()) {
+            Optional<Participant> participantOptional = session.getParticipantByUUID(item.uuid);
+            if (participantOptional.isPresent()) {
+                Participant part = participantOptional.get();
+                passThruList.add(constructPartRecordInfo(part, source, item.streamType, order++));
+            } else {
+                log.warn("uuid {} not exist", item.uuid);
+                source.add(null);
+                order++;
+            }
+        }
+
+        this.sourcesPublisher = source;
+        this.passThruList = passThruList;
     }
 
     private JsonArray mixVoice() {

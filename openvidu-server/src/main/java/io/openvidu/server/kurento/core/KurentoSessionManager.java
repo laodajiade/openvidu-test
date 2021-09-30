@@ -247,6 +247,9 @@ public class KurentoSessionManager extends SessionManager {
             if (participant.getRole() == OpenViduRole.MODERATOR && reason != EndReason.reconnect && session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().switchAutoMode(true);
             }
+            if (participant.getRole() == OpenViduRole.MODERATOR && session.isRecording.get()){
+                session.getRecorderService().switchAutoMode(true);
+            }
 
             UseTime.point("ip4");
             // adjust order notify after onLeft
