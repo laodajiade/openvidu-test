@@ -26,7 +26,7 @@ public class ConferenceRecordingProperties {
     private RecordOutputMode outputMode;
     private MediaProfileSpecType mediaProfileSpecType;
     private Integer layoutMode;
-    private LayoutModeTypeEnum layoutModeTypeEnum;
+    private LayoutModeTypeEnum layoutModeType;
     private JsonArray mediaSources;
     private JsonObject participantStatus;
 }

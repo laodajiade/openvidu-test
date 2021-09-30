@@ -101,7 +101,7 @@ public class RecorderService {
             mediaSources.add(mediaSourceObj);
             recordingProperties.setMediaSources(mediaSources);
             recordingProperties.setLayoutMode(layoutMode.getMode());
-            recordingProperties.setLayoutModeTypeEnum(layoutModeType);
+            recordingProperties.setLayoutModeType(layoutModeType);
         } catch (Exception e) {
             log.error("getSipCompositeElements error", e);
             return false;
@@ -282,6 +282,8 @@ public class RecorderService {
             jsonObject.addProperty("micStatus", part.getMicStatus() == ParticipantMicStatus.on);
             jsonObject.addProperty("videoStatus", part.getVideoStatus() == ParticipantVideoStatus.on);
             jsonObject.addProperty("voiceMode", part.getVoiceMode() == VoiceMode.on);
+            jsonObject.addProperty("isModerator", part.getRole() == OpenViduRole.MODERATOR);
+            jsonObject.addProperty("isSpeaker", session.isSpeaker(part.getUuid()));
         }
         source.add(new CompositeObjectWrapper(part, streamType, publisherEndpoint));
         return jsonObject;
@@ -298,6 +300,21 @@ public class RecorderService {
                 .build();
 
         recordingProperties.getParticipantStatus().addProperty(field, "on".equals(status));
+        recordingProperties.getParticipantStatus().addProperty("uuid", uuid);
+        recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateParticipantStatus.buildMqMsg(recordingProperties).toString());
+    }
+
+    public void updateParticipantStatus(String uuid, String field, boolean status) {
+        ConferenceRecordingProperties recordingProperties = ConferenceRecordingProperties.builder()
+                .project(session.getConference().getProject())
+                .roomId(session.getSessionId())
+                .outputMode(RecordOutputMode.COMPOSED)
+                .ruid(session.getRuid())
+                .updateTime(System.currentTimeMillis())
+                .participantStatus(new JsonObject())
+                .build();
+
+        recordingProperties.getParticipantStatus().addProperty(field, status);
         recordingProperties.getParticipantStatus().addProperty("uuid", uuid);
         recordingRedisPublisher.sendRecordingTask(RecordingOperationEnum.updateParticipantStatus.buildMqMsg(recordingProperties).toString());
     }
