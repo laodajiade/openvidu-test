@@ -247,7 +247,7 @@ public class KurentoSessionManager extends SessionManager {
             if (participant.getRole() == OpenViduRole.MODERATOR && reason != EndReason.reconnect && session.getConferenceMode() == ConferenceModeEnum.MCU) {
                 session.getCompositeService().switchAutoMode(true);
             }
-            if (participant.getRole() == OpenViduRole.MODERATOR && session.isRecording.get()){
+            if (participant.getRole() == OpenViduRole.MODERATOR && session.isRecording.get()) {
                 session.getRecorderService().switchAutoMode(true);
             }
 
@@ -1462,7 +1462,9 @@ public class KurentoSessionManager extends SessionManager {
 
         log.info("Stop recording and sessionId is {}", sessionId);
         // pub stop recording task
-        session.getRecorderService().stopRecording();
+        if (session.getRecorderService() != null) {
+            session.getRecorderService().stopRecording();
+        }
     }
 
     @Override
