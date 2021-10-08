@@ -71,9 +71,7 @@ public class CompositeService {
 
     private ManualLayoutInfo manualLayoutInfo;
 
-    /**
-     * 0 = 主持人模式，1 = 主动模式
-     */
+
     @Getter
     private boolean autoMode = true;
 
@@ -232,7 +230,7 @@ public class CompositeService {
                 try {
                     session.getKms().getKurentoClient().sendJsonRpcRequest(composeLayoutRequest(session.getPipeline().getId(),
                             session.getSessionId(), newPoint, LayoutModeEnum.getLayoutMode(newPoint.size())));
-                    if (!this.autoMode || isLayoutChange(newPoint, false)) {
+                    if (!this.autoMode || needToBeNotifiedChange(newPoint)) {
                         conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_LAYOUT_CHANGED_NOTIFY);
                     }
 
@@ -626,6 +624,29 @@ public class CompositeService {
                 return true;
             }
             if (streamChange && !Objects.equals(sourcesPublisher.get(i).endpoint.getStreamId(), newObjects.get(i).endpoint.getStreamId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 是否需要通知客户端布局变化，和isLayoutChange相比条件较为宽松
+     */
+    private boolean needToBeNotifiedChange(List<CompositeObjectWrapper> newObjects) {
+        if (layoutMode != lastLayoutMode || layoutModeType != lastLayoutModeType || this.sourcesPublisher.size() != newObjects.size()) {
+            return true;
+        }
+
+        for (int i = 0; i < sourcesPublisher.size(); i++) {
+            final CompositeObjectWrapper s1 = sourcesPublisher.get(i);
+            final CompositeObjectWrapper s2 = newObjects.get(i);
+
+            boolean equal = s1.order == s2.order &&
+                    Objects.equals(s1.uuid, s2.uuid) &&
+                    Objects.equals(s1.username, s2.username) &&
+                    s1.streamType == s2.streamType;
+            if (!equal) {
                 return true;
             }
         }

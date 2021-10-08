@@ -693,8 +693,10 @@ class TestManualLayout(test.MyTestCase):
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
         self.set_mcu_mode(moderator_client)
-        time.sleep(240)
-
+        timeout = 240
+        logger.info('睡眠', timeout, 's')
+        time.sleep(timeout)
+        logger.info('睡眠结束')
 
     ###################################################################################
 
