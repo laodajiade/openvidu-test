@@ -41,6 +41,7 @@ import io.openvidu.server.living.service.LivingManager;
 import io.openvidu.server.recording.service.RecordingManager;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import io.openvidu.server.service.SessionEventRecord;
 import io.openvidu.server.utils.FormatChecker;
 import io.openvidu.server.utils.GeoLocation;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -688,6 +689,7 @@ public abstract class SessionManager {
             this.closeSessionAndEmptyCollections(session, reason);
             throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "Session '" + sessionId + "' already closed");
         }
+        SessionEventRecord.closeRoom(session, reason);
         Set<Participant> participants = getParticipants(sessionId);
 
         // set session status: closing

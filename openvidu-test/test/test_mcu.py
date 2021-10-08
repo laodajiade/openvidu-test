@@ -688,7 +688,7 @@ class TestManualLayout(test.MyTestCase):
         self.assertEqual(notify['params']['layoutInfo']['mode'], 1)
         self.assertEqual(notify['params']['layoutInfo']['linkedCoordinates'][0]['uuid'], part_client.uuid)
 
-    @unittest2.skipIf(sys.modules.get('fast_test'), '需要等待至少30分钟，调过用例')
+    @unittest2.skipIf(True, '需要等待至少30分钟，调过用例')
     def test_release_mcu(self):
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
