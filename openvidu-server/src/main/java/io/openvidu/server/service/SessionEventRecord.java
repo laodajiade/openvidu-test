@@ -90,6 +90,19 @@ public class SessionEventRecord {
     }
 
     /**
+     * SESSION-EVENT {sessionId}({ruid[-8:]}) {closeRoom} {timestamp} {reason}
+     */
+    public static void closeRoom(Session session, EndReason reason) {
+        if (session == null) {
+            return;
+        }
+        if (log.isInfoEnabled()) {
+            log.info("SESSION-EVENT {}({}) {} {} {}",
+                    session.getSessionId(), subRuid(session), "closeRoom", System.currentTimeMillis(), reason.name());
+        }
+    }
+
+    /**
      * SESSION-EVENT {sessionId}({ruid[-8:]}) {joinRoom} {timestamp} {part_uuid} {json_msg} {reconnected}
      */
     public static void joinRoom(Session session, Participant participant, boolean reconnected) {
