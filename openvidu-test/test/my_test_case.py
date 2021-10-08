@@ -36,6 +36,7 @@ class MyTestCase(unittest.TestCase):
     def tearDown(self):
         """ 自动释放资源 """
         time.sleep(1)
+        logger.info("#################### tear down ####################")
         for client in self.clients:
             client.safeOut()
         time.sleep(1)

@@ -88,8 +88,9 @@ class SdClient:
             elif len(self.room_id) == 9 or len(self.room_id) == 8:
                 self.close_room(self.room_id)
         if self.wsClient is not None:
+            self.request("accessOut", {})
             self.wsClient.close()
-        logger.info("================== " + self.uuid + " safe outed ==================")
+        logger.info("****************** " + self.uuid + " safe outed ******************")
 
     def logout(self):
         self.wsClient.close()
