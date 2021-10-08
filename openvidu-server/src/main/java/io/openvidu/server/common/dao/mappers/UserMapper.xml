@@ -150,7 +150,7 @@
   </select>
 
   <select id="selectCallUserByUuidList" parameterType="java.util.List" resultMap="BaseResultMap">
-    select uuid, if(su.username is not null,su.username,sd.device_name) username
+    select uuid, if(su.username is not null,su.username,sd.device_name) username,su.type type
     from sd_user su
     left join sd_user_dev sud on su.id = sud.user_id
     left join sd_device sd on sud.serial_number = sd.serial_number
