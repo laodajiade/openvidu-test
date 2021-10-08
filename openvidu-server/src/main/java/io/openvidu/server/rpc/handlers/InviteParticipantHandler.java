@@ -1,6 +1,8 @@
 package io.openvidu.server.rpc.handlers;
 
 import cn.jpush.api.push.model.notification.IosAlert;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
@@ -23,7 +25,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -99,8 +100,20 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             });
         }
         inviteOnline(targetIds, params);
-        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
-
+        List<String> collect = sessionManager.getSession(sessionId).getParticipants().stream().map(x -> x.getUuid()).collect(Collectors.toList());
+        JSONObject result = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        invitees.stream().forEach(x->{
+            if(!collect.contains(x.getUuid())){
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("uuid",x.getUuid());
+                jsonObject.put("userName",x.getUsername());
+                jsonObject.put("accountType",x.getType());
+                jsonArray.add(jsonObject);
+            }
+        });
+        result.put("inviteList",jsonArray);
+        this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), result);
         Conference conference = sessionManager.getSession(sessionId).getConference();
         saveCallHistoryUsers(invitees, sessionId, conference.getRuid());
         //极光推送
