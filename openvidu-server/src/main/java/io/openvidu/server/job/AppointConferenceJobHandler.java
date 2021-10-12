@@ -497,6 +497,7 @@ public class AppointConferenceJobHandler {
             params.addProperty(ProtocolElements.INVITE_PARTICIPANT_PASSWORD_PARAM, conference.getPassword());
         }
 
+        // 邀请通知
         List<RpcConnection> rpcConnections = notificationService.getRpcConnectionByUuids(uuidSet);
         rpcConnections.stream().filter(rpcConnection -> Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.terminal))
                 .forEach(rpcConnection -> {
@@ -508,16 +509,6 @@ public class AppointConferenceJobHandler {
                     } else {
                         log.info("conferenceBeginJobHandler no inviteParticipant uuid={},online status = {}", rpcConnection.getUserUuid(), cacheManage.getTerminalStatus(rpcConnection.getUserUuid()));
                     }
-                });
-
-        // 邀请通知
-        notificationService.getRpcConnections()
-                .stream()
-                .filter(rpcConnection -> uuidSet.contains(rpcConnection.getUserUuid())
-                        && Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.terminal)
-                        && TerminalStatus.online.name().equals(cacheManage.getTerminalStatus(rpcConnection.getUserUuid())))
-                .forEach(rpcConnection -> {
-
                 });
     }
 
