@@ -127,7 +127,7 @@ public class KurentoSessionManager extends SessionManager {
             } else {
                 if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                     participant.setMicStatus(ParticipantMicStatus.off);
-                } else if (participant.getOrder() >= openviduConfig.getSmartMicOnThreshold()) {
+                } else if (participant.getOrder() >= kSession.getPresetInfo().getSfuPublisherThreshold()) {
                     participant.setMicStatus(ParticipantMicStatus.off);
                 }
             }
