@@ -154,6 +154,7 @@ public class SessionEventsHandler {
         roomInfoJson.addProperty("isRecording", session.getIsRecording());
         roomInfoJson.addProperty("quietStatusInRoom", session.getPresetInfo().getQuietStatusInRoom().name());
         roomInfoJson.addProperty("allowPartDismissMute", participant.getPreset().getAllowPartDismissMute().name());
+        roomInfoJson.addProperty("imMode", session.getPresetInfo().getImMode());
         if (!session.isAutomatically()) {
             roomInfoJson.addProperty("mode", session.getLayoutMode().getMode());
         }
