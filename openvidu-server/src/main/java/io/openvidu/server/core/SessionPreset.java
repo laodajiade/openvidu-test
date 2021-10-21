@@ -31,7 +31,7 @@ public class SessionPreset {
 
     @Getter
     @Setter
-    private SessionPresetEnum allowPartDismissMute = SessionPresetEnum.off; //允许与会者自我解除静音 默认关闭
+    private SessionPresetEnum allowPartDismissMute; //允许与会者自我解除静音 默认关闭
 
     @Getter
     @Setter
@@ -189,7 +189,7 @@ public class SessionPreset {
         this.roomCapacity = 500;
         this.roomDuration = -1f;
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
-        this.allowPartDismissMute = SessionPresetEnum.off;
+        this.allowPartDismissMute = SessionPresetEnum.on;
         this.allowPartOperShare = SessionPresetEnum.off;
         this.allowPartOperSpeaker = SessionPresetEnum.on;
         this.allowRecord = SessionPresetEnum.on;
@@ -213,7 +213,7 @@ public class SessionPreset {
         this.roomCapacity = 500;
         this.roomDuration = -1f;
         this.useIdTypeInRoom = SessionPresetUseIDEnum.ALL_PARTICIPANTS;
-        this.allowPartDismissMute = SessionPresetEnum.off;
+        this.allowPartDismissMute = SessionPresetEnum.on;
         this.allowPartOperShare = SessionPresetEnum.off;
         this.allowPartOperSpeaker = SessionPresetEnum.on;
         this.quietStatusInRoom = SessionPresetEnum.smart;
