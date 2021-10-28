@@ -137,7 +137,7 @@ public class AppointConferenceJobHandler {
 
         Session session = sessionManager.getSession(conference.getRoomId());
         if (session != null) {
-            sessionManager.closeSession(session.getSessionId(), EndReason.sessionClosedByServer);
+            sessionManager.dealSessionClose(session.getSessionId(), EndReason.sessionClosedByServer);
         }
     }
 
