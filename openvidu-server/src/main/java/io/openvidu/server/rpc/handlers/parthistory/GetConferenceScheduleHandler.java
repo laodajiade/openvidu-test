@@ -165,7 +165,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
                 resp.setRoomCapacity(appointConference.getRoomCapacity());
                 resp.setCreatorUserId(appointConference.getUserId());
                 resp.setStatus(appointConference.getStatus());
-
+                resp.setPassWord(appointConference.getPassword());
                 list.add(resp);
             }
 
@@ -207,7 +207,7 @@ public class GetConferenceScheduleHandler extends ExRpcAbstractHandler<GetConfer
 
             for (Conference conference : appointConferenceList) {
                 ConferenceHisResp resp = new ConferenceHisResp();
-
+                resp.setPassWord(conference.getPassword());
                 resp.setRuid(conference.getRuid());
                 resp.setRoomId(conference.getRoomId());
                 resp.setSubject(conference.getConferenceSubject());

@@ -62,6 +62,8 @@ public class ConferenceHisResp {
      * 会议发起人的account
      */
     private String creatorAccount;
+    
+    private String passWord;
 
     private Long creatorUserId;
 
