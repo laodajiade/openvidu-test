@@ -37,7 +37,7 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
         String ruid = getStringOptionalParam(request, ProtocolElements.GET_INVITE_INFO_RUID_PARAM);
         Session session = sessionManager.getSession(roomId);
         // 如果ruid为空则复制会议邀请信息   否则复制预约会议邀请信息
-        if (StringUtils.isEmpty(ruid) || !ruid.startsWith("appt-")) {
+        if (StringUtils.isEmpty(ruid) || (StringUtils.isNotEmpty(ruid) && !ruid.startsWith("appt-"))) {
             if (Objects.isNull(session)) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
