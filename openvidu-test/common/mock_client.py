@@ -425,14 +425,14 @@ class WsClient:
                 self.pt.start()
 
     def on_error(self, ws, error):
-        print("on_error " + error)
+        # print("on_error " + str(error))
+        pass
 
     def on_close(self, message):
-        print("### closed ###")
+        logger.info(self.uuid + ' ws connect close')
 
     def on_open(self, message):
         logger.info(self.uuid + ' ws connect open')
-        print("### ws open ###" + message)
 
     def request(self, method, params, timeout=2000):
         msgId = self.__getMsgId()

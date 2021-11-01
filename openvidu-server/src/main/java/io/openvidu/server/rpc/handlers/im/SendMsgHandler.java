@@ -104,6 +104,9 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         if (session.getPresetInfo().getImMode() == IMModeEnum.NOT_LIMIT.getMode()) {
             return;
         }
+        if (session.getConference().getModeratorUuid().equals(params.getSenderAccount())) {
+            return;
+        }
         if (session.getPresetInfo().getImMode() == IMModeEnum.ALL_LIMIT.getMode()) {
             throw new BizException(ErrorCodeEnum.IM_ALL_LIMIT);
         }
