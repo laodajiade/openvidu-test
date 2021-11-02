@@ -125,11 +125,10 @@ public class KurentoSessionManager extends SessionManager {
             UseTime.point("setMajorPartsOrder end");
             // 如果是主持人，所有权限都打开
             SessionPreset preset = getPresetInfo(sessionId);
-            if (OpenViduRole.MODERATOR.equals(participant.getRole())) {
-            } else {
+            if (!OpenViduRole.MODERATOR.equals(participant.getRole())) {
                 if (preset.getQuietStatusInRoom().equals(SessionPresetEnum.off)) {
                     participant.setMicStatus(ParticipantMicStatus.off);
-                } else if (participant.getOrder() >= kSession.getPresetInfo().getSfuPublisherThreshold()) {
+                } else if (participant.getOrder() >= openviduConfig.getSmartMicOnThreshold()) {
                     participant.setMicStatus(ParticipantMicStatus.off);
                 }
             }
