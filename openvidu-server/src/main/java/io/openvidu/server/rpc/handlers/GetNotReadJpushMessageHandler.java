@@ -23,6 +23,7 @@ public class GetNotReadJpushMessageHandler extends RpcAbstractHandler {
         int count = jpushMessageMapper.getNotReadMsgCount(uuid);
         JSONObject respJson = new JSONObject();
         respJson.put("isExist", count != 0);
+        respJson.put("count", count);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
     }
 }
