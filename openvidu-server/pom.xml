@@ -544,6 +544,14 @@
 			<artifactId>netty-all</artifactId>
 			<version>4.1.6.Final</version>
 		</dependency>
+
+
+		<!--apollo客户端-->
+		<dependency>
+			<groupId>com.ctrip.framework.apollo</groupId>
+			<artifactId>apollo-client</artifactId>
+			<version>1.7.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
