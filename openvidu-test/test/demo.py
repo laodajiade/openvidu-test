@@ -1,7 +1,8 @@
 import time
 
 def main():
-    print(int(time.time())*1000)
+    for a in range(0,5):
+        print(a)
 
 if __name__ == '__main__':
     main()

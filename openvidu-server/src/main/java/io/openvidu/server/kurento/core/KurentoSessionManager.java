@@ -114,6 +114,8 @@ public class KurentoSessionManager extends SessionManager {
                 throw new OpenViduException(Code.ROOM_CLOSED_ERROR_CODE, "'" + participant.getParticipantPublicId()
                         + "' is trying to join session '" + sessionId + "' but it is closing");
             }
+            kSession.getParticipantByUUID(participant.getUuid())
+                    .ifPresent(existPart -> evictParticipant(existPart, Collections.emptyList(), EndReason.reconnect));
 
             existingParticipants = getParticipants(sessionId);
             participant.setApplicationContext(applicationContext);

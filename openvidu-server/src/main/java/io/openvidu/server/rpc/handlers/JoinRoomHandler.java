@@ -256,9 +256,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                     }
                 }
 
-
-                boolean recorder = getBooleanOptionalParam(request, ProtocolElements.JOINROOM_RECORDER_PARAM);
-
                 // verify room capacity limit.
                 if (!Objects.isNull(session) && !Objects.equals(rpcConnection.getAccessType(), AccessTypeEnum.web)) {
                     Set<Participant> majorParts = session.getParticipants();
@@ -383,6 +380,8 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 rtcUserClient.updateRpcConnection(rpcConnection); //强制同步一次数据
                 UseTime.point("join room p1");
                 try {
+                    log.info("yy debug 111 {}", session == null);
+                    log.info("yy debug order {}, {}", participant.getUuid(), participant.getOrder());
                     if (session == null || session.getJoinOrLeaveReentrantLock().tryLock(1L, TimeUnit.SECONDS)) {
                         UseTime.point("join room p1.1");
                         sessionManager.joinRoom(participant, sessionId, conference.get(0), request.getId());

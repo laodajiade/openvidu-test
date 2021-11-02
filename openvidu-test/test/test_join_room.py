@@ -269,14 +269,14 @@ class TestJoinRoom(test.MyTestCase):
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         clients = []
-        self.barrier = False  # 与会者栅栏，让线程能同一个时间执行。
+        barrier = threading.Barrier(14, timeout=5)  # 与会者栅栏，让线程能同一个时间执行。
         self.finish = False  # True后让主持人线程停止
         for i in range(1, 15):
             client = self.loginAndAccessIn2(self.users[i])
             clients.append(client)
 
         for client in clients:
-            t = threading.Thread(target=self.join, args=(client, room_id))
+            t = threading.Thread(target=self.join, args=(client, room_id, barrier))
             t.setDaemon(True)
             t.start()
 
@@ -334,10 +334,9 @@ class TestJoinRoom(test.MyTestCase):
         self.assertEqual(re[1]['roomInfo']['sharingUuid'], "", '分享者有问题')
         self.assertEqual(re[1]['roomInfo']['speakerUuid'], "", '发言者有问题')
 
-    def join(self, client, room_id):
+    def join(self, client, room_id, barrier):
         """ 与会者并发入会 """
-        while (not self.barrier):
-            pass
+        barrier.wait()
         t1 = time.time()
         self.joinRoom(client, room_id)
         t2 = time.time()
@@ -377,6 +376,20 @@ class TestJoinRoom(test.MyTestCase):
                 self.assertTrue('PUBLISHER' in re[1]['roomInfo']['metadata'])
             else:
                 self.assertTrue('SUBSCRIBE' in re[1]['roomInfo']['metadata'])
+
+    def test_concurrent_join_multiple(self):
+        """ 同一个uuid并发入会，检查order，
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        part_client = self.loginAndAccessIn2(self.users[1])
+        time.sleep(1)
+        barrier = threading.Barrier(5, timeout=5)
+        for i in range(0, 5):  # 模拟客户端同时请求N个joinRoom，导致order异常
+            threading.Thread(target=self.join, args=(part_client, room_id, barrier), daemon=True).start()
+        time.sleep(2)
+        result = part_client.joinRoom(room_id)
+        self.assertEqual(result[1]['roomInfo']['order'], 1, '入会的order不正确')
 
 
 if __name__ == '__main__':
