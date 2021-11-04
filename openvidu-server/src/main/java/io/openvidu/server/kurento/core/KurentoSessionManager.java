@@ -773,10 +773,9 @@ public class KurentoSessionManager extends SessionManager {
 
         if (evictedParticipant != null && !evictedParticipant.isClosed()) {
             KurentoParticipant kParticipant = (KurentoParticipant) evictedParticipant;
-            Set<Participant> participants = kParticipant.getSession().getParticipants();
-            sessionClosedByLastParticipant = this.leaveRoom(kParticipant, null, reason, false);
-            this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant, participants, transactionId,
+            this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant, kParticipant.getSession().getParticipants(), transactionId,
                     null, reason);
+            sessionClosedByLastParticipant = this.leaveRoom(kParticipant, null, reason, false);
         } else {
             if (moderator != null && transactionId != null) {
                 this.sessionEventsHandler.onForceDisconnect(moderator, evictedParticipant,

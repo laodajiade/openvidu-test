@@ -395,7 +395,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         session.getJoinOrLeaveReentrantLock().unlock();
                     }
                 }
-                UseTime.point("join room p2");
             } while (false);
 
             rpcConnection.setReconnected(false);
@@ -427,7 +426,6 @@ public class JoinRoomHandler extends RpcAbstractHandler {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
         }
-        UseTime.point("join room end");
     }
 
 }
