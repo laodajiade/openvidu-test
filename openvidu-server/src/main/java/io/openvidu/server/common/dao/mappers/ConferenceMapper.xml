@@ -403,6 +403,12 @@
     <include refid="Base_Column_List"/>
     from sd_conference a
     where a.`status`=2  and ( (a.user_id = #{userId} and del = 0) or a.ruid in ( select ruid from sd_conf_part_history b where b.user_id = #{userId} and del = 0))
+    <if test="startTime != null">
+      and start_time >= #{startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="endTime != null">
+      and #{endTime,jdbcType=TIMESTAMP} >= start_time
+    </if>
     order by start_time desc
   </select>
 
