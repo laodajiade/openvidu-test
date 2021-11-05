@@ -78,7 +78,7 @@
     count(*)
     from sd_jpush_message
     where read_type = 0
-    and uuid = #{uuid,jdbcType=VARCHAR}
+    and uuid = #{uuid,jdbcType=VARCHAR} and DATE_SUB(CURDATE(), INTERVAL 30 DAY) <![CDATA[<=]]> date(create_time)
   </select>
 
   <delete id="delJpushMsg" >
