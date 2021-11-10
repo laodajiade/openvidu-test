@@ -1,6 +1,7 @@
 package io.openvidu.server.config;
 
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +18,11 @@ public class XxlJobConfig {
     @Value("${xxl.job.executor.appname}")
     private String appName;
 
-    @Value("${xxl.job.executor.ip}")
-    private String ip;
+    @Value("${xxl.job.executor.ip:}")
+    private String xxlIp;
+
+    @Value("${spring.cloud.client.ip-address}")
+    private String cloudIp;
 
     @Value("${xxl.job.executor.port}")
     private int port;
@@ -34,15 +38,19 @@ public class XxlJobConfig {
 
     @Bean
     public XxlJobSpringExecutor xxlJobExecutor() {
-        logger.info(">>>>>>>>>>> xxl-job config init.");
+        logger.info(">>>>>>>>>>> xxl-job config init. xxl_ip {},cloud_id {}", xxlIp, cloudIp);
         XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();
         xxlJobSpringExecutor.setAdminAddresses(adminAddresses);
         xxlJobSpringExecutor.setAppName(appName);
-        xxlJobSpringExecutor.setIp(ip);
         xxlJobSpringExecutor.setPort(port);
         xxlJobSpringExecutor.setAccessToken(accessToken);
         xxlJobSpringExecutor.setLogPath(logPath);
         xxlJobSpringExecutor.setLogRetentionDays(logRetentionDays);
+
+        xxlJobSpringExecutor.setIp(cloudIp);
+        if (StringUtils.isNotEmpty(xxlIp)) {
+            xxlJobSpringExecutor.setIp(xxlIp);
+        }
 
         return xxlJobSpringExecutor;
     }

@@ -116,7 +116,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         if (session.getPresetInfo().getImMode() == IMModeEnum.ONLY_TO_MODERATOR.getMode()) {
             if (params.getOperate() != 0) {
                 throw new BizException(ErrorCodeEnum.IM_ONLY_TO_MODERATOR);
-            } else if (params.getReciverAccount().isEmpty() || Objects.equals(session.getConference().getModeratorUuid(), params.getReciverAccount().get(0))) {
+            } else if (params.getReciverAccount().isEmpty() || !Objects.equals(session.getConference().getModeratorUuid(), params.getReciverAccount().get(0))) {
                 throw new BizException(ErrorCodeEnum.IM_ONLY_TO_MODERATOR);
             }
         }

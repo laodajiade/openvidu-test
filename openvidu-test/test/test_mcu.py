@@ -16,6 +16,7 @@ class TestMCU(test.MyTestCase):
         """ 创建会议, 主持人入会，强制开启MCU，第二人入会
             期望：第二个人入会将使用mcu模式
         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
         self.set_mcu_mode(moderator_client)
@@ -38,6 +39,7 @@ class TestMCU(test.MyTestCase):
          期望：后面入会的人看到会议变MCU模式
          """
         # 主持人入会
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         moderator_client.ms = MeetingService(moderator_client, room_id)
         # moderator_client.collecting_notify()
@@ -335,6 +337,7 @@ class TestMCU(test.MyTestCase):
     def test_t200_mcu_speak_and_share(self):
         """ 测试主持人是t200的发言布局 """
         # 主持人入会
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator = self.users[0]
         moderator_client = self.loginAndAccessIn(moderator['phone'], moderator['pwd'], deviceModel='T200')
         re = self.createRandomRoom(moderator_client)
@@ -590,6 +593,7 @@ class TestManualLayout(test.MyTestCase):
                 3、主持人收到布局回调
         结果期望： step3:回调和主持人上报的一致
         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
         self.set_mcu_mode(moderator_client)
@@ -617,6 +621,7 @@ class TestManualLayout(test.MyTestCase):
                 3、主持人收到布局回调
         结果期望： step3:回调和主持人上报的一致
         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
         self.set_mcu_mode(moderator_client)
@@ -648,6 +653,7 @@ class TestManualLayout(test.MyTestCase):
                 2、主持人推流，上报自己的布局
         结果期望： step2: 接口应该报错13017
         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
         self.set_mcu_mode(moderator_client)
@@ -673,6 +679,7 @@ class TestManualLayout(test.MyTestCase):
                 2、主持人离会
         结果期望： step2: 离会后，MCU的布局转自动布局
         """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
         logger.info('强制开启MCU')
         self.set_mcu_mode(moderator_client)

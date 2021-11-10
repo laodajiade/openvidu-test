@@ -4,6 +4,7 @@ import io.openvidu.server.common.pojo.ConfStatisticSearch;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.common.pojo.dto.CorpRoomsSearch;
+import io.openvidu.server.domain.AppointConferenceDTO;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public interface ConferenceMapper {
 
     long selectConfRecordsCountByCondition(ConferenceSearch search);
 
-    List<Conference> getFinishedList(Long userId);
+    List<Conference> getFinishedList(AppointConferenceDTO userId);
 
     void softDeleteById(Long id);
 

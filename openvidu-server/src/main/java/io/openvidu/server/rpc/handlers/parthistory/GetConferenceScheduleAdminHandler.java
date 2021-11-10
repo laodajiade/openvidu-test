@@ -28,8 +28,8 @@ public class GetConferenceScheduleAdminHandler extends GetConferenceScheduleHand
             }
 
             @Override
-            protected AppointConferenceDTO getAppointConferenceDTO() {
-                AppointConferenceDTO appointConferenceDTO = super.getAppointConferenceDTO();
+            public AppointConferenceDTO getAppointConferenceDTO(Long userId, String project, GetConferenceScheduleVO vo) {
+                AppointConferenceDTO appointConferenceDTO = super.getAppointConferenceDTO(userId, project, vo);
                 List<Long> deptLimit = roleManage.getDeptLimit(rpcConnection.getUserId());
                 appointConferenceDTO.setDeptLimit(deptLimit);
                 return appointConferenceDTO;

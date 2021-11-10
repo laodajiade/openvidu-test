@@ -212,7 +212,6 @@ public class StartConferenceRecordHandler extends RpcAbstractHandler {
                     log.warn("会议录制没有正常开始 {},{}", session.getSessionId(), session.getRuid());
                     // 通知录制服务停止录制视频
                     sessionManager.stopRecording(roomId);
-
                     JsonObject notify = new JsonObject();
                     // notify.addProperty("reason", "serverInternalError");
                     notify.addProperty("reason", CommonConstants.SERVER_INTERNAL_ERROR);
