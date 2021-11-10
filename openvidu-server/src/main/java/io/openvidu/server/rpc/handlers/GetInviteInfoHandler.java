@@ -45,11 +45,11 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
             }
             // verify operate permission
             Optional<Participant> participantOptional = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId(), rpcConnection.getUserUuid());
-            if (!participantOptional.isPresent() || !participantOptional.get().getRole().isController()) {
+/*            if (!participantOptional.isPresent() || !participantOptional.get().getRole().isController()) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.PERMISSION_LIMITED);
                 return;
-            }
+            }*/
 
             ConferenceSearch search = new ConferenceSearch();
             search.setRoomId(roomId);
