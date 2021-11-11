@@ -8,7 +8,6 @@ import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
-import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -20,7 +19,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author even
@@ -35,29 +33,22 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
     public void handRpcRequest(RpcConnection rpcConnection, Request<JsonObject> request) {
         String roomId = getStringParam(request, ProtocolElements.GET_INVITE_INFO_ROOMID_PARAM);
         String ruid = getStringOptionalParam(request, ProtocolElements.GET_INVITE_INFO_RUID_PARAM);
-        Session session = sessionManager.getSession(roomId);
         // 如果ruid为空则复制会议邀请信息   否则复制预约会议邀请信息
-        if (StringUtils.isEmpty(ruid) || (StringUtils.isNotEmpty(ruid) && !ruid.startsWith("appt-"))) {
+        if (!StringUtils.startsWith(ruid, "appt-")) {
+            Session session = sessionManager.getSession(roomId);
             if (Objects.isNull(session)) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
                 return;
             }
             // verify operate permission
-            Optional<Participant> participantOptional = session.getParticipantByPrivateId(rpcConnection.getParticipantPrivateId(), rpcConnection.getUserUuid());
-/*            if (!participantOptional.isPresent() || !participantOptional.get().getRole().isController()) {
-                this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
-                        null, ErrorCodeEnum.PERMISSION_LIMITED);
-                return;
-            }*/
-
             ConferenceSearch search = new ConferenceSearch();
             search.setRoomId(roomId);
             search.setStatus(ConferenceStatus.PROCESS.getStatus());
             List<Conference> list = conferenceMapper.selectBySearchCondition(search);
 
             JSONObject respJson = new JSONObject();
-            respJson.put("userName", participantOptional.get().getUsername());
+            respJson.put("userName", session.getConference().getModeratorName());
             respJson.put("subject", session.getConference().getConferenceSubject());
             respJson.put("startTime", session.getStartTime());
             respJson.put("roomId", roomId);
