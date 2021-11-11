@@ -3,11 +3,9 @@ package io.openvidu.server.rpc.handlers;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
-import io.openvidu.server.common.enums.ConferenceStatus;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
@@ -15,9 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,11 +37,7 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
                 return;
             }
-            // verify operate permission
-            ConferenceSearch search = new ConferenceSearch();
-            search.setRoomId(roomId);
-            search.setStatus(ConferenceStatus.PROCESS.getStatus());
-            List<Conference> list = conferenceMapper.selectBySearchCondition(search);
+            final Conference conference = conferenceMapper.selectUsedConference(roomId);
 
             JSONObject respJson = new JSONObject();
             respJson.put("userName", session.getConference().getModeratorName());
@@ -53,7 +45,7 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
             respJson.put("startTime", session.getStartTime());
             respJson.put("roomId", roomId);
             respJson.put("password", StringUtils.isEmpty(session.getConference().getPassword()) ? "" : session.getConference().getPassword());
-            respJson.put("inviteUrl", CollectionUtils.isEmpty(list) ? "" : openviduConfig.getConferenceInviteUrl() + list.get(0).getShortUrl());
+            respJson.put("inviteUrl", conference == null ? "" : openviduConfig.getConferenceInviteUrl() + conference.getShortUrl());
             this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
         } else {
             AppointConference appointConference = appointConferenceManage.getByRuid(ruid);
