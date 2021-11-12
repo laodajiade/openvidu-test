@@ -48,6 +48,7 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
         record.setRuid(session.getRuid());
         List<ConferenceRecord> conferenceRecordList = conferenceRecordManage.getByCondition(record);
         if (CollectionUtils.isEmpty(conferenceRecordList)) {
+            log.warn("CONFERENCE_RECORD_NOT_START ruid={} ", session.getRuid());
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
             return;
@@ -56,11 +57,13 @@ public class StopConferenceRecordHandler extends RpcAbstractHandler {
         ConferenceRecord conferenceRecord = conferenceRecordList.get(0);
         if (conferenceRecord.getStatus().equals(ConferenceRecordStatusEnum.WAIT.getStatus())) {
             if (System.currentTimeMillis() - conferenceRecord.getRequestStartTime().getTime() < 15000) {
+                log.warn("CONFERENCE_RECORD_NOT_START ruid={} ", session.getRuid());
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.CONFERENCE_RECORD_NOT_START);
                 return;
             }
             log.error("会议录制开始超时,强行停止,record:{}", JSON.toJSONString(conferenceRecord));
+            sessionManager.stopRecording(roomId);
         }
 
         if (!rpcConnection.getUserUuid().equals(conferenceRecord.getRecorderUuid())) {
