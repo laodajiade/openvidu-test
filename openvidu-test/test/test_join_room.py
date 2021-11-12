@@ -391,6 +391,32 @@ class TestJoinRoom(test.MyTestCase):
         result = part_client.joinRoom(room_id)
         self.assertEqual(result[1]['roomInfo']['order'], 1, '入会的order不正确')
 
+    def test_join_room_mute_all(self):
+        """ 主持人开启/关闭全体静音后加入会议
+        测试目的：主持人开启/关闭全体静音后加入会议后的mic status
+        测试过程: 1、主持人创建会议，
+                2、主持人开启全体静音
+                3、第2人入会，mic status = off
+                4、主持人关闭全体静音
+                5、第3人入会，mic status = on
+        结果期望：step3:第2人可以看到发言者和分享，
+                step4:第3人可以看到发言者和分享，
+                step5:掉线的会被踢出会议，所以第4人入会看不到言者和分享
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        logger.info('主持人设置全体静音')
+        moderator_client.request('setMuteAll',
+                                 {'roomId': room_id, 'originator': moderator_client.uuid, 'quietStatusInRoom': 'off'})
+        part_client, result = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        self.assertEqual(result[1]['roomInfo']['micStatusInRoom'], 'off', '麦克风状态不是off')
+        logger.info('主持人解除全体静音')
+        moderator_client.request('setMuteAll',
+                                 {'roomId': room_id, 'originator': moderator_client.uuid, 'quietStatusInRoom': 'smart'})
+        part_client, result = self.loginAndAccessInAndJoin(self.users[2], room_id)
+        self.assertEqual(result[1]['roomInfo']['micStatusInRoom'], 'on', '麦克风状态不是on')
+        pass
+
 
 if __name__ == '__main__':
     unittest2.main()
