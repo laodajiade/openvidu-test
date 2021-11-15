@@ -109,6 +109,22 @@ class TestInvite(test.MyTestCase):
         """
         pass
 
+    def test_get_invite_info(self):
+        """ 测试主持人能在外部获取邀请信息
+        描述：测试获取邀请信息
+        测试目的：测试主持人身份可以获取邀请信息
+        测试过程: 1、主持人创建会议入会
+                2、其他人入会
+                3、主持人离会并getInviteInfo
+        结果期望：
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        part_client, result = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        moderator_client.leave_room(room_id)
+        result = moderator_client.request("getInviteInfo", {"roomId": room_id})
+        self.assertEqual(result[0], 0)
+
 
 if __name__ == '__main__':
     unittest2.main()

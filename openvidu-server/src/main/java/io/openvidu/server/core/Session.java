@@ -1010,7 +1010,7 @@ public class Session implements SessionInterface {
     private void doPubToSub(Participant participant, Participant operatorPart, SessionManager sessionManager) {
 
         if (ParticipantMicStatus.on.equals(participant.getMicStatus())) {
-            participant.setMicStatus(ParticipantMicStatus.off);
+            participant.changeMicStatus(ParticipantMicStatus.off);
             JsonObject audioParams = new JsonObject();
             JsonArray targetIds = new JsonArray();
             targetIds.add(participant.getUuid());

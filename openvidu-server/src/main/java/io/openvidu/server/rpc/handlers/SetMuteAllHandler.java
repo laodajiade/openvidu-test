@@ -3,7 +3,10 @@ package io.openvidu.server.rpc.handlers;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
-import io.openvidu.server.core.*;
+import io.openvidu.server.core.Participant;
+import io.openvidu.server.core.Session;
+import io.openvidu.server.core.SessionManager;
+import io.openvidu.server.core.SessionPresetEnum;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +35,7 @@ public class SetMuteAllHandler extends RpcAbstractHandler {
         try {
             String sessionId = getStringParam(request, ProtocolElements.SET_MUTE_ALL_ROOMID_PARAM);
             String originator = getStringParam(request, ProtocolElements.SET_MUTE_ALL_ORIGINATOR_PARAM);
-            String quietStatusInRoom = getStringParam(request, ProtocolElements.SET_MUTE_ALL_QUIETSTATUSINROOM_PARAM);
+            SessionPresetEnum quietStatusInRoom = SessionPresetEnum.valueOf(getStringParam(request, ProtocolElements.SET_MUTE_ALL_QUIETSTATUSINROOM_PARAM));
             Session session = sessionManager.getSession(sessionId);
             // verify session valid
             if (Objects.isNull(session)) {
@@ -40,7 +43,8 @@ public class SetMuteAllHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.CONFERENCE_NOT_EXIST);
                 return;
             }
-            if  (!quietStatusInRoom.equals(SessionPresetEnum.off.name()) && !quietStatusInRoom.equals(SessionPresetEnum.smart.name())) {
+
+            if (quietStatusInRoom == SessionPresetEnum.on) {
                 this.notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
                 return;
@@ -52,7 +56,7 @@ public class SetMuteAllHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.PERMISSION_LIMITED);
                 return;
             }
-            sessionManager.setMuteAll(sessionId,originator,quietStatusInRoom.equals(SessionPresetEnum.off.name())?SessionPresetEnum.off:SessionPresetEnum.smart);
+            sessionManager.setMuteAll(sessionId, originator, quietStatusInRoom);
             notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), new JsonObject());
         } catch (Exception e) {
             log.error("setMuteAll error {}, {}", request.getParams(), rpcConnection.toString(), e);

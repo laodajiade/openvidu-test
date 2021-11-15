@@ -1,12 +1,12 @@
 {
-  "use_evn": "evn_206",
+  "use_evn": "evn_50",
   "evn_50": {
     "fast": true,
     "server_url": "https://172.25.12.50:443",
     "fixed_rooms":[{"roomId": "10360004", "sortId": "9999", "pwd": ""}]
   },
   "evn_200": {
-    "server_url": "https://172.25.11.200:443",
+    "server_url": "https://172.25.11.106:443",
     "fixed_rooms":[{"roomId": "10360004", "sortId": "9999", "pwd": ""}]
   },
   "evn_206": {

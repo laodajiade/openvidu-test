@@ -464,7 +464,6 @@ public class RpcHandlerFactory {
         handlersMap.put(ProtocolElements.SET_SCROLLING_BANNERS_METHOD, setScrollingBannersHandler);
         handlersMap.put(ProtocolElements.GET_SCROLLING_BANNERS_METHOD, getScrollingBannersHandler);
         handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD, saveJpushHandler);
-        handlersMap.put(ProtocolElements.SAVE_JPUSH_METHOD, saveJpushHandler);
         handlersMap.put(ProtocolElements.GET_FREQUENT_CONTACTS, getFrequentContactsHandler);
         handlersMap.put(ProtocolElements.SET_FREQUENT_CONTACTS, setFrequentContactsHandler);
         handlersMap.put(ProtocolElements.QUERY_OPERATION_PERMISSION, queryOperationPermissionHandler);
@@ -472,7 +471,6 @@ public class RpcHandlerFactory {
     }
 
     public RpcAbstractHandler getRpcHandler(String requestMethod) {
-        log.info("requestMethod:{},gethandlerMap{}", requestMethod, handlersMap.get(requestMethod));
         return handlersMap.getOrDefault(requestMethod, null);
     }
 

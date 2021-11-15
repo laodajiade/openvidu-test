@@ -72,7 +72,6 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
                     null, ErrorCodeEnum.ROOM_CAPACITY_CORP_LIMITED);
             return;
         }
-
         Map userInfo = cacheManage.getUserInfoByUUID(rpcConnection.getUserUuid());
         Object username = userInfo.get("username");
         String deviceName = userInfo.containsKey("deviceName") ? String.valueOf(userInfo.get("deviceName")) : null;
@@ -100,19 +99,19 @@ public class InviteParticipantHandler extends RpcAbstractHandler {
             });
         }
         inviteOnline(targetIds, params);
-        List<String> collect = sessionManager.getSession(sessionId).getParticipants().stream().map(x -> x.getUuid()).collect(Collectors.toList());
+        List<String> collect = sessionManager.getSession(sessionId).getParticipants().stream().map(Participant::getUuid).collect(Collectors.toList());
         JSONObject result = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        invitees.stream().forEach(x->{
-            if(!collect.contains(x.getUuid())){
+        invitees.forEach(x -> {
+            if (!collect.contains(x.getUuid())) {
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("uuid",x.getUuid());
-                jsonObject.put("userName",x.getUsername());
-                jsonObject.put("accountType",x.getType());
+                jsonObject.put("uuid", x.getUuid());
+                jsonObject.put("userName", x.getUsername());
+                jsonObject.put("accountType", x.getType());
                 jsonArray.add(jsonObject);
             }
         });
-        result.put("inviteList",jsonArray);
+        result.put("inviteList", jsonArray);
         this.notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), result);
         Conference conference = sessionManager.getSession(sessionId).getConference();
         saveCallHistoryUsers(invitees, sessionId, conference.getRuid());

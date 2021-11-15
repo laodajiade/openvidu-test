@@ -172,21 +172,17 @@ public class KurentoSessionManager extends SessionManager {
     public void setMuteAll(String sessionId, String originator, SessionPresetEnum sessionPresetEnum) {
         SessionPreset preset = getPresetInfo(sessionId);
         Session session = getSession(sessionId);
+        preset.setQuietStatusInRoom(sessionPresetEnum);
+
         if (SessionPresetEnum.off.equals(sessionPresetEnum)) {
-            //设置全体静音   所有人静音
-            preset.setQuietStatusInRoom(SessionPresetEnum.off);
-            session.getMajorPartExcludeModeratorConnect().stream().forEach(participant -> {
+            session.getMajorPartExcludeModeratorConnect().forEach(participant -> {
                 //不关闭分享者 麦克风
                 if (participant.getShareStatus().equals(ParticipantShareStatus.off)) {
-                    participant.setMicStatus(ParticipantMicStatus.off);
+                    participant.changeMicStatus(ParticipantMicStatus.off);
                 }
             });
-        } else {
-            //取消全体静音   打开墙上人员麦克风
-            session.getMajorPartExcludeModeratorConnect().stream().filter(x -> x.getOrder() <= preset.getSfuPublisherThreshold() - 1).forEach(participant -> {
-                participant.setMicStatus(ParticipantMicStatus.on);
-            });
         }
+
         JsonObject result = new JsonObject();
         result.addProperty("roomId", sessionId);
         result.addProperty("originator", originator);
