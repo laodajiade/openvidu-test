@@ -78,7 +78,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String videoStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM);
         String nickName = getStringOptionalParam(request, ProtocolElements.JOINROOM_NICKNAME_PARAM);
         String participantPrivatetId = rpcConnection.getParticipantPrivateId();
-        SessionPreset preset = sessionManager.getPresetInfo(sessionId);
+
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         VoiceMode voiceMode = VoiceMode.off;
         rpcConnection.setReconnected(isReconnected);
@@ -157,7 +157,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 ) {
                     role = OpenViduRole.MODERATOR;
                 }
-
+                SessionPreset preset = sessionManager.getPresetInfo(sessionId);
                 if (!rpcConnection.isReconnected() &&
                         SessionPresetUseIDEnum.ONLY_MODERATOR.equals(preset.getUseIdTypeInRoom())) {
                     if (!isModerator(role) && ParticipantJoinType.active.equals(ParticipantJoinType.valueOf(joinType))) {
