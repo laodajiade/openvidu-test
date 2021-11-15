@@ -117,23 +117,23 @@ public class KurentoParticipantEndpointConfig {
 //			log.info(msg);
 //		});
 
-		endpoint.getWebEndpoint().addIceComponentStateChangeListener(event -> {
-			// if (!event.getState().equals(IceComponentState.READY)) {
-			String msg = "KMS event [IceComponentStateChange]: -> endpoint: " + endpoint.getEndpointName() + " ("
-					+ typeOfEndpoint + ") | state: " + event.getState().name() + " | componentId: "
-					+ event.getComponentId() + " | streamId: " + event.getStreamId() + " | timestamp: "
-					+ event.getTimestampMillis();
-			log.info(msg);
-			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
-					endpoint.createdAt());
-			endpoint.kmsEvents.add(kmsEvent);
-			this.CDR.log(kmsEvent);
-			this.infoHandler.sendInfo(msg);
-//			if (event.getState() == IceComponentState.CONNECTED) {
-//				endpoint.notifyEndpointPass(typeOfEndpoint);
-//			}
-			// }
-		});
+//		endpoint.getWebEndpoint().addIceComponentStateChangeListener(event -> {
+//			// if (!event.getState().equals(IceComponentState.READY)) {
+//			String msg = "KMS event [IceComponentStateChange]: -> endpoint: " + endpoint.getEndpointName() + " ("
+//					+ typeOfEndpoint + ") | state: " + event.getState().name() + " | componentId: "
+//					+ event.getComponentId() + " | streamId: " + event.getStreamId() + " | timestamp: "
+//					+ event.getTimestampMillis();
+//			log.info(msg);
+//			KmsEvent kmsEvent = new KmsEvent(event, endpoint.getOwner(), endpoint.getEndpointName(),
+//					endpoint.createdAt());
+//			endpoint.kmsEvents.add(kmsEvent);
+//			this.CDR.log(kmsEvent);
+//			this.infoHandler.sendInfo(msg);
+////			if (event.getState() == IceComponentState.CONNECTED) {
+////				endpoint.notifyEndpointPass(typeOfEndpoint);
+////			}
+//			// }
+//		});
 
 		endpoint.getWebEndpoint().addErrorListener(event -> {
 			String msg = "KMS event [ERROR]: -> endpoint: " + endpoint.getEndpointName() + " (" + typeOfEndpoint

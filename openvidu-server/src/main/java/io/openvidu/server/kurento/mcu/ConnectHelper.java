@@ -45,13 +45,13 @@ public class ConnectHelper {
             @Override
             public void onSuccess(Void result) {
                 log.info("MCU subscribe {}: Elements have been connected (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId());
+                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {}: Failed to connect media elements (source {} -> sink {})", subscriberEndpoint.getStreamId(),
-                        hubPort.getTag("debug_name"), subscriberEndpoint.getEndpoint().getId(), cause);
+                        hubPort.getId(), subscriberEndpoint.getEndpoint().getId(), cause);
             }
         });
     }
@@ -62,13 +62,13 @@ public class ConnectHelper {
             @Override
             public void onSuccess(Void result) {
                 log.info("MCU subscribe {} {}: Elements have been connected (source {} -> sink {})", sinkEndpointName, mediaType.name(),
-                        source.getTag("debug_name"), sink.getId());
+                        source.getId(), sink.getId());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {} {}: Failed to connect media elements (source {} -> sink {})", sinkEndpointName, mediaType.name(),
-                        source.getTag("debug_name"), sink.getId(), cause);
+                        source.getId(), sink.getId(), cause);
             }
         });
     }
@@ -83,13 +83,13 @@ public class ConnectHelper {
                 @Override
                 public void onSuccess(Void result) {
                     log.info("MCU subscribe {}: {} media elements have been disconnected (source {} -> sink {})",
-                            sinkEndPointName, type, source.getTag("debug_name"), sink.getId());
+                            sinkEndPointName, type, source.getId(), sink.getId());
                 }
 
                 @Override
                 public void onError(Throwable cause) {
                     log.info("MCU subscribe {}: Failed to disconnect {} media elements (source {} -> sink {})", sinkEndPointName,
-                            type, source.getTag("debug_name"), sink.getId(), cause);
+                            type, source.getId(), sink.getId(), cause);
                 }
             });
         }
@@ -100,13 +100,13 @@ public class ConnectHelper {
             @Override
             public void onSuccess(Void result) {
                 log.debug("MCU subscribe {}: Elements have been disconnected (source {} -> sink {})", sinkEndPointName,
-                        source.getTag("debug_name"), sink.getName());
+                        source.getId(), sink.getName());
             }
 
             @Override
             public void onError(Throwable cause) {
                 log.warn("MCU subscribe {}: Failed to disconnect media elements (source {} -> sink {})", sinkEndPointName,
-                        source.getTag("debug_name"), sink.getName(), cause);
+                        source.getId(), sink.getName(), cause);
             }
         });
     }

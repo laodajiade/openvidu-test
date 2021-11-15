@@ -32,6 +32,7 @@ import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.lb.rtn.RTNFactory;
 import io.openvidu.server.lb.rtn.RTNObject;
 import org.kurento.client.*;
+import org.kurento.jsonrpc.Prop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +87,7 @@ public abstract class MediaEndpoint {
 	public Queue<KmsEvent> kmsEvents = new ConcurrentLinkedQueue<>();
 	public Future<?> kmsWebrtcStatsThread;
 	public RTNFactory rtnFactory;
+	protected Properties epProperties = new Properties();
 
 	/**
 	 * Constructor to set the owner, the endpoint's name and the media pipeline.
@@ -271,7 +273,7 @@ public abstract class MediaEndpoint {
 			/*
 			 * if (this.dataChannels) { builder.useDataChannels(); }
 			 */
-			builder.buildAsync(new Continuation<WebRtcEndpoint>() {
+			builder.withProperties(epProperties).buildAsync(new Continuation<WebRtcEndpoint>() {
 				@Override
 				public void onSuccess(WebRtcEndpoint result) throws Exception {
 					webEndpoint = result;

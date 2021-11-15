@@ -19,6 +19,7 @@ package io.openvidu.server.kurento.endpoint;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.StreamModeEnum;
 import io.openvidu.server.common.enums.VoiceMode;
 import io.openvidu.server.config.OpenviduConfig;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -59,6 +61,21 @@ public class SubscriberEndpoint extends MediaEndpoint {
                               CompositeService compositeService, OpenviduConfig openviduConfig) {
         super(web, owner, endpointName, pipeline, openviduConfig, log);
         this.setCompositeService(compositeService);
+    }
+
+    public SdpEndpoint createEndpoint(String msTraceId, CountDownLatch endpointLatch) {
+        addProperties(msTraceId);
+        return createEndpoint(endpointLatch);
+    }
+
+    public void addProperties(String msTraceId) {
+        epProperties.add("traceId", msTraceId);
+        epProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        epProperties.add("trackDirect", OpenViduRole.SUBSCRIBER.name());
+
+        epProperties.add("userUuid", getOwner().getUuid());
+        epProperties.add("userName", getOwner().getUsername());
+        epProperties.add("userPhone", "");
     }
 
     public synchronized String subscribeVideo(String sdpOffer, PublisherEndpoint publisher, StreamModeEnum streamMode) {

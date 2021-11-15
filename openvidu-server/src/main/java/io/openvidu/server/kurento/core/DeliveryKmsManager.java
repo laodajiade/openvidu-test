@@ -12,12 +12,10 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.Properties;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -154,13 +152,16 @@ public class DeliveryKmsManager {
     public void createPipeline() {
         log.info("SESSION {}: Creating delivery MediaPipeline,kmsIp ({} >> {}),master kms {}", sessionId, kms.getIp(), kms.getId(), kSession.getKms().getIp());
         try {
-            kms.getKurentoClient().createMediaPipeline(new Continuation<MediaPipeline>() {
+            Properties properties = new Properties();
+            properties.add("roomId", sessionId);
+            properties.add("traceId", "delivery_pipeline_" + kms.getIp() + "_" + sessionId + "_" + kSession.getRuid());
+            properties.add("createAt", String.valueOf(System.currentTimeMillis()));
+            kms.getKurentoClient().createMediaPipeline(properties, new Continuation<MediaPipeline>() {
                 @Override
                 public void onSuccess(MediaPipeline result) {
                     pipeline = result;
                     pipelineLatch.countDown();
                     state = DeliveryKmsStateEnum.CONNECTED;
-                    pipeline.setName(MessageFormat.format("delivery_pipeline_{0}_{1}", kms.getIp(), sessionId));
                     log.info("SESSION {}: Created MediaPipeline {}, MediaPipelineName {} in kmsId {}", sessionId, result.getId(), result.getName(), kms.getId());
                 }
 

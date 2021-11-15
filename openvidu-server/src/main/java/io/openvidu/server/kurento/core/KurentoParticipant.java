@@ -158,7 +158,7 @@ public class KurentoParticipant extends Participant {
 
         PublisherEndpoint publisher;
         publisher = createPublisher(streamType);
-        publisher.createEndpoint(publisher.createPublisherLatch());
+        publisher.createEndpoint(translateMsPubEpTraceId(publisher.getStreamId()));
         if (getPublisher(streamType).getEndpoint() == null) {
             //this.setStreaming(false);
             throw new OpenViduException(Code.MEDIA_ENDPOINT_ERROR_CODE, "Unable to create publisher endpoint");
@@ -177,8 +177,6 @@ public class KurentoParticipant extends Participant {
 
         String debugRandomID = RandomStringUtils.randomAlphabetic(6);
         publisher.getEndpoint().setName(publisher.getEndpointName());
-        publisher.getEndpoint().addTag(strMSTagDebugEndpointName, "_debug_" + "_rid_" + session.getTraceId() + "_pid_" + publisher.getStreamId() + "_pub_cid_" + debugRandomID);
-        publisher.getPassThru().addTag(strMSTagDebugPassThroughName, "_debug_" + "_rid_" + session.getTraceId() + "_pid_" + publisher.getStreamId() + "_pt_cid_" + debugRandomID);
         endpointConfig.addEndpointListeners(publisher, "publisher_" + streamType);
 
         return publisher;
@@ -404,7 +402,7 @@ public class KurentoParticipant extends Participant {
         try {
             CountDownLatch subscriberLatch = new CountDownLatch(1);
             UseTime.point("createEndpoint start");
-            SdpEndpoint oldMediaEndpoint = subscriber.createEndpoint(subscriberLatch);
+            SdpEndpoint oldMediaEndpoint = subscriber.createEndpoint(translateMsSubEpTraceId(subscriber.getStreamId()), subscriberLatch);
             UseTime.point("createEndpoint mid");
             try {
                 if (!subscriberLatch.await(KurentoSession.ASYNC_LATCH_TIMEOUT, TimeUnit.SECONDS)) {
@@ -428,7 +426,6 @@ public class KurentoParticipant extends Participant {
 
             subscriber.setEndpointName(subscriberStreamId);
             subscriber.getEndpoint().setName(subscriberStreamId);
-            subscriber.getEndpoint().addTag(strMSTagDebugEndpointName, "_debug_rid_" + session.getTraceId() + "_stream_" + subscriber.getStreamId() + "_tid" + RandomStringUtils.randomAlphabetic(6));
             subscriber.setStreamId(subscriberStreamId);
             returnObj.put("subscribeId", subscriberStreamId);
             endpointConfig.addEndpointListeners(subscriber, "subscriber");
@@ -473,6 +470,15 @@ public class KurentoParticipant extends Participant {
     public String translateSubscribeId(String receiveUuid, String publishStreamId) {
         return receiveUuid + "_receive_" + publishStreamId;
         //return publishStreamId;
+    }
+
+    public String translateMsPubEpTraceId(String publishStreamId) {
+        return getSessionId() + "_" + session.getSubRuid() + "_" + publishStreamId + "_pub";
+    }
+
+    public String translateMsSubEpTraceId(String subStreamId) {
+        // format: "rec_{roomId}_{receiverId}_receive_{senderId}"
+        return getSessionId() + "_" + session.getSubRuid() + "_" + RandomStringUtils.randomAlphabetic(6).toUpperCase() + "_" + subStreamId;
     }
 
     public void cancelReceivingMedia(String subscribeId, EndReason reason) {

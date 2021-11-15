@@ -23,6 +23,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
+import org.kurento.client.Properties;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
 
@@ -43,9 +44,11 @@ public class CompositeService {
     private Composite composite;
     private final Object compositeCreateLock = new Object();
     private final Object compositeReleaseLock = new Object();
+    private Properties compositeProperties = new Properties();
 
     private HubPort hubPortOut = null;
     private ListenerSubscription hubPortOutSubscription = null;
+    private Properties hubOutProperties = new Properties();
 
     private final ThreadPoolExecutor compositeThreadPoolExes;
 
@@ -100,7 +103,9 @@ public class CompositeService {
 
                 this.pipeline = session.getPipeline();
                 log.info("SESSION {}: Creating Composite", session.getSessionId());
-                composite = new Composite.Builder(this.pipeline).build();
+                compositeProperties.add("traceId", session.getSessionId() + "_" + session.getSubRuid() + "_mixCom");
+                compositeProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+                composite = new Composite.Builder(this.pipeline).withProperties(compositeProperties).build();
                 createHubPortOut();
                 session.setConferenceMode(ConferenceModeEnum.MCU);
                 conferenceLayoutChangedNotify(ProtocolElements.CONFERENCE_MODE_CHANGED_NOTIFY_METHOD);
@@ -110,7 +115,6 @@ public class CompositeService {
                 unMcuThread = new UnMcuThread(this, session, 2);
                 unMcuThread.start();
             }
-            composite.setName(session.getSessionId());
         }
 
 
@@ -132,11 +136,12 @@ public class CompositeService {
     }
 
     private void createHubPortOut() {
-        hubPortOut = new HubPort.Builder(composite).build();
+        hubOutProperties.add("traceId", session.getSessionId() + "_" + session.getSubRuid() + "_mixHubOut");
+        hubOutProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        hubPortOut = new HubPort.Builder(composite).withProperties(hubOutProperties).build();
         this.hubPortOut.setMinOutputBitrate(1000000);
         this.hubPortOut.setMaxOutputBitrate(2000000);
         hubPortOutSubscription = registerElemErrListener(hubPortOut);
-        this.hubPortOut.addTag("debug_name", this.session.getSessionId() + "_mix_hubPort_" + this.session.getRuid().substring(session.getRuid().length() - 6));
         log.info("Sub EP create hubPortOut. {}", this.hubPortOut.getName());
         SessionEventRecord.other(session, "createHubPortOut", " hubPortOutId:" + this.hubPortOut.getId());
     }

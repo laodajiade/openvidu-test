@@ -208,11 +208,18 @@ public class Session implements SessionInterface {
         this.ruid = ruid;
     }
 
-    public String getTraceId() {
+//    public String getTraceId() {
+//        if (StringUtils.isEmpty(ruid)) {
+//            return null;
+//        }
+//        return ruid.substring(ruid.length() - 8);
+//    }
+
+    public String getSubRuid() {
         if (StringUtils.isEmpty(ruid)) {
             return null;
         }
-        return ruid.substring(ruid.length() - 8);
+        return ruid.substring(0, 8);
     }
 
 

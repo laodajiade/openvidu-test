@@ -36,6 +36,7 @@ import io.openvidu.server.kurento.kms.Kms;
 import org.apache.commons.collections4.CollectionUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.*;
+import org.kurento.client.Properties;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -295,12 +296,15 @@ public class KurentoSession extends Session {
             }
             log.info("SESSION {}: Creating MediaPipeline", sessionId);
             try {
-                kms.getKurentoClient().createMediaPipeline(new Continuation<MediaPipeline>() {
+                Properties properties = new Properties();
+                properties.add("roomId", sessionId);
+                properties.add("traceId", sessionId + "_" + ruid);
+                properties.add("createAt", String.valueOf(System.currentTimeMillis()));
+                kms.getKurentoClient().createMediaPipeline(properties, new Continuation<MediaPipeline>() {
                     @Override
                     public void onSuccess(MediaPipeline result) throws Exception {
                         pipeline = result;
                         pipelineLatch.countDown();
-                        pipeline.setName(sessionId);
                         log.debug("SESSION {}: Created MediaPipeline", sessionId);
                     }
 

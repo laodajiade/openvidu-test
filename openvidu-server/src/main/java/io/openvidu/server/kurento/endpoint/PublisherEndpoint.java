@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
 import io.openvidu.client.OpenViduException.Code;
+import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.common.enums.ConferenceModeEnum;
 import io.openvidu.server.common.enums.PushStreamStatusEnum;
 import io.openvidu.server.common.enums.StreamType;
@@ -35,6 +36,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.kurento.client.*;
+import org.kurento.client.Properties;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +62,11 @@ public class PublisherEndpoint extends MediaEndpoint {
     @Setter
     private PassThrough passThru = null;
     private ListenerSubscription passThruSubscription = null;
+    private Properties ptProperties = new Properties();
 
     private HubPort pubHubPort = null;
     private ListenerSubscription majorShareHubPortSubscription = null;
+    private Properties pubHubProperties = new Properties();
 
     private HubPort recordHubPort = null;
     private HubPort liveHubPort = null;
@@ -123,10 +127,25 @@ public class PublisherEndpoint extends MediaEndpoint {
         this.streamType = streamType;
     }
 
+    public void createEndpoint(String epTraceId) {
+        epProperties.add("traceId", epTraceId);
+        epProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        epProperties.add("trackAppType", streamType.name());
+        epProperties.add("trackDirect", OpenViduRole.PUBLISHER.name());
+        epProperties.add("userUuid", getOwner().getUuid());
+        epProperties.add("userName", getOwner().getUsername());
+        epProperties.add("userPhone", "");
+        this.createEndpoint(this.createPublisherLatch());
+    }
+
     @Override
     protected void internalEndpointInitialization(final CountDownLatch endpointLatch) {
         super.internalEndpointInitialization(endpointLatch);
-        passThru = new PassThrough.Builder(getPipeline()).build();
+
+        String epTraceId = String.valueOf(epProperties.get("traceId"));
+        ptProperties.add("traceId", epTraceId.substring(0, epTraceId.length() - 3) + "pt");
+        ptProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        passThru = new PassThrough.Builder(getPipeline()).withProperties(ptProperties).build();
         log.info("Pub EP create passThrough.");
         passThruSubscription = registerElemErrListener(passThru);
 
@@ -772,8 +791,12 @@ public class PublisherEndpoint extends MediaEndpoint {
         if (this.pubHubPort != null) {
             return this.pubHubPort;
         }
-        pubHubPort = new HubPort.Builder(composite).build();
-        this.pubHubPort.addTag("debug_name", this.getStreamId() + "_pub_hubPort");
+        String epTraceId = String.valueOf(epProperties.get("traceId"));
+        // format: "{roomId}_{senderId}_mixHubIn}"
+        pubHubProperties.add("traceId", epTraceId.substring(0, epTraceId.length() - 3) + "mixHubIn");
+        pubHubProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        pubHubProperties.add("sdOsd", "testOsd");
+        pubHubPort = new HubPort.Builder(composite).withProperties(pubHubProperties).build();
         SessionEventRecord.other(this.getOwner().getSessionId(), "createPubHubPort", this.getStreamId(), pubHubPort.getName());
         log.info("{} Pub EP create majorShareHubPort. {}", this.streamId, pubHubPort.getName());
         majorShareHubPortSubscription = registerElemErrListener(pubHubPort);
