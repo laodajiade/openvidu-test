@@ -160,7 +160,11 @@ public class RpcNotificationServiceAccess implements RpcNotificationService {
 
         AccessNotification dto = new AccessNotification(rpcConnection.getParticipantPrivateId(), rpcConnection.getAccessInfo().getOrigin());
         dto.setMethod(method);
-        dto.setParams(JSONObject.parseObject(new Gson().toJson(params)));
+        if (params instanceof String) {
+            dto.setParams(JSONObject.parseObject((String) params));
+        } else {
+            dto.setParams(JSONObject.parseObject(new Gson().toJson(params)));
+        }
         return accessClient.sendNotification(dto);
     }
 
