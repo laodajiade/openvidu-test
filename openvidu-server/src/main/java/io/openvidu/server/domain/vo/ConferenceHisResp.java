@@ -63,7 +63,7 @@ public class ConferenceHisResp {
      */
     private String creatorAccount;
     
-    private String passWord;
+    private String password;
 
     private Long creatorUserId;
 
