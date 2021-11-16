@@ -2,6 +2,8 @@ package io.openvidu.server.rpc.handlers.appoint;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.common.broker.ToOpenviduElement;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.dao.AppointParticipantMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.ConferenceStatus;
@@ -12,8 +14,8 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
+import io.openvidu.server.domain.ToOpenviduChannelDTO;
 import io.openvidu.server.rpc.RpcConnection;
-import io.openvidu.server.rpc.handlers.CloseRoomHandler;
 import io.openvidu.server.rpc.handlers.parthistory.DeleteConferenceHistoryHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -42,9 +44,6 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
 
     @Resource
     private DeleteConferenceHistoryHandler deleteConferenceHistoryHandler;
-
-    @Autowired
-    private CloseRoomHandler closeRoomHandler;
 
     @Transactional
     @Override
@@ -84,11 +83,7 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
         }
 
         // 结束会议
-        Session session = sessionManager.getSession(appointConference.getRoomId());
-        if (session != null && session.getConference().getRuid().equals(ruid)) {
-            log.info("close session with cancel appointment conference ,roomId = {} and ruid = {}", appointConference.getRoomId(), appointConference.getRuid());
-            sessionManager.closeRoom(session);
-        }
+        this.closeUsedRoom(ruid, appointConference.getRoomId());
 
         return RespResult.ok(new JsonObject());
     }
@@ -117,15 +112,29 @@ public class CancelAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             if (!conference.getModeratorUuid().equals(rpcConnection.getUserUuid())) {
                 return RespResult.fail(ErrorCodeEnum.PERMISSION_LIMITED);
             }
-            // 结束会议
-            Session session = sessionManager.getSession(conference.getRoomId());
-            if (session != null && session.getConference().getRuid().equals(ruid)) {
-                log.info("close session with cancel general conference ,roomId = {} and ruid = {}", conference.getRoomId(), conference.getRuid());
-                sessionManager.closeRoom(session);
+            if (closeUsedRoom(ruid, conference.getRoomId())) {
                 return RespResult.ok(new JsonObject());
             }
         }
         return deleteConferenceHistoryHandler.doProcess(rpcConnection, request, vo);
+    }
+
+    // 结束会议
+    private boolean closeUsedRoom(String ruid, String roomId) {
+        Session session = sessionManager.getSession(roomId);
+        if (session != null && session.getConference().getRuid().equals(ruid)) {
+            log.info("close session with cancel general conference ,roomId = {} and ruid = {}", roomId, ruid);
+            sessionManager.closeRoom(session);
+            return true;
+        } else {
+            final Conference conference = conferenceMapper.selectUsedConference(roomId);
+            if (conference != null && Objects.equals(conference.getRuid(), ruid)) {
+                ToOpenviduChannelDTO dto = new ToOpenviduChannelDTO(ToOpenviduElement.CLOSE_ROOM).addProperty("ruid", ruid)
+                        .addProperty("roomId", roomId);
+                cacheManage.publish(BrokerChannelConstans.TO_OPENVIDU_CHANNEL, dto.toJsonStr());
+            }
+        }
+        return false;
     }
 
 }

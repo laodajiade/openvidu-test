@@ -8,6 +8,7 @@ public class ToOpenviduElement {
     public static final String EVICT_PARTICIPANT_BY_UUID_METHOD = "evictParticipantByUUID";
     public static final String SEBD_INVITE_NOTICE = "sendInviteNotice";
     public static final String UPDATE_DEVICE_INFO = "updateDeviceInfo";
+    public static final String CLOSE_ROOM = "closeRoom";
 
 
 }

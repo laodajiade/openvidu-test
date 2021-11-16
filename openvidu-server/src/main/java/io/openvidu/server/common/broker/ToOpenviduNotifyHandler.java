@@ -7,6 +7,7 @@ import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.common.enums.EvictParticipantStrategy;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.core.EndReason;
+import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.job.AppointConferenceJobHandler;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -88,8 +89,16 @@ public class ToOpenviduNotifyHandler {
                         );
                         break;
                     case ToOpenviduElement.UPDATE_DEVICE_INFO:
-                        System.out.println("进入监听" + ToOpenviduElement.UPDATE_DEVICE_INFO);
                         updateUsernameHandler.updateDeviceInfo(params.get("id").getAsString(), params.get("devNum").getAsString(), params.get("devName").getAsString());
+                        break;
+                    case ToOpenviduElement.CLOSE_ROOM:
+                        final String roomId = params.get("roomId").getAsString();
+                        final String ruid = params.get("ruid").getAsString();
+                        final Session session = sessionManager.getSession(roomId);
+                        if (session != null && session.getConference().getRuid().equals(ruid)) {
+                            log.info("closeRoom by subscribe roomId {},ruid {}", roomId, ruid);
+                            sessionManager.closeRoom(session);
+                        }
                         break;
                 }
             } catch (Exception e) {
