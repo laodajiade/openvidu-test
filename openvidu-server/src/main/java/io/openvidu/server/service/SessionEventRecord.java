@@ -84,8 +84,8 @@ public class SessionEventRecord {
             return;
         }
         if (log.isInfoEnabled()) {
-            log.info("SESSION-EVENT {}({}) {} {}",
-                    session.getSessionId(), subRuid(session), "createRoom", System.currentTimeMillis());
+            log.info("SESSION-EVENT {}({}) {} {} {}",
+                    session.getSessionId(), subRuid(session), "createRoom", session.getRuid(), System.currentTimeMillis());
         }
     }
 

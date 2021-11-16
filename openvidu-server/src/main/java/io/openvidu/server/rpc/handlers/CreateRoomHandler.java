@@ -166,8 +166,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                     Date date = new Date();
                     Calendar instance = Calendar.getInstance();
                     instance.setTime(date);
-                    instance.add(Calendar.MINUTE,appt.getDuration());
-                    appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid,date,instance.getTime());
+                    instance.add(Calendar.MINUTE, appt.getDuration());
+                    appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), ruid, date, instance.getTime());
 
                     conference.setRuid(ruid);
                     roomSubject = appt.getConferenceSubject();
@@ -209,7 +209,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 String quietStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_QUIET_STATUS_PARAM);
                 Corporation corporation = corpInfoService.selectByCorpProject(rpcConnection.getProject());
                 SessionPreset preset = new SessionPreset(micStatusInRoom, videoStatusInRoom, sharePowerInRoom,
-                        roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartDismissMute, allowPartOperShare, quietStatusInRoom);
+                        roomSubject, roomCapacity, roomDuration, useIdInRoom, allowPartDismissMute, allowPartOperShare,
+                        quietStatusInRoom, instanceId);
                 preset.setMcuThreshold(corporation.getMcuThreshold());
                 preset.setSfuPublisherThreshold(corporation.getSfuPublisherThreshold());
                 if (roomIdType == RoomIdTypeEnums.fixed) {
@@ -217,10 +218,10 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                     preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
                     preset.setAllowPart(fixedRoom.getAllowPart());
                     preset.setRoomCapacity(fixedRoom.getRoomCapacity());
+                    preset.setShortId(fixedRoom.getShortId());
                 }
 
-                Session session = sessionManager.createSession(sessionId, conference);
-                session.setPresetInfo(preset);
+                Session session = sessionManager.createSession(sessionId, conference, preset);
                 if (appt != null) {
                     session.setEndTime(appt.getEndTime().getTime());
                 }
