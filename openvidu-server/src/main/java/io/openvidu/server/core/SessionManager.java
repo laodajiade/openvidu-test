@@ -434,21 +434,9 @@ public abstract class SessionManager {
 //        return sessionNotActive;
 //    }
 
-    public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
+    public KurentoSession createSession(String sessionId, Conference conference, SessionPreset presetInfo) throws OpenViduException {
         return null;
     }
-
-//    @Deprecated //delete 2.0 废弃
-//    private void dealSessionNotActiveStored(String sessionId, Session sessionNotActive) {
-//        this.sessionsNotActive.put(sessionId, sessionNotActive);
-//        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-//        this.sessionidParticipantpublicidParticipant.putIfAbsent(sessionId, new ConcurrentHashMap<>());
-//        log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-//        //this.sessionidFinalUsers.putIfAbsent(sessionId, new ConcurrentHashMap<>());
-//        if (this.openviduConfig.isRecordingModuleEnabled()) {
-//            this.sessionidAccumulatedRecordings.putIfAbsent(sessionId, new ConcurrentLinkedQueue<>());
-//        }
-//    }
 
     public String newToken(String sessionId, OpenViduRole role, String serverMetadata,
                            KurentoTokenOptions kurentoTokenOptions) throws OpenViduException {

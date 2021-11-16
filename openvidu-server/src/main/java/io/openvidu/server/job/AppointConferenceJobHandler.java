@@ -267,7 +267,9 @@ public class AppointConferenceJobHandler {
                 }
 
                 SessionPreset preset = new SessionPreset(SessionPresetEnum.on.name(), SessionPresetEnum.on.name(), null,
-                        appointConference.getConferenceSubject(), appointConference.getRoomCapacity(), appointConference.getDuration().floatValue(), null, null, null, null);
+                        appointConference.getConferenceSubject(), appointConference.getRoomCapacity(),
+                        appointConference.getDuration().floatValue(), null, null, null, null,
+                        instanceId);
 
                 if (Objects.nonNull(corporation.getMcuThreshold()) && Objects.nonNull(corporation.getSfuPublisherThreshold())) {
                     preset.setMcuThreshold(corporation.getMcuThreshold());
@@ -278,18 +280,17 @@ public class AppointConferenceJobHandler {
                     FixedRoom fixedRoom = fixedRoomMapper.selectByRoomId(appointConference.getRoomId());
                     preset.setAllowRecord(fixedRoom.getAllowRecord() ? SessionPresetEnum.on : SessionPresetEnum.off);
                     preset.setRoomCapacity(fixedRoom.getRoomCapacity());
+                    preset.setShortId(fixedRoom.getShortId());
                 }
 
                 // change the conference status
                 Conference conference = constructConf(appointConference);
                 conferenceMapper.insertSelective(conference);
-                Session session = sessionManager.createSession(conference.getRoomId(), conference);
+                Session session = sessionManager.createSession(conference.getRoomId(), conference, preset);
                 session.setEndTime(appointConference.getEndTime().getTime());
-                session.setPresetInfo(preset);
-                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid(),null,null);
+                appointConferenceMapper.changeStatusByRuid(ConferenceStatus.PROCESS.getStatus(), appointConference.getRuid(), null, null);
             } else {
                 log.info("conferenceBeginJobHandler in use:{}", JSON.toJSONString(appointConference));
-                //todo 修改定时任务在下一分钟
             }
 
             List<AppointParticipant> appointParts = appointParticipantManage.listByRuid(ruid);

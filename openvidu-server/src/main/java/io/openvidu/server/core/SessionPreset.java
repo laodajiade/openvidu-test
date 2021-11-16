@@ -41,6 +41,14 @@ public class SessionPreset {
     @Setter
     private Integer allowPart = 0;//0=不限制
 
+    @Getter
+    @Setter
+    private String shortId = null;//短id
+
+    @Getter
+    @Setter
+    private String instanceId;//短id
+
     private SessionPresetEnum quietStatusInRoom;
 
     private SessionPresetEnum pollingStatusInRoom = SessionPresetEnum.off;
@@ -205,7 +213,8 @@ public class SessionPreset {
                          String useIdTypeInRoom,
                          String allowPartDismissMute,
                          String allowPartOperShare,
-                         String quietStatusInRoom) {
+                         String quietStatusInRoom,
+                         String instanceId) {
         this.micStatusInRoom = SessionPresetEnum.on;
         this.videoStatusInRoom = SessionPresetEnum.on;
         this.sharePowerInRoom = SessionPresetEnum.off;
@@ -217,7 +226,7 @@ public class SessionPreset {
         this.allowPartOperShare = SessionPresetEnum.off;
         this.allowPartOperSpeaker = SessionPresetEnum.on;
         this.quietStatusInRoom = SessionPresetEnum.smart;
-
+        this.instanceId = instanceId;
         if (!StringUtils.isEmpty(micStatusInRoom)) {
             this.micStatusInRoom = SessionPresetEnum.valueOf(micStatusInRoom);
         }

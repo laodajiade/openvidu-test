@@ -69,14 +69,14 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(re[0], 0, msg=re[1])
         return re
 
-    def batchJoinRoom(self, room_id, start, end):
+    def batchJoinRoom(self, room_id, users_index_start, users_index_end):
         clients = []
-        for i in range(start, end):
+        for i in range(users_index_start, users_index_end):
             part_user = self.users[i]
             part_client = self.loginAndAccessIn(part_user['phone'], part_user['pwd'])
             clients.append(part_client)
             self.joinRoom(part_client, room_id)
-            time.sleep(0.3)
+            time.sleep(0.1)
         return clients
 
     def leaveRoom(self, client, room_id):

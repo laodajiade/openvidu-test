@@ -23,6 +23,7 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.java.client.SessionProperties;
+import io.openvidu.server.client.RtcRoomClient;
 import io.openvidu.server.common.broker.RedisPublisher;
 import io.openvidu.server.common.broker.ToOpenviduElement;
 import io.openvidu.server.common.cache.CacheManage;
@@ -100,6 +101,9 @@ public class KurentoSessionManager extends SessionManager {
 
     @Resource
     protected TimerManager timerManager;
+
+    @Autowired
+    private RtcRoomClient rtcRoomClient;
 
     @Override
     public void joinRoom(Participant participant, String sessionId, Conference conference, Integer transactionId) {
@@ -720,7 +724,7 @@ public class KurentoSessionManager extends SessionManager {
      *
      * @throws OpenViduException in case of error while creating the session
      */
-    public KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
+    private KurentoSession createSession(String sessionId, Conference conference) throws OpenViduException {
         KurentoSession session = (KurentoSession) sessions.get(sessionId);
         if (session != null) {
             throw new BizException(ErrorCodeEnum.CONFERENCE_ALREADY_EXIST, "Session '" + session.getSessionId() + "' already exists");
@@ -757,7 +761,15 @@ public class KurentoSessionManager extends SessionManager {
         }
 
         log.warn("No session '{}' exists yet. Created one on KMS '{}'", session.getSessionId(), lessLoadedKms.getUri());
-        sessionEventsHandler.onSessionCreated(session);
+
+        return session;
+    }
+
+    @Override
+    public KurentoSession createSession(String sessionId, Conference conference, SessionPreset preset) throws OpenViduException {
+        final KurentoSession session = this.createSession(sessionId, conference);
+        session.setPresetInfo(preset);
+        rtcRoomClient.registerRoom(sessionId, session.getPresetInfo().getInstanceId(), conference.getProject(), preset.getShortId());
         return session;
     }
 
