@@ -38,7 +38,6 @@ public class GetInviteInfoHandler extends RpcAbstractHandler {
                 return;
             }
             final Conference conference = conferenceMapper.selectUsedConference(roomId);
-
             JSONObject respJson = new JSONObject();
             respJson.put("userName", session.getConference().getModeratorName());
             respJson.put("subject", session.getConference().getConferenceSubject());
