@@ -272,6 +272,7 @@ public class RecorderService {
         List<Participant> parts = session.getParticipants().stream()
                 .filter(p -> p.getOrder() < session.getPresetInfo().getSfuPublisherThreshold())
                 .sorted(Comparator.comparing(Participant::getOrder))
+                .limit(9)
                 .collect(Collectors.toList());
 
         int order = 0;

@@ -1,11 +1,10 @@
-package io.openvidu.server.rpc.handlers;
+package io.openvidu.server.rpc.handlers.dev;
 
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.kurento.core.KurentoSession;
 import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;

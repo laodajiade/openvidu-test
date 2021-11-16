@@ -19,6 +19,9 @@ class TestCreateRoom(test.MyTestCase):
     def tearDown(self):
         super(TestCreateRoom, self).tearDown()
 
+    def test_empty(self):
+        pass
+
     def a_test_urge_fix_room(self):
         """ 催促固定会议室 """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)

@@ -1,10 +1,9 @@
 # -*- coding: UTF-8 -*-
 import json
 import os
+import sys
 import time
 import unittest
-import sys
-
 
 from loguru import logger
 
@@ -12,9 +11,9 @@ from common.mock_client import SdClient
 
 
 class MyTestCase(unittest.TestCase):
-
     sfuLimit = 9
     smart_mic_on_threshold = 6
+
     ######################### init #########################
     def setUp(self):
         """ 数据准备 """
@@ -40,6 +39,7 @@ class MyTestCase(unittest.TestCase):
         for client in self.clients:
             client.safeOut()
         time.sleep(1)
+
     ######################### init #########################
     ######################### room #########################
     def getParticipant(self, parts, uuid):
@@ -156,5 +156,9 @@ class MyTestCase(unittest.TestCase):
         self.assertIsNotNone(re[1]['sdpAnswer'], '推流没有 sdpAnswer')
         time.sleep(1)
         return stream_id
+
+    def set_sfu_publisher_threshold(self, client, cnt):
+        """ 修改企业的墙上人数，调试接口"""
+        client.request('devSetCorpInfo', {'sfuPublisherThreshold': cnt, 'pwd': 'sudi123'})
 
     ######################### stream #########################

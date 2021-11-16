@@ -190,6 +190,7 @@ public class ProtocolElements {
     public static final String MAJORLAYOUTNOTIFY_LAYOUT_PARAM = "layout";
 
     public static final String SET_CONFERENCE_MODE_METHOD = "setConferenceMode";
+    public static final String DEV_SET_CORP_INFO_MOTHOD = "devSetCorpInfo";
 
 
     public static final String SETCONFERENCELAYOUT_MODE_METHOD = "setConferenceLayout";
