@@ -22,8 +22,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.kurento.client.*;
 import org.kurento.client.Properties;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.util.StringUtils;
 
@@ -674,6 +674,9 @@ public class CompositeService {
     public void sinkConnect(SubscriberEndpoint subscriberEndpoint) {
         Participant participant = subscriberEndpoint.getOwner();
         for (CompositeObjectWrapper compositeObjectWrapper : this.sourcesPublisher) {
+            if (compositeObjectWrapper == null) {
+                continue;
+            }
             if (compositeObjectWrapper.uuid.equals(participant.getUuid()) && compositeObjectWrapper.isStreaming) {
                 log.info("sink connect self publisher {} {}", participant.getUuid(), compositeObjectWrapper.streamId);
                 ConnectHelper.connectVideoHubAndAudioHub(hubPortOut, compositeObjectWrapper.endpoint.getPubHubPort(), subscriberEndpoint.getEndpoint(), subscriberEndpoint.getEndpointName());
@@ -786,8 +789,7 @@ public class CompositeService {
                     Participant part = participantOptional.get();
                     getCompositeElements(part, source, item.streamType);
                 } else {
-                    log.warn("uuid {} not exist", item.uuid);
-                    source.add(null);
+                    log.warn("MCU composite Participant not exist uuid {}", item.uuid);
                 }
             }
             log.info("normal MCU composite number:{} and composite hub port ids:{}", source.size(), source.toString());

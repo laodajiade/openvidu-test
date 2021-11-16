@@ -130,9 +130,8 @@ public class RecorderService {
                 Participant part = participantOptional.get();
                 passThruList.add(constructPartRecordInfo(part, source, item.streamType, order++));
             } else {
-                log.warn("uuid {} not exist", item.uuid);
-                source.add(null);
-                order++;
+                log.warn("MCU composite Participant not exist uuid {}", item.uuid);
+                //order++;
             }
         }
 
