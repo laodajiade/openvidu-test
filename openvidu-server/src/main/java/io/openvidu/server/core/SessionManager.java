@@ -104,12 +104,6 @@ public abstract class SessionManager {
 
     protected ConcurrentMap<String, Session> sessions = new ConcurrentHashMap<>();
     protected ConcurrentMap<String, Session> sessionsNotActive = new ConcurrentHashMap<>();
-    //@Deprecated // delete 2.0废弃
-    //protected ConcurrentMap<String, ConcurrentHashMap<String, Participant>> sessionidParticipantpublicidParticipant = new ConcurrentHashMap<>();
-    //@Deprecated // delete 2.0废弃
-    //protected ConcurrentMap<String, ConcurrentHashMap<String, FinalUser>> sessionidFinalUsers = new ConcurrentHashMap<>();
-    //@Deprecated // delete 2.0废弃
-    //protected ConcurrentMap<String, ConcurrentLinkedQueue<CDREventRecording>> sessionidAccumulatedRecordings = new ConcurrentHashMap<>();
 
     protected ConcurrentMap<String, Boolean> insecureUsers = new ConcurrentHashMap<>();
     public ConcurrentMap<String, ConcurrentHashMap<String, Token>> sessionidTokenTokenobj = new ConcurrentHashMap<>();
@@ -145,10 +139,6 @@ public abstract class SessionManager {
     public abstract void pauseAndResumeStream(Participant pausePart, String subscribeId, OperationMode operation, String mediaType);
 
     public abstract void sendMessage(Participant participant, String message, Integer transactionId);
-
-    //delete 2.0
-//    public abstract void streamPropertyChanged(Participant participant, Integer transactionId, String streamId,
-//                                               String property, JsonElement newValue, String changeReason);
 
     public abstract void onIceCandidate(Participant participant, String endpointName, String candidate,
                                         int sdpMLineIndex, String sdpMid, Integer transactionId);
@@ -258,43 +248,6 @@ public abstract class SessionManager {
         return participants;
     }
 
-    //delete 2.0
-//    public Participant getParticipantByPrivateAndPublicId(String sessionId, String participantPrivateId, String participantPublicId) throws OpenViduException {
-//        Session session = sessions.get(sessionId);
-//        if (session == null) {
-//            throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
-//        }
-//        Participant participant = session.getPartByPrivateIdAndPublicId(participantPrivateId, participantPublicId);
-//        if (participant == null) {
-//            throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-//                    "Participant '" + participantPublicId + "' not found in session '" + sessionId + "'");
-//        }
-//        return participant;
-//    }
-
-    /**
-     * Returns a participant in a session
-     *
-     * @param sessionId            identifier of the session
-     * @param participantPrivateId private identifier of the participant
-     * @param streamType           type of stream
-     * @return {@link Participant}
-     * @throws OpenViduException in case the session doesn't exist or the
-     *                           participant doesn't belong to it
-     */
-    // delete 2.0
-    //   @Deprecated
-//    public Participant getParticipant(String sessionId, String participantPrivateId, StreamType streamType) throws OpenViduException {
-//        Session session = sessions.get(sessionId);
-//        if (session == null) {
-//            throw new OpenViduException(Code.ROOM_NOT_FOUND_ERROR_CODE, "Session '" + sessionId + "' not found");
-//        }
-//        return session.getPartByPrivateIdAndStreamType(participantPrivateId, streamType);
-//		/*if (participant == null) {
-//			throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-//					"Participant '" + participantPrivateId + "' not found in session '" + sessionId + "'");
-//		}*/
-//    }
 
     /**
      * Returns a participant in a session
@@ -321,33 +274,6 @@ public abstract class SessionManager {
         return session.getParticipantByUUID(uuid);
     }
 
-    /**
-     * Returns a participant
-     *
-     * @param participantPrivateId private identifier of the participant
-     * @param streamType           type of stream
-     * @return {@link Participant}
-     * @throws OpenViduException in case the participant doesn't exist
-     */
-    // delete 2.0
-//    public Participant getParticipant(String participantPrivateId, StreamType streamType) throws OpenViduException {
-//        for (Session session : sessions.values()) {
-//            if (!session.isClosed()) {
-//                Participant participant = session.getParticipantByPrivateId(participantPrivateId, streamType);
-//                if (!Objects.isNull(participant)) {
-//                    return participant;
-//                }
-////				if (Objects.isNull(participant))
-////					throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-////							"No participant with private id '" + participantPrivateId + "' was found");
-////				return participant;
-//            }
-//        }
-////		throw new OpenViduException(Code.USER_NOT_FOUND_ERROR_CODE,
-////				"No participant with private id '" + participantPrivateId + "' was found");
-//        log.warn("No participant with private id:{} was found.", participantPrivateId);
-//        return null;
-//    }
 
     /**
      * Returns a participant
@@ -377,62 +303,9 @@ public abstract class SessionManager {
         return null;
     }
 
-    // delete 2.0
-//    public Map<String, FinalUser> getFinalUsers(String sessionId) {
-//        return this.sessionidFinalUsers.get(sessionId);
-//    }
-
-    // delete 2.0
-//    public Map<String, FinalUser> removeFinalUsers(String sessionId) {
-//        return this.sessionidFinalUsers.remove(sessionId);
-//    }
-
-    // delete 2.0
-//    public Collection<CDREventRecording> getAccumulatedRecordings(String sessionId) {
-//        return this.sessionidAccumulatedRecordings.get(sessionId);
-//    }
-
-    // delete 2.0
-//    public Collection<CDREventRecording> removeAccumulatedRecordings(String sessionId) {
-//        return this.sessionidAccumulatedRecordings.remove(sessionId);
-//    }
-
     public MediaOptions generateMediaOptions(Request<JsonObject> request) {
         return null;
     }
-
-//    @Deprecated //delete 2.0 废弃
-//    public Session storeSessionNotActive(String sessionId, SessionProperties sessionProperties) {
-//        Session sessionNotActive = new Session(sessionId, sessionProperties, openviduConfig, recordingManager, livingManager);
-//        dealSessionNotActiveStored(sessionId, sessionNotActive);
-//        showTokens();
-//        return sessionNotActive;
-//    }
-
-    //delete 2.0 废弃
-//    public Session storeSessionNotActive(Session sessionNotActive) {
-//        final String sessionId = sessionNotActive.getSessionId();
-//        dealSessionNotActiveStored(sessionId, sessionNotActive);
-//        showTokens();
-//        return sessionNotActive;
-//    }
-
-//    @Deprecated //delete 2.0 废弃
-//    public Session storeSessionNotActiveWhileRoomCreated(String sessionId) {
-//        Session sessionNotActive = new Session(sessionId,
-//                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
-//        dealSessionNotActiveStored(sessionId, sessionNotActive);
-//        return sessionNotActive;
-//    }
-
-//    public Session SessionNotActiveWhileRoomCreated(String sessionId, Conference conference) {
-//        Session sessionNotActive = new Session(sessionId,
-//                new SessionProperties.Builder().customSessionId(sessionId).build(), openviduConfig, recordingManager, livingManager);
-//        sessionNotActive.setConference(conference);
-//        sessionNotActive.setRuid(conference.getRuid());
-//        this.sessionsNotActive.put(sessionId, sessionNotActive);
-//        return sessionNotActive;
-//    }
 
     public KurentoSession createSession(String sessionId, Conference conference, SessionPreset presetInfo) throws OpenViduException {
         return null;
@@ -531,24 +404,6 @@ public abstract class SessionManager {
             String participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
             Participant p = new Participant(userId, participantPrivatetId, participantPublicId, sessionId, OpenViduRole.parseRole(role),
                     clientMetadata, location, platform, deviceModel, null, ability, functionality);
-//			while (this.sessionidParticipantpublicidParticipant.get(sessionId).putIfAbsent(participantPublicId,
-//					p) != null) {
-//				participantPublicId = RandomStringUtils.randomAlphanumeric(16).toLowerCase();
-//				p.setParticipantPublicId(participantPublicId);
-//			}
-
-            //FinalUser finalUser = this.sessionidFinalUsers.get(sessionId).get(finalUserId);
-//			if (finalUser == null) {
-//				//First connection for new final user
-//				log.info("Participant {} of session {} belongs to a new final user", p.getParticipantPublicId(),
-//						sessionId);
-//				this.sessionidFinalUsers.get(sessionId).put(finalUserId, new FinalUser(finalUserId, sessionId, p));
-//			} else {
-//				// New connection for previously existing final user
-//				log.info("Participant {} of session {} belongs to a previously existing user",
-//						p.getParticipantPublicId(), sessionId);
-//				finalUser.addConnection(p);
-//			}
 
             return p;
         } else {
@@ -556,7 +411,6 @@ public abstract class SessionManager {
         }
     }
 
-    //	public Participant newRecorderParticipant(String sessionId, String participantPrivatetId, Token token,
     public Participant newRecorderParticipant(Long userId, String sessionId, String participantPrivatetId, String clientMetadata,
                                               String role) {
         Participant p = new Participant(userId, participantPrivatetId, ProtocolElements.RECORDER_PARTICIPANT_PUBLICID,
@@ -593,8 +447,6 @@ public abstract class SessionManager {
     @PreDestroy
     public void close() {
         log.info("Closing all sessions and update user/device online status");
-//        notificationService.getRpcConnections().forEach(rpcConnection ->
-//                cacheManage.updateTerminalStatus(rpcConnection, TerminalStatus.offline));
         for (String sessionId : sessions.keySet()) {
             try {
                 // stop the record task
@@ -612,15 +464,6 @@ public abstract class SessionManager {
         String sessionId = session.getSessionId();
         // set session status: closing
         session.setClosing(true);
-
-//		sessionManager.getSession(sessionId).getParticipants().forEach(p -> {
-//			if (!Objects.equals(StreamType.MAJOR, p.getStreamType())) return;
-//			notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
-//			RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
-//			if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
-//				cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
-//			}
-//		});
 
         Set<Participant> participants = session.getParticipants();
         notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
@@ -710,11 +553,6 @@ public abstract class SessionManager {
 
     public void closeSessionAndEmptyCollections(Session session, EndReason reason) {
 
-//		if (openviduConfig.isRecordingModuleEnabled()
-//				&& this.recordingManager.sessionIsBeingRecorded(session.getSessionId())) {
-//			recordingManager.stopRecording(session, null, RecordingManager.finalReason(reason));
-//		}
-
         if (session.close(reason)) {
             sessionEventsHandler.onSessionClosed(session.getSessionId(), reason);
         }
@@ -732,12 +570,6 @@ public abstract class SessionManager {
         cleanCacheCollections(sessionId);
         sessions.remove(sessionId);
         sessionsNotActive.remove(sessionId);
-        // log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        // sessionidParticipantpublicidParticipant.remove(sessionId);
-        // log.info("sessionidParticipantpublicidParticipant sessionId:{}, value:{}", sessionId, sessionidParticipantpublicidParticipant.get(sessionId));
-        //sessionidFinalUsers.remove(sessionId);
-        // sessionidAccumulatedRecordings.remove(sessionId);
-        sessionidTokenTokenobj.remove(sessionId);
     }
 
     public void cleanCacheCollections(String sessionId) {
@@ -1184,16 +1016,6 @@ public abstract class SessionManager {
             session.getCompositeService().asyncUpdateComposite();
         }
     }
-
-
-//    @Deprecated //delete 2.0 废弃
-//    public Session storeSessionNotActiveWhileAppointCreate(String roomId, Conference conference) {
-//        log.info("===>storeSessionNotActiveWhileAppointCreate:{}", roomId);
-//        Session session = storeSessionNotActiveWhileRoomCreated(roomId);
-//        session.setConference(conference);
-//        session.setRuid(conference.getRuid());
-//        return session;
-//    }
 
     public abstract void startRecording(String sessionId);
 
