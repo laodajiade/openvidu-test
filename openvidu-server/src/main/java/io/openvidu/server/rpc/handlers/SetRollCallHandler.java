@@ -30,7 +30,7 @@ public class SetRollCallHandler extends RpcAbstractHandler {
 //        String type = getStringOptionalParam(request, "type");
 
         Session conferenceSession = sessionManager.getSession(sessionId);
-        Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElseGet(null);
+        Participant targetPart = conferenceSession.getParticipantByUUID(targetId).orElse(null);
         Optional<Participant> originatorOp = conferenceSession.getParticipantByUUID(rpcConnection.getUserUuid());
 
         if (targetPart == null) {

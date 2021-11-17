@@ -5,6 +5,7 @@ import unittest2
 from loguru import logger
 
 import test
+from test.service.services import MeetingService
 
 
 class TestRecord(test.MyTestCase):
@@ -12,7 +13,7 @@ class TestRecord(test.MyTestCase):
 
     def test_record(self):
         """ 创建个人会议, 主持人推流，开始录制，7秒后结束录制 """
-        logger.info('创建随机会议, 主持人推流，开始录制，7秒后结束录制')
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         # 主持人入会
         moderator = self.users[0]
         moderator_client = self.loginAndAccessIn(moderator['phone'], moderator['pwd'])
@@ -58,6 +59,34 @@ class TestRecord(test.MyTestCase):
         finally:
             self.set_sfu_publisher_threshold(moderator_client, 9)
             logger.info("修改墙上人数为9人")
+
+    def test_record_speaker_tag(self):
+        """ 测试录制的发言标签
+        测试目的：录测试录制的发言标签
+        测试过程: 1、主持人入会创建会议
+                2、加入8人
+                3、主持人开始录制
+                4、主持人点名发言
+                5、主持人替换发言
+        结果期望：发言标签正常被替换 """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        # 主持人入会
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        clients = self.batchJoinRoom(room_id, 1, 7)
+
+        # client2 = self.loginAndAccessIn2(self.users[9], type='HDC')
+        client2 = self.loginAndAccessIn2(self.users[9])
+        client2.joinRoom(room_id)
+
+        time.sleep(1)
+        self.publish_video(moderator_client, 'MAJOR')
+        result = moderator_client.request('startConferenceRecord', {'roomId': room_id})
+        self.assertEqual(result[0], 0, ' 开启录制失败 ' + str(result))
+        time.sleep(5)
+        moderator_client.ms = MeetingService(moderator_client, room_id)
+        result = moderator_client.ms.set_roll_call(client2.uuid)
+        self.assertEqual(result[0], 0, ' 点名发言失败 ' + str(result))
+        time.sleep(10)
 
     @unittest2.skip('没有真正的流，录制会失败')
     def test_record_speaker_shareing(self):
