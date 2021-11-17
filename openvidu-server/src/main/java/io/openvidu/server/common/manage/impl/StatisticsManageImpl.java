@@ -6,15 +6,10 @@ import io.openvidu.server.common.dao.ConferencePartHistoryMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.dao.StatisticsConferenceDailyMapper;
 import io.openvidu.server.common.manage.StatisticsManage;
-import io.openvidu.server.common.pojo.ConfStatisticSearch;
-import io.openvidu.server.common.pojo.Conference;
-import io.openvidu.server.common.pojo.ConferencePartHistory;
-import io.openvidu.server.common.pojo.Corporation;
-import io.openvidu.server.common.pojo.StatisticsConferenceDaily;
+import io.openvidu.server.common.pojo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -85,9 +80,8 @@ public class StatisticsManageImpl implements StatisticsManage {
         }
         map.put("remainderHour", remainderDuration / 60);
         map.put("remainderMinute", remainderDuration % 60);
-        int count = conferencePartHistoryMapper.countProcessPartHistory(project);
-        if (count > 0) {
-            int totalUsedDuration = count;
+        int totalUsedDuration = conferencePartHistoryMapper.countProcessPartHistory(project);
+        if (totalUsedDuration > 0) {
             int remainderTotalDuration = remainderDuration - totalUsedDuration;
             log.info("企业:{},在会议中与会者耗时-totalUsedDuration:{},剩余时长-remainderDuration:{}", project, totalUsedDuration, remainderTotalDuration);
             int remainderHour = remainderTotalDuration / 60;

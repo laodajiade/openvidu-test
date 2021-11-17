@@ -24,7 +24,9 @@ import io.openvidu.client.OpenViduException.Code;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.java.client.OpenViduRole;
 import io.openvidu.server.client.RtcUserClient;
+import io.openvidu.server.common.broker.ToOpenviduElement;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.constants.BrokerChannelConstans;
 import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.enums.*;
@@ -32,6 +34,7 @@ import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.ConferenceSearch;
 import io.openvidu.server.config.OpenviduConfig;
 import io.openvidu.server.coturn.CoturnCredentialsService;
+import io.openvidu.server.domain.ToOpenviduChannelDTO;
 import io.openvidu.server.exception.BizException;
 import io.openvidu.server.kurento.core.KurentoParticipant;
 import io.openvidu.server.kurento.core.KurentoSession;
@@ -458,15 +461,37 @@ public abstract class SessionManager {
         }
     }
 
+    /**
+     * @param closeOtherServerIfAbsent 如果本地不存在，是否尝试关闭其他服务上的会议
+     */
+    public void closeRoom(String roomId, EndReason reason, boolean closeOtherServerIfAbsent) {
+        final Session session = this.getSession(roomId);
+        if (session == null) {
+            if (closeOtherServerIfAbsent) {
+                ToOpenviduChannelDTO dto = new ToOpenviduChannelDTO(ToOpenviduElement.CLOSE_ROOM)
+                        .addProperty("roomId", roomId).addProperty("reason", reason.name());
+                log.info("closeOtherServerIfAbsent {}", dto.toJsonStr());
+                cacheManage.publish(BrokerChannelConstans.TO_OPENVIDU_CHANNEL, dto.toJsonStr());
+            }
+            return;
+        }
+        this.closeRoom(session, reason);
+    }
 
     public void closeRoom(Session session) {
+        this.closeRoom(session, EndReason.sessionClosedByServer);
+    }
+
+    public void closeRoom(Session session, EndReason reason) {
         UseTime.point("closeRoom p1");
         String sessionId = session.getSessionId();
         // set session status: closing
         session.setClosing(true);
 
         Set<Participant> participants = session.getParticipants();
-        notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, new JsonObject());
+        JsonObject params = new JsonObject();
+        params.addProperty("reason", reason.name());
+        notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
 
         new Thread(() -> {
             for (Participant p : participants) {
@@ -487,12 +512,12 @@ public abstract class SessionManager {
             sessionPreset.setPollingStatusInRoom(SessionPresetEnum.off);
             timerManager.stopPollingCompensation(sessionId);
             //send notify
-            JsonObject params = new JsonObject();
+            params = new JsonObject();
             params.addProperty("roomId", sessionId);
             notificationService.sendBatchNotificationConcurrent(participants, ProtocolElements.STOP_POLLING_NODIFY_METHOD, params);
         }
         UseTime.Point point = UseTime.getPoint("sessionManager.closeSession.Point");
-        this.closeSession(sessionId, EndReason.closeSessionByModerator);
+        this.closeSession(sessionId, reason);
         point.updateTime();
         UseTime.point("closeRoom p5");
     }
@@ -511,6 +536,8 @@ public abstract class SessionManager {
      * @throws OpenViduException in case the session doesn't exist or has been
      *                           already closed
      */
+    // 外部调用关闭会议尽量使用closeRoom(Session session, EndReason reason)这个方法，closeRoom做的事更多更全。
+    // 我会在未来的几个版本里逐步迁移使用这个接口的调用。
     public Set<Participant> closeSession(String sessionId, EndReason reason) {
         Session session = sessions.get(sessionId);
         if (session == null) {

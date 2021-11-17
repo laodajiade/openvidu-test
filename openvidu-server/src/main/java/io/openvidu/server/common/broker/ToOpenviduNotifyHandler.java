@@ -93,12 +93,23 @@ public class ToOpenviduNotifyHandler {
                         break;
                     case ToOpenviduElement.CLOSE_ROOM:
                         final String roomId = params.get("roomId").getAsString();
-                        final String ruid = params.get("ruid").getAsString();
                         final Session session = sessionManager.getSession(roomId);
-                        if (session != null && session.getConference().getRuid().equals(ruid)) {
-                            log.info("closeRoom by subscribe roomId {},ruid {}", roomId, ruid);
-                            sessionManager.closeRoom(session);
+                        if (session == null) {
+                            break;
                         }
+                        String ruid = null;
+                        if (params.has("ruid")) {
+                            ruid = params.get("ruid").getAsString();
+                            if (!session.getConference().getRuid().equals(ruid)) {
+                                break;
+                            }
+                        }
+                        EndReason reason = EndReason.sessionClosedByServer;
+                        if (params.has("reason")) {
+                            reason = EndReason.valueOf(params.get("reason").getAsString());
+                        }
+                        log.info("closeRoom by subscribe roomId {},ruid {},reason {}", roomId, ruid, reason.name());
+                        sessionManager.closeRoom(session, reason);
                         break;
                 }
             } catch (Exception e) {

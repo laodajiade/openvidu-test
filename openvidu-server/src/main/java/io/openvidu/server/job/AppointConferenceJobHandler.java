@@ -375,8 +375,7 @@ public class AppointConferenceJobHandler {
             Set<Participant> participants = session.getParticipants();
             if (participants.isEmpty()) {
                 // finish conference
-                log.info("conferenceEndJobHandler close session roomId = {}, ruid = {}", first.get().getRoomId(), first.get().getRuid());
-                sessionManager.closeSession(first.get().getRoomId(), EndReason.sessionClosedByServer);
+                sessionManager.closeRoom(first.get().getRoomId(), EndReason.sessionClosedByServer, true);
             } else {
                 // notify
                 if (session.isDelay()) {

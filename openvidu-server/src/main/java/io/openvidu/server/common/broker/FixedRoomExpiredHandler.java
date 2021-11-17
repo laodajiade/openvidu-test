@@ -5,7 +5,6 @@ import io.openvidu.server.common.dao.AppointConferenceMapper;
 import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.AppointConferenceExample;
 import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
 import io.openvidu.server.rpc.handlers.appoint.CancelAppointmentRoomHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +26,10 @@ public class FixedRoomExpiredHandler {
     @Autowired
     private CancelAppointmentRoomHandler cancelAppointmentRoomHandler;
 
-
-    @Autowired
-    private CorpServiceExpiredNotifyHandler corpServiceExpiredNotifyHandler;
-
     public void processor(JsonObject params) {
         String roomId = params.get("roomId").getAsString();
 
-        Session session = sessionManager.getSession(roomId);
-        if (session != null) {
-            corpServiceExpiredNotifyHandler.closeRoomAndNotify(session, EndReason.fixedRoomServiceExpired);
-        }
+        sessionManager.closeRoom(roomId, EndReason.fixedRoomServiceExpired, true);
 
         AppointConferenceExample example = new AppointConferenceExample();
         example.createCriteria().andRoomIdEqualTo(roomId).andStatusIn(Arrays.asList(0, 1));

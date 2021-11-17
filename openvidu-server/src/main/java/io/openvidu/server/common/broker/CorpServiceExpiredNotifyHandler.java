@@ -3,16 +3,13 @@ package io.openvidu.server.common.broker;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.cache.CacheManage;
+import io.openvidu.server.common.dao.ConferenceMapper;
 import io.openvidu.server.common.dao.CorporationMapper;
-import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
-import io.openvidu.server.common.enums.StreamType;
+import io.openvidu.server.common.pojo.Conference;
 import io.openvidu.server.common.pojo.Corporation;
 import io.openvidu.server.core.EndReason;
-import io.openvidu.server.core.Participant;
-import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionManager;
-import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
 import io.openvidu.server.utils.DateUtil;
 import io.openvidu.server.utils.ValidPeriodHelper;
@@ -23,9 +20,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -40,6 +37,9 @@ public class CorpServiceExpiredNotifyHandler {
     @Resource
     private CacheManage cacheManage;
 
+    @Resource
+    private ConferenceMapper conferenceMapper;
+
     @Autowired
     private SessionManager sessionManager;
 
@@ -51,8 +51,8 @@ public class CorpServiceExpiredNotifyHandler {
     @Async
     public void notify(String message) {
         log.info("corp in modified to notify corpId:" + message);
-        final String corpId = message;
-        Corporation corporation = corporationMapper.selectByPrimaryKey(Long.parseLong(corpId));
+        final Long corpId = Long.parseLong(message);
+        Corporation corporation = corporationMapper.selectByPrimaryKey(corpId);
         if (corporation == null) {
             log.error("corp service expired notify error corp not exist");
             return;
@@ -67,12 +67,10 @@ public class CorpServiceExpiredNotifyHandler {
         int remainderMinute = remainderDuration % 60;
         params.addProperty("remainderHour", remainderHour);
         params.addProperty("remainderMinute", remainderMinute);
-
         rpcNotificationService.getRpcConnections().stream()
                 .filter(rpcConnection -> !Objects.isNull(rpcConnection) && Objects.equals(rpcConnection.getProject(), corporation.getProject()))
                 .forEach(rpcConnection -> rpcNotificationService.sendNotification(rpcConnection.getParticipantPrivateId(),
-                        ProtocolElements.CORP_INFO_MODIFIED_NOTIFY_METHOD, params)
-                );
+                        ProtocolElements.CORP_INFO_MODIFIED_NOTIFY_METHOD, params));
 
         if (!corporationMapper.isConcurrentServiceDuration(corporation)) {
             closeRoomByConcurrent(corporation.getProject(), EndReason.serviceExpired);
@@ -85,35 +83,15 @@ public class CorpServiceExpiredNotifyHandler {
 
     public void closeRoomByConcurrent(String project, EndReason reason) {
         synchronized (lock) {
-            Collection<Session> sessions = sessionManager.getSessions();
+            final List<Conference> notFinishConferences = conferenceMapper.getNotFinishConference()
+                    .stream().filter(conference -> conference.getProject().equals(project)).collect(Collectors.toList());
 
-            for (Session session : sessions) {
-                // close room and notify
-                if (Objects.equals(project, session.getConference().getProject())) {
-                    if (!RoomIdTypeEnums.isFixed(session.getSessionId())) {
-                        closeRoomAndNotify(session, reason);
-                    }
+            for (Conference conference : notFinishConferences) {
+                if (!RoomIdTypeEnums.isFixed(conference.getRoomId())) {
+                    sessionManager.closeRoom(conference.getRoomId(), reason, true);
                 }
             }
         }
-    }
-
-    public void closeRoomAndNotify(Session session, EndReason reason) {
-        JsonObject params = new JsonObject();
-        params.addProperty("reason", reason.name());
-
-        Set<Participant> participants = sessionManager.getParticipants(session.getSessionId());
-
-        participants.forEach(p -> {
-            notificationService.sendNotification(p.getParticipantPrivateId(), ProtocolElements.CLOSE_ROOM_NOTIFY_METHOD, params);
-            RpcConnection rpcConnect = notificationService.getRpcConnection(p.getParticipantPrivateId());
-            if (!Objects.isNull(rpcConnect) && !Objects.isNull(rpcConnect.getSerialNumber())) {
-                cacheManage.setDeviceStatus(rpcConnect.getSerialNumber(), DeviceStatus.online.name());
-            }
-        });
-
-        sessionManager.stopRecording(session.getSessionId());
-        sessionManager.closeSession(session.getSessionId(), EndReason.serviceExpired);
     }
 
 }

@@ -12,7 +12,6 @@ import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.DeviceStatus;
 import io.openvidu.server.common.enums.ParticipantStatusEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.manage.StatisticsManage;
 import io.openvidu.server.common.manage.UserManage;
 import io.openvidu.server.common.pojo.ConferencePartHistory;
@@ -34,12 +33,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -75,7 +69,7 @@ public class CorpRemainderDurationSchedule {
 
     @Scheduled(cron = "0 0/1 * * * ?")
     @DistributedLock(key = "fixEndPart")
-    public void fixEndPartHistory(){
+    public void fixEndPartHistory() {
         List<NotEndPartHistory> notEndPartHistoryList = conferencePartHistoryMapper.selectNotEndPartHistory();
         if (!CollectionUtils.isEmpty(notEndPartHistoryList)) {
             notEndPartHistoryList.forEach(e -> {
@@ -86,7 +80,7 @@ public class CorpRemainderDurationSchedule {
                     List<ConferencePartHistory> conferencePartHistories = conferencePartHistoryMapper.selectByCondition(search);
                     if (!CollectionUtils.isEmpty(conferencePartHistories)) {
                         AtomicInteger totalDuration = new AtomicInteger();
-                        conferencePartHistories.forEach(conferencePartHistory ->{
+                        conferencePartHistories.forEach(conferencePartHistory -> {
                             conferencePartHistory.setStatus(ParticipantStatusEnum.LEAVE.getStatus());
                             Date endTime = new Date();
                             conferencePartHistory.setEndTime(endTime);
@@ -108,14 +102,14 @@ public class CorpRemainderDurationSchedule {
 
     @Scheduled(cron = "0 0/1 * * * ?")
     @DistributedLock(key = "corpRemainderDuration")
-    public void countCorpRemainderDuration(){
+    public void countCorpRemainderDuration() {
         List<Corporation> corporations = corporationMapper.selectAllCorp();
         if (!CollectionUtils.isEmpty(corporations)) {
             corporations.forEach(corporation -> {
                 if (Objects.nonNull(corporation.getRemainderDuration())) {
                     statisticsManage.statisticsRemainderDuration(corporation.getProject());
                     int remainderDuration = cacheManage.getCorpRemainDuration(corporation.getProject());
-                    if (remainderDuration > 0 && remainderDuration < durationLessThanTenHour ) {
+                    if (remainderDuration > 0 && remainderDuration < durationLessThanTenHour) {
                         String durationLessTenHour = cacheManage.getCorpRemainDurationLessTenHour(corporation.getProject());
                         if (org.apache.commons.lang.StringUtils.isEmpty(durationLessTenHour)) {
                             //获取企业管理员信息
@@ -130,7 +124,7 @@ public class CorpRemainderDurationSchedule {
                                 smsObj.addProperty("smsType", "RemainderDuration");
                                 redisPublisher.sendChnMsg(BrokerChannelConstans.SMS_DELIVERY_CHANNEL, smsObj.toString());
                             } else {
-                                log.info("企业时长不足十小时,通知企业管理员uuid:{}, phone:{}",adminUser.getUuid() ,adminUser.getPhone());
+                                log.info("企业时长不足十小时,通知企业管理员uuid:{}, phone:{}", adminUser.getUuid(), adminUser.getPhone());
                             }
                             //时长不足十小时通知
                             corpServiceExpiredNotifyHandler.notify(String.valueOf(corporation.getId()));
@@ -163,7 +157,7 @@ public class CorpRemainderDurationSchedule {
                                         }
                                     });
                                     sessionManager.stopRecording(session.getSessionId());
-                                    sessionManager.closeSession(session.getSessionId(), EndReason.callDurationUsedUp);
+                                    sessionManager.closeRoom(session.getSessionId(), EndReason.callDurationUsedUp, false);
                                 }
                             }
                             cacheManage.setCorpRemainDurationUsedUp(corporation.getProject());
