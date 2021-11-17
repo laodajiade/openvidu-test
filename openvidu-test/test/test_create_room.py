@@ -1,4 +1,5 @@
 import sys
+import threading
 import time
 
 import unittest2
@@ -50,6 +51,53 @@ class TestCreateRoom(test.MyTestCase):
         time.sleep(0.5)
         re = client.close_room(self.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
+
+    def test_create_same_room_current(self):
+        """ 并发创建相同的会议
+        测试目的：并发创建相同的会议
+        测试过程: 1、登录多个客户端，
+        2、同时对一个固定会议室创建会议
+        结果期望：并发创建相同的会议，最终只有一个能成功。
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        client1 = self.loginAndAccessIn2(self.users[0])
+        client2 = self.loginAndAccessIn2(self.users[1])
+        client3 = self.loginAndAccessIn2(self.users[2])
+        client4 = self.loginAndAccessIn2(self.users[3])
+        time.sleep(0.5)
+        room_id = self.fixed_rooms[0]['roomId']
+        t1 = threading.Thread(target=client1.createRoom, args=(room_id, client1.uuid + '并发创建的会议', 'fixed'))
+        t2 = threading.Thread(target=client2.createRoom, args=(room_id, client2.uuid + '并发创建的会议', 'fixed'))
+        t3 = threading.Thread(target=client3.createRoom, args=(room_id, client3.uuid + '并发创建的会议', 'fixed'))
+        t4 = threading.Thread(target=client4.createRoom, args=(room_id, client4.uuid + '并发创建的会议', 'fixed'))
+        t1.start()
+        t2.start()
+        t3.start()
+        t4.start()
+        time.sleep(5)
+
+    def test_create_different_room_current(self):
+        """ 并发创建不同的会议
+        测试目的：并发创建不同的会议
+        测试过程: 1、登录多个客户端，
+        2、创建随机会议
+        结果期望：各自不受到全局锁的影响
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        client1 = self.loginAndAccessIn2(self.users[0])
+        client2 = self.loginAndAccessIn2(self.users[1])
+        client3 = self.loginAndAccessIn2(self.users[2])
+        client4 = self.loginAndAccessIn2(self.users[3])
+        time.sleep(0.5)
+        t1 = threading.Thread(target=client1.createRoom, args=(client1.uuid, client1.uuid + '并发创建的会议', 'fixed'))
+        t2 = threading.Thread(target=client2.createRoom, args=(client2.uuid, client2.uuid + '并发创建的会议', 'fixed'))
+        t3 = threading.Thread(target=client3.createRoom, args=(client3.uuid, client3.uuid + '并发创建的会议', 'fixed'))
+        t4 = threading.Thread(target=client4.createRoom, args=(client4.uuid, client4.uuid + '并发创建的会议', 'fixed'))
+        t1.start()
+        t2.start()
+        t3.start()
+        t4.start()
+        time.sleep(5)
 
     def test_create_fixed(self):
         """ 创建固定会议，不入会,1秒后关闭会议 """

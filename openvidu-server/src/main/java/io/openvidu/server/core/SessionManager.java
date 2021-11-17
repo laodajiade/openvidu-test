@@ -631,8 +631,7 @@ public abstract class SessionManager {
     }
 
     public boolean isNewSessionIdValid(String sessionId) {
-        sessionidConferenceInfo.put(sessionId, new ConcurrentHashMap<>());
-        return true;
+        return sessionidConferenceInfo.put(sessionId, new ConcurrentHashMap<>()) == null;
     }
 
     public boolean isSessionIdValid(String sessionId) {

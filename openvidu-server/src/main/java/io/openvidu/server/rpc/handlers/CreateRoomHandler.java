@@ -12,6 +12,7 @@ import io.openvidu.server.common.pojo.*;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.core.SessionPresetEnum;
+import io.openvidu.server.exception.BizException;
 import io.openvidu.server.rpc.RpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.service.CorpInfoService;
@@ -142,8 +143,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, processConference.get().getRuid());
                 respJson.addProperty("inviteUrl", processConference.get().getShortUrl() == null ?
-                        "":openviduConfig.getConferenceInviteUrl()+processConference.get().getShortUrl());
-                log.info("param ruid={}, actual ruid = {},inviteUrl ={}", ruid, processConference.get().getRuid());
+                        "" : openviduConfig.getConferenceInviteUrl() + processConference.get().getShortUrl());
+                log.info("param ruid={}, actual ruid = {}", ruid, processConference.get().getRuid());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
                 return;
             }
@@ -229,16 +230,21 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 }
                 inviteCountDownLatch.countDown();
                 SessionEventRecord.createRoom(session);
-                respJson.addProperty("inviteUrl",conference.getShortUrl() == null ?
-                        "":openviduConfig.getConferenceInviteUrl()+conference.getShortUrl());
+                respJson.addProperty("inviteUrl", conference.getShortUrl() == null ?
+                        "" : openviduConfig.getConferenceInviteUrl() + conference.getShortUrl());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
             } else {
                 log.warn("conference:{} already exist.", sessionId);
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.CONFERENCE_ALREADY_EXIST);
             }
+        } catch (BizException e) {
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, e.getRespEnum());
         } catch (Exception e) {
             log.error("create Room error room_id = {}", sessionId, e);
+            notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                    null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
         } finally {
             GLOBAL_LOCK.unlock();
         }
