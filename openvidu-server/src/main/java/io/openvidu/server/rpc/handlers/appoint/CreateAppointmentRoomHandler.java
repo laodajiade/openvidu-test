@@ -7,6 +7,7 @@ import io.openvidu.server.common.dao.CorporationMapper;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.RoomIdTypeEnums;
 import io.openvidu.server.common.manage.AppointConferenceManage;
+import io.openvidu.server.common.pojo.AppointConference;
 import io.openvidu.server.common.pojo.User;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.resp.AppointmentRoomResp;
@@ -98,15 +99,18 @@ public class CreateAppointmentRoomHandler extends AbstractAppointmentRoomHandler
             insertBatchCallHistory(params.getRoomId(), params.getRuid(), users);
         }
 
+
         // 创建定时任务
         JsonObject respJson = new JsonObject();
         respJson.addProperty("ruid", params.getRuid());
         params.setAccessType(rpcConnection.getAccessType());
         createTimer(params, new HashSet<>(params.getParticipants()), respJson);
 
+        AppointConference appconf = appointConferenceManage.getByRuid(params.getRuid());
         AppointmentRoomResp resp = new AppointmentRoomResp();
         resp.setRuid(params.getRuid());
         resp.setRoomId(params.getRoomId());
+        resp.setInviteurl(openviduConfig.getConferenceInviteUrl()+appconf.getShortUrl());
         return RespResult.ok(resp);
     }
 

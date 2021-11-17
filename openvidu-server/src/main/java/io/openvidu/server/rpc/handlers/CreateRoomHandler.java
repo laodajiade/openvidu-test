@@ -141,7 +141,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 JsonObject respJson = new JsonObject();
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_ID_PARAM, sessionId);
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, processConference.get().getRuid());
-                log.info("param ruid={}, actual ruid = {}", ruid, processConference.get().getRuid());
+                respJson.addProperty("inviteUrl", processConference.get().getShortUrl() == null ?
+                        "":openviduConfig.getConferenceInviteUrl()+processConference.get().getShortUrl());
+                log.info("param ruid={}, actual ruid = {},inviteUrl ={}", ruid, processConference.get().getRuid());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
                 return;
             }
@@ -227,6 +229,8 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 }
                 inviteCountDownLatch.countDown();
                 SessionEventRecord.createRoom(session);
+                respJson.addProperty("inviteUrl",conference.getShortUrl() == null ?
+                        "":openviduConfig.getConferenceInviteUrl()+conference.getShortUrl());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
             } else {
                 log.warn("conference:{} already exist.", sessionId);
