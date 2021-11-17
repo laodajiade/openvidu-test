@@ -198,7 +198,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 conference.setShortUrl(roomManage.createShortUrl());
                 conference.setModeratorName(rpcConnection.getUsername());
                 conference.setOpenviduId(instanceId);
-                roomManage.createMeetingRoom(conference);
+
 
                 // setPresetInfo.
                 String micStatusInRoom = getStringOptionalParam(request, ProtocolElements.CREATE_ROOM_MIC_STATUS_PARAM);
@@ -225,6 +225,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 }
 
                 Session session = sessionManager.createSession(sessionId, conference, preset);
+                roomManage.createMeetingRoom(conference);
                 if (appt != null) {
                     session.setEndTime(appt.getEndTime().getTime());
                 }
