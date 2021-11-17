@@ -795,7 +795,7 @@ public class PublisherEndpoint extends MediaEndpoint {
         // format: "{roomId}_{senderId}_mixHubIn}"
         pubHubProperties.add("traceId", epTraceId.substring(0, epTraceId.length() - 3) + "mixHubIn");
         pubHubProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
-        pubHubProperties.add("sdOsd", "testOsd");
+//        pubHubProperties.add("sdOsd", "testOsd");
         pubHubPort = new HubPort.Builder(composite).withProperties(pubHubProperties).build();
         SessionEventRecord.other(this.getOwner().getSessionId(), "createPubHubPort", this.getStreamId(), pubHubPort.getName());
         log.info("{} Pub EP create majorShareHubPort. {}", this.streamId, pubHubPort.getName());

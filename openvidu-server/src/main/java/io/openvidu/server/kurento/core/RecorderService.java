@@ -156,6 +156,7 @@ public class RecorderService {
             }
             jsonObject.addProperty("uuid", participant.getUuid());
             jsonObject.addProperty("passThruId", publisherEndpoint.getPassThru().getId());
+            jsonObject.addProperty("streamId", publisherEndpoint.getStreamId());
             result.add(jsonObject);
         }
         return result;
@@ -315,6 +316,7 @@ public class RecorderService {
             jsonObject.addProperty("voiceMode", part.getVoiceMode() == VoiceMode.on);
             jsonObject.addProperty("isModerator", part.getRole() == OpenViduRole.MODERATOR);
             jsonObject.addProperty("isSpeaker", session.isSpeaker(part.getUuid()));
+            jsonObject.addProperty("streamId", publisherEndpoint.getStreamId());
         }
         source.add(new CompositeObjectWrapper(part, streamType, publisherEndpoint));
         return jsonObject;
