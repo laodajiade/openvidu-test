@@ -6,5 +6,6 @@ package io.openvidu.server.common.enums;
  */
 public enum EvictParticipantStrategy {
     CLOSE_WEBSOCKET_CONNECTION,
-    CLOSE_ROOM_WHEN_EVICT_MODERATOR
+    CLOSE_ROOM_WHEN_EVICT_MODERATOR,
+    LAST_PARTICIPANT_LEFT
 }

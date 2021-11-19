@@ -926,36 +926,7 @@ public class KurentoSessionManager extends SessionManager {
             if (ParticipantHandStatus.speaker.equals(evictParticipant.getHandStatus())) {
                 endSpeaker(session, evictParticipant, evictParticipant.getUuid());
             }
-            // check if exists SHARING
-//            if (session.isShare(evictParticipant.getUuid())) {
-//
-////                JsonObject params = new JsonObject();
-////                params.addProperty(ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_CONNECTIONID_PARAM,
-////                        sharePart.getParticipantPublicId());
-////
-////                // send stop SHARING
-////                participants.forEach(participant -> rpcNotificationService.sendNotification(participant.getParticipantPrivateId(),
-////                        ProtocolElements.RECONNECTPART_STOP_PUBLISH_SHARING_METHOD, params));
-//                // change session share status
-//                if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-//                    KurentoSession kurentoSession = (KurentoSession) session;
-//                    kurentoSession.getCompositeService().setExistSharing(false);
-//                }
-//            }
-
-            // change the layout if mode is MCU
-//            if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
-//
-//            }
-
-            // evict participants
-//            samePrivateIdParts.values().forEach(participant -> evictParticipant(participant, null,
-//                    null, reason));
             evictParticipant(evictParticipant, null, null, reason);
-
-            // delete 2.0
-            // deal auto on wall
-            // session.putPartOnWallAutomatically(this);
         }
 
         // clear the rpc connection if necessary

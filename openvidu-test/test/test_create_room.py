@@ -52,6 +52,7 @@ class TestCreateRoom(test.MyTestCase):
         re = client.close_room(self.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
 
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时用例')
     def test_create_not_join(self):
         """ 创建会议，不加入会议
         测试目的：创建会议，不加入会议，并掉线，看是否会关闭会议
@@ -258,9 +259,6 @@ class TestCreateRoom(test.MyTestCase):
         结果期望： 主持人掉线后，会议中如果有人不应关闭会议
         """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
-        if self.fast:
-            logger.info('跳过耗时用例')
-            return
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[10])
         part_client, re = self.loginAndAccessInAndJoin(self.users[1], room_id)
         moderator_client.close_ping_pong()
@@ -268,6 +266,25 @@ class TestCreateRoom(test.MyTestCase):
         logger.info('等待130s后')
         part_client, re = self.loginAndAccessInAndJoin(self.users[2], room_id)
         self.assertEqual(re[0], 0, '会议被关闭了')
+
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时超过60s的用例')
+    def test_moderate_disconnected_2(self):
+        """ 测试会议中仅主持人的情况下，主持人掉线，应关闭会议。
+        描述：测试会议中仅主持人的情况下，主持人掉线，应关闭会议。
+        测试目的：测试主持人掉线会议存在被关闭情况
+        测试过程: 1、创建会议，主持人入会
+               2、主持人掉线，等待130秒
+        结果期望： 主持人掉线后，应关闭会议
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[10])
+        moderator_client.close_ping_pong()
+        moderator_client.request('accessDevInf', {'pwd': 'sudi123456', 'method': 'setConnectedExpired'})
+        time.sleep(130)
+        logger.info('等待130s后')
+        part_client = self.loginAndAccessIn2(self.users[2])
+        result = part_client.joinRoom(room_id)
+        self.assertNotEqual(result[0], 0, '会议被关闭了')
 
 
 if __name__ == '__main__':

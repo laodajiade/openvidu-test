@@ -381,19 +381,19 @@ class WsClient:
         self.wst.daemon = True
         self.wst.start()
         time.sleep(0.1)
-        self.pt = threading.Thread(target=self.ping)
+        self.ping = True  # ping pong
+        self.pt = threading.Thread(target=self.ping_method)
         self.pt.daemon = True
         self.pt.start()
         # 是否启用收集通知
         self.isCollecting = False
-        self.ping = True  # ping pong
 
     def run_forever(self):
         self.ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE}, ping_interval=10, ping_timeout=5)
 
-    def ping(self):
+    def ping_method(self):
+        time.sleep(10)
         while self.ping and self.ws.keep_running:
-            time.sleep(10)
             msgId = self.__getMsgId()
             content = {}
             method = 'ping'
@@ -404,10 +404,11 @@ class WsClient:
                 content['params'] = {}
                 json_params = json.dumps(content)
                 self.ws.send(json_params)
-                # logger.info(self.uuid + " request " + str(json_params))
+                logger.info(self.uuid + " request " + str(json_params))
             except Exception as e:
                 if "is already closed" in str(e):
                     break
+            time.sleep(10)
         # logger.info('shutdown ping thread')
 
     def on_message(self, ws, message):
