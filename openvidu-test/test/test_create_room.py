@@ -52,7 +52,7 @@ class TestCreateRoom(test.MyTestCase):
         re = client.close_room(self.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
 
-    def test_create_same_room_current(self):
+    def a_test_create_same_room_current(self):
         """ 并发创建相同的会议
         测试目的：并发创建相同的会议
         测试过程: 1、登录多个客户端，
@@ -76,7 +76,7 @@ class TestCreateRoom(test.MyTestCase):
         t4.start()
         time.sleep(5)
 
-    def test_create_different_room_current(self):
+    def a_test_create_different_room_current(self):
         """ 并发创建不同的会议
         测试目的：并发创建不同的会议
         测试过程: 1、登录多个客户端，
@@ -98,6 +98,10 @@ class TestCreateRoom(test.MyTestCase):
         t3.start()
         t4.start()
         time.sleep(5)
+        client1.close_room(client1.uuid)
+        client2.close_room(client2.uuid)
+        client3.close_room(client3.uuid)
+        client4.close_room(client4.uuid)
 
     def test_create_fixed(self):
         """ 创建固定会议，不入会,1秒后关闭会议 """

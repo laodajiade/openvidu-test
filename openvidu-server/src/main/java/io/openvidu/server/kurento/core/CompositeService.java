@@ -516,7 +516,7 @@ public class CompositeService {
         JsonObject params = new JsonObject();
         params.addProperty("object", pipelineId);
         params.addProperty("operation", "setLayout");
-        params.addProperty("sessionId", sessionId);
+        params.addProperty("sessionId", session.getKms().getKurentoClient().getSessionId());
 
         // construct composite layout info
         JsonArray layoutInfos = new JsonArray(layoutMode.getMode());

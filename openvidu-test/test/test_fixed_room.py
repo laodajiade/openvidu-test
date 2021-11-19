@@ -31,6 +31,7 @@ class TestCreateRoom(test.MyTestCase):
 
         logger.info('批量入会，让负载均衡器尽量照顾到各个服务器')
         clients = self.batchJoinRoom(short_id, 1, 10)
+        moderator_client.close_room(room_id)
         self.tearDown()
 
     def test_join_room_by_short_id_cycle_10(self):
