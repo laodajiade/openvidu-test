@@ -4,7 +4,6 @@ import unittest2
 from loguru import logger
 
 import test
-import time
 from test.service.services import MeetingService
 
 
@@ -53,7 +52,6 @@ class TestReconnect(test.MyTestCase):
         notify = moderator_client.find_any_notify('partOrderOrRoleChangeNotify')
         self.check_order_list(notify)
 
-
     def check_order_list(self, notify):
         """ 检查order 0-N 是不是连续的 """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
@@ -65,6 +63,7 @@ class TestReconnect(test.MyTestCase):
                     flag = True
                     break
             self.assertTrue(flag, ' order ' + str(i) + ' 不存在 ' + str(notify))
+
 
 if __name__ == '__main__':
     unittest2.main()

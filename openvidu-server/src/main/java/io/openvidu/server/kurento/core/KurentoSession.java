@@ -30,13 +30,11 @@ import io.openvidu.server.common.redis.RecordingRedisPublisher;
 import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.kurento.endpoint.MediaEndpoint;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
-import org.apache.commons.collections4.CollectionUtils;
 import org.kurento.client.EventListener;
-import org.kurento.client.*;
 import org.kurento.client.Properties;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * @author Pablo Fuente (pablofuenteperez@gmail.com)
@@ -86,10 +83,19 @@ public class KurentoSession extends Session {
     // 服务崩溃或者kill -9等方式非正常关机会导致会议永远存在。
     private final Thread leaseThread = new Thread(() -> {
         log.info("room lease thead start,roomId={}, ruid={}", sessionId, ruid);
+        int idleCnt = 0;
         while (!closed) {
             try {
                 kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
                 TimeUnit.SECONDS.sleep(20);
+                if (!ruid.equals("appt-") && getPartSize() == 0) {
+                    idleCnt = getPartSize() == 0 ? ++idleCnt : 0;
+                }
+                if (idleCnt > 3) {
+                    log.info("room lease thead interrupt,roomId={}, ruid={}", sessionId, ruid);
+                    close(EndReason.sessionClosedByServer);
+                    return;
+                }
             } catch (InterruptedException e) {
                 return;
             }
@@ -356,17 +362,18 @@ public class KurentoSession extends Session {
     /**
      * 对比sip中的辅流是否有发生改变，如果有则返回true
      */
-    public boolean equalsSipCompositeStream(Participant... participants) {
-        Set<String> newStreamSet = Arrays.stream(participants).filter(Objects::nonNull)
-                .map(p -> ((KurentoParticipant) p).getPublisher()).filter(Objects::nonNull)
-                .map(MediaEndpoint::getStreamId).collect(Collectors.toSet());
-        boolean equalCollection = CollectionUtils.isEqualCollection(newStreamSet, sipStreamIdSet);
-        log.info("oldSipStreamIdSet {}, newSipStreamIdSet {}", sipStreamIdSet, newStreamSet);
-        if (!equalCollection) {
-            sipStreamIdSet = newStreamSet;
-        }
-        return equalCollection;
-    }
+    //delete 2.0
+//    public boolean equalsSipCompositeStream(Participant... participants) {
+//        Set<String> newStreamSet = Arrays.stream(participants).filter(Objects::nonNull)
+//                .map(p -> ((KurentoParticipant) p).getPublisher()).filter(Objects::nonNull)
+//                .map(MediaEndpoint::getStreamId).collect(Collectors.toSet());
+//        boolean equalCollection = CollectionUtils.isEqualCollection(newStreamSet, sipStreamIdSet);
+//        log.info("oldSipStreamIdSet {}, newSipStreamIdSet {}", sipStreamIdSet, newStreamSet);
+//        if (!equalCollection) {
+//            sipStreamIdSet = newStreamSet;
+//        }
+//        return equalCollection;
+//    }
     // delete 2.0
 //	public void asyncUpdateSipComposite() {
 //		if (Objects.isNull(getSipComposite())){
@@ -443,7 +450,6 @@ public class KurentoSession extends Session {
 //		hubPortIds.add(hubPort.getId());
 //		return ++mcuNum;
 //	}
-
     private Request<JsonObject> composeLayoutRequestForSip(String pipelineId, String sessionId, JsonArray hubPortIds, LayoutModeEnum layoutMode) {
         Request<JsonObject> kmsRequest = new Request<>();
         JsonObject params = new JsonObject();

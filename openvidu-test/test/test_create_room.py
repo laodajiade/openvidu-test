@@ -52,6 +52,21 @@ class TestCreateRoom(test.MyTestCase):
         re = client.close_room(self.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
 
+    def test_create_not_join(self):
+        """ 创建会议，不加入会议
+        测试目的：创建会议，不加入会议，并掉线，看是否会关闭会议
+        测试过程:
+        结果期望：空会议在1分钟后应该被释放 """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        user = self.users[0]
+        client = self.loginAndAccessIn(user['phone'], user['pwd'])
+        self.moderatorClient = client
+        result = self.createRandomRoom(client)
+        room_id = result[1]['roomId']
+        time.sleep(120)
+        result = client.joinRoom(room_id)
+        self.assertNotEqual(result[0], 0, '入会应该失败，因为会议不存在')
+
     def a_test_create_same_room_current(self):
         """ 并发创建相同的会议
         测试目的：并发创建相同的会议
