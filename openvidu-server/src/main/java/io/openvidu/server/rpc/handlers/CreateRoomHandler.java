@@ -9,6 +9,7 @@ import io.openvidu.server.common.dao.FixedRoomMapper;
 import io.openvidu.server.common.enums.*;
 import io.openvidu.server.common.manage.AppointConferenceManage;
 import io.openvidu.server.common.pojo.*;
+import io.openvidu.server.core.EndReason;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.core.SessionPreset;
 import io.openvidu.server.core.SessionPresetEnum;
@@ -246,6 +247,9 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             log.error("create Room error room_id = {}", sessionId, e);
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.SERVER_INTERNAL_ERROR);
+            //清理数据
+            log.info("clear room cache {}", sessionId);
+            sessionManager.closeRoom(sessionId, EndReason.sessionClosedByServer, false);
         } finally {
             GLOBAL_LOCK.unlock();
         }
