@@ -447,7 +447,7 @@ class WsClient:
                 content['params'] = {}
                 json_params = json.dumps(content)
                 self.ws.send(json_params)
-                logger.info(self.uuid + " request " + str(json_params))
+                # logger.info(self.uuid + " request " + str(json_params))
             except Exception as e:
                 if "is already closed" in str(e):
                     break

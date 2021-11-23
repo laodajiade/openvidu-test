@@ -409,9 +409,14 @@ public class CacheManageImpl implements CacheManage {
 
     @Override
     public void roomLease(String sessionId, String ruid) {
+        this.roomLease(sessionId, ruid, 1, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void roomLease(String sessionId, String ruid, long timeout, TimeUnit timeUnit) {
         String key = CacheKeyConstants.CONFERENCE_LEASE_HEARTBEAT_PREFIX_KEY + sessionId;
         roomStringTemplate.opsForValue().set(key, ruid + "#" + instanceId);
-        roomStringTemplate.expire(key, 1, TimeUnit.MINUTES);
+        roomStringTemplate.expire(key, timeout, timeUnit);
 
         // 记录最后在哪个服务器上开会
         key = "last:session:location:" + sessionId;

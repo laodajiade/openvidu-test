@@ -94,6 +94,7 @@ public class KurentoSession extends Session {
                 if (idleCnt > 3) {
                     log.info("room lease thead interrupt,roomId={}, ruid={}", sessionId, ruid);
                     closing = true;
+                    kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid, 20, TimeUnit.MILLISECONDS);
                     return;
                 }
             } catch (InterruptedException e) {

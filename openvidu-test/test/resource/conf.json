@@ -6,7 +6,7 @@
     "fixed_rooms":[{"roomId": "10360004", "sortId": "9999", "pwd": ""}]
   },
   "evn_200": {
-    "server_url": "https://172.25.11.106:443",
+    "server_url": "https://172.25.11.200:443",
     "fixed_rooms":[{"roomId": "10360004", "sortId": "9999", "pwd": ""}]
   },
   "evn_206": {
@@ -56,6 +56,9 @@
     ],
     "SIP": [
       {"account": "81103600039", "uuid": "81103600039", "sipNumber": "33333","pwd": "123456"}
+    ],
+    "HDC": [
+       {"serialNumber": "20210118067", "uuid": "81103600028", "pwd": "123456"}
     ],
     "fixed_rooms":[{}]
   },

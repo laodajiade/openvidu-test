@@ -66,7 +66,7 @@ class TestCreateRoom(test.MyTestCase):
         room_id = result[1]['roomId']
         time.sleep(120)
         result = client.joinRoom(room_id)
-        self.assertNotEqual(result[0], 0, '入会应该失败，因为会议不存在')
+        self.assertEqual(result[0], 13001, '入会应该失败，因为会议不存在')
 
     def a_test_create_same_room_current(self):
         """ 并发创建相同的会议
