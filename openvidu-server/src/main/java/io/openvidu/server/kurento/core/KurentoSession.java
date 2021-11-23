@@ -93,6 +93,7 @@ public class KurentoSession extends Session {
                 }
                 if (idleCnt > 3) {
                     log.info("room lease thead interrupt,roomId={}, ruid={}", sessionId, ruid);
+                    closing = true;
                     return;
                 }
             } catch (InterruptedException e) {
