@@ -768,7 +768,11 @@ public class CompositeService {
                 newPoint = updateManualLayout();
             } else {
                 if (manualLayoutInfo.getModeratorDeviceModel().equals("T200")) {
-                    this.compositeService.setLayoutModeType(LayoutModeTypeEnum.ROSTRUM_T200);
+                    if (session.getSpeakerPart().isPresent() && session.getSharingPart().isPresent()) {
+                        this.compositeService.setLayoutModeType(LayoutModeTypeEnum.ROSTRUM_T200_TWO);
+                    } else {
+                        this.compositeService.setLayoutModeType(LayoutModeTypeEnum.ROSTRUM_T200);
+                    }
                 } else {
                     this.compositeService.setLayoutModeType(LayoutModeTypeEnum.ROSTRUM);
                 }
