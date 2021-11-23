@@ -27,6 +27,7 @@ class MyTestCase(unittest.TestCase):
         self.server_url = conf_json['server_url']
         self.users = conf_json['users']
         self.sips = conf_json['SIP']
+        self.HDCs = conf_json['HDC']
         self.fixed_rooms = conf_json['fixed_rooms']
         # 耗时用例是否测试，本地快速跑通用例时可以跳过，在测试环境最好全用例测试
         self.fast = conf_json['fast']
@@ -104,6 +105,25 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(re[0], 0)
         self.clients.append(client)
         return client
+
+    def HDCLoginAndAccessIn(self, hdc, **kwargs):
+        client = SdClient(hdc['uuid'], hdc['pwd'], self.server_url)
+        kwargs['type'] = 'HDC'
+        kwargs['deviceModel'] = 'T200'
+        kwargs['accessType'] = 'terminal'
+        kwargs['serialNumber'] = hdc['serialNumber']
+        re = client.loginHDCAndAccessIn(**kwargs)
+        self.assertEqual(re[0], 0)
+        self.clients.append(client)
+        return client
+
+    def HDCLoginAndAccessInAndCreateAndJoin(self, hdc, **kwargs):
+        moderator_client = self.HDCLoginAndAccessIn(hdc, **kwargs)
+        self.clients.append(moderator_client)
+        re = self.createRandomRoom(moderator_client)
+        room_id = re[1]['roomId']
+        self.joinRoom(moderator_client, room_id)
+        return moderator_client, room_id
 
     def loginAndAccessInAndCreateAndJoin(self, user):
         moderator = user

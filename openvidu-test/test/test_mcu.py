@@ -705,6 +705,21 @@ class TestManualLayout(test.MyTestCase):
         time.sleep(timeout)
         logger.info('睡眠结束')
 
+    def test_t200_layout_1_1_5(self):
+        """ 测试T200主持人上报布局
+        测试目的：T200主持人上报布局
+        测试过程: 1、创建会议，T200主持人入会，强制开启mcu
+                2、入会6个人，
+                3、点名发言和分享
+                4、主持人上报1+1+5布局
+                5、查看MCU的布局是否正确也是1+1+5
+        结果期望： 混流的布局和主持人上报的布局一致。
+        """
+        # todo 未完
+        moderator_client, room_id = self.HDCLoginAndAccessInAndCreateAndJoin(self.HDCs[0])
+        self.batchJoinRoom(room_id, 1, 6)
+        self.set_mcu_mode(moderator_client)
+
     ###################################################################################
 
     def subscribe_mcu_stream(self, client, publish_id):
