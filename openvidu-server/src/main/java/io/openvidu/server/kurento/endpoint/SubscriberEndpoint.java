@@ -71,6 +71,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
     public void addProperties(String msTraceId) {
         epProperties.add("traceId", msTraceId);
         epProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        epProperties.add("roomId", getOwner().getSessionId());
         epProperties.add("trackDirect", OpenViduRole.SUBSCRIBER.name());
 
         epProperties.add("userUuid", getOwner().getUuid());

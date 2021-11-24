@@ -105,6 +105,7 @@ public class CompositeService {
                 log.info("SESSION {}: Creating Composite", session.getSessionId());
                 compositeProperties.add("traceId", session.getSessionId() + "_" + session.getSubRuid() + "_mixCom");
                 compositeProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+                compositeProperties.add("roomId", session.getSessionId());
                 composite = new Composite.Builder(this.pipeline).withProperties(compositeProperties).build();
                 createHubPortOut();
                 session.setConferenceMode(ConferenceModeEnum.MCU);
@@ -138,6 +139,7 @@ public class CompositeService {
     private void createHubPortOut() {
         hubOutProperties.add("traceId", session.getSessionId() + "_" + session.getSubRuid() + "_mixHubOut");
         hubOutProperties.add("createAt", String.valueOf(System.currentTimeMillis()));
+        hubOutProperties.add("roomId", session.getSessionId());
         hubPortOut = new HubPort.Builder(composite).withProperties(hubOutProperties).build();
         this.hubPortOut.setMinOutputBitrate(1000000);
         this.hubPortOut.setMaxOutputBitrate(2000000);
