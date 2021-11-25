@@ -22,10 +22,13 @@ public class RedisSubscriber {
     @Autowired
     private SessionManager sessionManager;
 
+    @Autowired
+    private DeviceUpgradeHandler deviceUpgradeHandler;
+
     public void receiveMessage(String message, String channel) {
         switch (channel) {
             case BrokerChannelConstans.DEVICE_UPGRADE_CHANNEL:
-                DeviceUpgradeHandler.notifyDevice2Upgrade(message);
+                deviceUpgradeHandler.notifyDevice2Upgrade(message);
                 break;
             case BrokerChannelConstans.USER_DELETE_CHANNEL:
                 UserDelHandler.accessOutDeletedUser(message);

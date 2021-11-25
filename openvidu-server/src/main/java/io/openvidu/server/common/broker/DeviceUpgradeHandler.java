@@ -37,6 +37,7 @@ public class DeviceUpgradeHandler {
     @Value("${device.upgrade.handler.thread.num}")
     private int threadNum;
 
+
     private static final Gson gson = new GsonBuilder().create();
 
     private static BlockingQueue<String> deviceInfos = new LinkedBlockingDeque<>(100);
@@ -55,8 +56,9 @@ public class DeviceUpgradeHandler {
 
 
 
-    @DistributedLock(key = "deviceUpgrade")
-    static void notifyDevice2Upgrade(String devUpInfos) {
+
+    @DistributedLock(key = "upgradeDevice")
+     void notifyDevice2Upgrade(String devUpInfos) {
         JsonArray devInfos = gson.fromJson(devUpInfos, JsonArray.class);
         devInfos.forEach(devUpInfo -> {
             if (deviceInfos.offer(devUpInfo.toString())) {
