@@ -1,8 +1,18 @@
-import time, hashlib, random, string, hmac, base64, sys, requests, json, ssl
+import base64
+import hashlib
+import hmac
+import json
+import random
+import ssl
+import string
+import sys
+import time
+from urllib import error
 from urllib import parse
 from urllib import request
-from urllib import error
+
 from loguru import logger
+
 
 class SDUtil():
     @staticmethod

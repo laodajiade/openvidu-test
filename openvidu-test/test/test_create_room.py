@@ -66,7 +66,7 @@ class TestCreateRoom(test.MyTestCase):
         room_id = result[1]['roomId']
         time.sleep(120)
         result = client.joinRoom(room_id)
-        self.assertNotEqual(result[0], 0, '入会应该失败，因为会议不存在')
+        self.assertEqual(result[0], 13001, '入会应该失败，因为会议不存在')
 
     def a_test_create_same_room_current(self):
         """ 并发创建相同的会议
@@ -285,6 +285,25 @@ class TestCreateRoom(test.MyTestCase):
         part_client = self.loginAndAccessIn2(self.users[2])
         result = part_client.joinRoom(room_id)
         self.assertNotEqual(result[0], 0, '会议被关闭了')
+
+    def test_create_room_by_emoji(self):
+        """ 创建会议使用emoji表情
+        描述：创建会议使用emoji表情，数据库写入失败后，内存中产生脏数据
+        测试目的：在创建会议失败后，及时释放资源、清理数据
+        测试过程: 1、创建会议，desc使用emoji表情。
+               2、创建会议应失败，
+               3、重新创建会议，不使用emoji
+        结果期望：第三步应成功
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client = self.loginAndAccessIn2(self.users[0])
+        try:
+            result = moderator_client.createRoom(moderator_client.uuid, '失败的会议😀', room_id_type='personal')
+            self.assertNotEqual(result[0], 0, '创建会议应该失败')
+            result = moderator_client.createRoom(moderator_client.uuid, '成功会议', room_id_type='personal')
+            self.assertEqual(result[0], 0, '创建会议应该失败')
+        finally:
+            moderator_client.close_room(moderator_client.uuid)
 
 
 if __name__ == '__main__':

@@ -8,6 +8,7 @@ import io.openvidu.server.rpc.RpcConnection;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author geedow
@@ -114,6 +115,8 @@ public interface CacheManage {
     boolean checkDuplicationSendPhone(String phone, String usage);
 
     void roomLease(String sessionId, String ruid);
+
+    void roomLease(String sessionId, String ruid, long timeout, TimeUnit timeUnit);
 
     boolean checkRoomLease(String sessionId, String ruid);
 

@@ -384,7 +384,6 @@ public class KurentoSessionManager extends SessionManager {
 //			if (session.isClosing()) {
 //				closeSession(sessionId, EndReason.lastParticipantLeft);
 //			}
-        UseTime.point("ip6");
         return sessionClosedByLastParticipant;
         //}
 

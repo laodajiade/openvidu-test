@@ -1,12 +1,14 @@
 import json
+import random
+import ssl
+import threading
+import time
+
 import websocket
 from loguru import logger
-import time
+
 from common.sd_utils import SDHTTPClient
 from common.sd_utils import SDUtil
-import threading
-import ssl
-import random
 
 try:
     import thread
@@ -52,6 +54,10 @@ class SdClient:
         self.login()
         return self.__accessIn(**kwargs)
 
+    def loginHDCAndAccessIn(self, **kwargs):
+        self.loginHDC()
+        return self.__accessIn(**kwargs)
+
     def login(self):
         try:
             uuid, token = self.__getToken(self.account, self.password)
@@ -75,6 +81,31 @@ class SdClient:
 
             self.signalAddr += "/openvidu"
             logger.info('{} signalAddr:{}', uuid, self.signalAddr)
+        except Exception as e:
+            logger.error(e)
+        return self.uuid
+
+    def loginHDC(self):
+        try:
+            uuid, token = self.__getToken(self.account, self.password)
+            if token == '':
+                logger.error('getToken failed. account:' + self.account + ' password:' + self.password)
+                return None
+            self.uuid = uuid
+            self.token = token
+            self.__src_uuid = self.uuid
+            # uuid, userId = self.__userLogin(uuid, token)
+            # if uuid == '':
+            #     logger.error('userLogin failed.')
+            #     return None
+            # self.userId = userId
+
+            self.signalAddr = self.__getSignalAddrList(uuid, token)
+            if self.signalAddr == '':
+                logger.error('getSignalAddr failed.')
+                return None
+
+            self.signalAddr += "/openvidu"
         except Exception as e:
             logger.error(e)
         return self.uuid
@@ -356,6 +387,18 @@ class SdClient:
             logger.error('getToken failed.' + json.dumps(res, sort_keys=True, indent=4, ensure_ascii=False))
         return uuid, token
 
+    def __getAccount(self, account, serial_number):
+        httpClient = SDHTTPClient(self.server_url, account, serial_number)
+        ret, res = httpClient.request(self.getTokenURL, '')
+        uuid = ''
+        token = ''
+        if ret and res['errorCode'] == 0:
+            uuid = res['result']['account']
+            token = res['result']['token']
+        else:
+            logger.error('getToken failed.' + json.dumps(res, sort_keys=True, indent=4, ensure_ascii=False))
+        return uuid, token
+
 
 class WsClient:
 
@@ -404,7 +447,7 @@ class WsClient:
                 content['params'] = {}
                 json_params = json.dumps(content)
                 self.ws.send(json_params)
-                logger.info(self.uuid + " request " + str(json_params))
+                # logger.info(self.uuid + " request " + str(json_params))
             except Exception as e:
                 if "is already closed" in str(e):
                     break

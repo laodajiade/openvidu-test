@@ -32,6 +32,7 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
+import org.apache.commons.lang.StringUtils;
 import org.kurento.client.EventListener;
 import org.kurento.client.Properties;
 import org.kurento.client.*;
@@ -88,12 +89,13 @@ public class KurentoSession extends Session {
             try {
                 kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
                 TimeUnit.SECONDS.sleep(20);
-                if (!ruid.equals("appt-") && getPartSize() == 0) {
+                if (!StringUtils.startsWith(ruid, "appt-") && getPartSize() == 0) {
                     idleCnt = getPartSize() == 0 ? ++idleCnt : 0;
                 }
                 if (idleCnt > 3) {
                     log.info("room lease thead interrupt,roomId={}, ruid={}", sessionId, ruid);
-                    close(EndReason.sessionClosedByServer);
+                    closing = true;
+                    kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid, 20, TimeUnit.MILLISECONDS);
                     return;
                 }
             } catch (InterruptedException e) {

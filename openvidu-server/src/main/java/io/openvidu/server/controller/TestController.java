@@ -23,7 +23,7 @@ public class TestController {
     @Autowired
     CorporationMapper corporationMapper;
 
-    private static final String robot = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=80356c9d-697c-4787-aafa-f0f2c6061d13";
+    private static final String robot = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=121d88f1-b1b7-413e-a4c6-a3b9a0bec8e1";
     private static final String robot_dev = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8e67beda-cba1-475a-bdb1-541016b34a01";
 
     @Autowired

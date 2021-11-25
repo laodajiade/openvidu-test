@@ -24,13 +24,15 @@ def all_test(path):
             description='信令2.0自测冒烟用例'
         )
         re = runner.run(suite)
-        logger.info(re.success_count)
-        logger.info(re.failure_count)
-        logger.info(re.error_count)
-        logger.info(re.skip_count)
-    t2 = time.time()
-    logger.info("******************** all_test ********************")
-    logger.info(f'ran in {round(t2 - t1, 2)}s')
+        logger.info("#################### test_result ####################")
+        logger.info('success_count: {}', re.success_count)
+        logger.info('failure_count: {}', re.failure_count)
+        logger.info('error_count: {}', re.error_count)
+        logger.info('skip_count: {}', re.skip_count)
+        logger.info("#################### test_result ####################")
+        t2 = time.time()
+        logger.info("******************** all_test ********************")
+        logger.info(f'ran in {round(t2 - t1, 2)}s')
 
 
 def main():
