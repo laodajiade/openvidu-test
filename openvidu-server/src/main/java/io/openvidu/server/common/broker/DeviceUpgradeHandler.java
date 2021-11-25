@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -53,6 +54,8 @@ public class DeviceUpgradeHandler {
 
 
 
+
+    @DistributedLock(key = "deviceUpgrade")
     static void notifyDevice2Upgrade(String devUpInfos) {
         JsonArray devInfos = gson.fromJson(devUpInfos, JsonArray.class);
         devInfos.forEach(devUpInfo -> {
