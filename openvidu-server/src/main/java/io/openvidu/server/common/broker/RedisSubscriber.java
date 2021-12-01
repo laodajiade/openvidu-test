@@ -23,6 +23,9 @@ public class RedisSubscriber {
     private SessionManager sessionManager;
 
     @Autowired
+    NotifyDeviceInfoUpdateHandler deviceInfoUpdateHandler;
+
+    @Autowired
     private DeviceUpgradeHandler deviceUpgradeHandler;
 
     public void receiveMessage(String message, String channel) {
@@ -41,7 +44,7 @@ public class RedisSubscriber {
                 notifyDeviceUploadLogHandler.notifyDev2UploadLog(message);
                 break;
             case BrokerChannelConstans.DEVICE_NAME_UPDATE_CHANNEL:
-                NotifyDeviceInfoUpdateHandler.notifyDeviceInfoUpdate(message);
+                deviceInfoUpdateHandler.notifyDeviceInfoUpdate(message);
                 break;
             case BrokerChannelConstans.TOPIC_ROOM_RECORDER_ERROR:
                 sessionManager.handleRecordErrorEvent(message);

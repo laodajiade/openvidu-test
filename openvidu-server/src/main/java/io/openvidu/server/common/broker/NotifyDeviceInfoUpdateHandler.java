@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.enums.AccessTypeEnum;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -39,10 +40,12 @@ public class NotifyDeviceInfoUpdateHandler {
     }
 
 
-    static void notifyDeviceInfoUpdate(String devUpInfos) {
+    @DistributedLock(key = "deviceNameUpdate")
+     void notifyDeviceInfoUpdate(String devUpInfos) {
         log.info("device update info:{} is offering in the queue.", devUpInfos);
         deviceInfos.offer(devUpInfos);
     }
+
 
     private class UpdateThread implements Runnable {
         @Override

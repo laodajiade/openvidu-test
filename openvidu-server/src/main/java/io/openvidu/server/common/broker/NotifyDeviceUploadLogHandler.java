@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
+import io.openvidu.server.annotation.DistributedLock;
 import io.openvidu.server.common.cache.CacheManage;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
@@ -37,6 +38,7 @@ public class NotifyDeviceUploadLogHandler {
     @Value("${device.upload.url}")
     private String devUploadUrl;
 
+    @DistributedLock(key = "deviceUploadLog")
     void notifyDev2UploadLog(String message) {
         JsonObject accountObj = gson.fromJson(message, JsonObject.class);
         String uuid;

@@ -270,6 +270,7 @@ public class ProtocolElements {
 
     public static final String RAISE_HAND_METHOD = "raiseHand";
     public static final String RAISE_HAND_ROOM_ID_PARAM = "roomId";
+    public static final String RAISE_HAND_USER_NAME_PARAM = "username";
     public static final String RAISE_HAND_SOURCE_ID_PARAM = "sourceId";
 
     public static final String PUT_DOWN_HAND_METHOD = "putDownHand";

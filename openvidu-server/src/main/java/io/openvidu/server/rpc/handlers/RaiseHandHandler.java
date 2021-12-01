@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.openvidu.client.internal.ProtocolElements;
 import io.openvidu.server.common.enums.ErrorCodeEnum;
 import io.openvidu.server.common.enums.ParticipantHandStatus;
-import io.openvidu.server.common.enums.StreamType;
 import io.openvidu.server.common.enums.TerminalTypeEnum;
 import io.openvidu.server.core.Participant;
 import io.openvidu.server.rpc.RpcAbstractHandler;
@@ -52,9 +51,9 @@ public class RaiseHandHandler extends RpcAbstractHandler {
         List<String> notifyClientPrivateIds = sessionManager.getParticipants(sessionId)
                 .stream().map(Participant::getParticipantPrivateId).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(notifyClientPrivateIds)) {
-
             JsonObject params = new JsonObject();
             params.addProperty(ProtocolElements.RAISE_HAND_ROOM_ID_PARAM, sessionId);
+            params.addProperty(ProtocolElements.RAISE_HAND_USER_NAME_PARAM, targetParticipant.getUsername());
             params.addProperty(ProtocolElements.RAISE_HAND_SOURCE_ID_PARAM, sourceId);
             notifyClientPrivateIds.forEach(client ->
                     this.notificationService.sendNotification(client, ProtocolElements.RAISE_HAND_METHOD, params));
