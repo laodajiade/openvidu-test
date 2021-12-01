@@ -10,6 +10,8 @@ import io.openvidu.server.rpc.RpcConnection;
 import org.kurento.jsonrpc.message.Request;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 /**
  * @author chosongi
  * @date 2020/8/6 17:58
@@ -22,7 +24,7 @@ public class SwitchVoiceModeHandler extends RpcAbstractHandler {
         Participant participant;
         participant = sanityCheckOfSession(rpcConnection);
 
-        if (participant.getVoiceMode().equals(operation)) {
+        if (Objects.isNull(operation) || participant.getVoiceMode().equals(operation)) {
             notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                     null, ErrorCodeEnum.REQUEST_PARAMS_ERROR);
             return;

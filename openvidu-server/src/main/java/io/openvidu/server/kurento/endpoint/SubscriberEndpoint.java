@@ -178,26 +178,49 @@ public class SubscriberEndpoint extends MediaEndpoint {
     }
 
     public synchronized void controlMediaTypeLink(MediaType mediaType, VoiceMode voiceMode) {
-        if (publisher == null && this.getMixHubPort() != null) {//MCU
-            switch (voiceMode) {
-                case on:
-                    this.getMixHubPort().disconnect(this.getEndpoint(), mediaType);
-                    break;
-                case off:
-                    this.getMixHubPort().connect(this.getEndpoint(), mediaType);
-                    break;
+        try {
+            if (publisher == null && this.getMixHubPort() != null) {//MCU
+                log.info("MCU  voiceMode {}",voiceMode.name());
+                switch (voiceMode) {
+                    case on:
+                        this.getMixHubPort().disconnect(this.getEndpoint(), mediaType);
+                        break;
+                    case off:
+                        this.getMixHubPort().connect(this.getEndpoint(), mediaType);
+                        break;
+                }
+            } else {//SFU
+                log.info("SFU  voiceMode {}",voiceMode.name());
+                switch (voiceMode) {
+                    case on:
+                        publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
+                        break;
+                    case off:
+                        publisher.connect(this.getEndpoint(), mediaType);
+                        break;
+                }
             }
-        } else {//SFU
-            switch (voiceMode) {
-                case on:
-                    publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
-                    break;
-                case off:
-                    publisher.connect(this.getEndpoint(), mediaType);
-                    break;
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("controlMediaTypeLink Error mediaType :{}  voiceMode :{}",mediaType.name(),voiceMode.name());
         }
 
 
+    }
+
+    public static void main(String[] args) {
+        String aa= null;
+        VoiceMode voiceMode = VoiceMode.valueOf("off");
+//        VoiceMode voiceMode =VoiceMode.on;
+        switch (voiceMode){
+            case on:
+                System.out.println("aa");
+                break;
+            case off:
+                System.out.println("bb");
+                break;
+            default:
+                System.out.println("ddd");
+        }
     }
 }
