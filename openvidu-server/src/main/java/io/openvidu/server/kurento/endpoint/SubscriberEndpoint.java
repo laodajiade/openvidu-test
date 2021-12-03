@@ -208,19 +208,4 @@ public class SubscriberEndpoint extends MediaEndpoint {
 
     }
 
-    public static void main(String[] args) {
-        String aa= null;
-        VoiceMode voiceMode = VoiceMode.valueOf("off");
-//        VoiceMode voiceMode =VoiceMode.on;
-        switch (voiceMode){
-            case on:
-                System.out.println("aa");
-                break;
-            case off:
-                System.out.println("bb");
-                break;
-            default:
-                System.out.println("ddd");
-        }
-    }
 }
