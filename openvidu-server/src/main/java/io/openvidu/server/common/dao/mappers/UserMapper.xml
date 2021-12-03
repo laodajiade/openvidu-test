@@ -307,6 +307,7 @@
 
   <select id="selectAllUserList" parameterType="java.lang.Long" resultType="io.openvidu.server.common.pojo.AllUserInfo">
     SELECT
+      u.id as uid,
       v.device_name userName,
       u.uuid,
       u.type,
@@ -333,6 +334,7 @@
     </if>
     union
     select
+    su.id as uid,
     su.username userName,
     su.uuid,
     su.type,
@@ -357,7 +359,7 @@
         #{item,jdbcType=BIGINT}
       </foreach>
     </if>
-    order by type asc,sort_number desc
+    order by type asc,sort_number desc, uid asc
   </select>
 
   <select id="selectAllUserByUuidList" parameterType="java.util.List" resultType="io.openvidu.server.common.pojo.AllUserInfo">
