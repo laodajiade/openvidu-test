@@ -54,7 +54,7 @@ public interface FixedRoomMapper {
     @ResultMap("BaseResultMap")
     FixedRoom selectByShortId(@Param("shortId") String shortId, @Param("corpId")long corpId);
 
-    @Select("select count(*) from sd_fixed_room where status != 0 and  corp_id = #{corpId}")
+    @Select("select count(*) from sd_fixed_room where status != 0 and deleted=0 and corp_id = #{corpId}")
     int countActivationRoom(long corpId);
 
     /**
