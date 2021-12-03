@@ -7,7 +7,6 @@ import io.openvidu.server.common.enums.IMModeEnum;
 import io.openvidu.server.core.Notification;
 import io.openvidu.server.core.RespResult;
 import io.openvidu.server.core.Session;
-import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.jsonrpc.message.Request;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service(ProtocolElements.SET_IM_MODE_METHOD)
-public class SetImModeHandler extends ExRpcAbstractHandler<JsonObject> {
+public class SetImModeHandler extends AbstractIMHandler<JsonObject> {
 
     @Override
     public RespResult<?> doProcess(RpcConnection rpcConnection, Request<JsonObject> request, JsonObject params) {

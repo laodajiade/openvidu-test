@@ -15,7 +15,6 @@ import io.openvidu.server.domain.SendMsgNotify;
 import io.openvidu.server.domain.resp.SendMsgResp;
 import io.openvidu.server.domain.vo.SendMsgVO;
 import io.openvidu.server.exception.BizException;
-import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,7 @@ import java.util.*;
 
 @Slf4j
 @Service(ProtocolElements.SEND_MSG_METHOD)
-public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
+public class SendMsgHandler extends AbstractIMHandler<SendMsgVO> {
 
     @Autowired
     private ImMsgMapper imMsgMapper;
@@ -159,11 +158,11 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
         imMsg.setOperate(params.getOperate());
         imMsg.setSenderUserId(rpcConnection.getUserId());
         imMsg.setSenderUuid(rpcConnection.getUserUuid());
-        imMsg.setSenderUsername(rpcConnection.getUsername());
+        imMsg.setSenderUsername(getRecentUsername(rpcConnection.getUserUuid(), rpcConnection.getUsername()));
         imMsg.setContent(params.getContent());
         imMsg.setExt(params.getExt());
 
-        Participant sendParticipant = session.getParticipantByUUID(rpcConnection.getUserUuid()).orElse(null);
+        Participant sendParticipant = sanityCheckOfSession(session.getSessionId(), rpcConnection.getUserUuid());
         imMsg.setSenderTerminalType(sendParticipant.getTerminalType().name());
         if (params.getOperate() == 0) {
             BindValidate.notEmpty(params::getReciverAccount);
@@ -175,7 +174,7 @@ public class SendMsgHandler extends ExRpcAbstractHandler<SendMsgVO> {
             }
             imMsg.setRevicerUserId(targetParticipant.getUserId());
             imMsg.setRevicerUuid(targetParticipant.getUuid());
-            imMsg.setRevicerUsername(targetParticipant.getUsername());
+            imMsg.setRevicerUsername(getRecentUsername(targetParticipant.getUuid(), targetParticipant.getUsername()));
             imMsg.setRevicerTerminalType(targetParticipant.getTerminalType().name());
         }
         imMsgMapper.insertSelective(imMsg);

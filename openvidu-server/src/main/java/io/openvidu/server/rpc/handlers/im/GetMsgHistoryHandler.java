@@ -10,7 +10,6 @@ import io.openvidu.server.core.RespResult;
 import io.openvidu.server.domain.ImUser;
 import io.openvidu.server.domain.SendMsgNotify;
 import io.openvidu.server.domain.vo.GetMsgHistoryVO;
-import io.openvidu.server.rpc.ExRpcAbstractHandler;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.utils.BindValidate;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service(ProtocolElements.GET_MSG_HISTORY_METHOD)
-public class GetMsgHistoryHandler extends ExRpcAbstractHandler<GetMsgHistoryVO> {
+public class GetMsgHistoryHandler extends AbstractIMHandler<GetMsgHistoryVO> {
 
     @Autowired
     private ImMsgMapper imMsgMapper;
@@ -38,7 +37,7 @@ public class GetMsgHistoryHandler extends ExRpcAbstractHandler<GetMsgHistoryVO> 
         Page<Object> page = PageHelper.startPage(1, params.getLimit());
         Date date = params.getTime() == 0 ? null : new Date(params.getTime());
 
-        List<ImMsg> imgHistory = imMsgMapper.getImgHistory(params.getRuid(), rpcConnection.getUserId(), date, params.getId() ,params.getReverse(),params.getKeyword());
+        List<ImMsg> imgHistory = imMsgMapper.getImgHistory(params.getRuid(), rpcConnection.getUserId(), date, params.getId(), params.getReverse(), params.getKeyword());
 
         List<SendMsgNotify> resultList = imgHistory.stream().map(imMsg -> {
             SendMsgNotify sendMsgNotify = new SendMsgNotify();
@@ -46,12 +45,12 @@ public class GetMsgHistoryHandler extends ExRpcAbstractHandler<GetMsgHistoryVO> 
             sendMsgNotify.setMsgId(imMsg.getId());
             sendMsgNotify.setResendFlag(0);
             sendMsgNotify.setSenderAccount(imMsg.getSenderUuid());
-            sendMsgNotify.setSender(new ImUser(imMsg.getSenderUuid(), imMsg.getSenderUsername(), imMsg.getSenderTerminalType()));
+            sendMsgNotify.setSender(new ImUser(imMsg.getSenderUuid(), getRecentUsername(imMsg.getRevicerUuid(), imMsg.getRevicerUsername()), imMsg.getSenderTerminalType()));
             sendMsgNotify.setTimestamp(imMsg.getTimestamp().getTime());
 
             if (sendMsgNotify.getOperate() == 0) {
                 sendMsgNotify.setRecivers(Collections.singletonList(
-                        new ImUser(imMsg.getRevicerUuid(), imMsg.getRevicerUsername(), imMsg.getRevicerTerminalType())));
+                        new ImUser(imMsg.getRevicerUuid(), getRecentUsername(imMsg.getRevicerUuid(), imMsg.getRevicerUsername()), imMsg.getRevicerTerminalType())));
             }
 
             sendMsgNotify.setClientMsgId(null);
