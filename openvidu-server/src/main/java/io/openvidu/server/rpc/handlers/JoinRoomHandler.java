@@ -28,6 +28,9 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static io.openvidu.server.common.enums.EvictParticipantStrategy.LAST_PARTICIPANT_LEFT;
+import static java.util.Collections.singletonList;
+
 /**
  * @author geedow
  * @date 2019/11/5 17:10
@@ -252,7 +255,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                     if (!partInfo.isEmpty() && Objects.nonNull(roomId) && !sessionId.equals(roomId)) {
                         log.info("参会者加入不同的会议室，踢出上个会议室,{},{},{}", roomId, rpcConnection.getUserUuid(), sessionId);
-                        sessionManager.evictParticipantByUUIDEx(roomId, rpcConnection.getUserUuid(), Collections.emptyList(), EndReason.reconnect);
+                        sessionManager.evictParticipantByUUIDEx(roomId, rpcConnection.getUserUuid(), Collections.emptyList(), EndReason.participantReplaceLeft);
                     }
                 }
 
