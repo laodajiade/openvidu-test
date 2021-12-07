@@ -40,6 +40,7 @@ import io.openvidu.server.kurento.kms.KmsManager;
 import io.openvidu.server.recording.Recording;
 import io.openvidu.server.rpc.RpcConnection;
 import io.openvidu.server.rpc.RpcNotificationService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,6 +177,15 @@ public class SessionEventsHandler {
             roomInfoJson.add("layoutInfo", layoutInfoObj);
         }
         result.add("roomInfo", roomInfoJson);
+
+        //participant properties
+        if (StringUtils.isNotEmpty(participant.getUsedRTCMode())) {
+            JsonObject partInfo = new JsonObject();
+            partInfo.addProperty("usedRTCMode",participant.getUsedRTCMode());
+            result.add("partInfo", partInfo);
+        }
+
+
         rpcNotificationService.sendResponse(participant.getParticipantPrivateId(), transactionId, result);
 
         new Thread(() -> deliveryOnParticipantJoined(session)).start();

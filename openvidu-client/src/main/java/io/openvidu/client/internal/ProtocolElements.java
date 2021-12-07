@@ -863,6 +863,8 @@ public class ProtocolElements {
     public  static  final String  GET_FIXED_CONFERENCE_SCHEDULE_METHOD = "getFixedConferenceSchedule";
     public  static  final String  GET_FIXED_CONFERENCE_SCHEDULE_ROOMID_PARAM = "roomId";
 
+    public static final String UPDATE_PARTICIPANT_PROPERTIES_METHOD = "updateParticipantProperties";
+
 
     public static final Set<String> FILTERS = new HashSet<>(Arrays.asList(ACCESS_IN_METHOD, CONFIRM_APPLY_FOR_LOGIN_METHOD,
             GET_NOT_FINISHED_ROOM_METHOD, CREATE_ROOM_METHOD, JOINROOM_METHOD, ACCESS_OUT_METHOD,

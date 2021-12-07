@@ -207,6 +207,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 // remove previous participant if reconnect
                 int preOrder = 0;
+                String usedRTCMode = null;
                 if (AccessTypeEnum.terminal.equals(rpcConnection.getAccessType())) {
                     Map partInfo = cacheManage.getPartInfo(rpcConnection.getUserUuid());
                     String roomId = Objects.isNull(!partInfo.isEmpty() ? partInfo.get("roomId") : null) ? null : partInfo.get("roomId").toString();
@@ -248,6 +249,9 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                         }
                         if (Objects.nonNull(partInfo.get("order"))) {
                             preOrder = Integer.parseInt(partInfo.get("order").toString());
+                        }
+                        if (Objects.nonNull(partInfo.get("usedRTCMode"))) {
+                            usedRTCMode = partInfo.get("usedRTCMode").toString();
                         }
 
                         sessionManager.evictParticipantByUUID(roomId, rpcConnection.getUserUuid(), Collections.emptyList(), EndReason.reconnect);
@@ -350,6 +354,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
                 participant.setSpeakerStatus(StringUtils.isEmpty(speakerStatus) ? ParticipantSpeakerStatus.on : ParticipantSpeakerStatus.valueOf(speakerStatus));
                 participant.changeVoiceMode(voiceMode);
                 participant.setOrder(preOrder);
+                participant.setUsedRTCMode(usedRTCMode);
                 if (StringUtils.isEmpty(serialNumber)) {
                     if (UserType.register.equals(participant.getUserType()) && TerminalTypeEnum.S != rpcConnection.getTerminalType()) {
                         User user = userMapper.selectByPrimaryKey(userId);

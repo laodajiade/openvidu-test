@@ -64,6 +64,29 @@ class TestReconnect(test.MyTestCase):
                     break
             self.assertTrue(flag, ' order ' + str(i) + ' 不存在 ' + str(notify))
 
+    def test_reconnect_rtc_mode(self):
+        """ 重连后将客户端上报的rtc模式返回给客户端
+        测试目的：重连后将客户端上报的rtc模式返回给客户端
+        测试过程: 1、主持人入会创建会议
+                2、第二人加入会议
+                3、上报rtcMode
+                4、重连获取rtcMode
+        结果期望：重连获取rtcMode和上报的一样
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])
+        part_client = self.loginAndAccessIn2(self.users[2], udid='123456')
+        part_client.joinRoom(room_id)
+
+        logger.info('上报usedRTCMode')
+        result = part_client.request('updateParticipantProperties', {'usedRTCMode': 'MCU'})
+        self.assertEqual(result[0], 0)
+
+        logger.info('重连入会')
+        result = part_client.joinRoom(room_id, isReconnected=True)
+        self.assertEqual(result[0], 0)
+        self.assertEqual(result[1]['partInfo']['usedRTCMode'], 'MCU')
+
 
 if __name__ == '__main__':
     unittest2.main()

@@ -106,6 +106,10 @@ public class Participant {
     @Setter
     private ApplicationContext applicationContext;
 
+    @Getter
+    @Setter
+    private String usedRTCMode;
+
     private final String METADATA_SEPARATOR = "%/%";
     protected static final Gson gson = new GsonBuilder().create();
 
