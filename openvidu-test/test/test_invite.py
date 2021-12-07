@@ -125,6 +125,28 @@ class TestInvite(test.MyTestCase):
         result = moderator_client.request("getInviteInfo", {"roomId": room_id})
         self.assertEqual(result[0], 0)
 
+    def test_get_invite_info_by_reconnect(self):
+        """ 测试重连后从外部获取邀请信息
+        描述：测试获取邀请信息
+        测试目的：测试主持人身份可以获取邀请信息
+        测试过程: 1、主持人创建会议入会
+                2、其他人入会
+                3、主持人重连并getInviteInfo
+                4、分布式下可能存在问题，循环20次。
+        结果期望：
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator_client = self.loginAndAccessIn2(self.users[0], udid='123456')
+        room_id = self.createRandomRoom(moderator_client)[1]['roomId']
+        result = self.joinRoom(moderator_client, room_id)
+
+        part_client, result = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        logger.info('主持人重连并getInviteInfo')
+        for i in range(0, 20):
+            moderator_client = self.loginAndAccessIn2(self.users[0], udid='123456')
+            result = moderator_client.request("getInviteInfo", {"roomId": room_id})
+            self.assertEqual(result[0], 0)
+
 
 if __name__ == '__main__':
     unittest2.main()
