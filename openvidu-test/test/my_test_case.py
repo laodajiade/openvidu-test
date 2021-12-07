@@ -125,18 +125,22 @@ class MyTestCase(unittest.TestCase):
         self.joinRoom(moderator_client, room_id)
         return moderator_client, room_id
 
-    def loginAndAccessInAndCreateAndJoin(self, user):
+    def loginAndAccessInAndCreateAndJoin(self, user, roomIdType='random'):
         moderator = user
         moderator_client = self.loginAndAccessIn(moderator['phone'], moderator['pwd'])
-        re = self.createRandomRoom(moderator_client)
-        room_id = re[1]['roomId']
+        if roomIdType == 'random':
+            result = self.createRandomRoom(moderator_client)
+            room_id = result[1]['roomId']
+        else:
+            result = self.createPersonalRoom(moderator_client)
+            room_id = result[1]['roomId']
         self.joinRoom(moderator_client, room_id)
         return moderator_client, room_id
 
     def loginAndAccessInAndJoin(self, user, room_id):
         client = self.loginAndAccessIn(user['phone'], user['pwd'])
-        re = self.joinRoom(client, room_id)
-        return client, re
+        result = self.joinRoom(client, room_id)
+        return client, result
 
     def search_client(self, clients, uuid):
         for c in clients:

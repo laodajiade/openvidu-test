@@ -125,6 +125,52 @@ class TestRecord(test.MyTestCase):
         self.assertEqual(re[0], 0, ' 关闭录制失败 ' + str(re))
         time.sleep(1)
 
+    @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时超过60s的用例')
+    def test_record_switch_voice_mode_on(self):
+        """ 语音模式下的录制
+        测试目的：测试语音模式下，切被点名的录制布局
+        测试过程: 1、主持人入会创建会议
+                2、加入1人
+                3、主持人开始录制
+                4、参会者开启语音模式
+                5、主持人点名发言
+                6、主持人取消发言
+        结果期望：发言标签正常被替换 """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        # 主持人入会
+        #moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[10], roomIdType='personal')
+
+        moderator_client, room_id = self.HDCLoginAndAccessInAndCreateAndJoin(self.HDCs[0])
+
+        part_client, result = self.loginAndAccessInAndJoin(self.users[1], room_id)
+        time.sleep(1)
+        self.publish_video(moderator_client, 'MAJOR')
+        logger.info('开启录制')
+        result = moderator_client.request('startConferenceRecord', {'roomId': room_id})
+        self.assertEqual(result[0], 0, ' 开启录制失败 ' + str(result))
+        time.sleep(5)
+
+        logger.info('参会者切换语音模式')
+        result = part_client.request('switchVoiceMode', {'operation': 'on'})
+        self.assertEqual(result[0], 0)
+        time.sleep(5)
+
+        logger.info('点名发言')
+        moderator_client.ms = MeetingService(moderator_client, room_id)
+        result = moderator_client.ms.set_roll_call(part_client.uuid)
+        self.assertEqual(result[0], 0, ' 点名发言失败 ' + str(result))
+        time.sleep(5)
+
+        logger.info('取消点名发言')
+        result = moderator_client.ms.end_roll_call(part_client.uuid)
+        self.assertEqual(result[0], 0, ' 取消点名发言失败 ' + str(result))
+        time.sleep(5)
+
+        logger.info('参会者取消语音模式')
+        result = part_client.request('switchVoiceMode', {'operation': 'off'})
+        self.assertEqual(result[0], 0)
+        time.sleep(5)
+
 
 if __name__ == '__main__':
     unittest2.main()

@@ -180,7 +180,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
     public synchronized void controlMediaTypeLink(MediaType mediaType, VoiceMode voiceMode) {
         try {
             if (publisher == null && this.getMixHubPort() != null) {//MCU
-                log.info("MCU  voiceMode {}",voiceMode.name());
+                log.info("MCU  voiceMode {}", voiceMode.name());
                 switch (voiceMode) {
                     case on:
                         this.getMixHubPort().disconnect(this.getEndpoint(), mediaType);
@@ -190,7 +190,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
                         break;
                 }
             } else {//SFU
-                log.info("SFU  voiceMode {}",voiceMode.name());
+                log.info("SFU  voiceMode {}", voiceMode.name());
                 switch (voiceMode) {
                     case on:
                         publisher.sfuDisconnectFrom(this.getEndpoint(), mediaType);
@@ -201,8 +201,7 @@ public class SubscriberEndpoint extends MediaEndpoint {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("controlMediaTypeLink Error mediaType :{}  voiceMode :{}",mediaType.name(),voiceMode.name());
+            log.error("controlMediaTypeLink Error mediaType :{}  voiceMode :{}", mediaType.name(), voiceMode.name(), e);
         }
 
 
