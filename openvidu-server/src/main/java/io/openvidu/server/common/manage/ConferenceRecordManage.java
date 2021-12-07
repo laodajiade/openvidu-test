@@ -53,4 +53,11 @@ public interface ConferenceRecordManage {
      * 查询企业的录制路数
      */
     int getRecordNumByProject(String project);
+
+    /**
+     * 检查录制情况
+     * @param roomId
+     * @return 录制则true
+     */
+    boolean checkRecordStatus(String roomId);
 }

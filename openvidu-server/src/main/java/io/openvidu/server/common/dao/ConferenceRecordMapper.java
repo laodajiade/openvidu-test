@@ -44,4 +44,7 @@ public interface ConferenceRecordMapper {
 
     @Select("select count(*) from sd_conference_record a ,sd_conference b where a.ruid= b.ruid and a.status != 2 and b.status != 2 and b.project=#{project}")
     int countRecordNumByProject(@Param("project") String project);
+
+    @Select("select count(*) from sd_conference_record a ,sd_conference b where a.ruid= b.ruid and a.status != 2 and b.status != 2 and a.room_id=#{roomId}")
+    int countRecording(@Param("roomId") String roomId);
 }

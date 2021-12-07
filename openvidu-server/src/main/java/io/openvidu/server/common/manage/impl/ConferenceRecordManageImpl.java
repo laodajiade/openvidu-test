@@ -297,4 +297,9 @@ public class ConferenceRecordManageImpl implements ConferenceRecordManage {
     public int getRecordNumByProject(String project) {
         return conferenceRecordMapper.countRecordNumByProject(project);
     }
+
+    @Override
+    public boolean checkRecordStatus(String roomId) {
+        return conferenceRecordMapper.countRecording(roomId) > 0;
+    }
 }
