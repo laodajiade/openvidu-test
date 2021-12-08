@@ -170,6 +170,7 @@ class TestRecord(test.MyTestCase):
         result = part_client.request('switchVoiceMode', {'operation': 'off'})
         self.assertEqual(result[0], 0)
         time.sleep(5)
+        moderator_client.close_room(room_id)
 
 
 if __name__ == '__main__':
