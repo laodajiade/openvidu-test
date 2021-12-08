@@ -70,12 +70,6 @@ public class KurentoSession extends Session {
 
     private RecorderService recorderService;
 
-    // delete 2.0
-    // private Composite sipComposite;
-
-    private Set<String> sipStreamIdSet = new HashSet<>();
-    private final ThreadPoolExecutor sipCompositeThreadPoolExes;
-
     private final Object pipelineCreateLock = new Object();
     private final Object pipelineReleaseLock = new Object();
     private final Object joinOrLeaveLock = new Object();
@@ -118,9 +112,6 @@ public class KurentoSession extends Session {
         log.info("New SESSION instance with id '{}'", sessionId);
         kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
         this.leaseThread.start();
-        sipCompositeThreadPoolExes = new ThreadPoolExecutor(0, 1, 10L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(1), new ThreadFactoryBuilder().setNameFormat("sip-composite-thread-" + sessionId + "-%d").setDaemon(true).build()
-                , new ThreadPoolExecutor.DiscardPolicy());
     }
 
     @Override
