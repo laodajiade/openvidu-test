@@ -310,7 +310,7 @@ public class RecorderService {
             jsonObject.addProperty("order", order);
             jsonObject.addProperty("uuid", part.getUuid());
             jsonObject.addProperty("streamType", streamType.name());
-            jsonObject.addProperty("osd", part.getUsername());
+            jsonObject.addProperty("osd", part.getUsername() == null ? "游客" : part.getUsername());
             jsonObject.addProperty("micStatus", part.getMicStatus() == ParticipantMicStatus.on);
             jsonObject.addProperty("videoStatus", part.getVideoStatus() == ParticipantVideoStatus.on);
             jsonObject.addProperty("voiceMode", part.getVoiceMode() == VoiceMode.on);

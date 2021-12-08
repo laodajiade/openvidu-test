@@ -25,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -180,6 +177,9 @@ public class AccessInHandler extends RpcAbstractHandler {
             rpcConnection.setUsername(!StringUtils.isEmpty(userInfo.get("username")) ? String.valueOf(userInfo.get("username")) : "用户");
         }
         if (UserType.tourist.equals(userType)) {
+            if (StringUtils.isEmpty(nickName)) {
+                nickName = "游客" + new Random(1000).nextInt();
+            }
             rpcConnection.setUsername(nickName);
         }
         rpcConnection.setProject(project);

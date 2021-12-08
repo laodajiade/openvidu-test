@@ -80,7 +80,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
         String micStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_MICSTATUS_PARAM);
         String videoStatus = getStringOptionalParam(request, ProtocolElements.JOINROOM_VIDEOSTATUS_PARAM);
         String nickName = getStringOptionalParam(request, ProtocolElements.JOINROOM_NICKNAME_PARAM);
-        String participantPrivatetId = rpcConnection.getParticipantPrivateId();
+        String participantPrivateId = rpcConnection.getParticipantPrivateId();
 
         ErrorCodeEnum errCode = ErrorCodeEnum.SUCCESS;
         VoiceMode voiceMode = VoiceMode.off;
@@ -330,10 +330,10 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
                 Participant participant;
                 if (generateRecorderParticipant) {
-                    participant = sessionManager.newRecorderParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata, role.name());
+                    participant = sessionManager.newRecorderParticipant(rpcConnection.getUserId(), sessionId, participantPrivateId, clientMetadata, role.name());
                 } else {
                     GeoLocation location = null;
-                    participant = sessionManager.newParticipant(rpcConnection.getUserId(), sessionId, participantPrivatetId, clientMetadata,
+                    participant = sessionManager.newParticipant(rpcConnection.getUserId(), sessionId, participantPrivateId, clientMetadata,
                             role.name(), location, platform, rpcConnection.getDeviceModel(), rpcConnection.getAbility(), rpcConnection.getFunctionality());
                 }
                 participant.setApplicationContext(applicationContext);
@@ -405,7 +405,7 @@ public class JoinRoomHandler extends RpcAbstractHandler {
 
             rpcConnection.setReconnected(false);
             if (!ErrorCodeEnum.SUCCESS.equals(errCode)) {
-                this.notificationService.sendErrorResponseWithDesc(participantPrivatetId, request.getId(),
+                this.notificationService.sendErrorResponseWithDesc(participantPrivateId, request.getId(),
                         null, errCode);
 
                 log.error("join room:{} failed. errCode:{} message:{}", sessionId, errCode.getCode(), errCode.getMessage());
