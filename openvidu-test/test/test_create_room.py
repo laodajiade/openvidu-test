@@ -64,7 +64,7 @@ class TestCreateRoom(test.MyTestCase):
         self.moderatorClient = client
         result = self.createRandomRoom(client)
         room_id = result[1]['roomId']
-        time.sleep(120)
+        time.sleep(80)
         result = client.joinRoom(room_id)
         self.assertEqual(result[0], 13001, '入会应该失败，因为会议不存在')
 
