@@ -64,7 +64,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
     private FixedRoomManagerMapper fixedRoomManagerMapper;
 
     @Autowired
-    CorpInfoService corpInfoService;
+    private CorpInfoService corpInfoService;
 
 
     private static final ReentrantLock GLOBAL_LOCK = new ReentrantLock();
@@ -102,6 +102,11 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                         null, ErrorCodeEnum.APPOINTMENT_CONFERENCE_HAS_FINISHED);
                 return;
             }
+            if (!Objects.equals(appt.getModeratorUuid(), rpcConnection.getUserUuid())) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.PERMISSION_LIMITED);
+                return;
+            }
             sessionId = appt.getRoomId();
             roomIdType = RoomIdTypeEnums.calculationRoomType(sessionId);
             moderatorUuid = appt.getModeratorUuid();
@@ -115,6 +120,11 @@ public class CreateRoomHandler extends RpcAbstractHandler {
             if (conference.getStatus() == ConferenceStatus.FINISHED.getStatus()) {
                 notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
                         null, ErrorCodeEnum.CONFERENCE_ALREADY_CLOSED);
+                return;
+            }
+            if (!Objects.equals(conference.getModeratorUuid(), rpcConnection.getUserUuid())) {
+                notificationService.sendErrorResponseWithDesc(rpcConnection.getParticipantPrivateId(), request.getId(),
+                        null, ErrorCodeEnum.PERMISSION_LIMITED);
                 return;
             }
             sessionId = conference.getRoomId();

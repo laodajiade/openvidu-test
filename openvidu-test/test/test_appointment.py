@@ -49,6 +49,26 @@ class TestCreateRoom(test.MyTestCase):
         logger.info('检查是否收到关闭会议的通知')
         self.assertTrue(part.has_notify_sync('closeRoomNotify', timeout=2000), '与会者没有收到关闭会议通知')
 
+    def test_order_create_room(self):
+        """ 主持人没有提前开启会议，参会者可以进入会议
+           测试目的：会议创建权限校验
+           测试过程: 1、预约随机会议
+                    2、其他人提前createRoom和joinRoom
+           结果期望： 其他人createRoom应失败
+           bug：http://task.sudi.best/browse/BASE121-4449
+           """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        moderator = self.loginAndAccessIn2(self.users[0])
+        room_id, ruid = self.create_appointment_room(moderator, self.users[0], self.users[1])
+        logger.info('create appt room {},{}', room_id, ruid)
+        part = self.loginAndAccessIn2(self.users[1])
+        logger.info('其他人提前创建会议')
+        result = part.createRoom(room_id, 'xxxx的预约会议', room_id_type='random', ruid=ruid)
+        self.assertEqual(result[0], 13004)
+        logger.info('主持人提前创建会议，并入会')
+        self.start_appointment_room(moderator, room_id, ruid)
+        self.joinRoom(moderator, room_id)
+
     def test_cancel_started_appt_cycle_20(self):
         """ test_cancel_started_appt 执行20次，增加随机性 """
         for i in range(0, 20):
