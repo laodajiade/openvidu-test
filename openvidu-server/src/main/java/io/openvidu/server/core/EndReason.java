@@ -31,6 +31,9 @@ public enum EndReason {
      * 结束发言
      */
     endRollCall,
-    participantReplaceLeft, livingStoppedByServer, serviceExpired, callDurationUsedUp, fixedRoomServiceExpired
-
+    participantReplaceLeft, livingStoppedByServer, serviceExpired, callDurationUsedUp, fixedRoomServiceExpired,
+    /**
+    * 会议空闲时间超时
+     */
+    sessionIdleTimeout,
 }

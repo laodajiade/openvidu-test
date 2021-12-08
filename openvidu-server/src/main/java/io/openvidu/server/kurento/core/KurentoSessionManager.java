@@ -61,6 +61,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class KurentoSessionManager extends SessionManager {
 
@@ -745,6 +746,7 @@ public class KurentoSessionManager extends SessionManager {
 
         session = new KurentoSession(sessionNotActive, lessLoadedKms, kurentoSessionEventsHandler, kurentoEndpointConfig,
                 kmsManager.destroyWhenUnused());
+
         session.setEndTime(sessionNotActive.getEndTime());
         lessLoadedKms.addKurentoSession(session);
 
@@ -754,6 +756,7 @@ public class KurentoSessionManager extends SessionManager {
         session.setPresetInfo(getPresetInfo(sessionId));
         session.setRuid(conference.getRuid());
         sessions.put(session.getSessionId(), session);
+        new RoomLeaseThread(session).start();
 
         if (ConferenceModeEnum.MCU.equals(session.getConferenceMode())) {
             session.setCorpMcuConfig(roomManage.getCorpMcuConfig(conference.getProject()));
@@ -1694,4 +1697,35 @@ public class KurentoSessionManager extends SessionManager {
         sendChnMsg(session, "StorageFillIn");
     }
 
+    // 服务崩溃或者kill -9等方式非正常关机会导致会议永远存在。
+    class RoomLeaseThread extends Thread {
+        private final Session session;
+
+        public RoomLeaseThread(Session session) {
+            this.session = session;
+        }
+
+        @Override
+        public void run() {
+            log.info("room lease thead start,roomId={}, ruid={}", session.getSessionId(), session.getRuid());
+            int idleCnt = 0;
+            while (!session.isClosed()) {
+                try {
+                    cacheManage.roomLease(session.getSessionId(), session.getRuid());
+                    TimeUnit.SECONDS.sleep(10);
+                    if (!org.apache.commons.lang.StringUtils.startsWith(session.getRuid(), "appt-") && session.getPartSize() == 0) {
+                        idleCnt = session.getPartSize() == 0 ? ++idleCnt : 0;
+                    }
+                    if (idleCnt > 6) {
+                        log.info("room lease thead interrupt, roomId={}, ruid={} that close room", session.getSessionId(), session.getRuid());
+                        closeRoom(session, EndReason.sessionIdleTimeout);
+                        return;
+                    }
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            log.info("room lease thead stop,roomId={}, ruid={}", session.getSessionId(), session.getRuid());
+        }
+    }
 }

@@ -17,7 +17,6 @@
 
 package io.openvidu.server.kurento.core;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.openvidu.client.OpenViduException;
@@ -32,16 +31,18 @@ import io.openvidu.server.core.Participant;
 import io.openvidu.server.core.Session;
 import io.openvidu.server.kurento.endpoint.PublisherEndpoint;
 import io.openvidu.server.kurento.kms.Kms;
-import org.apache.commons.lang.StringUtils;
-import org.kurento.client.EventListener;
-import org.kurento.client.Properties;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -59,14 +60,14 @@ public class KurentoSession extends Session {
 
     private Kms kms;
 
-    private List<DeliveryKmsManager> deliveryKmsManagers = new ArrayList<>();
+    private final List<DeliveryKmsManager> deliveryKmsManagers = new ArrayList<>();
 
     private KurentoSessionEventsHandler kurentoSessionHandler;
     private KurentoParticipantEndpointConfig kurentoEndpointConfig;
 
     private final ConcurrentHashMap<String, String> filterStates = new ConcurrentHashMap<>();
 
-    private CompositeService compositeService;
+    private final CompositeService compositeService;
 
     private RecorderService recorderService;
 
@@ -74,30 +75,6 @@ public class KurentoSession extends Session {
     private final Object pipelineReleaseLock = new Object();
     private final Object joinOrLeaveLock = new Object();
     private boolean destroyKurentoClient;
-
-    // 服务崩溃或者kill -9等方式非正常关机会导致会议永远存在。
-    private final Thread leaseThread = new Thread(() -> {
-        log.info("room lease thead start,roomId={}, ruid={}", sessionId, ruid);
-        int idleCnt = 0;
-        while (!closed) {
-            try {
-                kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
-                TimeUnit.SECONDS.sleep(20);
-                if (!StringUtils.startsWith(ruid, "appt-") && getPartSize() == 0) {
-                    idleCnt = getPartSize() == 0 ? ++idleCnt : 0;
-                }
-                if (idleCnt > 3) {
-                    log.info("room lease thead interrupt,roomId={}, ruid={}", sessionId, ruid);
-                    closing = true;
-                    kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid, 20, TimeUnit.MILLISECONDS);
-                    return;
-                }
-            } catch (InterruptedException e) {
-                return;
-            }
-        }
-        log.info("room lease thead stop,roomId={},ruid={}", sessionId, ruid);
-    });
 
     public final ConcurrentHashMap<String, String> publishedStreamIds = new ConcurrentHashMap<>();
 
@@ -111,7 +88,6 @@ public class KurentoSession extends Session {
         this.compositeService = new CompositeService(this);
         log.info("New SESSION instance with id '{}'", sessionId);
         kurentoSessionHandler.cacheManage.roomLease(sessionId, ruid);
-        this.leaseThread.start();
     }
 
     @Override
