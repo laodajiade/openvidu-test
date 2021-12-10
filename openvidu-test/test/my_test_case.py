@@ -60,10 +60,10 @@ class MyTestCase(unittest.TestCase):
 
     def createRandomRoom(self, client):
         self.moderatorClient = client
-        re = client.createRoom('', client.uuid + '的随机会议', 'random')
-        self.assertEqual(re[0], 0, msg='create room error ' + str(re))
-        logger.info('create room ' + re[1]['roomId'])
-        return re
+        result = client.createRoom('', client.uuid + '的随机会议', 'random')
+        self.assertEqual(result[0], 0, msg='create room error ' + str(result))
+        logger.info('create room ' + result[1]['roomId'])
+        return result
 
     def joinRoom(self, client, room_id, **kwargs):
         re = client.joinRoom(room_id, **kwargs)

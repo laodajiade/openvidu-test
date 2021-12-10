@@ -78,7 +78,7 @@ public class SessionEventsHandler {
     private KmsManager kmsManager;
 
     @Value("${conference.delivery.load.factor}")
-    private int loadFactor = 10;
+    private int loadFactor = 999;
 
     Map<String, Recording> recordingsStarted = new ConcurrentHashMap<>();
 
@@ -181,7 +181,7 @@ public class SessionEventsHandler {
         //participant properties
         if (StringUtils.isNotEmpty(participant.getUsedRTCMode())) {
             JsonObject partInfo = new JsonObject();
-            partInfo.addProperty("usedRTCMode",participant.getUsedRTCMode());
+            partInfo.addProperty("usedRTCMode", participant.getUsedRTCMode());
             result.add("partInfo", partInfo);
         }
 
@@ -200,8 +200,11 @@ public class SessionEventsHandler {
     private void deliveryOnParticipantJoined(Session session) {
         // 人数超过阈值后开始往第二台分发。
         KurentoSession ks = (KurentoSession) session;
-
-        if (!ks.needMediaDeliveryKms(loadFactor)) {
+        if (kmsManager.getKmss().size() < 2) {
+            return;
+        }
+        loadFactor=1;//todo dev
+        if (!ks.needMediaDeliveryKms(loadFactor) && session.getPresetInfo().getMcuThreshold() < 500) {
             return;
         }
         try {

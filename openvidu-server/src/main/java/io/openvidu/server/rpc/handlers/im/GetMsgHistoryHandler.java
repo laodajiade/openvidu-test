@@ -45,7 +45,7 @@ public class GetMsgHistoryHandler extends AbstractIMHandler<GetMsgHistoryVO> {
             sendMsgNotify.setMsgId(imMsg.getId());
             sendMsgNotify.setResendFlag(0);
             sendMsgNotify.setSenderAccount(imMsg.getSenderUuid());
-            sendMsgNotify.setSender(new ImUser(imMsg.getSenderUuid(), getRecentUsername(imMsg.getRevicerUuid(), imMsg.getRevicerUsername()), imMsg.getSenderTerminalType()));
+            sendMsgNotify.setSender(new ImUser(imMsg.getSenderUuid(), getRecentUsername(imMsg.getSenderUuid(), imMsg.getSenderUsername()), imMsg.getSenderTerminalType()));
             sendMsgNotify.setTimestamp(imMsg.getTimestamp().getTime());
 
             if (sendMsgNotify.getOperate() == 0) {
