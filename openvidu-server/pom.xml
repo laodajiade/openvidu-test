@@ -571,6 +571,11 @@
 			<id>geedow-maven</id>
 			<name>geedow maven</name>
 			<url>http://172.25.11.53:8081/repository/maven-public/</url>
+			<snapshots>
+				<!--<updatePolicy>always</updatePolicy>-->
+				<updatePolicy>always</updatePolicy>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>spring-milestones</id>

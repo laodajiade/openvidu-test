@@ -155,7 +155,7 @@ public class CreateRoomHandler extends RpcAbstractHandler {
                 respJson.addProperty(ProtocolElements.CREATE_ROOM_RUID_PARAM, processConference.get().getRuid());
                 respJson.addProperty("inviteUrl", processConference.get().getShortUrl() == null ?
                         "" : openviduConfig.getConferenceInviteUrl() + processConference.get().getShortUrl());
-                log.info("param ruid={}, actual ruid = {}", ruid, processConference.get().getRuid());
+                log.info("room exist and return Success ,param ruid={}, actual ruid = {}", ruid, processConference.get().getRuid());
                 notificationService.sendResponse(rpcConnection.getParticipantPrivateId(), request.getId(), respJson);
                 return;
             }

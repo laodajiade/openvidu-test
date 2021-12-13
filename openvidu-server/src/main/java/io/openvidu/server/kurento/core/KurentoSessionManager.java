@@ -753,7 +753,6 @@ public class KurentoSessionManager extends SessionManager {
         session.setConference(conference);
         //session.setConferenceMode(conference.getConferenceMode() == 0 ? ConferenceModeEnum.SFU : ConferenceModeEnum.MCU);
         session.setConferenceMode(ConferenceModeEnum.SFU);
-        session.setPresetInfo(getPresetInfo(sessionId));
         session.setRuid(conference.getRuid());
         sessions.put(session.getSessionId(), session);
         new RoomLeaseThread(session).start();
@@ -1720,6 +1719,15 @@ public class KurentoSessionManager extends SessionManager {
                         log.info("room lease thead interrupt, roomId={}, ruid={} that close room", session.getSessionId(), session.getRuid());
                         closeRoom(session, EndReason.sessionIdleTimeout);
                         return;
+                    }
+                    if (new Random().nextInt(60) == 59) {
+                        try {
+                            if (rtcRoomClient.leaseRoom(session.getSessionId(), session.getPresetInfo().getInstanceId())) {
+                                log.warn("room lease to rtc-user failure, roomId={}, ruid={}", session.getSessionId(), session.getRuid());
+                            }
+                        } catch (Exception e) {
+                            log.warn("room lease to rtc-user exception, roomId={}, ruid={}", session.getSessionId(), session.getRuid(), e);
+                        }
                     }
                 } catch (InterruptedException e) {
                     return;
