@@ -1,0 +1,21 @@
+POST http://localhost:4443/dev/test?id=80101900003&method=getSpecificPageOfMember
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "deptId": 46,
+  "isChooseAll": false,
+  "pageNum": 1,
+  "pageSize": 20,
+  "version": "56fbbed6ced2260d05c7110e6460e0be96473b23"
+}
+
+###
+POST http://localhost:4443/dev/test?id={{uuid}}&method=getParticipants
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+"roomId":"{{roomId}}","targetId":"{{uuid}}"}

@@ -1,0 +1,25 @@
+
+# 移交主持人
+POST http://localhost:4443/dev/test?id=alibb100002&method=transferModerator
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb59789",
+  "sourceId": "alibb100002",
+  "targetId": "alibb100003"
+}
+
+
+###
+# 移交主持人
+POST http://localhost:4443/dev/test?id=alibb100003&method=transferModeratorPassword
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb999002",
+  "password": "666666"
+}

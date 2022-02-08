@@ -1,0 +1,14 @@
+
+# 设置是否允许参会者自主开启扬声器
+POST http://localhost:4443/dev/test?id=alibb100002&method=setPartOperSpeaker
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb100002",
+  "sourceId": "alibb100002",
+  "allowPartOperSpeaker": "off"
+}
+
+###

@@ -1,0 +1,22 @@
+
+# 修改个人会议室设置
+POST http://localhost:4443/dev/test?id=alibb100002&method=updateConfRoomInfo
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "allowPartOperMic": "off",
+  "allowPartOperShare": "off",
+  "id": 9617,
+  "micStatus": "smart",
+  "moderatorPassword": "481844",
+  "password": "666665",
+  "roomCapacity": 500,
+  "roomId": "alibb100002",
+  "roomSubject": "淘宝2的云会议室",
+  "sharePower": "off",
+  "videoStatus": "off"
+}
+
+###

@@ -1,0 +1,16 @@
+
+# 点名发言
+POST http://localhost:4443/dev/test?id=alibb100003&method=raiseHand
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb100002",
+  "sourceId": "alibb100003",
+  "targetId": "alibb100003",
+  "type": "applicant"
+}
+
+###
+

@@ -1,0 +1,51 @@
+
+# 设置会议室分享
+POST http://localhost:4443/dev/test?id=alibb100002&method=setAllowPartOperShare
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb100002",
+  "operate": "off"
+}
+
+###
+
+# 设置会议室分享
+POST http://localhost:4443/dev/test?id=alibb100002&method=setAllowPartOperInvite
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+"roomId": "alibb100002",
+"operate": "on"
+}
+
+
+###
+
+# 设置会议室分享
+POST http://localhost:4443/dev/test?id=alibb100002&method=setAllowPartType
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb100002",
+  "type": "unlimited"
+}
+
+###
+# 设置会议室分享
+POST http://localhost:4443/dev/test?id=alibb100002&method=setAllowPartOperMic
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+"roomId": "alibb100002",
+"operate": "on"
+}
+

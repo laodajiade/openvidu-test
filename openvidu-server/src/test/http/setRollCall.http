@@ -1,0 +1,13 @@
+
+# 点名发言
+POST http://localhost:4443/dev/test?id={{uuid}}&method=delConferenceRecord
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "ids": [
+    1257
+  ]
+}
+###

@@ -1,0 +1,26 @@
+
+# 关闭个人会议室
+POST http://localhost:4443/dev/test?id=alibb100002&method=closeRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb90499",
+  "sourceId": "alibb100002",
+  "streamType": "MAJOR"
+}
+
+###
+
+# 03离开02房间
+POST http://localhost:4443/dev/test?id=alibb100003&method=closeRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb90499",
+  "sourceId": "alibb100003",
+  "streamType": "MAJOR"
+}

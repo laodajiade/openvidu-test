@@ -310,8 +310,8 @@ class TestJoinRoom(test.MyTestCase):
         # step 2
         logger.info("step 2")
         speaker_sharing_uuid = part_client.uuid
-        moderator_client.ms.set_roll_call(part_client.uuid)
-        part_client.request('applyShare', {'targetId': part_client.uuid})
+        moderator_client.ms.set_roll_call(part_client.uuid) #发起发言
+        part_client.request('applyShare', {'targetId': part_client.uuid}) # 发起分享
         logger.info('stop ping pong')
         part_client.close_ping_pong()
 

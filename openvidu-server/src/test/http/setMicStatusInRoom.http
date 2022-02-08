@@ -1,0 +1,11 @@
+
+# 主持人设置入会时是否静音
+POST http://localhost:4443/dev/test?id=alibb100002&method=setMicStatusInRoom
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb100002",
+  "micStatusInRoom": "off"
+}

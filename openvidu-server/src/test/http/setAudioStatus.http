@@ -1,0 +1,14 @@
+
+# 设置是否允许参会者自主开启扬声器
+POST http://localhost:4443/dev/test?id={{uuid}}&method=setAudioStatus
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "{{roomId}}",
+  "sourceId": "{{uuid}}",
+  "status": "on"
+}
+
+###

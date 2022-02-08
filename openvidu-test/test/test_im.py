@@ -9,6 +9,10 @@ import test
 class TestLogin(test.MyTestCase):
     """ IM相关"""
 
+    def test_error(self):
+        # self.assertEqual(1, 0, "hhhhhhh")
+        pass
+
     def test_im_send(self):
         """ 测试IM发消息能力
         测试目的：测试IM发消息能力

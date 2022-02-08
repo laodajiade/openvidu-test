@@ -50,6 +50,8 @@ class SdClient:
             # logger.add("../log.log", filter="", level="INFO", rotation="10 MB", encoding='utf-8')
         logger.info('server_url:' + server_url)
 
+
+
     def loginAndAccessIn(self, **kwargs):
         self.login()
         return self.__accessIn(**kwargs)
@@ -197,7 +199,7 @@ class SdClient:
         params['subject'] = subject
         params['useIdInRoom'] = 'allParticipant'
         params['videoStatusInRoom'] = 'on'
-        params['ruid'] = ''
+        params['ruid'] = '' #会议的唯一id
 
         for k, v in args.items():
             params[k] = v
@@ -399,6 +401,20 @@ class SdClient:
             logger.error('getToken failed.' + json.dumps(res, sort_keys=True, indent=4, ensure_ascii=False))
         return uuid, token
 
+#zyx个人练习———————————————————————请忽略
+    def getMemberDetails(self, uuid):
+        self.uuid = uuid
+        re = self.wsClient.request("getMemberDetails", {"uuid":uuid})
+        return re
+
+#zyx个人练习———————————————————————请忽略
+    def getUploadToken(self, type):
+        self.type = type
+        re = self.wsClient.request("getUploadToken", {"type":type})
+        return re
+
+
+
 
 class WsClient:
 
@@ -527,3 +543,5 @@ class WsClient:
         msgId = self.traceId
         self.lockMsgId.release()
         return str(msgId)
+
+

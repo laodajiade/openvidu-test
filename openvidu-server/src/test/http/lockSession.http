@@ -1,0 +1,13 @@
+
+# 锁定会议室
+POST http://localhost:4443/dev/test?id=alibb100002&method=lockSession
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "roomId": "alibb100002",
+  "operate": "on"
+}
+
+###

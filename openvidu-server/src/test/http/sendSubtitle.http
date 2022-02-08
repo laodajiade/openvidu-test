@@ -1,0 +1,17 @@
+
+# 发送字幕
+POST http://localhost:4443/dev/test?id=alibb100002&method=sendSubtitle
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "status": true,
+    "subtitles": [
+      {
+        "language": "cn",
+        "text": "没有他那个那个",
+        "type": "recognition"
+      }
+    ]
+  }

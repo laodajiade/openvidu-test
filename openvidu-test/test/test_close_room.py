@@ -83,7 +83,7 @@ class TestCloseRoom(test.MyTestCase):
                 2、第二人加入会议
                 3、主持人关闭会议
                 4、与会者在收到closeRoom通知后，立即查询getNotFinishedRoom
-        结果期望：getNotFinishedRoom结果为控
+        结果期望：getNotFinishedRoom结果为空
         """
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         moderator_client, room_id = self.loginAndAccessInAndCreateAndJoin(self.users[0])

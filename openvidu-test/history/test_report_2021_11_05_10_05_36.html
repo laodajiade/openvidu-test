@@ -1,0 +1,2306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title> 信令自测用例 </title>
+    <meta name="generator" content="HTMLTestRunner 1.0.3" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="https://lib.baomitu.com/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="http://img.itest.info/seldom.css">
+
+    <style type="text/css" media="screen">
+    body {
+        font-family: verdana, arial, helvetica, sans-serif;
+        font-size: 80%;
+    }
+
+    table {
+        font-size: 100%;
+    }
+
+    /* -- heading ---------------------------------------------------------------------- */
+    h1 {
+        font-size: 16pt;
+        color: gray;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+        background-color: #F5F5F5;
+    }
+
+    ::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        background-color: rgba(114,124,245,.25);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        background-color: #6c757d;
+    }
+
+    .heading {
+        margin-top: 20px;
+        margin-bottom: 1ex;
+        margin-left: 10px;
+        margin-right: 10px;
+        width: 23%;
+        float: left;
+        padding-top: 10px;
+        padding-left: 10px;
+        padding-bottom: 10px;
+        padding-right: 10px;
+        box-shadow: 0px 0px 5px #000;
+    }
+
+    .heading .attribute {
+        margin-top: 1ex;
+        margin-bottom: 0;
+    }
+
+    .heading .description {
+        margin-top: 4ex;
+        margin-bottom: 6ex;
+    }
+
+    /* -- css div popup ------------------------------------------------------------------------ */
+
+    a.popup_link:hover {
+        color: red;
+    }
+
+    .popup_window {
+        display: none;
+        position: relative;
+        left: 0px;
+        top: 0px;
+        /*border: solid #627173 1px; */
+        font-family: "Lucida Console", "Courier New", Courier, monospace;
+        text-align: left;
+        font-size: 12pt;
+        width: 500px;
+    }
+
+    /* -- report ------------------------------------------------------------------------ */
+    pre {
+        background-color: #eef2f7;
+        box-shadow: 0px 0px 1px inset;
+        padding-top: 10px;
+    }
+
+    #show_detail_line {
+        margin-top: 3ex;
+        margin-bottom: 1ex;
+        margin-left: 10px;
+        text-align: right;
+        margin-right: 15px;
+    }
+
+    #header_row {
+        font-weight: bold;
+        color: #606060;
+        border-top-width: 10px;
+        border-color: #d6e9c6;
+        font-size: 15px;
+    }
+
+    #total_row {
+        font-weight: bold;
+        background-color: #dee2e6;
+    }
+
+    .passClass {
+        background-color: #d6e9c6;
+    }
+
+    .failClass {
+        background-color: #faebcc;
+    }
+
+    .errorClass {
+        background-color: #ebccd1;
+    }
+
+    .passCase {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .failCase {
+        color: #c60;
+        font-weight: bold;
+    }
+
+    .errorCase {
+        color: #c00;
+        font-weight: bold;
+    }
+
+    .hiddenRow {
+        display: none;
+    }
+
+    .none {
+        color: #009900
+    }
+
+    .testcase {
+        margin-left: 2em;
+    }
+
+    /* -- chars ---------------------------------------------------------------------- */
+    .testChars {
+        width: 900px;
+        margin-left: 0px;
+    }
+
+    .error-color {
+        color: #fff;
+        background-color: #f44455;
+        border-color: #f44455;
+    }
+
+    .pass-color {
+        color: #fff;
+        background-color: #5fc27e;
+        border-color: #5fc27e;
+    }
+
+    .fail-color {
+        color: #fff;
+        background-color: #fcc100;
+        border-color: #fcc100;
+    }
+
+    .skip-color {
+        color: #fff;
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    /* -- screenshots ---------------------------------------------------------------------- */
+    .img {
+        height: 100%;
+        border-collapse: collapse;
+    }
+
+    .screenshots {
+        z-index: 100;
+        position: fixed;
+        height: 80%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        box-shadow: 1px 2px 20px #333333;
+    }
+
+    .imgyuan {
+        height: 20px;
+        border-radius: 12px;
+        background-color: red;
+        padding-left: 13px;
+        margin: 0 auto;
+        position: relative;
+        top: -40px;
+        background-color: rgba(1, 150, 0, 0.3);
+    }
+
+    .imgyuan font {
+        border: 1px solid white;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        margin-right: 9px;
+        margin-top: 4px;
+        display: block;
+        float: left;
+        background-color: white;
+    }
+
+    .close_shots {
+        background-image: url(data:image/png;base64,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);
+        background-size: 22px 22px;
+        -moz-background-size: 22px 22px;
+        background-repeat: no-repeat;
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        height: 22px;
+        z-index: 99;
+        width: 22px;
+        box-shadow: 1px 2px 5px #333333;
+    }
+
+    .footer {
+        height: 50px;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+    }
+    
+    @media screen and (max-width:1000px){
+        #parentContainer{
+            padding-bottom:300px
+        };
+    }
+
+    @media screen and (min-width:1000px){
+        #parentContainer{
+            padding-bottom:100px
+        };
+    }
+</style>
+</head>
+
+<body>
+    <script language="javascript" type="text/javascript">
+
+        function show_img(obj) {
+            var obj1 = obj.nextElementSibling
+            obj1.style.display = 'block'
+            var index = 0; //每张图片的下标，
+            var len = obj1.getElementsByTagName('img').length;
+            var imgyuan = obj1.getElementsByClassName('imgyuan')[0]
+            //var start=setInterval(autoPlay,500);
+            obj1.onmouseover = function () { //当鼠标光标停在图片上，则停止轮播
+                clearInterval(start);
+            }
+            obj1.onmouseout = function () { //当鼠标光标停在图片上，则开始轮播
+                start = setInterval(autoPlay, 1000);
+            }
+            for (var i = 0; i < len; i++) {
+                var font = document.createElement('font')
+                imgyuan.appendChild(font)
+            }
+            var lis = obj1.getElementsByTagName('font'); //得到所有圆圈
+            changeImg(0)
+            var funny = function (i) {
+                lis[i].onmouseover = function () {
+                    index = i
+                    changeImg(i)
+                }
+            }
+            for (var i = 0; i < lis.length; i++) {
+                funny(i);
+            }
+
+            function autoPlay() {
+                if (index > len - 1) {
+                    index = 0;
+                    clearInterval(start); //运行一轮后停止
+                }
+                changeImg(index++);
+            }
+            imgyuan.style.width = 25 * len + "px";
+            //对应圆圈和图片同步
+            function changeImg(index) {
+                var list = obj1.getElementsByTagName('img');
+                var list1 = obj1.getElementsByTagName('font');
+                for (i = 0; i < list.length; i++) {
+                    list[i].style.display = 'none';
+                    list1[i].style.backgroundColor = 'white';
+                }
+                list[index].style.display = 'block';
+                list1[index].style.backgroundColor = 'red';
+            }
+        }
+
+        function hide_img(obj) {
+            obj.parentElement.style.display = "none";
+            obj.parentElement.getElementsByClassName('imgyuan')[0].innerHTML = "";
+        }
+
+        output_list = Array();
+        /* level 
+        - 0:Summary; 
+        - 1:Failed; 
+        - 2:Skip; 
+        - 3:All 
+        */
+        function showCase(level, channel) {
+            trs = document.getElementsByTagName("tr");
+            for (var i = 0; i < trs.length; i++) {
+                tr = trs[i];
+                id = tr.id;
+                if (["ft", "pt", "et", "st"].indexOf(id.substr(0, 2)) != -1) {
+                    if (level == 0 && id.substr(2, 1) == channel) {
+                        tr.className = 'hiddenRow';
+                    }
+                }
+                if (id.substr(0, 3) == 'pt' + channel) {
+                    if (level == 1) {
+                        tr.className = '';
+                    }
+                    else if (level > 4 && id.substr(2, 1) == channel) {
+                        tr.className = '';
+                    }
+                    else {
+                        tr.className = 'hiddenRow';
+                    }
+                }
+                if (id.substr(0, 3) == 'ft' + channel) {
+                    if (level == 2) {
+                        tr.className = '';
+                    }
+                    else if (level > 4 && id.substr(2, 1) == channel) {
+                        tr.className = '';
+                    }
+                    else {
+                        tr.className = 'hiddenRow';
+                    }
+                }
+                if (id.substr(0, 3) == 'et' + channel) {
+                    if (level == 3) {
+                        tr.className = '';
+                    }
+                    else if (level > 4 && id.substr(2, 1) == channel) {
+                        tr.className = '';
+                    }
+                    else {
+                        tr.className = 'hiddenRow';
+                    }
+                }
+                if (id.substr(0, 3) == 'st' + channel) {
+                    if (level == 4) {
+                        tr.className = '';
+                    }
+                    else if (level > 4 && id.substr(2, 1) == channel) {
+                        tr.className = '';
+                    }
+                    else {
+                        tr.className = 'hiddenRow';
+                    }
+                }
+            }
+        }
+        function showClassDetail(cid, count) {
+            var id_list = Array(count);
+            var toHide = 1;
+            for (var i = 0; i < count; i++) {
+                tid0 = 't' + cid.substr(1) + '.' + (i + 1);
+                tid = 'f' + tid0;
+                tr = document.getElementById(tid);
+                if (!tr) {
+                    tid = 'p' + tid0;
+                    tr = document.getElementById(tid);
+                }
+                if (!tr) {
+                    tid = 'e' + tid0;
+                    tr = document.getElementById(tid);
+                }
+                if (!tr) {
+                    tid = 's' + tid0;
+                    tr = document.getElementById(tid);
+                }
+                id_list[i] = tid;
+                if (tr.className) {
+                    toHide = 0;
+                }
+            }
+            for (var i = 0; i < count; i++) {
+                tid = id_list[i];
+                if (toHide) {
+                    document.getElementById(tid).className = 'hiddenRow';
+                }
+                else {
+                    document.getElementById(tid).className = '';
+                }
+            }
+        }
+        function showTestDetail(div_id) {
+            var details_div = document.getElementById(div_id)
+            var displayState = details_div.style.display
+
+            if (displayState != 'block') {
+                displayState = 'block'
+                details_div.style.display = 'block'
+            }
+            else {
+                details_div.style.display = 'none'
+            }
+        }
+        function html_escape(s) {
+            s = s.replace(/&/g, '&amp;');
+            s = s.replace(/</g, '&lt;');
+            s = s.replace(/>/g, '&gt;');
+            return s;
+        }
+    </script>
+
+    <nav class="navbar navbar-expand navbar-light bg-dark">
+    <a class="sidebar-toggle d-flex mr-2">
+        <i class="hamburger align-self-center"></i>
+    </a>
+    <h1 style="margin-bottom: 0px; color: azure;">seldom</h1>
+    <div class="navbar-collapse collapse">
+        <ul class="navbar-nav ml-auto">
+            <h3 style="float: right; color: azure;"> 信令自测用例</h3>
+        </ul>
+    </div>
+</nav>
+
+<div id="parentContainer" class="container-fluid mm-active" style="padding-left: 35px;padding-right: 35px;">
+    <div style="height: 260px; margin-top: 20px;">
+        
+        <div class="row" style="margin-left: 0px; margin-right: 0px;">
+            <div class="col-12 col-lg-5 col-xl-3 d-flex" style="float:left">
+                <div class='card flex-fill'>
+                    <div class="card-body my-2">
+                        <h4 class="header-title">Overview</h4>
+                        <table class="table my-0">
+                            <tbody>
+                                
+                                <tr>
+                                    <td> Start Time</td>
+                                    <td class="text-right">2021-11-05 10:05:36</td>
+                                </tr>
+                                
+                                <tr>
+                                    <td> Duration</td>
+                                    <td class="text-right">0:18:15.994549</td>
+                                </tr>
+                                
+                                <tr>
+                                    <td> Status</td>
+                                    <td class="text-right">Passed:78 Failed:7 Skiped:2</td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>Description:</td>
+                                    <td class="text-right">信令2.0自测冒烟用例</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-lg-6 order-lg-1">
+                <div class="card-body">
+                    <div class="testChars" style="width: 230px; height: 200px;">
+                        <canvas id="myChart" width="250" height="250"></canvas>
+                    </div>
+                </div> 
+            </div>
+
+        </div>
+    </div>
+</div>
+    <div style="margin-left: 10px; margin-top: 30px;">
+    <p id='show_detail_line' >
+        <a href='javascript:showCase(0, 1)' class="btn btn-dark btn-sm">Summary</a>
+        <a href='javascript:showCase(1, 1)' class="btn btn-success btn-sm">Pass</a>
+        <a href='javascript:showCase(2, 1)' class="btn btn-warning btn-sm">Failed</a>
+        <a href='javascript:showCase(3, 1)' class="btn btn-danger btn-sm">Error</a>
+        <a href='javascript:showCase(4, 1)' class="btn btn-secondary btn-sm">Skip</a>
+        <a href='javascript:showCase(5, 1)' class="btn btn-info btn-sm">All</a>
+    </p>
+</div>
+
+<div class="col-12 d-flex">
+    <div class='card flex-fill'  style="bottom: 50px;">
+        <div class="card-body my-2">
+            <h4 class="header-title">Result</h4>
+            <table class="table mb-0">
+                <thead>
+                    <tr id='header_row'>
+                        <td>Test Group/Test case</td>
+                        <td>description</td>
+                        <td>Duration</td>
+                        <td>Count</td>
+                        <td>Pass</td>
+                        <td>Fail</td>
+                        <td>Error</td>
+                        <td>View</td>
+                        <td>Screenshots</td>
+                    </tr>
+                </thead>
+                
+<tr class='passClass'>
+    <td>test_close_room.TestCloseRoom</td>
+    <td> 会议关闭相关用例 </td>
+    <td></td>
+    <td>5</td>
+    <td>5</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.1',5)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.1.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_close_get_not_finished_room</div>
+    </td>
+    <td style="color: #495057">
+        <div>主持人关闭会议后，与会者查询未完成会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>7.39 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.1.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_close_many_people</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建会议，多人入会，不离会，直接关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.98 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.1.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_close_not_exist</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试关闭不存在的会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.33 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.1.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_close</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，入会，然后离会,再关闭会议室</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.09 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.1.5' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_simple_close</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，入会，然后离会</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.03 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='failClass'>
+    <td>test_create_room.TestCreateRoom</td>
+    <td> 创建会议相关用例 </td>
+    <td></td>
+    <td>11</td>
+    <td>7</td>
+    <td>4</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.2',11)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.2.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_1</div>
+    </td>
+    <td style="color: #495057">
+        <div>更多设置,入会静音模式为智能静音</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.91 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.2.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_2</div>
+    </td>
+    <td style="color: #495057">
+        <div>更多设置，入会静音模式为全部静音</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.13 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.2.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_3</div>
+    </td>
+    <td style="color: #495057">
+        <div>更多设置，ID入会对象仅为主持人</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.03 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='ft1.2.4' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_create_appt</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建一个不存在的ruid的会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.85 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.2.4')" >
+        fail</a>
+    <div id='div_ft1.2.4' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.2.4').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.2.4: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_create_room.py", line 100, in test_create_appt
+    self.assertEqual(re[0], 13054, msg=re[1])  # {"code":13054,"message":"预约会议不存在"}
+AssertionError: 11001 != 13054 : {'code': 11001, 'message': '请稍后再试', 'sessionId': '011206-9c1e5b12'}
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='ft1.2.5' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_create_appt_person</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建一个预约会议，然后提前开始</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.45 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.2.5')" >
+        fail</a>
+    <div id='div_ft1.2.5' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.2.5').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.2.5: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_create_room.py", line 111, in test_create_appt_person
+    self.assertEqual(re[0], 0, msg=re[1])
+AssertionError: 11001 != 0 : {'code': 11001, 'message': '请稍后再试', 'sessionId': '011206-c0664034'}
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='ft1.2.6' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_create_fixed</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建固定会议，不入会,1秒后关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.52 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.2.6')" >
+        fail</a>
+    <div id='div_ft1.2.6' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.2.6').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.2.6: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_create_room.py", line 64, in test_create_fixed
+    self.assertEqual(re[0], 0, msg=re[1])
+AssertionError: 13076 != 0 : {'code': 13076, 'message': '固定会议室已到期', 'sessionId': '011206-cd2ff275'}
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='ft1.2.7' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_create_fixed_2</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建固定会议，然后第二个人创建相同的固定会议室</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.47 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.2.7')" >
+        fail</a>
+    <div id='div_ft1.2.7' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.2.7').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.2.7: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_create_room.py", line 80, in test_create_fixed_2
+    self.assertEqual(re[0], 0, msg=re[1])
+AssertionError: 13076 != 0 : {'code': 13076, 'message': '固定会议室已到期', 'sessionId': '011206-92ed4b40'}
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='pt1.2.8' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_personal</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，不入会,1秒后关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.26 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.2.9' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_personal_twice</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议室2次</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.25 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.2.10' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_random</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，不入会,1秒后关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.13 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.2.11' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_moderate_disconnected</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试主持人掉线会议存在被关闭情况</div>
+    </td>
+    <td style="color: #495057">
+        <div>134.67 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_invite.TestInvite</td>
+    <td>邀请的相关测试 </td>
+    <td></td>
+    <td>4</td>
+    <td>4</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.3',4)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.3.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_get_invite_info</div>
+    </td>
+    <td style="color: #495057">
+        <div>查询邀请情况</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.62 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.3.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_invite</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试被邀请的人是否能收到invite</div>
+    </td>
+    <td style="color: #495057">
+        <div>14.25 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.3.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_invite_ring</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试被邀请的人响应ring后是否还会推送invite通知</div>
+    </td>
+    <td style="color: #495057">
+        <div>27.78 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.3.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_refuse_invite</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试被邀请的人拒绝邀请后是否还会收到邀请</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.02 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_join_room.TestJoinRoom</td>
+    <td> 加入会议相关用例 </td>
+    <td></td>
+    <td>17</td>
+    <td>17</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.4',17)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.4.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_concurrent_join</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试并发入会</div>
+    </td>
+    <td style="color: #495057">
+        <div>14.51 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.4.1')" >
+        pass</a>
+    <div id='div_pt1.4.1' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.4.1').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        pt1.4.1: Exception in thread Thread-194:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-deea6064'}
+
+Exception in thread Thread-192:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-bc318fc2'}
+
+Exception in thread Thread-186:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-bc1e7d56'}
+
+Exception in thread Thread-196:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-d9a0d1f3'}
+
+Exception in thread Thread-195:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-a35d9cdd'}
+
+Exception in thread Thread-197:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-fa226b51'}
+
+Exception in thread Thread-185:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-6b853fdb'}
+
+Exception in thread Thread-189:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 917, in _bootstrap_inner
+    self.run()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\threading.py", line 865, in run
+    self._target(*self._args, **self._kwargs)
+  File "E:\mtgconcenter\openvidu-test\test\test_join_room.py", line 341, in join
+    self.joinRoom(client, room_id)
+  File "E:\mtgconcenter\openvidu-test\test\my_test_case.py", line 69, in joinRoom
+    self.assertEqual(re[0], 0, msg=re[1])
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 839, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python37\lib\unittest\case.py", line 832, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 11011 != 0 : {'code': 11011, 'message': '请稍后再试', 'sessionId': '011206-2e90ca53'}
+
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_concurrent_join_multiple</div>
+    </td>
+    <td style="color: #495057">
+        <div>同一个uuid并发入会，检查order，</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.86 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_and_join</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议,主持人入会</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.92 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_and_join2</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议,主持人入会，其他与会者也一起入会</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.18 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.5' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_join_20</div>
+    </td>
+    <td style="color: #495057">
+        <div>加入会议，不离会，重复20次</div>
+    </td>
+    <td style="color: #495057">
+        <div>18.12 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.6' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_join_leave</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议,主持人入会，其他与会者也一起入会,然后离会</div>
+    </td>
+    <td style="color: #495057">
+        <div>5.89 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.7' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_personal</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，不入会,1秒后关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.16 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.8' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_create_random</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，不入会,1秒后关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.12 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.9' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_force_disconnected</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试强制掉线</div>
+    </td>
+    <td style="color: #495057">
+        <div>165.39 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.10' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_2</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议, 连续入会2次</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.02 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.11' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_get_participant</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议, 测试get_participants接口</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.00 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.12' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_not_exist</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试加入不存在的会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.43 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.13' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_order</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议,与会者先入会6个，主持人在入会，把最后一人挤下墙，发生角色改变</div>
+    </td>
+    <td style="color: #495057">
+        <div>8.34 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.14' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_parts</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议,主持人入会，获取与会者列表</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.89 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.15' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_room_15_role</div>
+    </td>
+    <td style="color: #495057">
+        <div>入会15人，验证入会墙上和墙下的角色正确</div>
+    </td>
+    <td style="color: #495057">
+        <div>13.09 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.16' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_reconnect</div>
+    </td>
+    <td style="color: #495057">
+        <div>重连入会</div>
+    </td>
+    <td style="color: #495057">
+        <div>12.34 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.4.17' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_reconnect_moderator</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试主持人重连入会</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.24 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_leave_room.TestLeaveRoom</td>
+    <td> 离会相关用例 </td>
+    <td></td>
+    <td>10</td>
+    <td>10</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.5',10)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.5.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_evict</div>
+    </td>
+    <td style="color: #495057">
+        <div>踢人</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.09 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_last_part_leave</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试最后一人离开会议，自动关闭会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.31 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_cycle</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议,主持人入会,第二个人重复多次入会离会，然后主持人重复入会离会</div>
+    </td>
+    <td style="color: #495057">
+        <div>20.27 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_multiple</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议,主持人入会,入会其他5个人，按入会顺序倒序退出</div>
+    </td>
+    <td style="color: #495057">
+        <div>14.37 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.5' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_not_exist</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试离开不存在的会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.51 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.6' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_random</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，入会，然后离会</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.94 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.7' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_reconnect</div>
+    </td>
+    <td style="color: #495057">
+        <div>重连离会</div>
+    </td>
+    <td style="color: #495057">
+        <div>32.77 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.8' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_role_change</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议,主持人入会,入会其他9个人，墙上退出一个，最后一个人上墙，角色变化</div>
+    </td>
+    <td style="color: #495057">
+        <div>9.41 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.9' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_leave_twice</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议,主持人入会,第二个人入会，主持人离开会议，查看order</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.58 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.5.10' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_simple_leave</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议，入会，然后离会</div>
+    </td>
+    <td style="color: #495057">
+        <div>3.47 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_login.TestLogin</td>
+    <td>登录相关</td>
+    <td></td>
+    <td>2</td>
+    <td>2</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.6',2)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.6.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_accessIn</div>
+    </td>
+    <td style="color: #495057">
+        <div>accessIn</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.26 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.6.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_login</div>
+    </td>
+    <td style="color: #495057">
+        <div>getToken</div>
+    </td>
+    <td style="color: #495057">
+        <div>2.28 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='failClass'>
+    <td>test_mcu.TestMCU</td>
+    <td> MCU用例 </td>
+    <td></td>
+    <td>9</td>
+    <td>8</td>
+    <td>1</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.7',9)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='ft1.7.1' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_mcu_normal</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建会议, 15人入会,墙上推流，</div>
+    </td>
+    <td style="color: #495057">
+        <div>33.04 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.7.1')" >
+        fail</a>
+    <div id='div_ft1.7.1' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.7.1').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.7.1: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_mcu.py", line 87, in test_mcu_normal
+    self.assertTrue(up_exist, '上墙的uuid不在布局中 ' + str(notify))
+AssertionError: False is not true : 上墙的uuid不在布局中 {'jsonrpc': '2.0', 'method': 'conferenceLayoutChanged', 'origin': 'access-server:172.25.11.206:4442', 'params': {'layoutInfo': {'mode': 9, 'linkedCoordinates': [{'hasVideo': True, 'streamId': '80100400010_MAJOR_IUZPII', 'onlineStatus': 'online', 'uuid': '80100400010', 'streaming': True, 'streamType': 'MAJOR', 'top': 1, 'left': 3, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 0, 'username': '0010'}, {'hasVideo': True, 'streamId': '80100400011_MAJOR_AARPZU', 'onlineStatus': 'online', 'uuid': '80100400011', 'streaming': True, 'streamType': 'MAJOR', 'top': 1, 'left': 642, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 1, 'username': '0011'}, {'hasVideo': True, 'streamId': '80100400012_MAJOR_FMORQT', 'onlineStatus': 'online', 'uuid': '80100400012', 'streaming': True, 'streamType': 'MAJOR', 'top': 1, 'left': 1281, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 2, 'username': '0012'}, {'hasVideo': True, 'streamId': '80100400013_MAJOR_NNAWRL', 'onlineStatus': 'online', 'uuid': '80100400013', 'streaming': True, 'streamType': 'MAJOR', 'top': 361, 'left': 3, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 3, 'username': '0013'}, {'hasVideo': True, 'streamId': '80100400015_MAJOR_ATUTMA', 'onlineStatus': 'online', 'uuid': '80100400015', 'streaming': True, 'streamType': 'MAJOR', 'top': 361, 'left': 642, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 5, 'username': '0015'}, {'hasVideo': True, 'streamId': '80100400016_MAJOR_BBRBMN', 'onlineStatus': 'online', 'uuid': '80100400016', 'streaming': True, 'streamType': 'MAJOR', 'top': 361, 'left': 1281, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 6, 'username': '0016'}, {'hasVideo': True, 'streamId': '80100400017_MAJOR_RMDHMP', 'onlineStatus': 'online', 'uuid': '80100400017', 'streaming': True, 'streamType': 'MAJOR', 'top': 721, 'left': 3, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 7, 'username': '0017'}, {'hasVideo': True, 'streamId': '80100400018_MAJOR_WYLBUM', 'onlineStatus': 'online', 'uuid': '80100400018', 'streaming': True, 'streamType': 'MAJOR', 'top': 721, 'left': 642, 'width': 637, 'connectionId': 'connectionId', 'height': 358, 'order': 8, 'username': '0018'}, {'top': 721, 'left': 1281, 'width': 637, 'uuid': '', 'height': 358}]}, 'mixFlows': [{'streamId': '460589412_MIX_PMMFJW', 'streamMode': 'MIX_MAJOR'}], 'conferenceMode': 'MCU', 'roomId': '460589412', 'timestamp': 1636078574460}, 'participantPrivateId': '011206-07280f05', 'trackId': 'Tke0002810'}
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_mcu_share</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试分享布局，普通的分享布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>31.78 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_mcu_simple</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建会议, 主持人入会，强制开启MCU，第二人入会</div>
+    </td>
+    <td style="color: #495057">
+        <div>9.38 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_mcu_speak</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试普通的发言布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>30.98 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.5' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_mcu_speak_and_share</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试发言+分享的布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>39.40 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.6' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_mcu_subscribe</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试拉MCU的流</div>
+    </td>
+    <td style="color: #495057">
+        <div>13.60 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.7' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_mcu_switch_voice_mode</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试MCU模式下切换语音模式</div>
+    </td>
+    <td style="color: #495057">
+        <div>10.88 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.8' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_t200_mcu_speak_and_share</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试主持人是t200的发言布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>40.11 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.7.9' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_update_conference_layout</div>
+    </td>
+    <td style="color: #495057">
+        <div>主持人修改MCU布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>7.08 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_mcu.TestManualLayout</td>
+    <td> 主持人上报布局 </td>
+    <td></td>
+    <td>4</td>
+    <td>4</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.8',4)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.8.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_layout_1</div>
+    </td>
+    <td style="color: #495057">
+        <div>主持人只有一人的等分布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>10.02 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.8.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_layout_2</div>
+    </td>
+    <td style="color: #495057">
+        <div>主持人上报2等分布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>8.76 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.8.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_layout_part_not_found</div>
+    </td>
+    <td style="color: #495057">
+        <div>主持人上报不存在的uuid</div>
+    </td>
+    <td style="color: #495057">
+        <div>9.77 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.8.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_layout_switch_auto_mode</div>
+    </td>
+    <td style="color: #495057">
+        <div>主持人离会后转自动模式</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.94 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='st1.8.5' class='none'>
+    <td class='passCase'>
+        <div class='testcase'>test_release_mcu</div>
+    </td>
+    <td style="color: #495057">
+        <div></div>
+    </td>
+    <td style="color: #495057">
+        <div>0.00 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_st1.8.5')" >
+        skip</a>
+    <div id='div_st1.8.5' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_st1.8.5').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        st1.8.5: 需要等待至少30分钟，调过用例
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_operation.TestOperation</td>
+    <td> 会议操作 </td>
+    <td></td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.9',1)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.9.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_set_video_status</div>
+    </td>
+    <td style="color: #495057">
+        <div>设置视频状态</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.52 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='failClass'>
+    <td>test_order.TestOrder</td>
+    <td> 会议排序 </td>
+    <td></td>
+    <td>3</td>
+    <td>2</td>
+    <td>1</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.10',3)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='ft1.10.1' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_force_disconnect_part</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试主持人踢人，然后重新入会,重复10次</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.69 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.10.1')" >
+        fail</a>
+    <div id='div_ft1.10.1' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.10.1').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.10.1: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_order.py", line 130, in test_force_disconnect_part
+    self.check_order_list(notify)
+  File "E:\mtgconcenter\openvidu-test\test\test_order.py", line 53, in check_order_list
+    self.assertTrue(flag, ' order ' + str(i) + ' 不存在 ' + str(notify))
+AssertionError: False is not true :  order 1 不存在 {'jsonrpc': '2.0', 'method': 'partOrderOrRoleChangeNotify', 'origin': 'access-server:172.25.11.206:4442', 'params': {'roleChange': [], 'partSize': 2, 'updateParticipantsOrder': [{'uuid': '80100400010', 'order': 0}, {'uuid': '80100400015', 'order': 2}], 'roomId': '774322368', 'timestamp': 1636078806120}, 'participantPrivateId': '011206-978e6dac', 'trackId': 'Tke0004298'}
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='pt1.10.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_order</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议，入会11人，墙上置顶一次，墙下置顶一次</div>
+    </td>
+    <td style="color: #495057">
+        <div>16.24 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.10.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_order_replace</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议，入会11人，墙上互换位置， 墙上和墙下互换</div>
+    </td>
+    <td style="color: #495057">
+        <div>13.57 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_polling.TestMCU</td>
+    <td> 轮询相关 </td>
+    <td></td>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.11',1)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.11.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_simple_polling</div>
+    </td>
+    <td style="color: #495057">
+        <div>简单轮询</div>
+    </td>
+    <td style="color: #495057">
+        <div>17.03 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_reconnect.TestReconnect</td>
+    <td> 重连的相关测试  </td>
+    <td></td>
+    <td>2</td>
+    <td>2</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.12',2)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.12.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_reconnect_not_finished</div>
+    </td>
+    <td style="color: #495057">
+        <div>在会议中，重连后getNotFinishedRoom查询,重连时可能重连到其他openvidu上，导致无结果</div>
+    </td>
+    <td style="color: #495057">
+        <div>20.15 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.12.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_reconnect_order</div>
+    </td>
+    <td style="color: #495057">
+        <div>A B C入会后，B离会，C重连，验证C的order</div>
+    </td>
+    <td style="color: #495057">
+        <div>5.76 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='failClass'>
+    <td>test_record.TestRecord</td>
+    <td> 录制相关 </td>
+    <td></td>
+    <td>1</td>
+    <td>0</td>
+    <td>1</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.13',1)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='ft1.13.1' class='none'>
+    <td class='failCase'>
+        <div class='testcase'>test_record</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议, 主持人推流，开始录制，7秒后结束录制</div>
+    </td>
+    <td style="color: #495057">
+        <div>10.77 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.13.1')" >
+        fail</a>
+    <div id='div_ft1.13.1' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.13.1').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        ft1.13.1: Traceback (most recent call last):
+  File "E:\mtgconcenter\openvidu-test\test\test_record.py", line 29, in test_record
+    self.assertEqual(re[0], 0, ' 关闭录制失败 ' + str(re))
+AssertionError: 13027 != 0 :  关闭录制失败 (13027, {'code': 13027, 'message': '会议尚未开始录制', 'sessionId': '011206-f102e675'})
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='st1.13.2' class='none'>
+    <td class='passCase'>
+        <div class='testcase'>test_record_speaker_shareing</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试录制画面，同时存在发言和分享的情况下布局</div>
+    </td>
+    <td style="color: #495057">
+        <div>0.00 s</div>
+    </td>
+    <td colspan='5' align='center'>
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_st1.13.2')" >
+        skip</a>
+    <div id='div_st1.13.2' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_st1.13.2').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        st1.13.2: 没有真正的流，录制会失败
+        </pre>
+    </div>
+    <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_share.TestShare</td>
+    <td> 分享相关 </td>
+    <td></td>
+    <td>5</td>
+    <td>5</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.14',5)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.14.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_share</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议，入会2人，然后分享</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.20 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.14.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_share_leave</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建随机会议，入会1人，分享，离开会议</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.41 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.14.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_share_order</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试分享后order变化</div>
+    </td>
+    <td style="color: #495057">
+        <div>5.81 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.14.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_share_order_no_moderator</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试在没有主持人情况下分享后order变化</div>
+    </td>
+    <td style="color: #495057">
+        <div>5.62 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.14.5' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_speaker_sharing_order</div>
+    </td>
+    <td style="color: #495057">
+        <div>发言者分享不改变order</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.26 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_speaker.TestSpeaker</td>
+    <td> 点名发言相关 </td>
+    <td></td>
+    <td>4</td>
+    <td>4</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.15',4)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.15.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_replace_speaker</div>
+    </td>
+    <td style="color: #495057">
+        <div>替换发言</div>
+    </td>
+    <td style="color: #495057">
+        <div>16.96 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.15.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_speaker</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试点名发言</div>
+    </td>
+    <td style="color: #495057">
+        <div>23.14 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.15.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_speaker_end</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试结束发言，释放所有的流</div>
+    </td>
+    <td style="color: #495057">
+        <div>11.57 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.15.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_speaker_not_stop_sharing</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试替换点名发言不结束共享</div>
+    </td>
+    <td style="color: #495057">
+        <div>4.04 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_stream.TestStream</td>
+    <td> 推拉流测试 </td>
+    <td></td>
+    <td>6</td>
+    <td>6</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1.16',6)">Detail</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+<tr id='pt1.16.1' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_join_publish</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建个人会议, 测试单人推流</div>
+    </td>
+    <td style="color: #495057">
+        <div>7.20 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.16.2' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_multiple_room</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建多个会议，每个会议都推流，测试kms的负载均衡策略</div>
+    </td>
+    <td style="color: #495057">
+        <div>15.77 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.16.3' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_pause_and_resume</div>
+    </td>
+    <td style="color: #495057">
+        <div>测试暂停拉流和恢复拉流</div>
+    </td>
+    <td style="color: #495057">
+        <div>8.38 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.16.4' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_receive</div>
+    </td>
+    <td style="color: #495057">
+        <div>创建会议, 主持人推主流，与会者1拉主流</div>
+    </td>
+    <td style="color: #495057">
+        <div>12.84 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.16.5' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_share</div>
+    </td>
+    <td style="color: #495057">
+        <div>推送分享流，非分享者不能推分享流</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.90 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+<tr id='pt1.16.6' class='hiddenRow'>
+    <td class='passCase'>
+        <div class='testcase'>test_switch_voice_mode</div>
+    </td>
+    <td style="color: #495057">
+        <div>切换语音模式</div>
+    </td>
+    <td style="color: #495057">
+        <div>6.50 s</div>
+    </td>
+    <td colspan='5' align='center'>pass</td>
+    <td></td>
+</tr>
+
+                <tr id='total_row'>
+                    <td>Total</td>
+                    <td> </td>
+                    <td> </td>
+                    <td>85</td>
+                    <td class="text text-success">78</td>
+                    <td class="text text-danger">7</td>
+                    <td class="text text-warning">0</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.bootcss.com/Chart.js/2.1.6/Chart.bundle.js"></script>
+<script type="text/javascript">
+
+    var data = {
+        labels: [
+            "passed",
+            "failed",
+            "errors",
+            "skiped",
+        ],
+        datasets: [
+            {
+                data: [78, 7, 0, 2],
+                backgroundColor: [
+                    "#10c469",
+                    "#f9c851",
+                    "#ff5b5b",
+                    "#98a6ad"
+                ],
+                hoverBackgroundColor: [
+                    "#10c469",
+                    "#f9c851",
+                    "#ff5b5b",
+                    "#98a6ad"
+                ]
+            }
+        ]
+    };
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var myNewChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        // options: options
+    });
+
+</script>
+
+</div>
+
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                2021 © 重定向科技 - http://itest.info
+            </div>
+            <div class="col-md-6">
+                <div class="text-md-right footer-links d-none d-md-block">
+                    <a href="https://github.com/SeldomQA/HTMLTestRunner">HTMLTestRunner</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+
+</html>

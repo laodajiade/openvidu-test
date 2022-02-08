@@ -24,8 +24,19 @@ class TestCreateRoom(test.MyTestCase):
         client = self.loginAndAccessIn(user['phone'], user['pwd'])
         re = self.createPersonalRoom(client)
         time.sleep(0.5)
-        re = client.close_room(self.room_id)
-        self.assertEqual(re[0], 0, msg=re[1])
+        res = client.close_room(client.room_id)
+        self.assertEqual(res[0], 0, msg=re[1])
+
+    def test_create_random2(self):
+        """创建随机会议，不入会，1s后关闭会议"""
+        logger.info(getattr(self,sys._getframe().f_code.co_name).__doc__)
+        user = self.users[0]
+        client = self.loginAndAccessIn(user['phone'],user['pwd'])
+        re = self.createRandomRoom(client)
+        print('创建随机会议的会议链接：',re[1]['inviteUrl'])
+        time.sleep(1)
+        res = client.close_room(re[1]['roomId'])
+        self.assertEqual(res[0], 0, msg='关闭会议失败')
 
     def test_create_personal_twice(self):
         """ 创建个人会议室2次 """
@@ -35,7 +46,7 @@ class TestCreateRoom(test.MyTestCase):
         self.createPersonalRoom(client)
         time.sleep(0.5)
         self.createPersonalRoom(client)
-        re = client.close_room(self.room_id)
+        re = client.close_room(client.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
 
     def test_create_random(self):
@@ -49,7 +60,7 @@ class TestCreateRoom(test.MyTestCase):
         self.assertEqual(re[0], 0, msg=re[1])
         self.room_id = re[1]['roomId']
         time.sleep(0.5)
-        re = client.close_room(self.room_id)
+        re = client.close_room(client.room_id)
         self.assertEqual(re[0], 0, msg=re[1])
 
     @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时用例')
@@ -61,7 +72,7 @@ class TestCreateRoom(test.MyTestCase):
         logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
         user = self.users[0]
         client = self.loginAndAccessIn(user['phone'], user['pwd'])
-        self.moderatorClient = client
+        # self.moderatorClient = client
         result = self.createRandomRoom(client)
         room_id = result[1]['roomId']
         time.sleep(80)
@@ -175,7 +186,7 @@ class TestCreateRoom(test.MyTestCase):
         user = self.users[0]
         client = self.loginAndAccessIn(user['phone'], user['pwd'])
         apptService = ApptService(client)
-        re = apptService.create_person_appt()
+        re = apptService.create_person_appt() #创建个人预约会议
         self.assertEqual(re[0], 0, msg=re[1])
         ruid = re[1]['ruid']  # 获取到创建的ruid
         room_id = re[1]['roomId']  # 获取到创建的roomId
@@ -249,6 +260,38 @@ class TestCreateRoom(test.MyTestCase):
         re = part_client.joinRoom(room_id)
         self.assertEqual(re[0], 13001, ' error 除主持人外，其他参会者无法通过ID加入此会议。')  # 会议不存在
 
+
+    def test_createRoomOfAll(self):
+        """
+        创建会议：预设为ID入会未全体参会人员
+        模块名称 会议
+        测试项目 创建会议
+        测试点 会议预设的更多设置，ID入会为所有参会者
+        预期结果 除主持人外，其他参会者可通过ID加入此会议
+
+        步骤：
+        1、主持人创建会议
+        2、其他参会者根据会议ID可加入会议成功
+        3、主持人关闭会议
+        """
+        logger.info(getattr(self,sys._getframe().f_code.co_name).__doc__)
+        moderator = self.users[0]
+        moderator_client = self.loginAndAccessIn(moderator['phone'],moderator['pwd'])
+        room_id = moderator['uuid']
+        re = moderator_client.createRoom(room_id,room_id + '的个人会议（其他人可通过ID入会）', 'personal')
+        self.assertEqual(re[0],0,' createRoom error ' + str(re[1]))
+        re_moderator = moderator_client.joinRoom(room_id) #主持人加入会议
+        self.assertEqual(re_moderator[0],0,' moderator join room fail ' + str(re_moderator[1]))
+
+        part = self.users[1] #参会者身份
+        part_client = self.loginAndAccessIn(part['phone'],part['pwd'])
+        re_part = part_client.joinRoom(room_id)  #参会者入会，可入会成功
+        self.assertEqual(re_part[0],0,' parter join room fail ' + str(re_part[1]))
+        moderator_client.close_room(room_id) #主持人关闭会议
+
+
+
+
     @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时超过60s的用例')
     def test_moderate_disconnected(self):
         """测试主持人掉线会议存在被关闭情况
@@ -265,7 +308,7 @@ class TestCreateRoom(test.MyTestCase):
         time.sleep(130)
         logger.info('等待130s后')
         part_client, re = self.loginAndAccessInAndJoin(self.users[2], room_id)
-        self.assertEqual(re[0], 0, '会议被关闭了')
+        self.assertEqual(re[0], 0, '会议被关闭了，但是不应该被关闭')
 
     @unittest2.skipIf(sys.modules.get('fast_test'), '跳过耗时超过60s的用例')
     def test_moderate_disconnected_2(self):
@@ -304,6 +347,36 @@ class TestCreateRoom(test.MyTestCase):
             self.assertEqual(result[0], 0, '创建会议应该失败')
         finally:
             moderator_client.close_room(moderator_client.uuid)
+
+    def test_getMemberDetails_img(self):
+        """
+        ----------zyx个人练习-请忽略-------------
+        登录
+        根据uuid获取个人（80103600010）的头像并打印
+        头像地址字段：userIcon
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        user = self.users[0]
+        user_client = self.loginAndAccessIn(user['phone'],user['pwd'])
+        uuid = user_client.uuid
+        re = user_client.getMemberDetails(uuid)
+        print('------------------------',re[1]['userIcon'])
+        self.assertEqual(re[0],0,'获取图像链接失败')
+
+
+    def test_getUploadToken(self):
+        """
+        ----------zyx个人练习-请忽略-------------
+        获取头像上传地址
+        """
+        logger.info(getattr(self, sys._getframe().f_code.co_name).__doc__)
+        user = self.users[0]
+        user_client = self.loginAndAccessIn(user['phone'],user['pwd'])
+        type = 'UserIcon'
+        re = user_client.getUploadToken(type)
+        print('------------------------',re[1]['uploadUrl'])
+        self.assertEqual(re[0],0,'获取图像上传链接失败')
+
 
 
 if __name__ == '__main__':

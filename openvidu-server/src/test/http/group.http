@@ -1,0 +1,40 @@
+
+
+POST http://localhost:4443/dev/test?id=alibb100002&method=saveGroup
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "groupName": "群组名2",
+  "uuids": ["uuid123456","uuid7890123"]
+}
+
+###
+
+
+POST http://localhost:4443/dev/test?id=80101900003&method=getGroupList
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "type": "private",
+  "pageNum":1,
+  "pageSize":10
+}
+
+
+###
+
+POST http://localhost:4443/dev/test?id=80101900003&method=getGroupMember
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "groupId": 17,
+  "pageNum":1,
+  "pageSize":10
+}
+
